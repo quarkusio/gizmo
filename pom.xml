@@ -27,10 +27,10 @@
     </parent>
 
     <description>
-        A bytecode generation library. This will eventually be split out of the Shamrock build.
+        A bytecode generation library..
     </description>
 
-    <groupId>org.jboss.protean.gizmo</groupId>
+    <groupId>org.jboss.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
     <version>1.0.0.Alpha1-SNAPSHOT</version>
