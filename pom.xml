@@ -42,6 +42,12 @@
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
     </properties>
 
+    <scm>
+        <url>https://github.com/quarkusio/gizmo</url>
+        <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.ow2.asm</groupId>
