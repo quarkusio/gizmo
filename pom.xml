@@ -30,7 +30,7 @@
         A bytecode generation library..
     </description>
 
-    <groupId>org.jboss.gizmo</groupId>
+    <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
     <version>1.0.0.Alpha2-SNAPSHOT</version>
