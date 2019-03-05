@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 /**
  * Use to construct the various branches of an if statement.

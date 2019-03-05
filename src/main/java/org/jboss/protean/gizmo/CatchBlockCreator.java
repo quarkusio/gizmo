@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 /**
  * A bytecode creator that represents a catch block

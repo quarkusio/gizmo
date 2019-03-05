@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 import java.util.function.Function;
 import java.util.function.IntSupplier;

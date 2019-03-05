@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 import java.io.File;
 import java.io.IOException;

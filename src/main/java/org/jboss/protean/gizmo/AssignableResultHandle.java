@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 /**
  * A result handle that can be assigned to (also known as an "lvalue").

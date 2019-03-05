@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jboss.protean.gizmo;
+package io.quarkus.gizmo;
 
 /**
  * A {@code try} block.  If the flow of control exits the bottom of the {@code try} block, it will resume after
