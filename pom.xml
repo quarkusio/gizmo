@@ -15,7 +15,9 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -31,7 +33,7 @@
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
-    <version>1.0.0.Alpha2</version>
+    <version>1.0.0.Alpha2-SNAPSHOT</version>
 
     <properties>
         <version.asm>6.2.1</version.asm>
@@ -164,7 +166,10 @@
                             <id>release</id>
                             <properties>
                                 <gpg.useagent>false</gpg.useagent>
-                                <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase </properties>
+                                <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X
+                                <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory
+                                <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase
+                            </properties>
                         </profile>
                          -->
                         <groupId>org.apache.maven.plugins</groupId>
@@ -183,8 +188,4 @@
             </build>
         </profile>
     </profiles>
-
-  <scm>
-    <tag>1.0.0.Alpha2</tag>
-  </scm>
 </project>
