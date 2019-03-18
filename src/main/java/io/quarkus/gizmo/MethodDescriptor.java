@@ -45,7 +45,7 @@ public class MethodDescriptor {
             }
         }
         if (returnType.length() != 1) {
-            if (!(returnType.startsWith("L") || returnType.startsWith("[")) || !returnType.endsWith(";")) {
+            if (!(returnType.startsWith("L") && returnType.endsWith(";") || returnType.startsWith("["))) {
                 throw new IllegalArgumentException("Invalid return type " + returnType + " it must be in the JVM descriptor format");
             }
         }
