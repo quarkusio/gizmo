@@ -25,7 +25,7 @@
     </parent>
 
     <description>
-        A bytecode generation library..
+        A bytecode generation library.
     </description>
 
     <groupId>io.quarkus.gizmo</groupId>
