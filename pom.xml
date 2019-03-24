@@ -21,11 +21,11 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>31</version>
+        <version>32</version>
     </parent>
 
     <description>
-        A bytecode generation library..
+        A bytecode generation library.
     </description>
 
     <groupId>io.quarkus.gizmo</groupId>
@@ -34,8 +34,8 @@
     <version>1.0.0.Alpha3-SNAPSHOT</version>
 
     <properties>
-        <version.asm>6.2.1</version.asm>
-        <version.jandex>2.1.0.Final</version.jandex>
+        <version.asm>7.1</version.asm>
+        <version.jandex>2.1.1.Final</version.jandex>
         <version.junit>4.12</version.junit>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
     </properties>
