@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class ClassCreator implements AutoCloseable, AnnotatedElement {
@@ -139,11 +138,9 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
     @Override
     public void close() {
         ClassWriter file = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        String[] interfaces = new String[this.interfaces.length];
-        for (int i = 0; i < interfaces.length; ++i) {
-            interfaces[i] = this.interfaces[i];
-        }
-        file.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, className, signature, superClass, interfaces);
+        final GizmoClassVisitor cv = new GizmoClassVisitor(Opcodes.ASM7, file, classOutput.getSourceWriter(className));
+        String[] interfaces = this.interfaces.clone();
+        cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, className, signature, superClass, interfaces);
 
         boolean requiresCtor = true;
         for (MethodDescriptor m : methods.keySet()) {
@@ -155,7 +152,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
 
         if (requiresCtor) {
             // constructor
-            MethodVisitor mv = file.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+            cv.append("// Auto-generated constructor").newLine();
+            GizmoMethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
             mv.visitVarInsn(ALOAD, 0); // push `this` to the operand stack
             mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false); // call the constructor of super class
             mv.visitInsn(RETURN);
@@ -165,21 +163,21 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
 
         //now add the fields
         for (Map.Entry<FieldDescriptor, FieldCreatorImpl> field : fields.entrySet()) {
-            field.getValue().write(file);
+            field.getValue().write(cv);
         }
 
         for (Map.Entry<MethodDescriptor, MethodCreatorImpl> method : methods.entrySet()) {
-            method.getValue().write(file);
+            method.getValue().write(cv);
         }
         for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = file.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
+            AnnotationVisitor av = cv.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 av.visit(e.getKey(), e.getValue());
             }
             av.visitEnd();
         }
 
-        file.visitEnd();
+        cv.visitEnd();
 
         classOutput.write(className, file.toByteArray());
     }

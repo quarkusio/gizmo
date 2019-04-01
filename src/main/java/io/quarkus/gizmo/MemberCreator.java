@@ -16,7 +16,7 @@
 
 package io.quarkus.gizmo;
 
-import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.ClassVisitor;
 
 public interface MemberCreator<T extends MemberCreator<T>> {
 
@@ -24,6 +24,5 @@ public interface MemberCreator<T extends MemberCreator<T>> {
 
     T setModifiers(int mods);
 
-    void write(ClassWriter file);
-
+    void write(ClassVisitor cv);
 }

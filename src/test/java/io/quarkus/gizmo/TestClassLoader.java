@@ -18,6 +18,7 @@ package io.quarkus.gizmo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,5 +65,16 @@ public class TestClassLoader extends ClassLoader implements ClassOutput {
             }
         }
         appClasses.put(name.replace('/', '.'), data);
+    }
+
+    public Writer getSourceWriter(final String className) {
+        File dir = new File("target/generated-test-sources/gizmo/", className.substring(0, className.lastIndexOf('/')));
+        dir.mkdirs();
+        File output = new File("target/generated-test-sources/gizmo/", className + ".zig");
+        try {
+            return Files.newBufferedWriter(output.toPath());
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot write .zig file for " + className, e);
+        }
     }
 }
