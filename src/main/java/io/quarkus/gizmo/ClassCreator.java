@@ -44,6 +44,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
     private final BytecodeCreatorImpl enclosing;
     private final ClassOutput classOutput;
     private final String superClass;
+    private final int extraAccess;
     private final String[] interfaces;
     private final Map<MethodDescriptor, MethodCreatorImpl> methods = new HashMap<>();
     private final Map<FieldDescriptor, FieldCreatorImpl> fields = new HashMap<>();
@@ -53,10 +54,11 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
     private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new HashMap<>();
     private static final AtomicInteger accessorCount = new AtomicInteger();
 
-    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, String... interfaces) {
+    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int extraAccess, String... interfaces) {
         this.enclosing = enclosing;
         this.classOutput = classOutput;
         this.superClass = superClass.replace('.', '/');
+        this.extraAccess = extraAccess;
         this.interfaces = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
             this.interfaces[i] = interfaces[i].replace('.', '/');
@@ -66,7 +68,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
     }
 
     public ClassCreator(ClassOutput classOutput, String name, String signature, String superClass, String... interfaces) {
-        this(null, classOutput, name, signature, superClass, interfaces);
+        this(null, classOutput, name, signature, superClass, 0, interfaces);
     }
 
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
@@ -140,7 +142,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
         ClassWriter file = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         final GizmoClassVisitor cv = new GizmoClassVisitor(Opcodes.ASM6, file, classOutput.getSourceWriter(className));
         String[] interfaces = this.interfaces.clone();
-        cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, className, signature, superClass, interfaces);
+        cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
 
         boolean requiresCtor = true;
         for (MethodDescriptor m : methods.keySet()) {
@@ -203,6 +205,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
 
         private BytecodeCreatorImpl enclosing;
 
+        private int extraAccess;
+
         Builder() {
             superClass(Object.class);
             this.interfaces = new ArrayList<>();
@@ -237,6 +241,15 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
             return superClass(superClass.getName());
         }
 
+        public Builder setFinal(boolean isFinal) {
+            if (isFinal) {
+                extraAccess |= Opcodes.ACC_FINAL;
+            } else {
+                extraAccess &= ~Opcodes.ACC_FINAL;
+            }
+            return this;
+        }
+
         public Builder interfaces(String... interfaces) {
             Collections.addAll(this.interfaces, interfaces);
             return this;
@@ -253,7 +266,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
             Objects.requireNonNull(className);
             Objects.requireNonNull(classOutput);
             Objects.requireNonNull(superClass);
-            return new ClassCreator(enclosing, classOutput, className, signature, superClass, interfaces.toArray(new String[0]));
+            return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
         }
 
     }
