@@ -31,7 +31,7 @@
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
-    <version>1.0.0.Alpha3</version>
+    <version>1.0.1.Alpha3-SNAPSHOT</version>
 
     <properties>
         <version.asm>7.1</version.asm>
@@ -44,7 +44,7 @@
         <url>https://github.com/quarkusio/gizmo</url>
         <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
-      <tag>gizmo-1.0.0.Alpha3</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <licenses>
