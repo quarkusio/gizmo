@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -87,7 +88,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     }
 
     @Override
-    public void write(ClassWriter file) {
+    public void write(ClassVisitor file) {
         MethodVisitor visitor = file.visitMethod(modifiers, methodDescriptor.getName(), methodDescriptor.getDescriptor(), null, exceptions.toArray(new String[0]));
 
 
