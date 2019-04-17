@@ -21,6 +21,7 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class FunctionTestCase {
@@ -60,6 +61,36 @@ public class FunctionTestCase {
             fbc.returnValue(functionReturn);
 
             ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class), functionCreator.getInstance());
+            method.returnValue(ret);
+
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Assert.assertTrue(clazz.isSynthetic());
+        MyInterface myInterface = (MyInterface) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals("input-func", myInterface.transform("input"));
+    }
+    
+    @Ignore("https://github.com/quarkusio/gizmo/issues/6")
+    @Test
+    public void testSimpleFunctionWithCaptureAndIf() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
+
+            //create a function that appends '-func' to its input from inside an if statement 
+            FunctionCreator functionCreator = method.createFunction(Supplier.class);
+            BytecodeCreator fbc = functionCreator.getBytecode();
+            BranchResult result = fbc.ifNonZero(fbc.load(true));
+            BytecodeCreator trueBranch = result.trueBranch();
+            ResultHandle functionReturn = trueBranch.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), method.getMethodParam(0),
+                    trueBranch.load("-func"));
+            trueBranch.returnValue(functionReturn);
+            fbc.returnValue(fbc.loadNull());
+
+            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class),
+                    functionCreator.getInstance());
             method.returnValue(ret);
 
         }
