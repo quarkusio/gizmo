@@ -985,12 +985,20 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         return handles;
     }
 
-    ResultHandle resolve(ResultHandle handle) {
-        return owner.resolve(handle);
+    final ResultHandle resolve(ResultHandle handle) {
+        return resolve(handle, this);
     }
 
-    ResultHandle[] resolve(ResultHandle... handles) {
+    ResultHandle resolve(ResultHandle handle, BytecodeCreator creator) {
+        return owner.resolve(handle, creator);
+    }
+
+    ResultHandle[] resolve(BytecodeCreator creator, ResultHandle... handles) {
         return owner.resolve(handles);
+    }
+
+    final ResultHandle[] resolve(ResultHandle... handles) {
+        return resolve(this, handles);
     }
 
     MethodCreatorImpl getMethod() {

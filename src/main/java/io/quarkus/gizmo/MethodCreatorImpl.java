@@ -126,12 +126,12 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     }
 
     @Override
-    ResultHandle resolve(final ResultHandle handle) {
+    ResultHandle resolve(final ResultHandle handle, BytecodeCreator creator) {
         return handle;
     }
 
     @Override
-    ResultHandle[] resolve(final ResultHandle... handles) {
+    ResultHandle[] resolve(BytecodeCreator owner, final ResultHandle... handles) {
         return handles;
     }
 

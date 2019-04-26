@@ -103,7 +103,7 @@ class FunctionCreatorImpl implements FunctionCreator {
          * @return The substituted handler
          */
         @Override
-        ResultHandle resolve(ResultHandle handle) {
+        ResultHandle resolve(ResultHandle handle, BytecodeCreator invoker) {
             // resolve any captures of captures.
             if (handle == null || handle.getResultType() == ResultHandle.ResultType.CONSTANT) return handle;
             final BytecodeCreatorImpl ourOwner = method.getOwner();
@@ -121,7 +121,7 @@ class FunctionCreatorImpl implements FunctionCreator {
                     String name = FIELD_NAME + (functionCreator.fieldCount++);
                     FieldCreator field = functionCreator.classCreator.getFieldCreator(name, handle.getType());
                     field.setModifiers(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL);
-                    ResultHandle sub = super.readInstanceField(field.getFieldDescriptor(), getMethod().getThis());
+                    ResultHandle sub = invoker.readInstanceField(field.getFieldDescriptor(), getMethod().getThis());
                     capture = new CapturedResultHandle(sub, field.getFieldDescriptor());
                     functionCreator.capturedResultHandles.put(handle, capture);
                     return sub;
@@ -132,10 +132,10 @@ class FunctionCreatorImpl implements FunctionCreator {
         }
 
         @Override
-        ResultHandle[] resolve(ResultHandle... handle) {
+        ResultHandle[] resolve(BytecodeCreator owner, ResultHandle... handle) {
             ResultHandle[] ret = new ResultHandle[handle.length];
             for (int i = 0; i < handle.length; ++i) {
-                ret[i] = resolve(handle[i]);
+                ret[i] = resolve(handle[i], owner);
             }
             return ret;
         }

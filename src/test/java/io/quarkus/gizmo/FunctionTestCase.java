@@ -69,8 +69,7 @@ public class FunctionTestCase {
         MyInterface myInterface = (MyInterface) clazz.getDeclaredConstructor().newInstance();
         Assert.assertEquals("input-func", myInterface.transform("input"));
     }
-    
-    @Ignore("https://github.com/quarkusio/gizmo/issues/6")
+
     @Test
     public void testSimpleFunctionWithCaptureAndIf() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
