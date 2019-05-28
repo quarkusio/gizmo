@@ -143,6 +143,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
         final GizmoClassVisitor cv = new GizmoClassVisitor(Opcodes.ASM6, file, classOutput.getSourceWriter(className));
         String[] interfaces = this.interfaces.clone();
         cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
+        cv.visitSource(null, null);
 
         boolean requiresCtor = true;
         for (MethodDescriptor m : methods.keySet()) {
