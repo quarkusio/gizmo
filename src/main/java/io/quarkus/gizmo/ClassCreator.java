@@ -35,7 +35,7 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 
-public class ClassCreator implements AutoCloseable, AnnotatedElement {
+public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureElement<ClassCreator> {
 
     public static Builder builder() {
         return new Builder();
@@ -50,7 +50,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
     private final Map<FieldDescriptor, FieldCreatorImpl> fields = new HashMap<>();
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
     private final String className;
-    private final String signature;
+    private String signature;
     private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new HashMap<>();
     private static final AtomicInteger accessorCount = new AtomicInteger();
 
@@ -190,6 +190,17 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement {
         AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
         annotations.add(ac);
         return ac;
+    }
+
+    @Override
+    public String getSignature() {
+        return signature;
+    }
+
+    @Override
+    public ClassCreator setSignature(String signiture) {
+        this.signature = signiture;
+        return this;
     }
 
     public static class Builder {

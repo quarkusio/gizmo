@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * A class that builds the body of a method without needing to understand java bytecode.
  */
-public interface MethodCreator extends MemberCreator<MethodCreator>, BytecodeCreator, AnnotatedElement {
+public interface MethodCreator extends MemberCreator<MethodCreator>, BytecodeCreator, AnnotatedElement, SignatureElement<MethodCreator> {
 
     /**
      * Adds an exception to the method signature

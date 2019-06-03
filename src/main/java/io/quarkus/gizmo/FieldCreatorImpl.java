@@ -25,11 +25,11 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
-class FieldCreatorImpl implements FieldCreator {
+class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImpl> {
 
     private final FieldDescriptor fieldDescriptor;
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
-
+    private String signature;
     private int modifiers;
 
     public FieldCreatorImpl(FieldDescriptor fieldDescriptor) {
@@ -55,7 +55,7 @@ class FieldCreatorImpl implements FieldCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), null, null);
+        FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature, null);
         for(AnnotationCreatorImpl annotation : annotations) {
             AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
@@ -71,5 +71,16 @@ class FieldCreatorImpl implements FieldCreator {
         AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
         annotations.add(ac);
         return ac;
+    }
+
+    @Override
+    public String getSignature() {
+        return signature;
+    }
+
+    @Override
+    public FieldCreatorImpl setSignature(String signature) {
+        this.signature = signature;
+        return this;
     }
 }

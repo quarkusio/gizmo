@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -41,6 +42,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private final String declaringClassName;
     private final ClassOutput classOutput;
     private final ClassCreator classCreator;
+    private String signature;
 
     MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassOutput classOutput, ClassCreator classCreator) {
         super(enclosing, true);
@@ -89,9 +91,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        MethodVisitor visitor = file.visitMethod(modifiers, methodDescriptor.getName(), methodDescriptor.getDescriptor(), null, exceptions.toArray(new String[0]));
-
-
+        MethodVisitor visitor = file.visitMethod(modifiers, methodDescriptor.getName(), methodDescriptor.getDescriptor(), signature, exceptions.toArray(new String[0]));
 
         int localVarCount = Modifier.isStatic(modifiers) ? 0 : 1;
         for (int i = 0; i < methodDescriptor.getParameterTypes().length; ++i) {
@@ -188,6 +188,17 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
             }
         });
         return fc;
+    }
+
+    @Override
+    public String getSignature() {
+        return signature;
+    }
+
+    @Override
+    public MethodCreator setSignature(String signature) {
+        this.signature = signature;
+        return this;
     }
 
     private static class AnnotationParameters implements AnnotatedElement {
