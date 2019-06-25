@@ -828,7 +828,9 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     methodVisitor.visitInsn(Opcodes.RETURN);
                 } else {
                     loadResultHandle(methodVisitor, resolvedReturnValue, BytecodeCreatorImpl.this, methodDescriptor.getReturnType());
-                    if (methodDescriptor.getReturnType().equals("S") || methodDescriptor.getReturnType().equals("Z") || methodDescriptor.getReturnType().equals("I") || methodDescriptor.getReturnType().equals("B")) {
+                    if (methodDescriptor.getReturnType().equals("S") || methodDescriptor.getReturnType().equals("Z")
+                            || methodDescriptor.getReturnType().equals("I") || methodDescriptor.getReturnType().equals("B")
+                            || methodDescriptor.getReturnType().equals("C")) {
                         methodVisitor.visitInsn(Opcodes.IRETURN);
                     } else if (methodDescriptor.getReturnType().equals("J")) {
                         methodVisitor.visitInsn(Opcodes.LRETURN);
