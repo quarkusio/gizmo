@@ -75,7 +75,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         if (methods.containsKey(methodDescriptor)) {
             return methods.get(methodDescriptor);
         }
-        MethodCreatorImpl creator = new MethodCreatorImpl(enclosing, methodDescriptor, className, classOutput, this);
+        MethodCreatorImpl creator = new MethodCreatorImpl(enclosing, methodDescriptor, className, this);
         methods.put(methodDescriptor, creator);
         return creator;
     }
@@ -137,8 +137,13 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         return ctor.getMethodDescriptor();
     }
 
-    @Override
-    public void close() {
+    /**
+     * Write the class bytes to the given class output.
+     *
+     * @param classOutput the class output (must not be {@code null})
+     */
+    public void writeTo(ClassOutput classOutput) {
+        Objects.requireNonNull(classOutput);
         ClassWriter file = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         final GizmoClassVisitor cv = new GizmoClassVisitor(Opcodes.ASM7, file, classOutput.getSourceWriter(className));
         String[] interfaces = this.interfaces.clone();
@@ -185,6 +190,18 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         classOutput.write(className, file.toByteArray());
     }
 
+    /**
+     * Finish the class creator.  If a class output was configured for this class creator, the class bytes
+     * will immediately be written there.
+     */
+    @Override
+    public void close() {
+        final ClassOutput classOutput = this.classOutput;
+        if (classOutput != null) {
+            writeTo(classOutput);
+        }
+    }
+
     @Override
     public AnnotationCreator addAnnotation(String annotationType) {
         AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
@@ -198,9 +215,13 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     @Override
-    public ClassCreator setSignature(String signiture) {
-        this.signature = signiture;
+    public ClassCreator setSignature(String signature) {
+        this.signature = signature;
         return this;
+    }
+
+    ClassOutput getClassOutput() {
+        return classOutput;
     }
 
     public static class Builder {
@@ -276,7 +297,6 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         public ClassCreator build() {
             Objects.requireNonNull(className);
-            Objects.requireNonNull(classOutput);
             Objects.requireNonNull(superClass);
             return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
         }

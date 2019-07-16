@@ -25,9 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -40,15 +38,13 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     private final MethodDescriptor methodDescriptor;
     private final String declaringClassName;
-    private final ClassOutput classOutput;
     private final ClassCreator classCreator;
     private String signature;
 
-    MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassOutput classOutput, ClassCreator classCreator) {
+    MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassCreator classCreator) {
         super(enclosing, true);
         this.methodDescriptor = methodDescriptor;
         this.declaringClassName = declaringClassName;
-        this.classOutput = classOutput;
         this.classCreator = classCreator;
     }
 
@@ -152,7 +148,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     }
 
     ClassOutput getClassOutput() {
-        return classOutput;
+        return classCreator.getClassOutput();
     }
 
     ClassCreator getClassCreator() {
