@@ -484,6 +484,36 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle arrayLength(ResultHandle array) {
+        ResultHandle result = new ResultHandle("I", this);
+        ResultHandle resolvedArray = resolve(checkScope(array));
+        operations.add(new Operation() {
+            @Override
+            public void writeBytecode(MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, resolvedArray, BytecodeCreatorImpl.this, resolvedArray.getType());
+                methodVisitor.visitInsn(Opcodes.ARRAYLENGTH);
+                storeResultHandle(methodVisitor, result);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return Collections.singleton(resolvedArray);
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return resolvedArray;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return result;
+            }
+        });
+        return result;
+    }
+
+    @Override
     public ResultHandle readArrayValue(ResultHandle array, ResultHandle index) {
         ResultHandle result = allocateResult(array.getType().substring(1));
         ResultHandle resolvedArray = resolve(checkScope(array));

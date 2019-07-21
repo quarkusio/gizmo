@@ -339,6 +339,8 @@ public interface BytecodeCreator extends AutoCloseable {
         return readStaticField(FieldDescriptor.of(fieldDescriptor));
     }
 
+    ResultHandle arrayLength(ResultHandle array);
+
     ResultHandle readArrayValue(ResultHandle array, ResultHandle index);
 
     void writeArrayValue(ResultHandle array, ResultHandle index, ResultHandle value);
