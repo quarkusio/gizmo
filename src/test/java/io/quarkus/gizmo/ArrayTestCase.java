@@ -58,4 +58,23 @@ public class ArrayTestCase {
         Assert.assertEquals("hello", res[0]);
 
     }
+
+    @Test
+    public void testArrayLength() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle arrayHandle = method.newArray(String.class, method.load(10));
+            ResultHandle arrayLength = method.arrayLength(arrayHandle);
+            method.returnValue(
+                    method.invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "valueOf", Integer.class, int.class), arrayLength));
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Object o = myInterface.get();
+        Assert.assertEquals(Integer.class, o.getClass());
+        Integer res = (Integer) o;
+        Assert.assertEquals((Object)10, res);
+
+    }
 }
