@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.AnnotationVisitor;
@@ -218,6 +219,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public ClassCreator setSignature(String signature) {
         this.signature = signature;
         return this;
+    }
+
+    public Set<MethodDescriptor> getExistingMethods() {
+        return methods.keySet();
     }
 
     ClassOutput getClassOutput() {
