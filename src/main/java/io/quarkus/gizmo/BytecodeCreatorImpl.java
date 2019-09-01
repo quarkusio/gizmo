@@ -308,30 +308,30 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle loadClass(String className) {
         Objects.requireNonNull(className);
-        Class primtiveType = null;
+        Class primitiveType = null;
         if (className.equals("boolean")) {
-            primtiveType = Boolean.class;
+            primitiveType = Boolean.class;
         } else if (className.equals("byte")) {
-            primtiveType = Byte.class;
+            primitiveType = Byte.class;
         } else if (className.equals("char")) {
-            primtiveType = Character.class;
+            primitiveType = Character.class;
         } else if (className.equals("short")) {
-            primtiveType = Short.class;
+            primitiveType = Short.class;
         } else if (className.equals("int")) {
-            primtiveType = Integer.class;
+            primitiveType = Integer.class;
         } else if (className.equals("long")) {
-            primtiveType = Long.class;
+            primitiveType = Long.class;
         } else if (className.equals("float")) {
-            primtiveType = Float.class;
+            primitiveType = Float.class;
         } else if (className.equals("double")) {
-            primtiveType = Double.class;
+            primitiveType = Double.class;
         } else if (className.equals("void")) {
-            primtiveType = Void.class;
+            primitiveType = Void.class;
         }
-        if (primtiveType == null) {
+        if (primitiveType == null) {
             return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
         } else {
-            Class pt = primtiveType;
+            Class pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
             operations.add(new Operation() {
                 @Override
