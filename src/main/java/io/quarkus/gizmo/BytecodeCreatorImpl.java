@@ -325,6 +325,8 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             primtiveType = Float.class;
         } else if (className.equals("double")) {
             primtiveType = Double.class;
+        } else if (className.equals("void")) {
+            primtiveType = Void.class;
         }
         if (primtiveType == null) {
             return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
