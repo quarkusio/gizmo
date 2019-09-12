@@ -36,4 +36,17 @@ public class LoadClassTestCase {
         Assert.assertEquals(String.class, myInterface.get());
     }
 
+    @Test
+    public void testLoadVoidClass() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle voidHandle = method.loadClass(void.class);
+            method.returnValue(voidHandle);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals(void.class, myInterface.get());
+    }
+
 }
