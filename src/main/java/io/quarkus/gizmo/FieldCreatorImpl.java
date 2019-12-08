@@ -16,6 +16,7 @@
 
 package io.quarkus.gizmo;
 
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     public void write(ClassVisitor file) {
         FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature, null);
         for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
+            AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 av.visit(e.getKey(), e.getValue());
             }
@@ -67,8 +68,8 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     }
 
     @Override
-    public AnnotationCreator addAnnotation(String annotationType) {
-        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
+    public AnnotationCreator addAnnotation(String annotationType, RetentionPolicy retentionPolicy) {
+        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType, retentionPolicy);
         annotations.add(ac);
         return ac;
     }

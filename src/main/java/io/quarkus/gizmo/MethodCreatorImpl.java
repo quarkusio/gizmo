@@ -16,6 +16,7 @@
 
 package io.quarkus.gizmo;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +104,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         visitor.visitMaxs(0, varCount);
 
         for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = visitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
+            AnnotationVisitor av = visitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 av.visit(e.getKey(), e.getValue());
             }
@@ -111,7 +112,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         }
         for(Map.Entry<Integer, AnnotationParameters> entry : parameterAnnotations.entrySet()) {
             for(AnnotationCreatorImpl annotation : entry.getValue().annotations) {
-                AnnotationVisitor av = visitor.visitParameterAnnotation(entry.getKey(), DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
+                AnnotationVisitor av = visitor.visitParameterAnnotation(entry.getKey(), DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
                 for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                     av.visit(e.getKey(), e.getValue());
                 }
@@ -137,8 +138,8 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     }
 
     @Override
-    public AnnotationCreator addAnnotation(String annotationType) {
-        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
+    public AnnotationCreator addAnnotation(String annotationType, RetentionPolicy retentionPolicy) {
+        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType, retentionPolicy);
         annotations.add(ac);
         return ac;
     }
@@ -202,8 +203,8 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
 
         @Override
-        public AnnotationCreator addAnnotation(String annotationType) {
-            AnnotationCreatorImpl ret = new AnnotationCreatorImpl(annotationType);
+        public AnnotationCreator addAnnotation(String annotationType, RetentionPolicy retentionPolicy) {
+            AnnotationCreatorImpl ret = new AnnotationCreatorImpl(annotationType, retentionPolicy);
             annotations.add(ret);
             return ret;
         }

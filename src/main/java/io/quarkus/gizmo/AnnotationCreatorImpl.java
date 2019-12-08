@@ -16,6 +16,7 @@
 
 package io.quarkus.gizmo;
 
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +24,14 @@ class AnnotationCreatorImpl implements AnnotationCreator {
 
     private Map<String, Object> values = new HashMap<>();
     private final String annotationType;
+    private final RetentionPolicy retentionPolicy;
 
-    AnnotationCreatorImpl(String annotationType) {
+    AnnotationCreatorImpl(String annotationType, RetentionPolicy retentionPolicy) {
         this.annotationType = annotationType;
+        if (retentionPolicy == RetentionPolicy.SOURCE) {
+            throw new IllegalArgumentException("Unsupported retention policy SOURCE");
+        }
+        this.retentionPolicy = retentionPolicy;
     }
 
     @Override
@@ -39,5 +45,9 @@ class AnnotationCreatorImpl implements AnnotationCreator {
 
     public String getAnnotationType() {
         return annotationType;
+    }
+
+    public RetentionPolicy getRetentionPolicy() {
+        return retentionPolicy;
     }
 }

@@ -23,6 +23,7 @@ import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.RETURN;
 
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -179,7 +180,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             method.getValue().write(cv);
         }
         for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = cv.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), true);
+            AnnotationVisitor av = cv.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 av.visit(e.getKey(), e.getValue());
             }
@@ -204,8 +205,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     @Override
-    public AnnotationCreator addAnnotation(String annotationType) {
-        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType);
+    public AnnotationCreator addAnnotation(String annotationType, RetentionPolicy retentionPolicy) {
+        AnnotationCreatorImpl ac = new AnnotationCreatorImpl(annotationType, retentionPolicy);
         annotations.add(ac);
         return ac;
     }

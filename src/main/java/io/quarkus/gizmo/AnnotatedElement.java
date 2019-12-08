@@ -16,15 +16,23 @@
 
 package io.quarkus.gizmo;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 
 public interface AnnotatedElement {
 
-    AnnotationCreator addAnnotation(String annotationType);
+    default AnnotationCreator addAnnotation(String annotationType) {
+        return addAnnotation(annotationType, RetentionPolicy.RUNTIME);
+    }
+
+    AnnotationCreator addAnnotation(String annotationType, RetentionPolicy retentionPolicy);
 
     default AnnotationCreator addAnnotation(Class<?> annotationType) {
-        return addAnnotation(annotationType.getName());
+        Retention retention = annotationType.getAnnotation(Retention.class);
+        return addAnnotation(annotationType.getName(), retention == null ? RetentionPolicy.SOURCE : retention.value());
     }
 
     default void addAnnotation(AnnotationInstance annotation) {
