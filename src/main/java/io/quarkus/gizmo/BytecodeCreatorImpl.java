@@ -517,6 +517,9 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle readArrayValue(ResultHandle array, ResultHandle index) {
+        if(!array.getType().startsWith("[")) {
+            throw new IllegalArgumentException("Not array type: " + array.getType());
+        }
         ResultHandle result = allocateResult(array.getType().substring(1));
         ResultHandle resolvedArray = resolve(checkScope(array));
         ResultHandle resolvedIndex = resolve(checkScope(index));
@@ -525,7 +528,32 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             public void writeBytecode(MethodVisitor methodVisitor) {
                 loadResultHandle(methodVisitor, resolvedArray, BytecodeCreatorImpl.this, resolvedArray.getType());
                 loadResultHandle(methodVisitor, resolvedIndex, BytecodeCreatorImpl.this, "I");
-                methodVisitor.visitInsn(Opcodes.AALOAD);
+                switch (result.getType()) {
+                    case "I":
+                        methodVisitor.visitInsn(Opcodes.AALOAD);
+                        break;
+                    case "J":
+                        methodVisitor.visitInsn(Opcodes.LALOAD);
+                        break;
+                    case "F":
+                        methodVisitor.visitInsn(Opcodes.FALOAD);
+                        break;
+                    case "D":
+                        methodVisitor.visitInsn(Opcodes.DALOAD);
+                        break;
+                    case "B":
+                    case "Z":
+                        methodVisitor.visitInsn(Opcodes.BALOAD);
+                        break;
+                    case "C":
+                        methodVisitor.visitInsn(Opcodes.CALOAD);
+                        break;
+                    case "S":
+                        methodVisitor.visitInsn(Opcodes.SALOAD);
+                        break;
+                    default:
+                        methodVisitor.visitInsn(Opcodes.AALOAD);
+                }
                 storeResultHandle(methodVisitor, result);
             }
 
@@ -618,9 +646,14 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle checkCast(final ResultHandle resultHandle, final String castTarget) {
         Objects.requireNonNull(resultHandle);
         Objects.requireNonNull(castTarget);
-        final String intName = castTarget.replace('.', '/');
+        final ResultHandle result;
+        String intName = castTarget.replace('.', '/');
+        if (intName.startsWith("[") || intName.endsWith(";")) {
+            result = allocateResult(intName);
+        } else {
+            result = allocateResult("L" + intName + ";");
+        }
         // seems like a waste of local vars but it's the safest approach since result type can't be mutated
-        final ResultHandle result = allocateResult("L" + intName + ";");
         final ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
         assert result != null;
         operations.add(new Operation() {
@@ -655,7 +688,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public void continueScope(final BytecodeCreator scope) {
-        if (! isScopedWithin(scope)) {
+        if (!isScopedWithin(scope)) {
             throw new IllegalArgumentException("Cannot continue non-enclosing scope");
         }
         operations.add(new JumpOperation(((BytecodeCreatorImpl) scope).top));
@@ -663,7 +696,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public void breakScope(final BytecodeCreator scope) {
-        if (! isScopedWithin(scope)) {
+        if (!isScopedWithin(scope)) {
             throw new IllegalArgumentException("Cannot break non-enclosing scope");
         }
         operations.add(new JumpOperation(((BytecodeCreatorImpl) scope).bottom));
@@ -708,10 +741,33 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 methodVisitor.visitInsn(Opcodes.ACONST_NULL);
             } else {
                 methodVisitor.visitLdcInsn(handle.getConstant());
+                if (!dontCast && !expectedType.equals(handle.getType())) {
+                    //both objects, we just do a checkcast
+                    if (expectedType.length() > 1 && handle.getType().length() > 1) {
+                        if (!expectedType.equals("Ljava/lang/Object;")) {
+                            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, DescriptorUtils.getTypeStringFromDescriptorFormat(expectedType));
+                        }
+                    } else if (expectedType.length() == 1 && handle.getType().length() == 1) {
+                        //ignore
+                    } else if (expectedType.length() == 1) {
+                        //autounboxing support
+                        String type = boxingMap.get(expectedType);
+                        if (type == null) {
+                            throw new RuntimeException("Unknown primitive type " + expectedType);
+                        }
+                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
+                    } else {
+                        //autoboxing support
+                        String type = boxingMap.get(handle.getType());
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
+                    }
+                }
+
             }
             return;
         }
-        if (! isScopedWithin(handle.getOwner())) {
+        if (!isScopedWithin(handle.getOwner())) {
 //            throw new IllegalStateException("Wrong owner for ResultHandle " + handle);
         }
         if (handle.getResultType() != ResultHandle.ResultType.SINGLE_USE) {
@@ -984,7 +1040,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     <R extends ResultHandle> R checkScope(R handle) {
         if (handle != null) {
             final BytecodeCreatorImpl handleOwner = handle.getOwner();
-            if (handleOwner != null && ! isScopedWithin(handleOwner)) {
+            if (handleOwner != null && !isScopedWithin(handleOwner)) {
                 final StringBuilder trace = new StringBuilder();
                 trace.append("Result handle ").append(handle).append(" used outside of its scope\n");
                 trace.append("The handle's scope is:\n");
@@ -1002,7 +1058,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         final StackTraceElement[] stack = this.stack;
         if (stack != null) {
             final int length = stack.length;
-            for (int i = 0; i < 8 && i < length; i ++) {
+            for (int i = 0; i < 8 && i < length; i++) {
                 builder.append("\t\tat ").append(stack[i]).append('\n');
             }
             if (length > 8) {
@@ -1049,8 +1105,8 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         private final Throwable errorPoint;
 
         Operation() {
-            if(Boolean.getBoolean("arc.debug")) {
-                errorPoint= new RuntimeException("Error location");
+            if (Boolean.getBoolean("arc.debug")) {
+                errorPoint = new RuntimeException("Error location");
             } else {
                 errorPoint = null;
             }
@@ -1061,7 +1117,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             try {
                 writeBytecode(visitor);
             } catch (Throwable e) {
-                if(errorPoint == null) {
+                if (errorPoint == null) {
                     throw new RuntimeException(e);
                 }
                 RuntimeException ex = new RuntimeException("Exception generating bytecode", errorPoint);

@@ -16,10 +16,12 @@
 
 package io.quarkus.gizmo;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 
 public class ArrayTestCase {
 
@@ -60,6 +62,62 @@ public class ArrayTestCase {
     }
 
     @Test
+    public void testReadArrayDouble() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), double[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        double[] array = new double[1];
+        array[0] = 101.0d;
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(Double.class, o.getClass());
+        double val = (Double) o;
+        Assert.assertEquals(101.0d, val, 0);
+    }
+
+    @Test
+    public void testReadArrayFloat() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), float[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        float[] array = new float[1];
+        array[0] = 101.0f;
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(Float.class, o.getClass());
+        float val = (Float) o;
+        Assert.assertEquals(101.0f, val, 0);
+    }
+
+    @Test
+    public void testReadArrayObject() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), Object[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        String[] array = new String[1];
+        array[0] = "hello array";
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(String.class, o.getClass());
+        Assert.assertEquals("hello array", o);
+    }
+
+    @Test
     public void testArrayLength() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
@@ -74,7 +132,7 @@ public class ArrayTestCase {
         Object o = myInterface.get();
         Assert.assertEquals(Integer.class, o.getClass());
         Integer res = (Integer) o;
-        Assert.assertEquals((Object)10, res);
+        Assert.assertEquals((Object) 10, res);
 
     }
 }
