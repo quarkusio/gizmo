@@ -15,7 +15,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -38,14 +39,16 @@
         <version.jandex>2.1.1.Final</version.jandex>
         <version.junit>4.12</version.junit>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <jacoco.version>0.8.5</jacoco.version>
+        <jacoco.agent.argLine></jacoco.agent.argLine>
     </properties>
 
     <scm>
         <url>https://github.com/quarkusio/gizmo</url>
         <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <licenses>
         <license>
@@ -92,6 +95,12 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>${jacoco.agent.argLine}</argLine>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -177,6 +186,41 @@
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>test-coverage</id>
+            <properties>
+                <jacoco.agent.argLine>${jacoco.activated.agent.argLine}</jacoco.agent.argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco.version}</version>
+                        <executions>
+                            <execution>
+                                <id>agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>io.quarkus*</include>
+                                    </includes>
+                                    <propertyName>jacoco.activated.agent.argLine</propertyName>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <goals>
+                                    <goal>report</goal>
                                 </goals>
                             </execution>
                         </executions>
