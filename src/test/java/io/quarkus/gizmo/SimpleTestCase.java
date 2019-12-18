@@ -69,4 +69,25 @@ public class SimpleTestCase {
         Assert.assertEquals("MESSAGE:CONST:PARAM", myInterface.transform("PARAM"));
     }
 
+    @Test
+    public void testUnboxing() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntInterface.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", int.class, Integer.class);
+            method.returnValue(method.getMethodParam(0));
+        }
+        IntInterface myInterface = (IntInterface) cl.loadClass("com.MyTest").newInstance();
+        Assert.assertEquals(10, myInterface.get(10));
+    }
+
+    @Test
+    public void testUnboxing2() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntInterface.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", int.class, Integer.class);
+            method.returnValue(method.newInstance(MethodDescriptor.ofConstructor(Integer.class, int.class), method.load(11)));
+        }
+        IntInterface myInterface = (IntInterface) cl.loadClass("com.MyTest").newInstance();
+        Assert.assertEquals(11, myInterface.get(10));
+    }
 }
