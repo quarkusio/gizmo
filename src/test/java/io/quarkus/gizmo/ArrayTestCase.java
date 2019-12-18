@@ -100,6 +100,60 @@ public class ArrayTestCase {
     }
 
     @Test
+    public void testReadArrayByte() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), byte[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        byte[] array = new byte[1];
+        array[0] = 26;
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(Byte.class, o.getClass());
+        Assert.assertEquals(26, (byte) o);
+    }
+
+    @Test
+    public void testReadArrayShort() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), short[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        short[] array = new short[1];
+        array[0] = 26;
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(Short.class, o.getClass());
+        Assert.assertEquals(26, (short) o);
+    }
+
+    @Test
+    public void testReadArrayLong() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), long[].class);
+            ResultHandle ret = method.readArrayValue(arrayHandle, 0);
+            method.returnValue(ret);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Function myInterface = (Function) clazz.getDeclaredConstructor().newInstance();
+        long[] array = new long[1];
+        array[0] = 26;
+        Object o = myInterface.apply(array);
+        Assert.assertEquals(Long.class, o.getClass());
+        Assert.assertEquals(26, (long) o);
+    }
+
+    @Test
     public void testReadArrayObject() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
