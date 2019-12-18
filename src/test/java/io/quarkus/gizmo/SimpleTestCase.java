@@ -21,6 +21,9 @@ import org.junit.Test;
 
 public class SimpleTestCase {
 
+    @SuppressWarnings("unused")
+    public static int staticField;
+
     @Test
     public void testSimpleGetMessage() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -33,6 +36,20 @@ public class SimpleTestCase {
         Assert.assertTrue(clazz.isSynthetic());
         MyInterface myInterface = (MyInterface) clazz.getDeclaredConstructor().newInstance();
         Assert.assertEquals("MESSAGE", myInterface.transform("ignored"));
+    }
+
+    @Test
+    public void testSetStaticField() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Runnable.class).build()) {
+            MethodCreator method = creator.getMethodCreator("run", void.class);
+            method.writeStaticField(FieldDescriptor.of(SimpleTestCase.class, "staticField", int.class), method.load(101));
+            method.returnValue(null);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Runnable myInterface = (Runnable) clazz.getDeclaredConstructor().newInstance();
+        myInterface.run();
+        Assert.assertEquals(101, staticField);
     }
 
     @Test
