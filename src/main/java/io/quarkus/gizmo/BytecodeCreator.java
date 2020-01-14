@@ -148,8 +148,16 @@ public interface BytecodeCreator extends AutoCloseable {
 
     ResultHandle newArray(String type, ResultHandle length);
 
-    default ResultHandle newArray(Class type, ResultHandle length) {
+    default ResultHandle newArray(String type, int length) {
+        return newArray(type, load(length));
+    }
+
+    default ResultHandle newArray(Class<?> type, ResultHandle length) {
         return newArray(type.getName(), length);
+    }
+
+    default ResultHandle newArray(Class<?> type, int length) {
+        return newArray(type.getName(), load(length));
     }
 
     /**

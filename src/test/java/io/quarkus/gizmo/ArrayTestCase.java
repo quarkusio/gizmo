@@ -47,7 +47,7 @@ public class ArrayTestCase {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
-            ResultHandle arrayHandle = method.newArray(String.class, method.load(1));
+            ResultHandle arrayHandle = method.newArray(String.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load("hello"));
             method.returnValue(arrayHandle);
         }
