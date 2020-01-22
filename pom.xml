@@ -32,7 +32,7 @@
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
-    <version>1.0.1.Final</version>
+    <version>1.0.2.Final-SNAPSHOT</version>
 
     <properties>
         <version.asm>7.1</version.asm>
