@@ -37,7 +37,7 @@ import org.objectweb.asm.Type;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
-    private static final boolean DEBUG_SCOPES = true;
+    private static final boolean DEBUG_SCOPES = Boolean.getBoolean("io.quarkus.gizmo.debug-scopes");
 
     private static final AtomicInteger functionCount = new AtomicInteger();
 
