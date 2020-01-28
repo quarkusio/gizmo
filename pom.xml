@@ -32,11 +32,11 @@
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
-    <version>1.0.2.Final-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <properties>
-        <version.asm>7.1</version.asm>
-        <version.jandex>2.1.1.Final</version.jandex>
+        <version.asm>7.3.1</version.asm>
+        <version.jandex>2.1.2.Final</version.jandex>
         <version.junit>4.12</version.junit>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <jacoco.version>0.8.5</jacoco.version>
@@ -132,6 +132,12 @@
             <id>release</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <tagNameFormat>@{project.version}</tagNameFormat>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
