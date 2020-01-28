@@ -38,7 +38,7 @@ public interface AnnotatedElement {
     default void addAnnotation(AnnotationInstance annotation) {
         AnnotationCreator ac = addAnnotation(annotation.name().toString());
         for (AnnotationValue member : annotation.values()) {
-            if (member.kind() == AnnotationValue.Kind.NESTED || member.kind() == AnnotationValue.Kind.ARRAY) {
+            if (member.kind() == AnnotationValue.Kind.NESTED) {
                 throw new RuntimeException("Not Yet Implemented: Cannot generate annotation " + annotation);
             } else if (member.kind() == AnnotationValue.Kind.BOOLEAN) {
                 ac.addValue(member.name(), member.asBoolean());
@@ -56,6 +56,8 @@ public interface AnnotatedElement {
                 ac.addValue(member.name(), member.asDouble());
             } else if (member.kind() == AnnotationValue.Kind.STRING) {
                 ac.addValue(member.name(), member.asString());
+            } else if (member.kind() == AnnotationValue.Kind.ARRAY) {
+                ac.addValue(member.name(), member.value());
             }
         }
     }
