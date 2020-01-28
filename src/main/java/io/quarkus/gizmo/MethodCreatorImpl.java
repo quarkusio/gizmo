@@ -106,7 +106,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         for(AnnotationCreatorImpl annotation : annotations) {
             AnnotationVisitor av = visitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
-                av.visit(e.getKey(), e.getValue());
+                AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
             }
             av.visitEnd();
         }
@@ -114,7 +114,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
             for(AnnotationCreatorImpl annotation : entry.getValue().annotations) {
                 AnnotationVisitor av = visitor.visitParameterAnnotation(entry.getKey(), DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
                 for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
-                    av.visit(e.getKey(), e.getValue());
+                    AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
                 }
                 av.visitEnd();
             }

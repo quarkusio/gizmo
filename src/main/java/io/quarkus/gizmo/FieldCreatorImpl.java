@@ -60,7 +60,7 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
         for(AnnotationCreatorImpl annotation : annotations) {
             AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
             for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
-                av.visit(e.getKey(), e.getValue());
+                AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
             }
             av.visitEnd();
         }
