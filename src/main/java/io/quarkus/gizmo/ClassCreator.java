@@ -147,7 +147,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public void writeTo(ClassOutput classOutput) {
         Objects.requireNonNull(classOutput);
         ClassWriter file = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        final GizmoClassVisitor cv = new GizmoClassVisitor(Opcodes.ASM7, file, classOutput.getSourceWriter(className));
+        final GizmoClassVisitor cv = new GizmoClassVisitor(Gizmo.ASM_API_VERSION, file, classOutput.getSourceWriter(className));
         String[] interfaces = this.interfaces.clone();
         cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
         cv.visitSource(null, null);
