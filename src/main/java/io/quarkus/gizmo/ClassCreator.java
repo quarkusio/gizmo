@@ -26,7 +26,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,13 +48,13 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     private final String superClass;
     private final int extraAccess;
     private final String[] interfaces;
-    private final Map<MethodDescriptor, MethodCreatorImpl> methods = new HashMap<>();
-    private final Map<FieldDescriptor, FieldCreatorImpl> fields = new HashMap<>();
+    private final Map<MethodDescriptor, MethodCreatorImpl> methods = new LinkedHashMap<>();
+    private final Map<FieldDescriptor, FieldCreatorImpl> fields = new LinkedHashMap<>();
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
     private final String className;
     private String signature;
-    private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new HashMap<>();
-    private static final AtomicInteger accessorCount = new AtomicInteger();
+    private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new LinkedHashMap<>();
+    private final AtomicInteger accessorCount = new AtomicInteger();
 
     ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int extraAccess, String... interfaces) {
         this.enclosing = enclosing;

@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,7 +35,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private int modifiers = Opcodes.ACC_PUBLIC;
     private final List<String> exceptions = new ArrayList<>();
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
-    private final Map<Integer, AnnotationParameters> parameterAnnotations = new HashMap<>();
+    private final Map<Integer, AnnotationParameters> parameterAnnotations = new LinkedHashMap<>();
 
     private final MethodDescriptor methodDescriptor;
     private final String declaringClassName;

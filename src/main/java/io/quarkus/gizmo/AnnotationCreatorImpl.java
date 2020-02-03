@@ -17,12 +17,12 @@
 package io.quarkus.gizmo;
 
 import java.lang.annotation.RetentionPolicy;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 class AnnotationCreatorImpl implements AnnotationCreator {
 
-    private Map<String, Object> values = new HashMap<>();
+    private Map<String, Object> values = new LinkedHashMap<>();
     private final String annotationType;
     private final RetentionPolicy retentionPolicy;
 
