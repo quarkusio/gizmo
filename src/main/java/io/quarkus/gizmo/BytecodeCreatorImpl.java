@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.Label;
@@ -39,7 +39,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private static final boolean DEBUG_SCOPES = Boolean.getBoolean("io.quarkus.gizmo.debug-scopes");
 
-    private static final AtomicInteger functionCount = new AtomicInteger();
+    private static final Map<String, AtomicInteger> functionCountersByClass = new ConcurrentHashMap<>();
 
     private static final String FUNCTION = "$$function$$";
 
@@ -380,7 +380,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
             @Override
             Set<ResultHandle> getInputResultHandles() {
-                return new HashSet<>(Arrays.asList(resolvedInstance, resolvedValue));
+                return new LinkedHashSet<>(Arrays.asList(resolvedInstance, resolvedValue));
             }
 
             @Override
@@ -559,7 +559,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
             @Override
             Set<ResultHandle> getInputResultHandles() {
-                return new HashSet<>(Arrays.asList(resolvedArray, resolvedIndex));
+                return new LinkedHashSet<>(Arrays.asList(resolvedArray, resolvedIndex));
             }
 
             @Override
@@ -608,7 +608,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
             @Override
             Set<ResultHandle> getInputResultHandles() {
-                return new HashSet<>(Arrays.asList(resolvedArray, resolvedIndex, resolvedValue));
+                return new LinkedHashSet<>(Arrays.asList(resolvedArray, resolvedIndex, resolvedValue));
             }
 
             @Override
@@ -868,7 +868,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         if (functionMethod == null) {
             throw new IllegalArgumentException("Could not find function method " + functionalInterface);
         }
-        final String functionName = getMethod().getDeclaringClassName() + FUNCTION + functionCount.incrementAndGet();
+
+
+        final String declaringClassName = getMethod().getDeclaringClassName();
+        final AtomicInteger counter = functionCountersByClass.computeIfAbsent(declaringClassName, k -> new AtomicInteger());
+        final String functionName = declaringClassName + FUNCTION + counter.incrementAndGet();
         ResultHandle ret = new ResultHandle("L" + functionName.replace('.', '/') + ";", this);
         ClassCreator cc = ClassCreator.builder().enclosing(this).classOutput(getMethod().getClassOutput()).className(functionName).interfaces(functionalInterface).build();
         MethodCreatorImpl mc = (MethodCreatorImpl) cc.getMethodCreator(functionMethod.getName(), functionMethod.getReturnType(), functionMethod.getParameterTypes());
@@ -1010,7 +1014,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         Operation prev = null;
         for (int i = 0; i < operations.size(); ++i) {
             Operation op = operations.get(i);
-            Set<ResultHandle> toAdd = new HashSet<>(op.getInputResultHandles());
+            Set<ResultHandle> toAdd = new LinkedHashSet<>(op.getInputResultHandles());
             if (prev != null &&
                     prev.getOutgoingResultHandle() != null &&
                     prev.getOutgoingResultHandle() == op.getTopResultHandle()) {
@@ -1237,7 +1241,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
         @Override
         Set<ResultHandle> getInputResultHandles() {
-            Set<ResultHandle> ret = new HashSet<>();
+            Set<ResultHandle> ret = new LinkedHashSet<>();
             if (object != null) {
                 ret.add(object);
             }
@@ -1296,7 +1300,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
         @Override
         Set<ResultHandle> getInputResultHandles() {
-            return new HashSet<>(Arrays.asList(args));
+            return new LinkedHashSet<>(Arrays.asList(args));
         }
 
         @Override
