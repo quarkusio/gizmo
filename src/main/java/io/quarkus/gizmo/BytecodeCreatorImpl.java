@@ -262,6 +262,10 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle load(String val) {
         Objects.requireNonNull(val);
+        if (val.length() > 65535) {
+            //TODO: we could auto split this, but I don't think we really want strings this long
+            throw new IllegalArgumentException("Cannot load strings larger than " + 65535 + " bytes");
+        }
         return new ResultHandle("Ljava/lang/String;", this, val);
     }
 
@@ -517,7 +521,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle readArrayValue(ResultHandle array, ResultHandle index) {
-        if(!array.getType().startsWith("[")) {
+        if (!array.getType().startsWith("[")) {
             throw new IllegalArgumentException("Not array type: " + array.getType());
         }
         ResultHandle result = allocateResult(array.getType().substring(1));
