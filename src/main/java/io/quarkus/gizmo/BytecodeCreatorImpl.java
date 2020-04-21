@@ -312,7 +312,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle loadClass(String className) {
         Objects.requireNonNull(className);
-        Class primitiveType = null;
+        Class<?> primitiveType = null;
         if (className.equals("boolean")) {
             primitiveType = Boolean.class;
         } else if (className.equals("byte")) {
@@ -335,7 +335,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         if (primitiveType == null) {
             return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
         } else {
-            Class pt = primitiveType;
+            Class<?>  pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
             operations.add(new Operation() {
                 @Override
@@ -820,22 +820,53 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public BranchResult ifNonZero(ResultHandle resultHandle) {
-        ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
-        BytecodeCreatorImpl trueBranch = new BytecodeCreatorImpl(this);
-        BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
-        operations.add(new IfOperation(Opcodes.IFNE, "I", resolvedResultHandle, trueBranch, falseBranch));
-        return new BranchResultImpl(trueBranch, falseBranch);
+        return ifValue(resultHandle, Opcodes.IFNE, "I");
     }
 
     @Override
     public BranchResult ifNull(ResultHandle resultHandle) {
-        ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
-        BytecodeCreatorImpl trueBranch = new BytecodeCreatorImpl(this);
-        BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
-        operations.add(new IfOperation(Opcodes.IFNULL, "Ljava/lang/Object;", resolvedResultHandle, trueBranch, falseBranch));
-        return new BranchResultImpl(trueBranch, falseBranch);
+        return ifValue(resultHandle, Opcodes.IFNULL, "Ljava/lang/Object;");
+    }
+    
+    @Override
+    public BranchResult ifZero(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFEQ, "I");
     }
 
+    @Override
+    public BranchResult ifTrue(ResultHandle resultHandle) {
+        return ifNonZero(resultHandle);
+    }
+
+    @Override
+    public BranchResult ifFalse(ResultHandle resultHandle) {
+        return ifZero(resultHandle);
+    }
+
+    @Override
+    public BranchResult ifNotNull(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFNONNULL, "Ljava/lang/Object;");
+    }
+
+    @Override
+    public BranchResult ifGreaterThanZero(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFGT, "I");
+    }
+
+    @Override
+    public BranchResult ifGreaterEqualZero(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFGE, "I");
+    }
+
+    @Override
+    public BranchResult ifLowerThanZero(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFLT, "I");
+    }
+
+    @Override
+    public BranchResult ifLowerEqualZero(ResultHandle resultHandle) {
+        return ifValue(resultHandle, Opcodes.IFLE, "I");
+    }
 
     @Override
     public ResultHandle getMethodParam(int methodNo) {
@@ -1105,6 +1136,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     BytecodeCreatorImpl getOwner() {
         return owner;
+    }
+    
+    private BranchResult ifValue(ResultHandle resultHandle, int opcode, String opType) {
+        Objects.requireNonNull(resultHandle);
+        Objects.requireNonNull(opType);
+        ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
+        BytecodeCreatorImpl trueBranch = new BytecodeCreatorImpl(this);
+        BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
+        operations.add(new IfOperation(opcode, opType, resolvedResultHandle, trueBranch, falseBranch));
+        return new BranchResultImpl(trueBranch, falseBranch);
     }
 
     static abstract class Operation {

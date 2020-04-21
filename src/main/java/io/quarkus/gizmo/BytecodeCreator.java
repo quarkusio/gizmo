@@ -406,6 +406,34 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNonZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type or boolean. If this value is false or zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. An alias for {@link BytecodeCreator#ifNonZero(ResultHandle)}.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifTrue(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. An alias for {@link BytecodeCreator#ifZero(ResultHandle)}.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifFalse(ResultHandle resultHandle);
 
     /**
      * An if statement. If the value is {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
@@ -415,6 +443,63 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNull(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. If the value is not {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
+     * run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifNotNull(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is greater than zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifGreaterThanZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is greater or equals to zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifGreaterEqualZero(ResultHandle resultHandle);
+
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is lower than zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifLowerThanZero(ResultHandle resultHandle);
+
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is lower or equals to zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifLowerEqualZero(ResultHandle resultHandle);
 
     /**
      * @param i The method parameter number, zero indexed
@@ -474,7 +559,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param exceptionType The exception type
      * @param message       The exception message
      */
-    default void throwException(Class exceptionType, String message) {
+    default <T extends Throwable> void throwException(Class<T> exceptionType, String message) {
         try {
             exceptionType.getDeclaredConstructor(String.class);
         } catch (NoSuchMethodException e) {
@@ -491,7 +576,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param message       The exception message
      * @param existing      The exception to wrap
      */
-    default void throwException(Class exceptionType, String message, ResultHandle existing) {
+    default <T extends Throwable> void throwException(Class<T> exceptionType, String message, ResultHandle existing) {
         try {
             exceptionType.getDeclaredConstructor(String.class, Throwable.class);
         } catch (NoSuchMethodException e) {
@@ -559,4 +644,5 @@ public interface BytecodeCreator extends AutoCloseable {
      */
     @Override
     default void close() {}
+
 }
