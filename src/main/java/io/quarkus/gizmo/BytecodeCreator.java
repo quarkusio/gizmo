@@ -487,7 +487,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
-    BranchResult ifLowerThanZero(ResultHandle resultHandle);
+    BranchResult ifLessThanZero(ResultHandle resultHandle);
 
     /**
      * An if statement.
@@ -499,8 +499,69 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
-    BranchResult ifLowerEqualZero(ResultHandle resultHandle);
+    BranchResult ifLessEqualZero(ResultHandle resultHandle);
 
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is equal to value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerEqual(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is greater than value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerGreaterThan(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is greater or equal to value2 the {@link BranchResult#trueBranch} code will be
+     * executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerGreaterEqual(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is less than value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerLessThan(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is less or equal to value2 the {@link BranchResult#trueBranch} code will be
+     * executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2);
     /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter

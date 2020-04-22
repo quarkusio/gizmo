@@ -55,4 +55,38 @@ public class IfStatementTestCase {
         Assert.assertEquals("TRUE", myInterface.transform("TEST"));
         Assert.assertEquals("FALSE", myInterface.transform(""));
     }
+
+    @Test
+    public void testIfIntegerEqual() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
+            ResultHandle lengthHandle = method.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "length", int.class),
+                    method.getMethodParam(0));
+            BranchResult branch = method.ifIntegerEqual(lengthHandle, method.load(3));
+            branch.trueBranch().returnValue(branch.trueBranch().load("TRUE"));
+            branch.falseBranch().returnValue(branch.falseBranch().load("FALSE"));
+        }
+        MyInterface myInterface = (MyInterface) cl.loadClass("com.MyTest").newInstance();
+        Assert.assertEquals("TRUE", myInterface.transform("TES"));
+        Assert.assertEquals("FALSE", myInterface.transform("TEST"));
+    }
+
+    @Test
+    public void testIfIntegerLessThan() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
+            ResultHandle lengthHandle = method.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "length", int.class),
+                    method.getMethodParam(0));
+            BranchResult branch = method.ifIntegerLessThan(lengthHandle, method.load(3));
+            branch.trueBranch().returnValue(branch.trueBranch().load("TRUE"));
+            branch.falseBranch().returnValue(branch.falseBranch().load("FALSE"));
+        }
+        MyInterface myInterface = (MyInterface) cl.loadClass("com.MyTest").newInstance();
+        Assert.assertEquals("TRUE", myInterface.transform("T"));
+        Assert.assertEquals("FALSE", myInterface.transform("TEST"));
+    }
 }

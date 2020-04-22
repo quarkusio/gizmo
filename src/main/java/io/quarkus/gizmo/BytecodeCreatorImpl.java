@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -859,13 +860,38 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
-    public BranchResult ifLowerThanZero(ResultHandle resultHandle) {
+    public BranchResult ifLessThanZero(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFLT, "I");
     }
 
     @Override
-    public BranchResult ifLowerEqualZero(ResultHandle resultHandle) {
+    public BranchResult ifLessEqualZero(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFLE, "I");
+    }
+    
+    @Override
+    public BranchResult ifIntegerEqual(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPEQ, "I");
+    }
+    
+    @Override
+    public BranchResult ifIntegerGreaterThan(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPGT, "I");
+    }
+
+    @Override
+    public BranchResult ifIntegerGreaterEqual(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPGE, "I");
+    }
+
+    @Override
+    public BranchResult ifIntegerLessThan(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPLT, "I");
+    }
+
+    @Override
+    public BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPLE, "I");
     }
 
     @Override
@@ -1147,6 +1173,18 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new IfOperation(opcode, opType, resolvedResultHandle, trueBranch, falseBranch));
         return new BranchResultImpl(trueBranch, falseBranch);
     }
+    
+    private BranchResult ifValues(ResultHandle resultHandle1, ResultHandle resultHandle2, int opcode, String opType) {
+        Objects.requireNonNull(resultHandle1);
+        Objects.requireNonNull(resultHandle2);
+        Objects.requireNonNull(opType);
+        ResultHandle resolvedResultHandle1 = resolve(checkScope(resultHandle1));
+        ResultHandle resolvedResultHandle2 = resolve(checkScope(resultHandle2));
+        BytecodeCreatorImpl trueBranch = new BytecodeCreatorImpl(this);
+        BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
+        operations.add(new IfOperation(opcode, opType, resolvedResultHandle1, resolvedResultHandle2, trueBranch, falseBranch));
+        return new BranchResultImpl(trueBranch, falseBranch);
+    }
 
     static abstract class Operation {
 
@@ -1362,21 +1400,30 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     class IfOperation extends Operation {
         private final int opcode;
         private final String opType;
-        private final ResultHandle resultHandle;
+        private final ResultHandle value1;
+        private final ResultHandle value2;
         private final BytecodeCreatorImpl trueBranch;
         private final BytecodeCreatorImpl falseBranch;
 
-        IfOperation(final int opcode, final String opType, final ResultHandle resultHandle, final BytecodeCreatorImpl trueBranch, final BytecodeCreatorImpl falseBranch) {
+        IfOperation(final int opcode, final String opType, final ResultHandle value, final BytecodeCreatorImpl trueBranch, final BytecodeCreatorImpl falseBranch) {
+            this(opcode, opType, value, null, trueBranch, falseBranch);
+        }
+        
+        IfOperation(final int opcode, final String opType, final ResultHandle value1, final ResultHandle value2, final BytecodeCreatorImpl trueBranch, final BytecodeCreatorImpl falseBranch) {
             this.opcode = opcode;
             this.opType = opType;
-            this.resultHandle = resultHandle;
+            this.value1 = value1;
+            this.value2 = value2;
             this.trueBranch = trueBranch;
             this.falseBranch = falseBranch;
         }
 
         @Override
         public void writeBytecode(MethodVisitor methodVisitor) {
-            loadResultHandle(methodVisitor, resultHandle, BytecodeCreatorImpl.this, opType);
+            loadResultHandle(methodVisitor, value1, BytecodeCreatorImpl.this, opType);
+            if (value2 != null) {
+                loadResultHandle(methodVisitor, value2, BytecodeCreatorImpl.this, opType);    
+            }
             methodVisitor.visitJumpInsn(opcode, trueBranch.getTop());
             falseBranch.writeOperations(methodVisitor);
             methodVisitor.visitJumpInsn(Opcodes.GOTO, trueBranch.getBottom());
@@ -1385,12 +1432,18 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
         @Override
         Set<ResultHandle> getInputResultHandles() {
-            return Collections.singleton(resultHandle);
+            if (value2 != null) {
+                Set<ResultHandle> ret = new HashSet<>(2);
+                ret.add(value1);
+                ret.add(value2);
+                return ret;
+            }
+            return Collections.singleton(value1);
         }
 
         @Override
         ResultHandle getTopResultHandle() {
-            return resultHandle;
+            return value1;
         }
 
         @Override
