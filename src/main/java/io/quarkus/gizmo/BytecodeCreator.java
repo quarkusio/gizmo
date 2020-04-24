@@ -406,6 +406,34 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNonZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type or boolean. If this value is false or zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. An alias for {@link BytecodeCreator#ifNonZero(ResultHandle)}.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifTrue(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. An alias for {@link BytecodeCreator#ifZero(ResultHandle)}.
+     *
+     * @param resultHandle The result to compare with zero
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifFalse(ResultHandle resultHandle);
 
     /**
      * An if statement. If the value is {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
@@ -415,7 +443,125 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNull(ResultHandle resultHandle);
+    
+    /**
+     * An if statement. If the value is not {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
+     * run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifNotNull(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is greater than zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifGreaterThanZero(ResultHandle resultHandle);
+    
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is greater or equals to zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifGreaterEqualZero(ResultHandle resultHandle);
 
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is lower than zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifLessThanZero(ResultHandle resultHandle);
+
+    /**
+     * An if statement.
+     * <p>
+     * resultHandle must be an integer type. If this value is lower or equals to zero the
+     * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
+     * will be run.
+     * 
+     * @param resultHandle
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifLessEqualZero(ResultHandle resultHandle);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is equal to value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerEqual(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is greater than value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerGreaterThan(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is greater or equal to value2 the {@link BranchResult#trueBranch} code will be
+     * executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerGreaterEqual(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is less than value2 the {@link BranchResult#trueBranch} code will be executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerLessThan(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
+     * Values must be integer types. If value1 is less or equal to value2 the {@link BranchResult#trueBranch} code will be
+     * executed,
+     * otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2);
     /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter
@@ -474,7 +620,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param exceptionType The exception type
      * @param message       The exception message
      */
-    default void throwException(Class exceptionType, String message) {
+    default <T extends Throwable> void throwException(Class<T> exceptionType, String message) {
         try {
             exceptionType.getDeclaredConstructor(String.class);
         } catch (NoSuchMethodException e) {
@@ -491,7 +637,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param message       The exception message
      * @param existing      The exception to wrap
      */
-    default void throwException(Class exceptionType, String message, ResultHandle existing) {
+    default <T extends Throwable> void throwException(Class<T> exceptionType, String message, ResultHandle existing) {
         try {
             exceptionType.getDeclaredConstructor(String.class, Throwable.class);
         } catch (NoSuchMethodException e) {
@@ -559,4 +705,5 @@ public interface BytecodeCreator extends AutoCloseable {
      */
     @Override
     default void close() {}
+
 }
