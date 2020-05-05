@@ -17,6 +17,7 @@
 package io.quarkus.gizmo;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
@@ -692,12 +693,21 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
-     * Create a nested scope.  Bytecode added to the nested scope will be inserted at this point of the
+     * Create a nested scope. Bytecode added to the nested scope will be inserted at this point of the
      * enclosing scope.
      *
      * @return the nested scope
      */
     BytecodeCreator createScope();
+    
+    /**
+     * Create a new while loop statement.
+     * 
+     * @param conditionFun A function used to create the condition. The true branch continues executing the block and the false
+     *        branch terminates the statement.
+     * @return the while loop statement
+     */
+    WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun);
 
     /**
      * Indicate that the scope is no longer in use.  The scope may refuse additional instructions after this method
@@ -705,5 +715,5 @@ public interface BytecodeCreator extends AutoCloseable {
      */
     @Override
     default void close() {}
-
+    
 }

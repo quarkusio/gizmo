@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -1043,6 +1044,14 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 return null;
             }
         });
+    }
+    
+    @Override
+    public WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun) {
+        Objects.requireNonNull(conditionFun);
+        WhileLoopImpl loop = new WhileLoopImpl(this, conditionFun);
+        operations.add(new BlockOperation(loop));
+        return loop;
     }
 
     private ResultHandle allocateResult(String returnType) {
