@@ -45,8 +45,13 @@ class WhileLoopImpl extends BytecodeCreatorImpl implements WhileLoop {
     }
 
     @Override
-    public BytecodeCreator scope() {
-        return this;
+    public void doContinue(BytecodeCreator creator) {
+        creator.continueScope(this);
+    }
+
+    @Override
+    public void doBreak(BytecodeCreator creator) {
+        creator.breakScope(this);
     }
 
 }

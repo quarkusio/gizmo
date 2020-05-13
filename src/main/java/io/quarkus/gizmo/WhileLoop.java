@@ -22,24 +22,27 @@ public interface WhileLoop {
 
     /**
      * The block is executed until the condition evaluates to false.
-     * 
+     *
      * @return the while block
      */
     BytecodeCreator block();
 
     /**
-     * The scope returned from this method should be used to continue/break the while statement.
-     * 
-     * <pre>
-     * WhileLoop loop = method.whileLoop(bc -> bc.ifTrue(condition));
-     * BytecodeCreator block = loop.block();
-     * // If counter > 5 we break the loop even if the condition is still true 
-     * block.ifIntegerGreaterThan(counter, block.load(5)).trueBranch().breakScope(loop.scope());
-     * </pre>
-     * 
-     * @return the scope that could be used to skip the current iteration or terminate the statement
-     * @see BytecodeCreator#continueScope(BytecodeCreator)
-     * @see BytecodeCreator#breakScope(BytecodeCreator)
+     * Writes bytecode into the provided {@link BytecodeCreator} to make it jump back to the
+     * start of the loop, effectively issuing a Java 'continue' statement. Generally this
+     * will be applied to a branch of an if statement.
+     *
+     * @param creator The creator that should return to the start of the loop
      */
-    BytecodeCreator scope();
+    void doContinue(BytecodeCreator creator);
+
+    /**
+     * Writes bytecode into the provided {@link BytecodeCreator} to make it exit the
+     * loop, effectively issuing a Java 'break' statement. Generally this
+     * will be applied to a branch of an if statement.
+     *
+     * @param creator The creator that should break from the loop
+     */
+    void doBreak(BytecodeCreator creator);
+
 }

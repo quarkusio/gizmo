@@ -79,7 +79,7 @@ public class ScopeTestCase {
         Supplier myInterface = (Supplier) cl.loadClass("com.MyTest").newInstance();
         Assert.assertEquals("10-9-8-7-6-5-4-3-2-1-", myInterface.get());
     }
-    
+
     @Test
     public void testWhileLoopContinue() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -98,18 +98,18 @@ public class ScopeTestCase {
             block.assign(val, block.invokeStaticMethod(
                     MethodDescriptor.ofMethod(Math.class, "addExact", int.class, int.class, int.class), val, block.load(-1)));
             // skip number 5
-            block.ifIntegerEqual(val, block.load(5)).trueBranch().continueScope(loop.scope());
+            loop.doContinue(block.ifIntegerEqual(val, block.load(5)).trueBranch());
             block.invokeVirtualMethod(sbAppend, sb, block
                     .invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "toString", String.class, int.class), val));
             block.invokeVirtualMethod(sbAppend, sb, block.load("-"));
-            
+
             method.returnValue(
                     method.invokeVirtualMethod(MethodDescriptor.ofMethod(Object.class, "toString", String.class), sb));
         }
         Supplier myInterface = (Supplier) cl.loadClass("com.MyTest").newInstance();
         Assert.assertEquals("10-9-8-7-6-4-3-2-1-", myInterface.get());
     }
-    
+
     @Test
     public void testWhileLoopBreak() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -128,7 +128,7 @@ public class ScopeTestCase {
             block.assign(val, block.invokeStaticMethod(
                     MethodDescriptor.ofMethod(Math.class, "addExact", int.class, int.class, int.class), val, block.load(-1)));
             // break if number 5
-            block.ifIntegerEqual(val, block.load(5)).trueBranch().breakScope(loop.scope());
+            loop.doBreak( block.ifIntegerEqual(val, block.load(5)).trueBranch());
             block.invokeVirtualMethod(sbAppend, sb, block
                     .invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "toString", String.class, int.class), val));
             block.invokeVirtualMethod(sbAppend, sb, block.load("-"));
@@ -139,5 +139,5 @@ public class ScopeTestCase {
         Supplier myInterface = (Supplier) cl.loadClass("com.MyTest").newInstance();
         Assert.assertEquals("10-9-8-7-6-", myInterface.get());
     }
-    
+
 }
