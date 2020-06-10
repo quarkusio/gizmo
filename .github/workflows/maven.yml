@@ -23,3 +23,7 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+      - uses: stuartwdouglas/citest@master
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}
+        if: always()

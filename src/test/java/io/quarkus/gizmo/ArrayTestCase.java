@@ -27,6 +27,7 @@ public class ArrayTestCase {
 
     @Test
     public void testNewArray() throws Exception {
+        Assert.fail();
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
