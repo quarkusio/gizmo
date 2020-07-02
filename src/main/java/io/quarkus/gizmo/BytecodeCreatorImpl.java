@@ -891,6 +891,41 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle instanceOf(ResultHandle resultHandle, String castTarget) {
+        Objects.requireNonNull(resultHandle);
+        Objects.requireNonNull(castTarget);
+        final ResultHandle result = allocateResult("I");
+        // seems like a waste of local vars but it's the safest approach since result type can't be mutated
+        final ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
+        assert result != null;
+        String intName = castTarget.replace('.', '/');
+        operations.add(new Operation() {
+            @Override
+            void writeBytecode(final MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, resolvedResultHandle, BytecodeCreatorImpl.this, resultHandle.getType(),true);
+                methodVisitor.visitTypeInsn(Opcodes.INSTANCEOF, intName);
+                storeResultHandle(methodVisitor, result);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return Collections.singleton(resolvedResultHandle);
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return resolvedResultHandle;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return result;
+            }
+        });
+        return result;
+    }
+
+    @Override
     public BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2) {
         return ifValues(value1, value2, Opcodes.IF_ICMPLE, "I");
     }

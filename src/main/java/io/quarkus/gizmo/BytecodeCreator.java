@@ -552,6 +552,26 @@ public interface BytecodeCreator extends AutoCloseable {
     BranchResult ifIntegerLessThan(ResultHandle value1, ResultHandle value2);
 
     /**
+     * Checks if the given resultHandle is an instance of the target type
+     *
+     * @param resultHandle the result handle
+     * @param testType the cast target class
+     * @return a boolean result handle with the result of the instanceof call
+     */
+    default ResultHandle instanceOf(ResultHandle resultHandle, Class<?> testType) {
+        return instanceOf(resultHandle, testType.getName());
+    }
+
+    /**
+     * Checks if the given resultHandle is an instance of the target type
+     *
+     * @param resultHandle the result handle
+     * @param testType the cast target class
+     * @return a boolean result handle with the result of the instanceof call
+     */
+    ResultHandle instanceOf(ResultHandle resultHandle, String testType);
+
+    /**
      * An if statement.
      * <p>
      * Values must be integer types. If value1 is less or equal to value2 the {@link BranchResult#trueBranch} code will be
