@@ -1,5 +1,10 @@
 package io.quarkus.gizmo;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Objects;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -89,4 +94,60 @@ public class IfStatementTestCase {
         Assert.assertEquals("TRUE", myInterface.transform("T"));
         Assert.assertEquals("FALSE", myInterface.transform("TEST"));
     }
+
+    @Test
+    public void testIfReferencesEqual() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(ReferenceEqualsTest.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("referenceEquals", boolean.class, Object.class, Object.class);
+            BranchResult branch = method.ifReferencesEqual(method.getMethodParam(0), method.getMethodParam(1));
+            branch.trueBranch().returnValue(branch.trueBranch().load(true));
+            branch.falseBranch().returnValue(branch.falseBranch().load(false));
+        }
+        ReferenceEqualsTest myTest = (ReferenceEqualsTest) cl.loadClass("com.MyTest").newInstance();
+        Item item1 = new Item(1000);
+        Item item2 = new Item(1000);
+        assertTrue(item1.equals(item2));
+        assertFalse(myTest.referenceEquals(item1, item2));
+        assertTrue(myTest.referenceEquals(item1, item1));
+    }
+
+    public interface ReferenceEqualsTest {
+
+        boolean referenceEquals(Object obj1, Object obj2);
+
+    }
+
+    public static class Item {
+
+        private int id;
+
+        public Item(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            Item other = (Item) obj;
+            return id == other.id;
+        }
+
+    }
+
 }

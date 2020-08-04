@@ -583,6 +583,19 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2);
+    
+    /**
+     * An if statement.
+     * <p>
+     * If references are equal (object identity) the {@link BranchResult#trueBranch} code will be
+     * executed, otherwise the {@link BranchResult#falseBranch} will be run.
+     * 
+     * @param ref1
+     * @param ref2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2);
+    
     /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter
