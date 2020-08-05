@@ -931,6 +931,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2) {
+        return ifValues(ref1, ref2, Opcodes.IF_ACMPEQ, "Ljava/lang/Object;");
+    }
+
+    @Override
     public ResultHandle getMethodParam(int methodNo) {
         int count = (method.getModifiers() & Modifier.STATIC) != 0 ? 0 : 1;
         for (int i = 0; i < methodNo; ++i) {
