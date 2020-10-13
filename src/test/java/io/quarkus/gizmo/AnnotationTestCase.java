@@ -18,6 +18,7 @@ public class AnnotationTestCase {
         MyAnnotation annotation = cl.loadClass("com.MyTest")
                 .getAnnotation(MyAnnotation.class);
         Assert.assertEquals("test", annotation.value());
+        Assert.assertEquals(MyEnum.YES, annotation.enumVal());
     }
 
     @Test
@@ -58,6 +59,7 @@ public class AnnotationTestCase {
                 .getMethod("test")
                 .getAnnotation(MyAnnotation.class);
         Assert.assertEquals("test", annotation.value());
+        Assert.assertEquals(MyEnum.YES, annotation.enumVal());
     }
 
     @Test
@@ -107,6 +109,7 @@ public class AnnotationTestCase {
                 .getParameters()[0]
                 .getAnnotation(MyAnnotation.class);
         Assert.assertEquals("test", annotation.value());
+        Assert.assertEquals(MyEnum.YES, annotation.enumVal());
     }
 
     @Test
@@ -155,6 +158,7 @@ public class AnnotationTestCase {
                 .getDeclaredField("test")
                 .getAnnotation(MyAnnotation.class);
         Assert.assertEquals("test", annotation.value());
+        Assert.assertEquals(MyEnum.YES, annotation.enumVal());
     }
 
     @Test
@@ -186,7 +190,9 @@ public class AnnotationTestCase {
     }
 
     private void addAnnotationWithString(AnnotatedElement element) {
-        element.addAnnotation(MyAnnotation.class).addValue("value", "test");
+        AnnotationCreator annotationCreator = element.addAnnotation(MyAnnotation.class);
+        annotationCreator.addValue("value", "test");
+        annotationCreator.addValue("enumVal", MyEnum.YES);
     }
 
     private void addAnnotationWithStringArray(AnnotatedElement element) {
