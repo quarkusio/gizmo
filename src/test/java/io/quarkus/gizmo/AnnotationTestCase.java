@@ -63,6 +63,23 @@ public class AnnotationTestCase {
     }
 
     @Test
+    public void testMethodAnnotationWithEnum() throws ClassNotFoundException, NoSuchMethodException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
+                methodCreator.addAnnotation(AnnotationInstance.create(DotName.createSimple(MyAnnotation.class.getName()), null, new AnnotationValue[] {
+                        AnnotationValue.createEnumValue("enumVal", DotName.createSimple("io.quarkus.gizmo.MyEnum"), "NO")
+                } ));
+                methodCreator.returnValue(null);
+            }
+        }
+
+        MyAnnotation annotation = cl.loadClass("com.MyTest")
+                .getMethod("test")
+                .getAnnotation(MyAnnotation.class);
+        Assert.assertEquals(MyEnum.NO, annotation.enumVal());
+    }
+    @Test
     public void testMethodAnnotationWithStringArray() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {

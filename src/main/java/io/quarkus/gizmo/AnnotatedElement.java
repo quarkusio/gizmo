@@ -58,6 +58,19 @@ public interface AnnotatedElement {
                 ac.addValue(member.name(), member.asString());
             } else if (member.kind() == AnnotationValue.Kind.ARRAY) {
                 ac.addValue(member.name(), member.value());
+            } else if (member.kind() == AnnotationValue.Kind.ENUM) {
+                Class<? extends Enum> enumType = null;
+                try {
+                    enumType = (Class<? extends Enum>)Class.forName(member.asEnumType().toString());
+                } catch (ClassNotFoundException e) {
+                    //handled lower
+                }
+                if (enumType != null) {
+                    Enum enumVal = Enum.valueOf(enumType, member.asEnum());
+                    ac.addValue(member.name(), enumVal);
+                } else {
+                    throw new IllegalArgumentException("typeName must be an enum for: " + member.name());
+                }
             }
         }
     }
