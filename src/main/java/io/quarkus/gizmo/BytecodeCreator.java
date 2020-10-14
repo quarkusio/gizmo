@@ -743,6 +743,23 @@ public interface BytecodeCreator extends AutoCloseable {
     WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun);
 
     /**
+     * Adds the two result handles together and returns the result
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle add(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Increments a ResultHandle
+     * @param toIncrement The number to increment
+     * @return The result
+     */
+    default ResultHandle increment(ResultHandle toIncrement) {
+        return add(toIncrement, load(1));
+    }
+
+    /**
      * Indicate that the scope is no longer in use.  The scope may refuse additional instructions after this method
      * is called.
      */

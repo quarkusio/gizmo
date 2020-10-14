@@ -16,6 +16,11 @@
 
 package io.quarkus.gizmo;
 
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -31,11 +36,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
@@ -337,7 +337,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         if (primitiveType == null) {
             return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
         } else {
-            Class<?>  pt = primitiveType;
+            Class<?> pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
             operations.add(new Operation() {
                 @Override
@@ -829,7 +829,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public BranchResult ifNull(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFNULL, "Ljava/lang/Object;");
     }
-    
+
     @Override
     public BranchResult ifZero(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFEQ, "I");
@@ -869,12 +869,12 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public BranchResult ifLessEqualZero(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFLE, "I");
     }
-    
+
     @Override
     public BranchResult ifIntegerEqual(ResultHandle value1, ResultHandle value2) {
         return ifValues(value1, value2, Opcodes.IF_ICMPEQ, "I");
     }
-    
+
     @Override
     public BranchResult ifIntegerGreaterThan(ResultHandle value1, ResultHandle value2) {
         return ifValues(value1, value2, Opcodes.IF_ICMPGT, "I");
@@ -902,7 +902,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new Operation() {
             @Override
             void writeBytecode(final MethodVisitor methodVisitor) {
-                loadResultHandle(methodVisitor, resolvedResultHandle, BytecodeCreatorImpl.this, resultHandle.getType(),true);
+                loadResultHandle(methodVisitor, resolvedResultHandle, BytecodeCreatorImpl.this, resultHandle.getType(), true);
                 methodVisitor.visitTypeInsn(Opcodes.INSTANCEOF, intName);
                 storeResultHandle(methodVisitor, result);
             }
@@ -1085,13 +1085,57 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         });
     }
-    
+
     @Override
     public WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun) {
         Objects.requireNonNull(conditionFun);
         WhileLoopImpl loop = new WhileLoopImpl(this, conditionFun);
         operations.add(new BlockOperation(loop));
         return loop;
+    }
+
+    @Override
+    public ResultHandle add(ResultHandle a1, ResultHandle a2) {
+        Objects.requireNonNull(a1);
+        Objects.requireNonNull(a2);
+        if (!a1.getType().equals(a2.getType())) {
+            //TODO: relax this somewhat
+            throw new RuntimeException("ResultHandles must be of the same type");
+        }
+        ResultHandle ret = new ResultHandle(a1.getType(), this);
+        operations.add(new Operation() {
+            @Override
+            void writeBytecode(MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, a1, BytecodeCreatorImpl.this, a1.getType());
+                loadResultHandle(methodVisitor, a2, BytecodeCreatorImpl.this, a2.getType());
+                if (a1.getType().equals("Z")) {
+                    methodVisitor.visitInsn(Opcodes.LADD);
+                } else if (a1.getType().equals("D")) {
+                    methodVisitor.visitInsn(Opcodes.DADD);
+                } else if (a1.getType().equals("F")) {
+                    methodVisitor.visitInsn(Opcodes.FADD);
+                } else {
+                    methodVisitor.visitInsn(Opcodes.IADD);
+                }
+                storeResultHandle(methodVisitor, ret);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return new HashSet<>(Arrays.asList(a1, a2));
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return a1;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return ret;
+            }
+        });
+        return ret;
     }
 
     private ResultHandle allocateResult(String returnType) {
@@ -1212,7 +1256,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     BytecodeCreatorImpl getOwner() {
         return owner;
     }
-    
+
     private BranchResult ifValue(ResultHandle resultHandle, int opcode, String opType) {
         Objects.requireNonNull(resultHandle);
         Objects.requireNonNull(opType);
@@ -1222,7 +1266,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new IfOperation(opcode, opType, resolvedResultHandle, trueBranch, falseBranch));
         return new BranchResultImpl(trueBranch, falseBranch);
     }
-    
+
     private BranchResult ifValues(ResultHandle resultHandle1, ResultHandle resultHandle2, int opcode, String opType) {
         Objects.requireNonNull(resultHandle1);
         Objects.requireNonNull(resultHandle2);
@@ -1457,7 +1501,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         IfOperation(final int opcode, final String opType, final ResultHandle value, final BytecodeCreatorImpl trueBranch, final BytecodeCreatorImpl falseBranch) {
             this(opcode, opType, value, null, trueBranch, falseBranch);
         }
-        
+
         IfOperation(final int opcode, final String opType, final ResultHandle value1, final ResultHandle value2, final BytecodeCreatorImpl trueBranch, final BytecodeCreatorImpl falseBranch) {
             this.opcode = opcode;
             this.opType = opType;
@@ -1471,7 +1515,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         public void writeBytecode(MethodVisitor methodVisitor) {
             loadResultHandle(methodVisitor, value1, BytecodeCreatorImpl.this, opType);
             if (value2 != null) {
-                loadResultHandle(methodVisitor, value2, BytecodeCreatorImpl.this, opType);    
+                loadResultHandle(methodVisitor, value2, BytecodeCreatorImpl.this, opType);
             }
             methodVisitor.visitJumpInsn(opcode, trueBranch.getTop());
             falseBranch.writeOperations(methodVisitor);
