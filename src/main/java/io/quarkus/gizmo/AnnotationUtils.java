@@ -16,6 +16,8 @@ final class AnnotationUtils {
         } else if (value instanceof AnnotationValue) {
             AnnotationValue annotationValue = (AnnotationValue) value;
             visitor.visit(annotationValue.name(), annotationValue.value());
+        } else if (value instanceof Enum) {
+            visitor.visitEnum(key, DescriptorUtils.objectToDescriptor(value.getClass()), ((Enum) value).name());
         } else {
             visitor.visit(key, value);
         }
