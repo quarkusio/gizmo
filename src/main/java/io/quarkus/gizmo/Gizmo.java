@@ -4,7 +4,7 @@ import org.objectweb.asm.Opcodes;
 
 public final class Gizmo {
 
-    public static final int ASM_API_VERSION = Opcodes.ASM8;
+    public static final int ASM_API_VERSION = Opcodes.ASM9;
 
     private Gizmo() {
     }
