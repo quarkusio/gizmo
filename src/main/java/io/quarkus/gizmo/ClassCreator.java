@@ -73,6 +73,14 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         this(null, classOutput, name, signature, superClass, 0, interfaces);
     }
 
+    public MethodCreator getConstructor(String... parameters) {
+        return getMethodCreator(MethodDescriptor.ofConstructor(className, parameters));
+    }
+
+    public MethodCreator getSuperConstructor(String... parameters) {
+        return getMethodCreator(MethodDescriptor.ofConstructor(superClass, parameters));
+    }
+
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
         if (methods.containsKey(methodDescriptor)) {
             return methods.get(methodDescriptor);
