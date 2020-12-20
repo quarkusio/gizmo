@@ -41,32 +41,18 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private final String declaringClassName;
     private final ClassCreator classCreator;
     private String signature;
-    private Boolean isValidMethod;
 
     MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassCreator classCreator) {
         super(enclosing, true);
         this.methodDescriptor = methodDescriptor;
         this.declaringClassName = declaringClassName;
         this.classCreator = classCreator;
-        this.isValidMethod = methodDescriptor.getReturnType().equals("V");
     }
 
     @Override
     public MethodCreator addException(String exception) {
         exceptions.add(exception.replace('.', '/'));
         return this;
-    }
-
-    @Override
-    public void returnValue(ResultHandle returnValue) {
-        super.returnValue(returnValue);
-        isValidMethod = true;
-    }
-
-    @Override
-    public void throwException(ResultHandle exception) {
-        super.throwException(exception);
-        isValidMethod = true;
     }
 
     @Override
@@ -102,15 +88,6 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        if (!isValidMethod) {
-            //auto add returnVAlue(null) at the end of operation for void and ctor method
-            if (methodDescriptor.getReturnType().equals("V")) {
-                returnValue(null);
-            } else {
-                throw new RuntimeException("Missing returnValue for method [declaringClassName="
-                        + getDeclaringClassName() + ", methodDescriptor=" + methodDescriptor + "]");
-            }
-        }
         MethodVisitor visitor = file.visitMethod(modifiers, methodDescriptor.getName(), methodDescriptor.getDescriptor(), signature, exceptions.toArray(new String[0]));
 
         int localVarCount = Modifier.isStatic(modifiers) ? 0 : 1;
@@ -123,6 +100,17 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
             }
         }
         int varCount = allocateLocalVariables(localVarCount);
+        MethodCheckerVisitor checker = new MethodCheckerVisitor();
+        boolean isValidMethod = checker.check(this);
+        if (!isValidMethod) {
+            //auto add returnVAlue(null) at the end of operation for void and ctor method
+            if (methodDescriptor.getReturnType().equals("V")) {
+                returnValue(null);
+            } else {
+                throw new RuntimeException("Missing returnValue for method [declaringClassName="
+                        + getDeclaringClassName() + ", methodDescriptor=" + methodDescriptor + "]");
+            }
+        }
         writeOperations(visitor);
         visitor.visitMaxs(0, varCount);
 
