@@ -24,6 +24,30 @@ public class MethodTestCase {
         assertNotNull(obj);
     }
     @Test
+    public void testMethodCheckerAutoAddSuperCtor() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            MethodCreator ctor = creator.getMethodCreator(MethodDescriptor.ofConstructor("com.MyTest", String.class));
+            //missing invokeSpecial of super()
+            //missing method.returnValue(null);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Object obj = clazz.getDeclaredConstructor(String.class).newInstance("foo");
+        assertNotNull(obj);
+    }
+    @Test
+    public void testMethodCheckerAutoAddSuperCtorWithReturn() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            MethodCreator ctor = creator.getMethodCreator(MethodDescriptor.ofConstructor("com.MyTest", String.class));
+            //missing invokeSpecial of super()
+            ctor.returnValue(null);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Object obj = clazz.getDeclaredConstructor(String.class).newInstance("foo");
+        assertNotNull(obj);
+    }
+    @Test
     public void testMethodCheckerAutoAddReturnValVoidMethod() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {

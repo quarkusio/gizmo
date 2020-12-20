@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
@@ -105,8 +106,14 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         if (methodDescriptor.getName().equals("<init>")
                 && methodDescriptor.getReturnType().equals("V")
                 && !checker.isSuperOrThisCalled()) {
-            //auto add super();
-            invokeSpecialMethod(MethodDescriptor.ofConstructor("java.lang.Object"), getThis());
+            if (classCreator.getSuperClass().equals("java/lang/Object")) {
+                //auto add super(); when inherit of object
+                MethodDescriptor desc = MethodDescriptor.ofConstructor("java.lang.Object");
+                operations.add(0, new InvokeOperation(null, desc, resolve(checkScope(getThis())), resolve(checkScope(new ResultHandle[0])), false, true));
+            } else {
+                throw new RuntimeException("Missing super() or this() for constructor [declaringClassName="
+                        + getDeclaringClassName() + ", methodDescriptor=" + methodDescriptor + "]");
+            }
         }
         if (!checker.isReturningValue()) {
             //auto add returnVAlue(null) at the end of operation for void and ctor method
