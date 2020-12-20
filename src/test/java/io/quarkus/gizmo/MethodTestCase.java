@@ -2,13 +2,10 @@ package io.quarkus.gizmo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
-import jdk.jshell.spi.ExecutionControl;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class MethodTestCase {
