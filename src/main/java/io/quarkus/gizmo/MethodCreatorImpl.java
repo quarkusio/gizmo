@@ -101,8 +101,14 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         }
         int varCount = allocateLocalVariables(localVarCount);
         MethodCheckerVisitor checker = new MethodCheckerVisitor();
-        boolean isValidMethod = checker.check(this);
-        if (!isValidMethod) {
+        checker.check(this);
+        if (methodDescriptor.getName().equals("<init>")
+                && methodDescriptor.getReturnType().equals("V")
+                && !checker.isSuperOrThisCalled()) {
+            //auto add super();
+            invokeSpecialMethod(MethodDescriptor.ofConstructor("java.lang.Object"), getThis());
+        }
+        if (!checker.isReturningValue()) {
             //auto add returnVAlue(null) at the end of operation for void and ctor method
             if (methodDescriptor.getReturnType().equals("V")) {
                 returnValue(null);

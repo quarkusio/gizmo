@@ -9,21 +9,25 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.TypePath;
 
 public class MethodCheckerVisitor extends MethodVisitor {
-    boolean isValid = false;
+    private boolean isReturningValue;
+    private boolean isSuperOrThisCalled;
+
     public MethodCheckerVisitor() {
         this(Gizmo.ASM_API_VERSION);
     }
     public MethodCheckerVisitor(int api) {
         super(api);
+        isReturningValue = false;
+        isSuperOrThisCalled = false;
     }
 
-    public boolean check(MethodCreatorImpl methodCreator) {
+
+    public void check(MethodCreatorImpl methodCreator) {
         visitLabel(methodCreator.getTop());
         for (BytecodeCreatorImpl.Operation op : methodCreator.operations) {
             op.writeBytecode(this);
         }
         visitLabel(methodCreator.getBottom());
-        return isValid;
     }
 
     @Override
@@ -37,7 +41,7 @@ public class MethodCheckerVisitor extends MethodVisitor {
             case Opcodes.DRETURN:
             case Opcodes.ARETURN:
             case Opcodes.ATHROW:
-                isValid = true;
+                isReturningValue = true;
                 break;
         }
     }
@@ -104,6 +108,9 @@ public class MethodCheckerVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+        if (opcode == Opcodes.INVOKESPECIAL && name.equals("<init>") && !isInterface) {
+            isSuperOrThisCalled = true;
+        }
     }
 
     @Override
@@ -173,6 +180,14 @@ public class MethodCheckerVisitor extends MethodVisitor {
 
     @Override
     public void visitEnd() {
+    }
+
+    public boolean isReturningValue() {
+        return isReturningValue;
+    }
+
+    public boolean isSuperOrThisCalled() {
+        return isSuperOrThisCalled;
     }
 
     class DummyVisitor extends AnnotationVisitor {
