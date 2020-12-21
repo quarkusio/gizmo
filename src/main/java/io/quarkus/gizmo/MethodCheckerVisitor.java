@@ -104,6 +104,9 @@ public class MethodCheckerVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String descriptor) {
+        if (opcode == Opcodes.INVOKESPECIAL && name.equals("<init>")) {
+            isSuperOrThisCalled = true;
+        }
     }
 
     @Override
