@@ -25,6 +25,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,7 +33,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import org.jboss.jandex.Type;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -246,6 +249,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         private int extraAccess;
 
+        private String parameters;
+
         Builder() {
             superClass(Object.class);
             this.interfaces = new ArrayList<>();
@@ -266,8 +271,16 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             return this;
         }
 
+        @Deprecated
         public Builder signature(String signature) {
             this.signature = signature;
+            return this;
+        }
+        public Builder parameters(String... parameters) {
+            this.parameters = Collections.singletonList(parameters)
+                    .stream()
+                    .map(DescriptorUtils::objectToDescriptor)
+                    .collect(Collectors.joining(","));
             return this;
         }
 
@@ -304,6 +317,12 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
+            if (parameters != null && !parameters.isEmpty()) {
+                String itf = interfaces.stream()
+                        .map(DescriptorUtils::objectToDescriptor)
+                        .collect(Collectors.joining(","));
+                signature = String.format("%s<%s>;%s", superClass, parameters, itf);
+            }
             return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
         }
 
