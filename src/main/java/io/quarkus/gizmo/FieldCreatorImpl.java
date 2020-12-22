@@ -18,9 +18,11 @@ package io.quarkus.gizmo;
 
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jdk.internal.access.JavaSecurityAccess;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -32,10 +34,12 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
     private String signature;
     private int modifiers;
+    private final Map<String, FormalType> formalTypeParameters;
 
     public FieldCreatorImpl(FieldDescriptor fieldDescriptor) {
         this.fieldDescriptor = fieldDescriptor;
         this.modifiers = Opcodes.ACC_PRIVATE;
+        this.formalTypeParameters = new HashMap<>();
     }
 
     @Override
@@ -54,8 +58,27 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
         return this;
     }
 
+    public FieldCreator formalType(String name) {
+        return formalType(name, Object.class.getName());
+    }
+
+    public FieldCreator formalType(String name, String superClass, String... interfaces) {
+        formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
+        return this;
+    }
+
     @Override
     public void write(ClassVisitor file) {
+        if (!formalTypeParameters.isEmpty()) {
+            SignatureUtils.TypeSignature SignatureGen = new SignatureUtils.TypeSignature();
+            SignatureGen.Type(DescriptorUtils.stringToType(fieldDescriptor.getType()));
+            //TODO handle innerClass for signature
+            //SignatureGen.innerClassType(innerClass);
+            for(FormalType formalType : formalTypeParameters.values()) {
+                SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
+            }
+            signature = SignatureGen.generate();
+        }
         FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature, null);
         for(AnnotationCreatorImpl annotation : annotations) {
             AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
@@ -80,6 +103,7 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     }
 
     @Override
+    @Deprecated
     public FieldCreatorImpl setSignature(String signature) {
         this.signature = signature;
         return this;

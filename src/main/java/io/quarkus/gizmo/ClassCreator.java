@@ -325,7 +325,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            if (formalTypeParameters != null && !formalTypeParameters.isEmpty()) {
+            if (!formalTypeParameters.isEmpty()) {
                 SignatureUtils.ClassSignature SignatureGen = new SignatureUtils.ClassSignature();
                 SignatureGen.interfaces(interfaces);
                 SignatureGen.superClass(superClass);

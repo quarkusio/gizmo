@@ -15,6 +15,7 @@ import org.jboss.jandex.Type;
 import org.jboss.jandex.TypeVariable;
 import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
+import sun.reflect.generics.tree.TypeArgument;
 
 public class SignatureUtils {
     public static void visitType(SignatureVisitor visitor, Type type) {
@@ -52,11 +53,18 @@ public class SignatureUtils {
             visitor.visitBaseType('V');
         } else if (type.kind() == Type.Kind.ARRAY) {
             ArrayType array = type.asArrayType();
-            visitor.visitArrayType();
+            for (int i = 0; i < array.dimensions(); i++) {
+                visitor.visitArrayType();
+            }
             visitType(visitor, array.component());
         } else if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
             ParameterizedType pt = type.asParameterizedType();
-            visitor.visitTypeVariable(pt.name().toString().replace('.', '/'));
+            visitType(visitor, pt.owner());
+            //todo handle super and extends wildcard for parameterType (+ and - char)
+            for (Type arg : pt.arguments()) {
+                visitor.visitTypeArgument('=');
+                visitType(visitor, arg);
+            }
         } else if (type.kind() == Type.Kind.CLASS) {
             ClassType pt = type.asClassType();
             visitor.visitClassType(pt.name().toString().replace('.', '/'));
@@ -64,6 +72,10 @@ public class SignatureUtils {
         } else if (type.kind() == Type.Kind.TYPE_VARIABLE) {
             TypeVariable pt = type.asTypeVariable();
             visitor.visitTypeVariable(pt.name().toString().replace('.', '/'));
+        } else if (type.kind() == Type.Kind.WILDCARD_TYPE) {
+            visitor.visitTypeArgument();
+        }  else if (type.kind() == Type.Kind.UNRESOLVED_TYPE_VARIABLE) {
+
         } else {
             throw new RuntimeException("Invalid type for descriptor " + type);
         }
@@ -228,19 +240,19 @@ public class SignatureUtils {
 
     private static class InnerClassType {
         private final String name;
-        private final List<Character> typeArguments;
+        private Map<String, FormalType> formalTypeParameters;
 
-        public InnerClassType(String name, List<Character> typeArguments) {
+        public InnerClassType(String name) {
             this.name = name;
-            this.typeArguments = typeArguments;
+            formalTypeParameters = new HashMap<>();
         }
 
         public String getName() {
             return name;
         }
 
-        public List<Character> getTypeArguments() {
-            return typeArguments;
+        public Map<String, FormalType> getFormalTypeParameters() {
+            return formalTypeParameters;
         }
     }
     /**
@@ -252,22 +264,30 @@ public class SignatureUtils {
     public static class TypeSignature {
 
         private Type type;
-        private List<Character> typeArguments;
+        private Map<String, FormalType> formalTypeParameters;
         private List<InnerClassType> innerClassTypes;
 
 
         TypeSignature() {
-        }
-        public void Type(Type type) {
-            this.type = type;
-            this.typeArguments = new ArrayList<>();
             this.innerClassTypes = new ArrayList<>();
+            formalTypeParameters = new HashMap<>();
         }
-        public void typeArguments(Character... typeArguments) {
-            this.typeArguments.addAll(Arrays.asList(typeArguments));
+        public SignatureUtils.TypeSignature Type(Type type) {
+            this.type = type;
+            return this;
         }
-        public void innerClassType(String innerClassTypeName, List<Character> typeArguments) {
-            this.innerClassTypes.add(new InnerClassType(innerClassTypeName, typeArguments));
+        public SignatureUtils.TypeSignature formalType(String name) {
+            return formalType(name, Object.class.getName());
+        }
+
+        public SignatureUtils.TypeSignature formalType(String name, String superClass, String... interfaces) {
+            formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
+            return this;
+        }
+        public SignatureUtils.TypeSignature innerClassType(String innerClassTypeName) {
+            //TODO support formalTypeParameter for inner class
+            this.innerClassTypes.add(new InnerClassType(innerClassTypeName));
+            return this;
         }
 
         public String generate() {
@@ -276,14 +296,26 @@ public class SignatureUtils {
             visitType(signature, type);
             if (type.kind() == Type.Kind.CLASS) {
                 // ( {@code visitInnerClassType} {@code visitTypeArgument}* )*
-                for (Character c : typeArguments) {
-                    signature.visitTypeArgument(c);
+                for (FormalType formalType : formalTypeParameters.values()) {
+                    //not sure for this part maybe we must use a new object for typeArgument
+                    if (formalType.getInterfaces().length  > 0) {
+                        for (String itf : formalType.getInterfaces()) {
+                            SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('+');
+                            paramTypeVisitor.visitClassType(itf);
+                        }
+                    }
+                    if (formalType.getSuperClass() != null) {
+                        SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('-');
+                        paramTypeVisitor.visitClassType(formalType.getSuperClass());
+                    }
+                    if (formalType.getName() != null) {
+                        SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('=');
+                        paramTypeVisitor.visitClassType(formalType.getName());
+                    }
                 }
                 for (InnerClassType cls : innerClassTypes) {
                     signature.visitInnerClassType(cls.getName());
-                    for (Character c : cls.getTypeArguments()) {
-                        signature.visitTypeArgument(c);
-                    }
+                    //TODO support formalTypeParameter for inner class
                 }
             }
             signature.visitEnd();
