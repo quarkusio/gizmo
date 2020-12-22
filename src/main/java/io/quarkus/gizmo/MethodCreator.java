@@ -57,4 +57,8 @@ public interface MethodCreator extends MemberCreator<MethodCreator>, BytecodeCre
 
     AnnotatedElement getParameterAnnotations(int param);
 
+    MethodCreator formalType(String name);
+
+    MethodCreator formalType(String name, String superClass, String... interfaces);
+
 }

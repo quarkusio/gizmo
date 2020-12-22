@@ -87,8 +87,8 @@ public class SignatureUtils {
             exceptionTypes = new ArrayList<>();
         }
 
-        public SignatureUtils.MethodSignature exceptionTypes(String... exceptionTypes) {
-            this.exceptionTypes.addAll(Arrays.asList(exceptionTypes));
+        public SignatureUtils.MethodSignature exceptionTypes(List<String> exceptionTypes) {
+            this.exceptionTypes.addAll(exceptionTypes);
             return this;
         }
 
@@ -172,11 +172,6 @@ public class SignatureUtils {
 
         public SignatureUtils.ClassSignature formalType(String name, String superClass, String... interfaces) {
             formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
-            return this;
-        }
-
-        public SignatureUtils.ClassSignature interfaces(String... interfaces) {
-            interfaces(Arrays.asList(interfaces));
             return this;
         }
 

@@ -16,12 +16,16 @@
 
 package io.quarkus.gizmo;
 
+import java.util.Objects;
+
 import org.jboss.jandex.ArrayType;
 import org.jboss.jandex.ClassType;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.jandex.TypeVariable;
+import org.jboss.jandex.VoidType;
 
 //TODO: should not be public
 public class DescriptorUtils {
@@ -221,5 +225,51 @@ public class DescriptorUtils {
         } else {
             throw new RuntimeException("Invalid type for descriptor " + type);
         }
+    }
+    public static Type stringToType(String representation) {
+        Objects.requireNonNull(representation);
+
+        if (representation.length() == 1) {
+            switch (representation) {
+                case "V":
+                    return Type.create(DotName.createSimple("void"), Type.Kind.VOID);
+                case "B":
+                    return PrimitiveType.BYTE;
+                case "C":
+                    return PrimitiveType.CHAR;
+                case "D":
+                    return PrimitiveType.DOUBLE;
+                case "F":
+                    return PrimitiveType.FLOAT;
+                case "I":
+                    return PrimitiveType.INT;
+                case "J":
+                    return PrimitiveType.LONG;
+                case "Z":
+                    return PrimitiveType.BOOLEAN;
+                case "S":
+                    return PrimitiveType.SHORT;
+                default:
+                    throw new RuntimeException("Unkown primitive type " + representation);
+            }
+        } else {
+            if (representation.startsWith("[")) {
+                String remaining = representation.substring(1);
+                int dimensions = 1;
+                while (remaining.startsWith("[")) {
+                    dimensions++;
+                    remaining = representation.substring(1);
+                }
+                return ArrayType.create(stringToType(remaining), dimensions);
+            } else if (representation.startsWith("L")) {
+                int end = 0;
+                do {
+                    ++end;
+                } while(representation.charAt(end) != ';');
+                String name = representation.substring(1, end);
+                return Type.create(DotName.createSimple(name), Type.Kind.CLASS);
+            }
+        }
+        throw new RuntimeException("Unkown type " + representation);
     }
 }
