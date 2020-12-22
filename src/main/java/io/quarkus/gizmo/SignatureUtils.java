@@ -69,29 +69,6 @@ public class SignatureUtils {
         }
     }
 
-    private static class FormalType {
-        private final String name;
-        private final String superClass;
-        private final String[] interfaces;
-
-        public FormalType(String name, String superClass, String[] interfaces) {
-            this.name = name;
-            this.superClass = superClass.replace('.','/');
-            this.interfaces = interfaces;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getSuperClass() {
-            return superClass;
-        }
-
-        public String[] getInterfaces() {
-            return interfaces;
-        }
-    }
     /**
      *  generate signature for method with this format
      *  ( {@code visitFormalTypeParameter} {@code visitClassBound}? {@code visitInterfaceBound}* )*
@@ -115,8 +92,8 @@ public class SignatureUtils {
             return this;
         }
 
-        public SignatureUtils.MethodSignature formalType(String name, String... interfaces) {
-            return formalType(name, Object.class.getName(),interfaces);
+        public SignatureUtils.MethodSignature formalType(String name) {
+            return formalType(name, Object.class.getName());
         }
 
         public SignatureUtils.MethodSignature formalType(String name, String superClass, String... interfaces) {
@@ -135,6 +112,7 @@ public class SignatureUtils {
         }
 
         public String generate() {
+            Objects.requireNonNull(returnType);
             SignatureWriter signature = new SignatureWriter();
             //( {@code visitFormalTypeParameter} {@code visitClassBound}? {@code visitInterfaceBound}* )*
             for (String formalTypeParameterName : formalTypeParameters.keySet()) {
@@ -188,8 +166,8 @@ public class SignatureUtils {
             interfaces = new ArrayList<>();
         }
 
-        public SignatureUtils.ClassSignature formalType(String name, String... interfaces) {
-            return formalType(name, Object.class.getName(),interfaces);
+        public SignatureUtils.ClassSignature formalType(String name) {
+            return formalType(name, Object.class.getName());
         }
 
         public SignatureUtils.ClassSignature formalType(String name, String superClass, String... interfaces) {
@@ -198,10 +176,14 @@ public class SignatureUtils {
         }
 
         public SignatureUtils.ClassSignature interfaces(String... interfaces) {
-            this.interfaces.addAll(Arrays.asList(interfaces));
+            interfaces(Arrays.asList(interfaces));
             return this;
         }
 
+        public SignatureUtils.ClassSignature interfaces(List<String> interfaces) {
+            this.interfaces.addAll(interfaces);
+            return this;
+        }
         public SignatureUtils.ClassSignature superClass(String superClass) {
             this.superClass = superClass;
             return this;

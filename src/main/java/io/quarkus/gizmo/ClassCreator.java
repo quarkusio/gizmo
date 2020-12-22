@@ -27,6 +27,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -249,11 +250,12 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         private int extraAccess;
 
-        private String parameters;
+        private Map<String, FormalType> formalTypeParameters;
 
         Builder() {
             superClass(Object.class);
             this.interfaces = new ArrayList<>();
+            formalTypeParameters = new HashMap<>();
         }
 
         Builder enclosing(BytecodeCreatorImpl enclosing) {
@@ -271,16 +273,22 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             return this;
         }
 
+        /**
+         * @deprecated signature generated. So it is replaced by {@link #formalType(String)}
+         * or {@link #formalType(String, String, String...)}
+         */
         @Deprecated
         public Builder signature(String signature) {
             this.signature = signature;
             return this;
         }
-        public Builder parameters(String... parameters) {
-            this.parameters = Collections.singletonList(parameters)
-                    .stream()
-                    .map(DescriptorUtils::objectToDescriptor)
-                    .collect(Collectors.joining(","));
+
+        public Builder formalType(String name) {
+            return formalType(name, Object.class.getName());
+        }
+
+        public Builder formalType(String name, String superClass, String... interfaces) {
+            formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
             return this;
         }
 
@@ -317,11 +325,14 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            if (parameters != null && !parameters.isEmpty()) {
-                String itf = interfaces.stream()
-                        .map(DescriptorUtils::objectToDescriptor)
-                        .collect(Collectors.joining(","));
-                signature = String.format("%s<%s>;%s", superClass, parameters, itf);
+            if (formalTypeParameters != null && !formalTypeParameters.isEmpty()) {
+                SignatureUtils.ClassSignature SignatureGen = new SignatureUtils.ClassSignature();
+                SignatureGen.interfaces(interfaces);
+                SignatureGen.superClass(superClass);
+                for(FormalType formalType : formalTypeParameters.values()) {
+                    SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
+                }
+                signature = SignatureGen.generate();
             }
             return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
         }
