@@ -17,7 +17,9 @@
 package io.quarkus.gizmo;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.jboss.jandex.FieldInfo;
 
@@ -26,33 +28,48 @@ public class FieldDescriptor {
     private final String declaringClass;
     private final String name;
     private final String type;
+    private final String genericParameters;
 
-    private FieldDescriptor(String declaringClass, String name, String type) {
+    private FieldDescriptor(String declaringClass, String name, String type, String genericParameters) {
         this.declaringClass = declaringClass.replace('.', '/');
         this.name = name;
         this.type = type;
+        this.genericParameters = genericParameters;
     }
 
     private FieldDescriptor(FieldInfo fieldInfo) {
         this.name = fieldInfo.name();
         this.type = DescriptorUtils.typeToString(fieldInfo.type());
         this.declaringClass = fieldInfo.declaringClass().toString().replace('.', '/');
+        this.genericParameters = DescriptorUtils.typeToGenericParameters(fieldInfo.type());
     }
 
     public static FieldDescriptor of(String declaringClass, String name, String type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        String genParam = "";
+        if (type.contains("<")) {
+            genParam = type.substring(type.indexOf('<') + 1, type.lastIndexOf('>'));
+            genParam = Arrays.stream(genParam.split(",")).map(DescriptorUtils::objectToDescriptor).collect(Collectors.joining( "," ));
+            type = type.substring(0, type.indexOf('<')) + type.substring(type.lastIndexOf('>') + 1);
+        }
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type), genParam);
     }
 
     public static FieldDescriptor of(String declaringClass, String name, Class<?> type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type), DescriptorUtils.TypeParametersToString(type.getTypeParameters()));
     }
 
     public static FieldDescriptor of(Class<?> declaringClass, String name, String type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        String genParam = "";
+        if (type.contains("<")) {
+            genParam = type.substring(type.indexOf('<') + 1, type.lastIndexOf('>'));
+            genParam = Arrays.stream(genParam.split(",")).map(DescriptorUtils::objectToDescriptor).collect(Collectors.joining( "," ));
+            type = type.substring(0, type.indexOf('<')) + type.substring(type.lastIndexOf('>') + 1);
+        }
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type), genParam);
     }
 
     public static FieldDescriptor of(Class<?> declaringClass, String name, Class<?> type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type), DescriptorUtils.TypeParametersToString(type.getTypeParameters()));
     }
 
     public static FieldDescriptor of(FieldInfo fieldInfo) {
@@ -73,6 +90,9 @@ public class FieldDescriptor {
 
     public String getType() {
         return type;
+    }
+    public String getGenericParameters() {
+        return genericParameters;
     }
 
     public boolean equals(final Object obj) {

@@ -7,75 +7,56 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jboss.jandex.ArrayType;
-import org.jboss.jandex.ClassType;
-import org.jboss.jandex.ParameterizedType;
-import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
-import org.jboss.jandex.TypeVariable;
 import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
-import sun.reflect.generics.tree.TypeArgument;
 
 public class SignatureUtils {
-    public static void visitType(SignatureVisitor visitor, Type type) {
-        if (type.kind() == Type.Kind.PRIMITIVE) {
-            PrimitiveType.Primitive primitive = type.asPrimitiveType().primitive();
-            switch (primitive) {
-                case INT:
-                    visitor.visitBaseType('I');
-                    break;
-                case BYTE:
-                    visitor.visitBaseType('B');
-                    break;
-                case CHAR:
-                    visitor.visitBaseType('C');
-                    break;
-                case LONG:
-                    visitor.visitBaseType('J');
-                    break;
-                case FLOAT:
-                    visitor.visitBaseType('F');
-                    break;
-                case SHORT:
-                    visitor.visitBaseType('S');
-                    break;
-                case DOUBLE:
-                    visitor.visitBaseType('D');
-                    break;
-                case BOOLEAN:
-                    visitor.visitBaseType('Z');
-                    break;
-                default:
-                    throw new RuntimeException("Unkown primitive type " + primitive);
-            }
-        } else if (type.kind() == Type.Kind.VOID) {
-            visitor.visitBaseType('V');
-        } else if (type.kind() == Type.Kind.ARRAY) {
-            ArrayType array = type.asArrayType();
-            for (int i = 0; i < array.dimensions(); i++) {
+    public static void visitType(SignatureVisitor visitor, String type, String genericParameters) {
+        if (type.length() == 1) {
+             visitor.visitBaseType(type.charAt(0));
+        } else if (type.startsWith("[")) {
+            String remaining = type.substring(1);
+            visitor.visitArrayType();
+            while (remaining.startsWith("[")) {
                 visitor.visitArrayType();
+                remaining = type.substring(1);
             }
-            visitType(visitor, array.component());
-        } else if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
-            ParameterizedType pt = type.asParameterizedType();
-            visitType(visitor, pt.owner());
-            //todo handle super and extends wildcard for parameterType (+ and - char)
-            for (Type arg : pt.arguments()) {
-                visitor.visitTypeArgument('=');
-                visitType(visitor, arg);
+            visitType(visitor, remaining, genericParameters);
+        } else if (type.startsWith("?")) {
+            String nextKeyword = type.substring(1).trim();
+            SignatureVisitor wildcardVisitor;
+            if (nextKeyword.startsWith("super")) {
+                wildcardVisitor = visitor.visitTypeArgument('-');
+                //remove super L...;
+                nextKeyword = nextKeyword.substring(5, nextKeyword.indexOf(';')).trim().substring(1);
+            } else if (nextKeyword.startsWith("extends")) {
+                wildcardVisitor = visitor.visitTypeArgument('+');
+                nextKeyword = nextKeyword.substring(7, nextKeyword.indexOf(';')).trim().substring(1);
+            } else {
+                wildcardVisitor = visitor.visitTypeArgument('=');
+                nextKeyword = "java/lang/Object";
             }
-        } else if (type.kind() == Type.Kind.CLASS) {
-            ClassType pt = type.asClassType();
-            visitor.visitClassType(pt.name().toString().replace('.', '/'));
+            wildcardVisitor.visitClassType(nextKeyword);
+        } else if (type.startsWith("T") && type.contains(";")) {
+            String typeVar = type.substring(1, type.indexOf(';'));
+            visitor.visitTypeVariable(typeVar);
+        } else if (type.startsWith("L") && type.contains(";")) {
+            String classType = type.substring(1, type.indexOf(';'));
+            visitor.visitClassType(classType);
+            //TODO embedded generics <String, K, List<?>>
+            if (genericParameters != null) {
+                for (String typeArg : genericParameters.split(",")) {
+                    typeArg = typeArg.trim();
+                    if (typeArg.startsWith("?")) {
+                        visitType(visitor, typeArg, null);
+                    } else {
+                        SignatureVisitor argVisitor = visitor.visitTypeArgument('=');
+                        visitType(argVisitor, typeArg, null);
+                    }
+                }
+            }
             visitor.visitEnd();
-        } else if (type.kind() == Type.Kind.TYPE_VARIABLE) {
-            TypeVariable pt = type.asTypeVariable();
-            visitor.visitTypeVariable(pt.name().toString().replace('.', '/'));
-        } else if (type.kind() == Type.Kind.WILDCARD_TYPE) {
-            visitor.visitTypeArgument();
-        }  else if (type.kind() == Type.Kind.UNRESOLVED_TYPE_VARIABLE) {
-
         } else {
             throw new RuntimeException("Invalid type for descriptor " + type);
         }
@@ -90,7 +71,8 @@ public class SignatureUtils {
 
         private Map<String, FormalType> formalTypeParameters;
         private List<String> paramTypes;
-        private Type returnType;
+        private String returnType;
+        private String returnTypeGenericParameters;
         private List<String> exceptionTypes;
 
         MethodSignature() {
@@ -118,8 +100,13 @@ public class SignatureUtils {
             return this;
         }
 
-        public SignatureUtils.MethodSignature returnType(Type returnType) {
+        public SignatureUtils.MethodSignature returnType(String returnType) {
             this.returnType = returnType;
+            return this;
+        }
+
+        public SignatureUtils.MethodSignature returnTypeGenericParamerters(String returnTypeGenericParameters) {
+            this.returnTypeGenericParameters = returnTypeGenericParameters;
             return this;
         }
 
@@ -150,7 +137,7 @@ public class SignatureUtils {
                     paramTypeVisitor.visitTypeVariable(paramType);
                 }
             }
-            visitType(signature.visitReturnType(), returnType);
+            visitType(signature.visitReturnType(), returnType, returnTypeGenericParameters);
             if (!exceptionTypes.isEmpty()) {
                 SignatureVisitor exceptionVisitor = signature.visitExceptionType();
                 for (String exceptionType : exceptionTypes) {
@@ -240,19 +227,19 @@ public class SignatureUtils {
 
     private static class InnerClassType {
         private final String name;
-        private Map<String, FormalType> formalTypeParameters;
+        private String genericParameters;
 
-        public InnerClassType(String name) {
+        public InnerClassType(String name, String genericParameters) {
             this.name = name;
-            formalTypeParameters = new HashMap<>();
+            this.genericParameters = genericParameters;
         }
 
         public String getName() {
             return name;
         }
 
-        public Map<String, FormalType> getFormalTypeParameters() {
-            return formalTypeParameters;
+        public String getGenericParameters() {
+            return genericParameters;
         }
     }
     /**
@@ -263,7 +250,8 @@ public class SignatureUtils {
      */
     public static class TypeSignature {
 
-        private Type type;
+        private String type;
+        private String genericParameters;
         private Map<String, FormalType> formalTypeParameters;
         private List<InnerClassType> innerClassTypes;
 
@@ -272,8 +260,12 @@ public class SignatureUtils {
             this.innerClassTypes = new ArrayList<>();
             formalTypeParameters = new HashMap<>();
         }
-        public SignatureUtils.TypeSignature Type(Type type) {
+        public SignatureUtils.TypeSignature Type(String type) {
             this.type = type;
+            return this;
+        }
+        public SignatureUtils.TypeSignature genericParameters(String genericParameters) {
+            this.genericParameters = genericParameters;
             return this;
         }
         public SignatureUtils.TypeSignature formalType(String name) {
@@ -284,38 +276,29 @@ public class SignatureUtils {
             formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
             return this;
         }
-        public SignatureUtils.TypeSignature innerClassType(String innerClassTypeName) {
+        public SignatureUtils.TypeSignature innerClassType(String innerClassTypeName, String genericParameters) {
             //TODO support formalTypeParameter for inner class
-            this.innerClassTypes.add(new InnerClassType(innerClassTypeName));
+            this.innerClassTypes.add(new InnerClassType(innerClassTypeName, genericParameters));
             return this;
         }
 
         public String generate() {
-
             SignatureWriter signature = new SignatureWriter();
-            visitType(signature, type);
-            if (type.kind() == Type.Kind.CLASS) {
-                // ( {@code visitInnerClassType} {@code visitTypeArgument}* )*
-                for (FormalType formalType : formalTypeParameters.values()) {
-                    //not sure for this part maybe we must use a new object for typeArgument
-                    if (formalType.getInterfaces().length  > 0) {
-                        for (String itf : formalType.getInterfaces()) {
-                            SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('+');
-                            paramTypeVisitor.visitClassType(itf);
-                        }
-                    }
-                    if (formalType.getSuperClass() != null) {
-                        SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('-');
-                        paramTypeVisitor.visitClassType(formalType.getSuperClass());
-                    }
-                    if (formalType.getName() != null) {
-                        SignatureVisitor paramTypeVisitor = signature.visitTypeArgument('=');
-                        paramTypeVisitor.visitClassType(formalType.getName());
-                    }
-                }
+            visitType(signature, type, genericParameters);
+            if (type.startsWith("L")) {
                 for (InnerClassType cls : innerClassTypes) {
                     signature.visitInnerClassType(cls.getName());
-                    //TODO support formalTypeParameter for inner class
+                    if (cls.getGenericParameters() != null && !cls.getGenericParameters().isEmpty()) {
+                        for (String typeArg : cls.getGenericParameters().split(",")) {
+                            typeArg = typeArg.trim();
+                            if (typeArg.startsWith("?")) {
+                                visitType(signature, typeArg, null);
+                            } else {
+                                SignatureVisitor argVisitor = signature.visitTypeArgument('=');
+                                visitType(argVisitor, typeArg, null);
+                            }
+                        }
+                    }
                 }
             }
             signature.visitEnd();

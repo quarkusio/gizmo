@@ -71,9 +71,8 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     public void write(ClassVisitor file) {
         if (!formalTypeParameters.isEmpty()) {
             SignatureUtils.TypeSignature SignatureGen = new SignatureUtils.TypeSignature();
-            SignatureGen.Type(DescriptorUtils.stringToType(fieldDescriptor.getType()));
-            //TODO handle innerClass for signature
-            //SignatureGen.innerClassType(innerClass);
+            SignatureGen.Type(fieldDescriptor.getType());
+            SignatureGen.genericParameters(fieldDescriptor.getGenericParameters());
             for(FormalType formalType : formalTypeParameters.values()) {
                 SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
             }

@@ -16,16 +16,12 @@
 
 package io.quarkus.gizmo;
 
-import java.util.Objects;
-
 import org.jboss.jandex.ArrayType;
 import org.jboss.jandex.ClassType;
-import org.jboss.jandex.DotName;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.jboss.jandex.TypeVariable;
-import org.jboss.jandex.VoidType;
 
 //TODO: should not be public
 public class DescriptorUtils {
@@ -226,50 +222,47 @@ public class DescriptorUtils {
             throw new RuntimeException("Invalid type for descriptor " + type);
         }
     }
-    public static Type stringToType(String representation) {
-        Objects.requireNonNull(representation);
 
-        if (representation.length() == 1) {
-            switch (representation) {
-                case "V":
-                    return Type.create(DotName.createSimple("void"), Type.Kind.VOID);
-                case "B":
-                    return PrimitiveType.BYTE;
-                case "C":
-                    return PrimitiveType.CHAR;
-                case "D":
-                    return PrimitiveType.DOUBLE;
-                case "F":
-                    return PrimitiveType.FLOAT;
-                case "I":
-                    return PrimitiveType.INT;
-                case "J":
-                    return PrimitiveType.LONG;
-                case "Z":
-                    return PrimitiveType.BOOLEAN;
-                case "S":
-                    return PrimitiveType.SHORT;
-                default:
-                    throw new RuntimeException("Unkown primitive type " + representation);
-            }
-        } else {
-            if (representation.startsWith("[")) {
-                String remaining = representation.substring(1);
-                int dimensions = 1;
-                while (remaining.startsWith("[")) {
-                    dimensions++;
-                    remaining = representation.substring(1);
+    public static String typeToGenericParameters(Type type) {
+        if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
+            ParameterizedType pt = type.asParameterizedType();
+            StringBuilder bld = new StringBuilder();
+            for (int i = 0; i < pt.arguments().size(); i++) {
+                Type arg = pt.arguments().get(i);
+                writeParam(bld, arg);
+                if (i != pt.arguments().size() - 1) {
+                    bld.append(',');
                 }
-                return ArrayType.create(stringToType(remaining), dimensions);
-            } else if (representation.startsWith("L")) {
-                int end = 0;
-                do {
-                    ++end;
-                } while(representation.charAt(end) != ';');
-                String name = representation.substring(1, end);
-                return Type.create(DotName.createSimple(name), Type.Kind.CLASS);
+            }
+            return bld.toString();
+        }
+        return null;
+    }
+    private static void writeParam(StringBuilder bld, Type arg) {
+        bld.append(arg.name().toString());
+        if (arg.kind() == Type.Kind.PARAMETERIZED_TYPE) {
+            ParameterizedType pt = arg.asParameterizedType();
+            bld.append('<');
+            for (int i = 0; i < pt.arguments().size(); i++) {
+                Type argArg = pt.arguments().get(i);
+                writeParam(bld, argArg);
+                if (i != pt.arguments().size() - 1) {
+                    bld.append(',');
+                }
+            }
+            bld.append('>');
+        }
+    }
+
+    public static String TypeParametersToString(java.lang.reflect.TypeVariable<? extends Class<?>>[] typeParameters) {
+        StringBuilder bld = new StringBuilder();
+        for (int i = 0; i < typeParameters.length; i++) {
+            java.lang.reflect.TypeVariable<? extends Class<?>> typeParameter = typeParameters[i];
+            bld.append(typeParameter.getName());
+            if (i != typeParameters.length - 1) {
+                bld.append(',');
             }
         }
-        throw new RuntimeException("Unkown type " + representation);
+        return bld.toString();
     }
 }
