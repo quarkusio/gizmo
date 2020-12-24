@@ -238,6 +238,7 @@ public class DescriptorUtils {
         }
         return null;
     }
+
     private static void writeParam(StringBuilder bld, Type arg) {
         bld.append(arg.name().toString());
         if (arg.kind() == Type.Kind.PARAMETERIZED_TYPE) {
