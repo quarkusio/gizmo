@@ -327,8 +327,9 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             Objects.requireNonNull(superClass);
             if (!formalTypeParameters.isEmpty()) {
                 SignatureUtils.ClassSignature SignatureGen = new SignatureUtils.ClassSignature();
-                SignatureGen.interfaces(interfaces);
-                SignatureGen.superClass(superClass);
+                //convert to jvm types
+                SignatureGen.interfaces(interfaces.stream().map(DescriptorUtils::extToInt).collect(Collectors.toList()));
+                SignatureGen.superClass(DescriptorUtils.extToInt(superClass));
                 for(FormalType formalType : formalTypeParameters.values()) {
                     SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
                 }

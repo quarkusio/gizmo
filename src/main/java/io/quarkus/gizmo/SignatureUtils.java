@@ -45,7 +45,8 @@ public class SignatureUtils {
             String classType = type.substring(1, type.indexOf(';'));
             visitor.visitClassType(classType);
             //TODO embedded generics <String, K, List<?>>
-            if (genericParameters != null) {
+            // tokenizer needed
+            if (genericParameters != null && !genericParameters.isEmpty()) {
                 for (String typeArg : genericParameters.split(",")) {
                     typeArg = typeArg.trim();
                     if (typeArg.startsWith("?")) {
@@ -120,31 +121,33 @@ public class SignatureUtils {
                 // Ensure that <K> extends object
                 if (formalTypeParameter.getSuperClass() != null && !formalTypeParameter.getSuperClass().isEmpty()){
                     SignatureVisitor classBound = signature.visitClassBound();
-                    classBound.visitClassType(formalTypeParameter.getSuperClass());
-                    classBound.visitEnd();
-
+                    visitType(classBound, formalTypeParameter.getSuperClass(), null);
                 }
                 // Ensure that <K> implements interfaces
                 for (String formalTypeParameterInterface : formalTypeParameter.getInterfaces()) {
                     SignatureVisitor interfaceBound = signature.visitInterfaceBound();
-                    interfaceBound.visitClassType(formalTypeParameterInterface);
-                    interfaceBound.visitEnd();
+                    visitType(interfaceBound, formalTypeParameterInterface, null);
                 }
             }
             if (!paramTypes.isEmpty()) {
                 SignatureVisitor paramTypeVisitor = signature.visitParameterType();
                 for (String paramType : paramTypes) {
-                    paramTypeVisitor.visitTypeVariable(paramType);
+                    if (formalTypeParameters.keySet().contains(paramType)) {
+                        paramTypeVisitor.visitTypeVariable(paramType);
+                    } else {
+                        //todo handle type variable for params
+                        visitType(paramTypeVisitor, paramType, null);
+                    }
                 }
             }
             visitType(signature.visitReturnType(), returnType, returnTypeGenericParameters);
             if (!exceptionTypes.isEmpty()) {
                 SignatureVisitor exceptionVisitor = signature.visitExceptionType();
                 for (String exceptionType : exceptionTypes) {
-                    exceptionVisitor.visitClassType(exceptionType);
+                    //exception can not contain generics
+                    visitType(exceptionVisitor, exceptionType, null);
                 }
             }
-            signature.visitEnd();
             return signature.toString();
         }
     }
@@ -163,6 +166,7 @@ public class SignatureUtils {
         ClassSignature() {
             formalTypeParameters = new HashMap<>();
             interfaces = new ArrayList<>();
+            this.superClass = Object.class.getName().replace('.', '/');
         }
 
         public SignatureUtils.ClassSignature formalType(String name) {
@@ -193,33 +197,27 @@ public class SignatureUtils {
                 // Ensure that <K> extends object
                 if (formalTypeParameter.getSuperClass() != null && !formalTypeParameter.getSuperClass().isEmpty()){
                     SignatureVisitor classBound = signature.visitClassBound();
-                    classBound.visitClassType(formalTypeParameter.getSuperClass());
-                    classBound.visitEnd();
-
+                    visitType(classBound, formalTypeParameter.getSuperClass(), null);
                 }
                 // Ensure that <K> implements interfaces
                 for (String formalTypeParameterInterface : formalTypeParameter.getInterfaces()) {
                     SignatureVisitor interfaceBound = signature.visitInterfaceBound();
-                    interfaceBound.visitClassType(formalTypeParameterInterface);
-                    interfaceBound.visitEnd();
+                    visitType(interfaceBound, formalTypeParameterInterface, null);
                 }
             }
 
             //({@code visitSuperclass} {@code visitInterface}* )
             {
                 SignatureVisitor superclassVisitor = signature.visitSuperclass();
-                superclassVisitor.visitClassType(superClass);
-                superclassVisitor.visitEnd();
+                visitType(superclassVisitor, superClass, null);
             }
 
             if (!interfaces.isEmpty()) {
-                SignatureVisitor interfaceVisitor = signature.visitInterface();
                 for (String interfaceType : interfaces) {
-                    interfaceVisitor.visitClassType(interfaceType);
-                    interfaceVisitor.visitEnd();
+                    SignatureVisitor interfaceVisitor = signature.visitInterface();
+                    visitType(interfaceVisitor, interfaceType, null);
                 }
             }
-            signature.visitEnd();
             return signature.toString();
         }
     }

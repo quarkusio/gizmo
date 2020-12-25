@@ -7,8 +7,11 @@ public class FormalType {
 
     public FormalType(String name, String superClass, String[] interfaces) {
         this.name = name;
-        this.superClass = superClass.replace('.','/');
-        this.interfaces = interfaces;
+        this.superClass = DescriptorUtils.objectToDescriptor(superClass);
+        this.interfaces = new String[interfaces.length];
+        for (int i = 0; i < interfaces.length; ++i) {
+            this.interfaces[i] = DescriptorUtils.objectToDescriptor(interfaces[i]);
+        }
     }
 
     public String getName() {
@@ -21,5 +24,12 @@ public class FormalType {
 
     public String[] getInterfaces() {
         return interfaces;
+    }
+
+    @Override
+    public String toString() {
+        return name + " extends " + superClass + (interfaces.length > 0 ?
+                " implements " + String.join(",", interfaces)
+                : "");
     }
 }

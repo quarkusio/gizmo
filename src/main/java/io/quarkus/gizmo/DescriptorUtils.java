@@ -16,6 +16,8 @@
 
 package io.quarkus.gizmo;
 
+import java.util.Map;
+
 import org.jboss.jandex.ArrayType;
 import org.jboss.jandex.ClassType;
 import org.jboss.jandex.ParameterizedType;
@@ -38,10 +40,14 @@ public class DescriptorUtils {
             void.class
     };
 
-    public static String methodSignatureToDescriptor(String returnType, String... params) {
+    public static String methodSignatureToDescriptor(String returnType, Map<String, FormalType> formalTypeParameters, String... params) {
         StringBuilder sb = new StringBuilder("(");
         for (String i : params) {
-            sb.append(i);
+            if (formalTypeParameters.containsKey(i)) {
+                sb.append(formalTypeParameters.get(i).getSuperClass());
+            } else {
+                sb.append(i);
+            }
         }
         sb.append(")");
         sb.append(returnType);
@@ -124,7 +130,7 @@ public class DescriptorUtils {
         if (param instanceof String) {
             String s = (String) param;
             if (s.length() == 1) {
-                return s; //primitive
+                return s; //primitive or type variable
             }
             if (s.startsWith("[")) {
                 return s.replace('.', '/');

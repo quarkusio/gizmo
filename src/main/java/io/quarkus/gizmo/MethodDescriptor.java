@@ -18,6 +18,8 @@ package io.quarkus.gizmo;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -30,8 +32,10 @@ public class MethodDescriptor {
     private final String name;
     private final String returnType;
     private final String[] parameterTypes;
+    //TODO parameterType generic params
     private String returnTypeGenericParameters;
     private final String descriptor;
+    private Map<String, FormalType> formalTypeParameters;
 
     private MethodDescriptor(String declaringClass, String name, String returnType, String returnTypeGenericParameters, String... parameterTypes) {
         this.declaringClass = declaringClass;
@@ -39,7 +43,8 @@ public class MethodDescriptor {
         this.returnType = returnType;
         this.returnTypeGenericParameters = returnTypeGenericParameters;
         this.parameterTypes = parameterTypes;
-        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(returnType, parameterTypes);
+        this.formalTypeParameters = new HashMap<>();
+        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(returnType, formalTypeParameters, parameterTypes);
         for (String p : parameterTypes) {
             if (p.length() != 1) {
                 if (!(p.startsWith("L") && p.endsWith(";") || p.startsWith("["))) {
@@ -64,11 +69,13 @@ public class MethodDescriptor {
         }
         this.parameterTypes = paramTypes;
         this.declaringClass = info.declaringClass().toString().replace('.', '/');
-        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(returnType, parameterTypes);
+        this.formalTypeParameters = new HashMap<>();
+        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(returnType, formalTypeParameters, parameterTypes);
     }
 
     public static MethodDescriptor ofMethod(String declaringClass, String name, String returnType, String... parameterTypes) {
         String genParam = "";
+        //TODO parser method which return object with 2 getters for generic parts and raw types to reuse of other part
         if (returnType.contains("<")) {
             genParam = returnType.substring(returnType.indexOf('<') + 1, returnType.lastIndexOf('>'));
             genParam = Arrays.stream(genParam.split(",")).map(DescriptorUtils::objectToDescriptor).collect(Collectors.joining( "," ));
@@ -110,6 +117,10 @@ public class MethodDescriptor {
         return new MethodDescriptor(methodInfo);
     }
 
+    public void formalType(String name, String superClass, String... interfaces) {
+        formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
+    }
+
     public String getName() {
         return name;
     }
@@ -128,6 +139,10 @@ public class MethodDescriptor {
 
     public String getDeclaringClass() {
         return declaringClass;
+    }
+
+    public Map<String, FormalType> getFormalTypeParameters() {
+        return formalTypeParameters;
     }
 
     @Override
@@ -150,6 +165,7 @@ public class MethodDescriptor {
     @Override
     public String toString() {
         return "MethodDescriptor{" +
+                (formalTypeParameters.isEmpty() ? "": "<" + formalTypeParameters.values().toString() + ">") +
                 "name='" + name + '\'' +
                 ", returnType='" + returnType + '\'' +
                 ", parameterTypes=" + Arrays.toString(parameterTypes) +
@@ -157,7 +173,11 @@ public class MethodDescriptor {
     }
 
     public String getDescriptor() {
-        return descriptor;
-
+        if (formalTypeParameters.isEmpty()) {
+            return descriptor;
+        } else {
+            //refresh because formalType is added after creation to avoid public API break
+            return DescriptorUtils.methodSignatureToDescriptor(returnType, formalTypeParameters, parameterTypes);
+        }
     }
 }

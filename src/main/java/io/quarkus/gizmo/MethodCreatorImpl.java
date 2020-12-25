@@ -43,14 +43,12 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private final String declaringClassName;
     private final ClassCreator classCreator;
     private String signature;
-    private Map<String, FormalType> formalTypeParameters;
 
     MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassCreator classCreator) {
         super(enclosing, true);
         this.methodDescriptor = methodDescriptor;
         this.declaringClassName = declaringClassName;
         this.classCreator = classCreator;
-        this.formalTypeParameters = new HashMap<>();
     }
 
     @Override
@@ -60,7 +58,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public MethodCreator formalType(String name, String superClass, String... interfaces) {
-        formalTypeParameters.put(name, new FormalType(name, superClass, interfaces));
+        methodDescriptor.formalType(name, superClass, interfaces);
         return this;
     }
 
@@ -103,13 +101,13 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        if (!formalTypeParameters.isEmpty()) {
+        if (!methodDescriptor.getFormalTypeParameters().isEmpty()) {
             SignatureUtils.MethodSignature SignatureGen = new SignatureUtils.MethodSignature();
             SignatureGen.returnType(methodDescriptor.getReturnType());
             SignatureGen.returnTypeGenericParamerters(methodDescriptor.getReturnTypeGenericParameters());
             SignatureGen.exceptionTypes(exceptions);
             SignatureGen.paramTypes(methodDescriptor.getParameterTypes());
-            for (FormalType formalType : formalTypeParameters.values()) {
+            for (FormalType formalType : methodDescriptor.getFormalTypeParameters().values()) {
                 SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
             }
             signature = SignatureGen.generate();
@@ -215,13 +213,13 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public String getSignature() {
-        if (!formalTypeParameters.isEmpty()) {
+        if (!methodDescriptor.getFormalTypeParameters().isEmpty()) {
             SignatureUtils.MethodSignature SignatureGen = new SignatureUtils.MethodSignature();
             SignatureGen.returnType(methodDescriptor.getReturnType());
             SignatureGen.returnTypeGenericParamerters(methodDescriptor.getReturnTypeGenericParameters());
             SignatureGen.exceptionTypes(exceptions);
             SignatureGen.paramTypes(methodDescriptor.getParameterTypes());
-            for (FormalType formalType : formalTypeParameters.values()) {
+            for (FormalType formalType : methodDescriptor.getFormalTypeParameters().values()) {
                 SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
             }
             signature = SignatureGen.generate();
