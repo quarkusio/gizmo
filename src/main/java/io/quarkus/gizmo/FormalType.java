@@ -7,11 +7,8 @@ public class FormalType {
 
     public FormalType(String name, String superClass, String[] interfaces) {
         this.name = name;
-        this.superClass = DescriptorUtils.objectToDescriptor(superClass);
-        this.interfaces = new String[interfaces.length];
-        for (int i = 0; i < interfaces.length; ++i) {
-            this.interfaces[i] = DescriptorUtils.objectToDescriptor(interfaces[i]);
-        }
+        this.superClass = superClass;
+        this.interfaces = interfaces;
     }
 
     public String getName() {

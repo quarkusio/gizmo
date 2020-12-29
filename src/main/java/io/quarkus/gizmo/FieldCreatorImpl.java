@@ -58,7 +58,7 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     }
 
     public FieldCreator formalType(String name) {
-        return formalType(name, Object.class.getName());
+        return formalType(name, "java.lang.Object");
     }
 
     public FieldCreator formalType(String name, String superClass, String... interfaces) {
@@ -68,15 +68,6 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
 
     @Override
     public void write(ClassVisitor file) {
-        if (!formalTypeParameters.isEmpty()) {
-            SignatureUtils.TypeSignature SignatureGen = new SignatureUtils.TypeSignature();
-            SignatureGen.Type(fieldDescriptor.getType());
-            SignatureGen.genericParameters(fieldDescriptor.getGenericParameters());
-            for(FormalType formalType : formalTypeParameters.values()) {
-                SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
-            }
-            signature = SignatureGen.generate();
-        }
         FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature, null);
         for(AnnotationCreatorImpl annotation : annotations) {
             AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
@@ -101,7 +92,6 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     }
 
     @Override
-    @Deprecated
     public FieldCreatorImpl setSignature(String signature) {
         this.signature = signature;
         return this;

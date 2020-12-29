@@ -176,6 +176,9 @@ public class DescriptorUtils {
     }
 
     public static String typeToString(Type type) {
+        return typeToString(type, false);
+    }
+    public static String typeToString(Type type, boolean keepGenerics) {
         if (type.kind() == Type.Kind.PRIMITIVE) {
             PrimitiveType.Primitive primitive = type.asPrimitiveType().primitive();
             switch (primitive) {
@@ -208,6 +211,13 @@ public class DescriptorUtils {
             StringBuilder ret = new StringBuilder();
             ret.append("L");
             ret.append(pt.name().toString().replace('.', '/'));
+            if (keepGenerics && !pt.arguments().isEmpty()) {
+                ret.append('<');
+                for (Type arg : pt.arguments()) {
+                    ret.append(typeToString(arg, true));
+                }
+                ret.append('>');
+            }
             ret.append(";");
             return ret.toString();
         } else if (type.kind() == Type.Kind.CLASS) {

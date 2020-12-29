@@ -284,7 +284,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         }
 
         public Builder formalType(String name) {
-            return formalType(name, Object.class.getName());
+            return formalType(name, "java.lang.Object");
         }
 
         public Builder formalType(String name, String superClass, String... interfaces) {
@@ -325,16 +325,6 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            if (!formalTypeParameters.isEmpty()) {
-                SignatureUtils.ClassSignature SignatureGen = new SignatureUtils.ClassSignature();
-                //convert to jvm types
-                SignatureGen.interfaces(interfaces.stream().map(DescriptorUtils::extToInt).collect(Collectors.toList()));
-                SignatureGen.superClass(DescriptorUtils.extToInt(superClass));
-                for(FormalType formalType : formalTypeParameters.values()) {
-                    SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
-                }
-                signature = SignatureGen.generate();
-            }
             return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
         }
 

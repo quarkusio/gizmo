@@ -20,13 +20,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.jandex.Type;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -53,7 +51,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public MethodCreator formalType(String name) {
-        return formalType(name, Object.class.getName());
+        return formalType(name, "java.lang.Object");
     }
 
     @Override
@@ -104,7 +102,6 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         if (!methodDescriptor.getFormalTypeParameters().isEmpty()) {
             SignatureUtils.MethodSignature SignatureGen = new SignatureUtils.MethodSignature();
             SignatureGen.returnType(methodDescriptor.getReturnType());
-            SignatureGen.returnTypeGenericParamerters(methodDescriptor.getReturnTypeGenericParameters());
             SignatureGen.exceptionTypes(exceptions);
             SignatureGen.paramTypes(methodDescriptor.getParameterTypes());
             for (FormalType formalType : methodDescriptor.getFormalTypeParameters().values()) {
@@ -211,24 +208,20 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         return fc;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String getSignature() {
-        if (!methodDescriptor.getFormalTypeParameters().isEmpty()) {
-            SignatureUtils.MethodSignature SignatureGen = new SignatureUtils.MethodSignature();
-            SignatureGen.returnType(methodDescriptor.getReturnType());
-            SignatureGen.returnTypeGenericParamerters(methodDescriptor.getReturnTypeGenericParameters());
-            SignatureGen.exceptionTypes(exceptions);
-            SignatureGen.paramTypes(methodDescriptor.getParameterTypes());
-            for (FormalType formalType : methodDescriptor.getFormalTypeParameters().values()) {
-                SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
-            }
-            signature = SignatureGen.generate();
-        }
         return signature;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
-    @Deprecated
     public MethodCreator setSignature(String signature) {
         this.signature = signature;
         return this;
