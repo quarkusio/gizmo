@@ -239,38 +239,6 @@ public class DescriptorUtils {
         }
     }
 
-    public static String typeToGenericParameters(Type type) {
-        if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
-            ParameterizedType pt = type.asParameterizedType();
-            StringBuilder bld = new StringBuilder();
-            for (int i = 0; i < pt.arguments().size(); i++) {
-                Type arg = pt.arguments().get(i);
-                writeParam(bld, arg);
-                if (i != pt.arguments().size() - 1) {
-                    bld.append(',');
-                }
-            }
-            return bld.toString();
-        }
-        return null;
-    }
-
-    private static void writeParam(StringBuilder bld, Type arg) {
-        bld.append(arg.name().toString());
-        if (arg.kind() == Type.Kind.PARAMETERIZED_TYPE) {
-            ParameterizedType pt = arg.asParameterizedType();
-            bld.append('<');
-            for (int i = 0; i < pt.arguments().size(); i++) {
-                Type argArg = pt.arguments().get(i);
-                writeParam(bld, argArg);
-                if (i != pt.arguments().size() - 1) {
-                    bld.append(',');
-                }
-            }
-            bld.append('>');
-        }
-    }
-
     public static String TypeParametersToString(java.lang.reflect.TypeVariable<? extends Class<?>>[] typeParameters) {
         StringBuilder bld = new StringBuilder();
         for (int i = 0; i < typeParameters.length; i++) {

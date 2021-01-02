@@ -99,16 +99,6 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        if (!methodDescriptor.getFormalTypeParameters().isEmpty()) {
-            SignatureUtils.MethodSignature SignatureGen = new SignatureUtils.MethodSignature();
-            SignatureGen.returnType(methodDescriptor.getReturnType());
-            SignatureGen.exceptionTypes(exceptions);
-            SignatureGen.paramTypes(methodDescriptor.getParameterTypes());
-            for (FormalType formalType : methodDescriptor.getFormalTypeParameters().values()) {
-                SignatureGen.formalType(formalType.getName(), formalType.getSuperClass(), formalType.getInterfaces());
-            }
-            signature = SignatureGen.generate();
-        }
         MethodVisitor visitor = file.visitMethod(modifiers, methodDescriptor.getName(), methodDescriptor.getDescriptor(), signature, exceptions.toArray(new String[0]));
 
         int localVarCount = Modifier.isStatic(modifiers) ? 0 : 1;
