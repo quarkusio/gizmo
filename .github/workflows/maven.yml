@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ 1.8, 11, 13, '14-ea', '15-ea' ]
+        java: [ 1.8, 11, 16, '17-ea' ]
 
     steps:
       - uses: actions/checkout@v1
