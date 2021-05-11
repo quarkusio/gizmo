@@ -135,10 +135,17 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle invokeStaticMethod(MethodDescriptor descriptor, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
-        operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(args))));
+        operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(args)), false));
         return ret;
     }
 
+
+    public ResultHandle invokeStaticInterfaceMethod(MethodDescriptor descriptor, ResultHandle... args) {
+        Objects.requireNonNull(descriptor);
+        ResultHandle ret = allocateResult(descriptor.getReturnType());
+        operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(args)), true));
+        return ret;
+    }
 
     @Override
     public ResultHandle invokeSpecialMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
@@ -1379,7 +1386,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             this.staticMethod = false;
         }
 
-        InvokeOperation(ResultHandle resultHandle, MethodDescriptor descriptor, ResultHandle[] args) {
+        InvokeOperation(ResultHandle resultHandle, MethodDescriptor descriptor, ResultHandle[] args, boolean isInterface) {
             if (args.length != descriptor.getParameterTypes().length) {
                 throw new RuntimeException("Wrong number of params " + Arrays.toString(descriptor.getParameterTypes()) + " vs " + Arrays.toString(args));
             }
@@ -1388,7 +1395,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             this.object = null;
             this.args = args.clone();
             this.staticMethod = true;
-            this.interfaceMethod = false;
+            this.interfaceMethod = isInterface;
             this.specialMethod = false;
         }
 
@@ -1402,7 +1409,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 loadResultHandle(methodVisitor, arg, BytecodeCreatorImpl.this, descriptor.getParameterTypes()[i]);
             }
             if (staticMethod) {
-                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), false);
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), interfaceMethod);
             } else if (interfaceMethod) {
                 methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), true);
             } else if (specialMethod) {
