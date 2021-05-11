@@ -144,4 +144,5 @@ public class FunctionTestCase {
         IntSupplier supplier = clazz.getDeclaredConstructor().newInstance();
         Assert.assertEquals(11, supplier.getAsInt());
     }
+
 }
