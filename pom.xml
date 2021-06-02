@@ -35,7 +35,7 @@
 
     <properties>
         <version.asm>9.1</version.asm>
-        <version.jandex>2.2.3.Final</version.jandex>
+        <version.jandex>2.3.0.Final</version.jandex>
         <version.junit>4.13.2</version.junit>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <jacoco.version>0.8.7</jacoco.version>
