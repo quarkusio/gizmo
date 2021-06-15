@@ -16,7 +16,7 @@
 
 package io.quarkus.gizmo;
 
-//TODO: support for nestled annotations
+//TODO: support for nested annotations (currently only Jandex types can be used)
 public interface AnnotationCreator {
 
     void addValue(String name, Object value);

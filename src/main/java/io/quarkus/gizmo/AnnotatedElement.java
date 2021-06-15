@@ -38,40 +38,7 @@ public interface AnnotatedElement {
     default void addAnnotation(AnnotationInstance annotation) {
         AnnotationCreator ac = addAnnotation(annotation.name().toString());
         for (AnnotationValue member : annotation.values()) {
-            if (member.kind() == AnnotationValue.Kind.NESTED) {
-                throw new RuntimeException("Not Yet Implemented: Cannot generate annotation " + annotation);
-            } else if (member.kind() == AnnotationValue.Kind.BOOLEAN) {
-                ac.addValue(member.name(), member.asBoolean());
-            } else if (member.kind() == AnnotationValue.Kind.BYTE) {
-                ac.addValue(member.name(), member.asByte());
-            } else if (member.kind() == AnnotationValue.Kind.SHORT) {
-                ac.addValue(member.name(), member.asShort());
-            } else if (member.kind() == AnnotationValue.Kind.INTEGER) {
-                ac.addValue(member.name(), member.asInt());
-            } else if (member.kind() == AnnotationValue.Kind.LONG) {
-                ac.addValue(member.name(), member.asLong());
-            } else if (member.kind() == AnnotationValue.Kind.FLOAT) {
-                ac.addValue(member.name(), member.asFloat());
-            } else if (member.kind() == AnnotationValue.Kind.DOUBLE) {
-                ac.addValue(member.name(), member.asDouble());
-            } else if (member.kind() == AnnotationValue.Kind.STRING) {
-                ac.addValue(member.name(), member.asString());
-            } else if (member.kind() == AnnotationValue.Kind.ARRAY) {
-                ac.addValue(member.name(), member.value());
-            } else if (member.kind() == AnnotationValue.Kind.ENUM) {
-                Class<? extends Enum> enumType = null;
-                try {
-                    enumType = (Class<? extends Enum>)Class.forName(member.asEnumType().toString());
-                } catch (ClassNotFoundException e) {
-                    //handled lower
-                }
-                if (enumType != null) {
-                    Enum enumVal = Enum.valueOf(enumType, member.asEnum());
-                    ac.addValue(member.name(), enumVal);
-                } else {
-                    throw new IllegalArgumentException("typeName must be an enum for: " + member.name());
-                }
-            }
+            ac.addValue(member.name(), member);
         }
     }
 
