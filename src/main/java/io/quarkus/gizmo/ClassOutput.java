@@ -23,6 +23,6 @@ public interface ClassOutput {
     void write(String name, byte[] data);
 
     default Writer getSourceWriter(String className) {
-        return NullWriter.INSTANCE;
+        return null;
     }
 }
