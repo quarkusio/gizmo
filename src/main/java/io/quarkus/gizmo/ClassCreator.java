@@ -23,6 +23,7 @@ import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.RETURN;
 
+import java.io.Writer;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +35,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureElement<ClassCreator> {
@@ -147,7 +150,14 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public void writeTo(ClassOutput classOutput) {
         Objects.requireNonNull(classOutput);
         ClassWriter file = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        final GizmoClassVisitor cv = new GizmoClassVisitor(Gizmo.ASM_API_VERSION, file, classOutput.getSourceWriter(className));
+
+        Writer sourceWriter = classOutput.getSourceWriter(className);
+        ClassVisitor cv;
+        if (sourceWriter != null) {
+             cv = new GizmoClassVisitor(Gizmo.ASM_API_VERSION, file, sourceWriter);
+        } else {
+            cv = file;
+        }
         String[] interfaces = this.interfaces.clone();
         cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
         cv.visitSource(null, null);
@@ -162,8 +172,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         if (requiresCtor) {
             // constructor
-            cv.append("// Auto-generated constructor").newLine();
-            GizmoMethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+            if (cv instanceof GizmoClassVisitor) {
+                ((GizmoClassVisitor)cv).append("// Auto-generated constructor").newLine();
+            }
+            MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
             mv.visitVarInsn(ALOAD, 0); // push `this` to the operand stack
             mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false); // call the constructor of super class
             mv.visitInsn(RETURN);
