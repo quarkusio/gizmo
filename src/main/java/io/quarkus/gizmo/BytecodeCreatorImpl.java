@@ -381,8 +381,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public void writeInstanceField(FieldDescriptor fieldDescriptor, ResultHandle instance, ResultHandle value) {
         Objects.requireNonNull(instance);
         Objects.requireNonNull(value);
-        requireTypeMatches(fieldDescriptor.getType(), value.getType());
-
         final ResultHandle resolvedInstance = resolve(checkScope(instance));
         final ResultHandle resolvedValue = resolve(checkScope(value));
         operations.add(new Operation() {
@@ -446,8 +444,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public void writeStaticField(FieldDescriptor fieldDescriptor, ResultHandle value) {
         Objects.requireNonNull(fieldDescriptor);
         Objects.requireNonNull(value);
-        requireTypeMatches(fieldDescriptor.getType(), value.getType());
-
         ResultHandle resolvedValue = resolve(checkScope(value));
         operations.add(new Operation() {
             @Override
@@ -594,8 +590,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public void writeArrayValue(ResultHandle array, ResultHandle index, ResultHandle value) {
-        requireTypeMatches(array.getType().replaceFirst("\\[", ""), value.getType());
-
         ResultHandle resolvedArray = resolve(checkScope(array));
         ResultHandle resolvedIndex = resolve(checkScope(index));
         ResultHandle resolvedValue = resolve(checkScope(value));
@@ -1290,13 +1284,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
         operations.add(new IfOperation(opcode, opType, resolvedResultHandle1, resolvedResultHandle2, trueBranch, falseBranch));
         return new BranchResultImpl(trueBranch, falseBranch);
-    }
-
-    private static void requireTypeMatches(String expectedType, String actualType) {
-        if (!actualType.equals(expectedType)) {
-            throw new IllegalStateException("The type of value is " + boxingMap.getOrDefault(actualType, actualType)
-                    + ", but it is expected to be " + boxingMap.getOrDefault(expectedType, expectedType));
-        }
     }
 
     static abstract class Operation {
