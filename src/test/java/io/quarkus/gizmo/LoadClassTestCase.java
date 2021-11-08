@@ -37,6 +37,19 @@ public class LoadClassTestCase {
     }
 
     @Test
+    public void testLoadClassFromTCCL() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle stringHandle = method.loadClassFromTCCL(String.class);
+            method.returnValue(stringHandle);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals(String.class, myInterface.get());
+    }
+
+    @Test
     public void testLoadVoidClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
