@@ -148,13 +148,27 @@ class FunctionCreatorImpl implements FunctionCreator {
         @Override
         public ResultHandle invokeSpecialMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
             final ClassCreator ownersCreator = getMethod().getOwner().getMethod().getClassCreator();
-            if (descriptor.getDeclaringClass().equals(ownersCreator.getSuperClass())) {
+            String superClass = ownersCreator.getSuperClass();
+            if (descriptor.getDeclaringClass().equals(superClass)) {
                 //this is an invokespecial on the owners superclass, we can't do this directly
-                MethodDescriptor newMethod = ownersCreator.getSuperclassAccessor(descriptor);
+                MethodDescriptor newMethod = ownersCreator.getSupertypeAccessor(descriptor, superClass, false);
                 return super.invokeVirtualMethod(newMethod, object, args);
             } else {
                 return super.invokeSpecialMethod(descriptor, object, args);
             }
+        }
+
+        @Override
+        public ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
+            final ClassCreator ownersCreator = getMethod().getOwner().getMethod().getClassCreator();
+            for (String superInterface : ownersCreator.getInterfaces()) {
+                if (descriptor.getDeclaringClass().equals(superInterface)) {
+                    //this is an invokespecial on the owners superinterface, we can't do this directly
+                    MethodDescriptor newMethod = ownersCreator.getSupertypeAccessor(descriptor, superInterface, true);
+                    return super.invokeVirtualMethod(newMethod, object, args);
+                }
+            }
+            return super.invokeSpecialInterfaceMethod(descriptor, object, args);
         }
 
         @Override

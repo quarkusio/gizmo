@@ -122,11 +122,15 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         return superClass;
     }
 
+    public String[] getInterfaces() {
+        return interfaces;
+    }
+
     public String getClassName() {
         return className;
     }
 
-    MethodDescriptor getSuperclassAccessor(MethodDescriptor descriptor) {
+    MethodDescriptor getSupertypeAccessor(MethodDescriptor descriptor, String supertype, boolean isInterface) {
         if (superclassAccessors.containsKey(descriptor)) {
             return superclassAccessors.get(descriptor);
         }
@@ -136,7 +140,13 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         for (int i = 0; i < params.length; ++i) {
             params[i] = ctor.getMethodParam(i);
         }
-        ResultHandle ret = ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(getSuperClass(), descriptor.getName(), descriptor.getReturnType(), descriptor.getParameterTypes()), ctor.getThis(), params);
+        MethodDescriptor superDescriptor = MethodDescriptor.ofMethod(supertype, descriptor.getName(), descriptor.getReturnType(), descriptor.getParameterTypes());
+        ResultHandle ret;
+        if (isInterface) {
+            ret = ctor.invokeSpecialInterfaceMethod(superDescriptor, ctor.getThis(), params);
+        } else {
+            ret = ctor.invokeSpecialMethod(superDescriptor, ctor.getThis(), params);
+        }
         ctor.returnValue(ret);
         superclassAccessors.put(descriptor, ctor.getMethodDescriptor());
         return ctor.getMethodDescriptor();

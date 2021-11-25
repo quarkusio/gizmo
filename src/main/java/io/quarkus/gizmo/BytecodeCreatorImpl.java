@@ -156,6 +156,14 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         return ret;
     }
 
+    @Override
+    public ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
+        Objects.requireNonNull(descriptor);
+        Objects.requireNonNull(object);
+        ResultHandle ret = allocateResult(descriptor.getReturnType());
+        operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(object)), resolve(checkScope(args)), true, true));
+        return ret;
+    }
 
     @Override
     public ResultHandle newInstance(MethodDescriptor descriptor, ResultHandle... args) {
@@ -1410,10 +1418,10 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
             if (staticMethod) {
                 methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), interfaceMethod);
+            } else if (specialMethod) {
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), interfaceMethod);
             } else if (interfaceMethod) {
                 methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), true);
-            } else if (specialMethod) {
-                methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), false);
             } else {
                 methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, descriptor.getDeclaringClass(), descriptor.getName(), descriptor.getDescriptor(), false);
             }
