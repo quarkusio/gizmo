@@ -123,6 +123,28 @@ public class FunctionTestCase {
     }
 
     @Test
+    public void testInvokeSuperInterfaceMethodFromFunction() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(IntSupplier.class, InterfaceWithDefaultMethod.class).build()) {
+            MethodCreator method = creator.getMethodCreator("getAsInt", int.class);
+
+            FunctionCreator functionCreator = method.createFunction(IntSupplier.class);
+            BytecodeCreator fbc = functionCreator.getBytecode();
+            ResultHandle superResult = fbc.invokeSpecialInterfaceMethod(MethodDescriptor.ofMethod(InterfaceWithDefaultMethod.class, "whatever", int.class), method.getThis());
+            ResultHandle functionReturn = fbc.add(superResult, fbc.load(1));
+            fbc.returnValue(functionReturn);
+
+            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(IntSupplier.class, "getAsInt", int.class), functionCreator.getInstance());
+            method.returnValue(ret);
+        }
+        Class<? extends IntSupplier> clazz = cl.loadClass("com.MyTest").asSubclass(IntSupplier.class);
+        Assert.assertTrue(clazz.isSynthetic());
+        IntSupplier supplier = clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals(14, supplier.getAsInt());
+    }
+
+    @Test
     public void testNestedFunction() throws Exception {
         MethodDescriptor getAsInt = MethodDescriptor.ofMethod(IntSupplier.class, "getAsInt", int.class);
         MethodDescriptor addExact = MethodDescriptor.ofMethod(Math.class, "addExact", int.class, int.class, int.class);

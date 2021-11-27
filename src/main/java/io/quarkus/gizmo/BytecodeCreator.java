@@ -147,6 +147,32 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
+     * Invokes a special interface method, and returns a {@link ResultHandle} with the result, or null if the method is void.
+     * <p>
+     * Special interface method invocations are invocations of a superinterface method of the current class.
+     *
+     * @param descriptor The method descriptor
+     * @param object     A {@link ResultHandle} representing the object to invoke on
+     * @param args       The method parameters
+     * @return The method result, or null if a void method
+     */
+    ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args);
+
+    /**
+     * Invokes a special interface method, and returns a {@link ResultHandle} with the result, or null if the method is void.
+     * <p>
+     * Special interface method invocations are invocations of a superinterface method of the current class.
+     *
+     * @param descriptor The method descriptor
+     * @param object     A {@link ResultHandle} representing the object to invoke on
+     * @param args       The method parameters
+     * @return The method result, or null if a void method
+     */
+    default ResultHandle invokeSpecialInterfaceMethod(MethodInfo descriptor, ResultHandle object, ResultHandle... args) {
+        return invokeSpecialInterfaceMethod(MethodDescriptor.of(descriptor), object, args);
+    }
+
+    /**
      * Creates a new instance of a given type, by calling the specified constructor, and returns a {@link ResultHandle}
      * representing the result
      *
