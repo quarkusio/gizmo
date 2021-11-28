@@ -39,6 +39,16 @@ import java.util.function.Function;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
+    private static final MethodDescriptor THREAD_CURRENT_THREAD = MethodDescriptor.ofMethod(Thread.class, "currentThread",
+            Thread.class);
+
+    private static final MethodDescriptor THREAD_GET_TCCL = MethodDescriptor.ofMethod(Thread.class, "getContextClassLoader",
+            ClassLoader.class);
+
+    private static final MethodDescriptor CL_FOR_NAME = MethodDescriptor.ofMethod(Class.class, "forName", Class.class,
+            String.class,
+            boolean.class, ClassLoader.class);
+
     private static final boolean DEBUG_SCOPES = Boolean.getBoolean("io.quarkus.gizmo.debug-scopes");
 
     private static final Map<String, AtomicInteger> functionCountersByClass = new ConcurrentHashMap<>();
@@ -57,6 +67,8 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private static final Map<String, String> boxingMap;
     private static final Map<String, String> boxingMethodMap;
+
+    private ResultHandle cachedTccl;
 
     static {
         Map<String, String> b = new HashMap<>();
@@ -328,6 +340,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle loadClass(String className) {
+        return loadClass(className, false);
+    }
+
+    @Override
+    public ResultHandle loadClassFromTCCL(String className) {
+        return loadClass(className, true);
+    }
+
+    private ResultHandle loadClass(String className, boolean useTccl) {
         Objects.requireNonNull(className);
         Class<?> primitiveType = null;
         if (className.equals("boolean")) {
@@ -350,7 +371,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             primitiveType = Void.class;
         }
         if (primitiveType == null) {
-            return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+            if (useTccl) {
+                if (cachedTccl == null) {
+                    ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
+                    cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
+                }
+                return invokeStaticMethod(CL_FOR_NAME,
+                        load(className), load(false), cachedTccl);
+            } else {
+                return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+            }
         } else {
             Class<?> pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
