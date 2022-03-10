@@ -26,7 +26,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
-class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImpl> {
+class FieldCreatorImpl implements FieldCreator {
 
     private final FieldDescriptor fieldDescriptor;
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
@@ -80,7 +80,7 @@ class FieldCreatorImpl implements FieldCreator, SignatureElement<FieldCreatorImp
     }
 
     @Override
-    public FieldCreatorImpl setSignature(String signature) {
+    public FieldCreator setSignature(String signature) {
         this.signature = signature;
         return this;
     }
