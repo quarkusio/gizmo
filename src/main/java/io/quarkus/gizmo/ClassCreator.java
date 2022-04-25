@@ -169,7 +169,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             cv = file;
         }
         String[] interfaces = this.interfaces.clone();
-        cv.visit(Opcodes.V1_8, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
+        cv.visit(Opcodes.V11, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
         cv.visitSource(null, null);
 
         boolean requiresCtor = true;
