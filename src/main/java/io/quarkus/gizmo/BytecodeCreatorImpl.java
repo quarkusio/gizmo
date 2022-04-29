@@ -348,30 +348,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         return loadClass(className, true);
     }
 
-    private ResultHandle loadClass(String className, boolean useTccl) {
+    private ResultHandle loadClass(final String className, final boolean useTccl) {
         Objects.requireNonNull(className);
-        Class<?> primitiveType = null;
-        if (className.equals("boolean")) {
-            primitiveType = Boolean.class;
-        } else if (className.equals("byte")) {
-            primitiveType = Byte.class;
-        } else if (className.equals("char")) {
-            primitiveType = Character.class;
-        } else if (className.equals("short")) {
-            primitiveType = Short.class;
-        } else if (className.equals("int")) {
-            primitiveType = Integer.class;
-        } else if (className.equals("long")) {
-            primitiveType = Long.class;
-        } else if (className.equals("float")) {
-            primitiveType = Float.class;
-        } else if (className.equals("double")) {
-            primitiveType = Double.class;
-        } else if (className.equals("void")) {
-            primitiveType = Void.class;
-        }
+        final Class<?> primitiveType = matchPossiblyPrimitive(className);
         if (primitiveType == null) {
-            if (useTccl) {
+            if (useTccl && !className.startsWith("java.")) {
                 if (cachedTccl == null) {
                     ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
                     cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
@@ -407,6 +388,21 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 }
             });
             return ret;
+        }
+    }
+
+    private Class<?> matchPossiblyPrimitive(final String className) {
+        switch (className) {
+            case "boolean" : return Boolean.class;
+            case "byte" : return Byte.class;
+            case "char" : return Character.class;
+            case "short" : return Short.class;
+            case "int" : return Integer.class;
+            case "long" : return Long.class;
+            case "float" : return Float.class;
+            case "double" : return Double.class;
+            case "void" : return Void.class;
+            default: return null;
         }
     }
 
