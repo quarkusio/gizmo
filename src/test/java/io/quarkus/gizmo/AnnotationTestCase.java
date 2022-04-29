@@ -1,5 +1,9 @@
 package io.quarkus.gizmo;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ArrayType;
@@ -53,6 +57,18 @@ public class AnnotationTestCase {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             addFullAnnotationUsingJandex(creator);
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testClassFullAnnotationWithoutJandex() throws ClassNotFoundException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            addFullAnnotationWithoutJandex(creator.addAnnotation(MyFullAnnotation.class));
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -132,6 +148,22 @@ public class AnnotationTestCase {
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
                 addFullAnnotationUsingJandex(methodCreator);
+                methodCreator.returnValue(null);
+            }
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getMethod("test")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testMethodFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchMethodException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
+                addFullAnnotationWithoutJandex(methodCreator.addAnnotation(MyFullAnnotation.class));
                 methodCreator.returnValue(null);
             }
         }
@@ -260,6 +292,20 @@ public class AnnotationTestCase {
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
             addFullAnnotationUsingJandex(fieldCreator);
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getDeclaredField("test")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testFieldFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchFieldException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
+            addFullAnnotationWithoutJandex(fieldCreator.addAnnotation(MyFullAnnotation.class));
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -429,6 +475,116 @@ public class AnnotationTestCase {
                         }),
                 }
         ));
+    }
+
+    // Substitute for Map.of, which is only available in Java 11+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Map mapOf(Object... entries) {
+        if (entries.length % 2 != 0) {
+            throw new IllegalArgumentException("entries (" + Arrays.toString(entries) + ") has odd length (" + entries.length +
+                                                       "), thus cannot be put into key/value pairs.");
+        }
+        Map out = new HashMap();
+        for (int i = 0; i < entries.length; i += 2) {
+            Object key = entries[i];
+            Object value = entries[i+1];
+            out.put(key, value);
+        }
+        return out;
+    }
+
+    private void addFullAnnotationWithoutJandex(AnnotationCreator annotationCreator) {
+        annotationCreator.addValue("bool", true);
+        annotationCreator.addValue("ch", 'c');
+        annotationCreator.addValue("b", (byte) 42);
+        annotationCreator.addValue("s", (short) 42);
+        annotationCreator.addValue("i", 42);
+        annotationCreator.addValue("l", 42L);
+        annotationCreator.addValue("f", 42.0F);
+        annotationCreator.addValue("d", 42.0);
+        annotationCreator.addValue("str", "str");
+        annotationCreator.addValue("enumerated", MyEnum.YES);
+        annotationCreator.addValue("cls", MyInterface.class);
+
+        annotationCreator.addValue("nested",
+                                   mapOf("annotationType", MyNestedAnnotation.class,
+                                         "bool", true,
+                                         "ch", 'c',
+                                         "b", (byte) 42,
+                                         "s", (short) 42,
+                                         "i", 42,
+                                         "l", 42L,
+                                         "f", 42.0F,
+                                         "d", 42.0,
+                                         "str", "str",
+                                         "enumerated", MyEnum.YES,
+                                         "cls", MyInterface.class,
+                                         "innerNested", mapOf("annotationType", MyAnnotation.class,
+                                                              "value", "nested",
+                                                              "enumVal", MyEnum.YES),
+                                         "clsArray", new Class[]{
+                                                 MyInterface.class,
+                                                 boolean[].class
+                                         },
+                                         "innerNestedArray", new Map[]{
+                                                  mapOf("annotationType", MyAnnotation.class,
+                                                        "value", "nested1",
+                                                        "enumVal", MyEnum.YES
+                                                  ),
+                                                  mapOf("annotationType", MyAnnotation.class,
+                                                        "value", "nested2",
+                                                        "enumVal", MyEnum.NO
+                                                  )
+                                         }));
+        annotationCreator.addValue("boolArray", new boolean[] {true, false});
+        annotationCreator.addValue("chArray", new char[] {'c', 'd'});
+        annotationCreator.addValue("bArray", new byte[] {(byte) 42, (byte) 43});
+        annotationCreator.addValue("sArray", new short[] {(short) 42, (short) 43});
+        annotationCreator.addValue("iArray", new int[] {42, 43});
+        annotationCreator.addValue("lArray", new long[] {42L, 43L});
+        annotationCreator.addValue("fArray", new float[] {42.0F, 43.0F});
+        annotationCreator.addValue("dArray", new double[] {42.0, 43.0});
+        annotationCreator.addValue("strArray", new String[] {"foo", "bar"});
+        annotationCreator.addValue("enumeratedArray", new MyEnum[] {MyEnum.YES, MyEnum.NO});
+        annotationCreator.addValue("clsArray", new Class[] {MyInterface.class, char[][].class});
+        annotationCreator.addValue("nestedArray", new Map[]{
+              mapOf("annotationType", MyNestedAnnotation.class,
+                            "cls", MyInterface.class,
+                            "innerNested", mapOf("annotationType", MyAnnotation.class,
+                                                 "value", "nested1",
+                                                 "enumVal", MyEnum.YES),
+                            "clsArray", new Class[]{
+                                    MyInterface.class,
+                                    boolean[].class
+                            },
+                            "innerNestedArray", new Map[]{
+                                    mapOf("annotationType", MyAnnotation.class,
+                                          "value", "nested11",
+                                          "enumVal", MyEnum.YES
+                                          ),
+                                    mapOf("annotationType", MyAnnotation.class,
+                                          "value", "nested12",
+                                          "enumVal", MyEnum.NO
+                                    )
+                            }),
+              mapOf("annotationType", MyNestedAnnotation.class,
+                    "cls", MyInterface.class,
+                    "innerNested", mapOf("annotationType", MyAnnotation.class,
+                                         "value", "nested2",
+                                         "enumVal", MyEnum.YES),
+                    "clsArray", new Class[]{
+                            MyInterface.class,
+                            boolean[].class,
+                    },
+                    "innerNestedArray", new Map[]{
+                            mapOf("annotationType", MyAnnotation.class,
+                                  "value", "nested21",
+                                  "enumVal",MyEnum.YES),
+                            mapOf("annotationType", MyAnnotation.class,
+                                  "value", "nested22",
+                                  "enumVal",MyEnum.NO)
+                    })
+              });
     }
 
     private void verifyFullAnnotation(MyFullAnnotation annotation) {
