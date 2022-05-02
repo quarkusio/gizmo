@@ -1,13 +1,11 @@
 package io.quarkus.gizmo;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.util.Map;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Type;
 
 final class AnnotationUtils {
 
@@ -34,8 +32,7 @@ final class AnnotationUtils {
                 throw new IllegalStateException("The annotationValueMap (" + annotationValueMap + ") does not have entry for " +
                         "required value \"annotationType\".");
             }
-            Class<? extends Annotation> annotationType = (Class<? extends Annotation>) annotationValueMap.get("annotationType");
-            String descriptor = Type.getDescriptor(annotationType);
+            String descriptor = DescriptorUtils.objectToDescriptor(annotationValueMap.get("annotationType"));
             AnnotationVisitor nestedVisitor = visitor.visitAnnotation(key, descriptor);
             for (Map.Entry<String, Object> annotationInstanceValueEntry : annotationValueMap.entrySet()) {
                 final String parameterName = annotationInstanceValueEntry.getKey();

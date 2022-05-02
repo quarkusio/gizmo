@@ -65,10 +65,22 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testClassFullAnnotationWithoutJandex() throws ClassNotFoundException {
+    public void testClassFullAnnotationWithMap() throws ClassNotFoundException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
-            addFullAnnotationWithoutJandex(creator.addAnnotation(MyFullAnnotation.class));
+            addFullAnnotationWithMap(creator.addAnnotation(MyFullAnnotation.class));
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testClassFullAnnotationWithNestedAnnotationCreator() throws ClassNotFoundException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            addFullAnnotationWithNestedAnnotationCreator(creator.addAnnotation(MyFullAnnotation.class));
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -159,11 +171,27 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testMethodFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchMethodException {
+    public void testMethodFullAnnotationWithMap() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
-                addFullAnnotationWithoutJandex(methodCreator.addAnnotation(MyFullAnnotation.class));
+                addFullAnnotationWithMap(methodCreator.addAnnotation(MyFullAnnotation.class));
+                methodCreator.returnValue(null);
+            }
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getMethod("test")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testMethodFullAnnotationWithNestedAnnotationCreator() throws ClassNotFoundException, NoSuchMethodException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
+                addFullAnnotationWithNestedAnnotationCreator(methodCreator.addAnnotation(MyFullAnnotation.class));
                 methodCreator.returnValue(null);
             }
         }
@@ -301,11 +329,25 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testFieldFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchFieldException {
+    public void testFieldFullAnnotationWithMap() throws ClassNotFoundException, NoSuchFieldException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
-            addFullAnnotationWithoutJandex(fieldCreator.addAnnotation(MyFullAnnotation.class));
+            addFullAnnotationWithMap(fieldCreator.addAnnotation(MyFullAnnotation.class));
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getDeclaredField("test")
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testFieldFullAnnotationWithNestedAnnotationCreator() throws ClassNotFoundException, NoSuchFieldException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
+            addFullAnnotationWithNestedAnnotationCreator(fieldCreator.addAnnotation(MyFullAnnotation.class));
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -493,7 +535,7 @@ public class AnnotationTestCase {
         return out;
     }
 
-    private void addFullAnnotationWithoutJandex(AnnotationCreator annotationCreator) {
+    private void addFullAnnotationWithMap(AnnotationCreator annotationCreator) {
         annotationCreator.addValue("bool", true);
         annotationCreator.addValue("ch", 'c');
         annotationCreator.addValue("b", (byte) 42);
@@ -585,6 +627,108 @@ public class AnnotationTestCase {
                                   "enumVal",MyEnum.NO)
                     })
               });
+    }
+
+    private void addFullAnnotationWithNestedAnnotationCreator(AnnotationCreator annotationCreator) {
+        annotationCreator.addValue("bool", true);
+        annotationCreator.addValue("ch", 'c');
+        annotationCreator.addValue("b", (byte) 42);
+        annotationCreator.addValue("s", (short) 42);
+        annotationCreator.addValue("i", 42);
+        annotationCreator.addValue("l", 42L);
+        annotationCreator.addValue("f", 42.0F);
+        annotationCreator.addValue("d", 42.0);
+        annotationCreator.addValue("str", "str");
+        annotationCreator.addValue("enumerated", MyEnum.YES);
+        annotationCreator.addValue("cls", MyInterface.class);
+
+        AnnotationCreator nested = annotationCreator.addNested("nested", MyNestedAnnotation.class);
+        nested.addValue("bool", true);
+        nested.addValue("ch", 'c');
+        nested.addValue("b", (byte) 42);
+        nested.addValue("s", (short) 42);
+        nested.addValue("i", 42);
+        nested.addValue("l", 42L);
+        nested.addValue("f", 42.0F);
+        nested.addValue("d", 42.0);
+        nested.addValue("str", "str");
+        nested.addValue("enumerated", MyEnum.YES);
+        nested.addValue("cls", MyInterface.class);
+
+        AnnotationCreator innerNested = nested.addNested("innerNested", MyAnnotation.class.getName());
+        innerNested.addValue("value", "nested");
+        innerNested.addValue("enumVal", MyEnum.YES);
+
+        nested.addValue("clsArray", new Class[]{
+                                                   MyInterface.class,
+                                                   boolean[].class
+                                           });
+        nested.addNestedArray("innerNestedArray", MyAnnotation.class,
+                                   element -> {
+                                       element.addValue("value", "nested1");
+                                       element.addValue("enumVal", MyEnum.YES);
+                                   },
+                                   element -> {
+                                       element.addValue("value", "nested2");
+                                       element.addValue("enumVal", MyEnum.NO);
+                                   });
+        annotationCreator.addValue("boolArray", new boolean[] {true, false});
+        annotationCreator.addValue("chArray", new char[] {'c', 'd'});
+        annotationCreator.addValue("bArray", new byte[] {(byte) 42, (byte) 43});
+        annotationCreator.addValue("sArray", new short[] {(short) 42, (short) 43});
+        annotationCreator.addValue("iArray", new int[] {42, 43});
+        annotationCreator.addValue("lArray", new long[] {42L, 43L});
+        annotationCreator.addValue("fArray", new float[] {42.0F, 43.0F});
+        annotationCreator.addValue("dArray", new double[] {42.0, 43.0});
+        annotationCreator.addValue("strArray", new String[] {"foo", "bar"});
+        annotationCreator.addValue("enumeratedArray", new MyEnum[] {MyEnum.YES, MyEnum.NO});
+        annotationCreator.addValue("clsArray", new Class[] {MyInterface.class, char[][].class});
+        annotationCreator.addNestedArray("nestedArray", MyNestedAnnotation.class,
+                element -> {
+                      element.addValue("cls", MyInterface.class);
+                      AnnotationCreator elementNested = element.addNested("innerNested", MyAnnotation.class);
+                      elementNested.addValue("value", "nested1");
+                      elementNested.addValue("enumVal", MyEnum.YES);
+
+                      element.addValue("clsArray", new Class[]{
+                                MyInterface.class,
+                                boolean[].class
+                      });
+
+                      element.addNestedArray("innerNestedArray", MyAnnotation.class,
+                                innerElement -> {
+                                    innerElement.addValue("value", "nested11");
+                                    innerElement.addValue("enumVal", MyEnum.YES);
+                                },
+                                innerElement -> {
+                                    innerElement.addValue("value", "nested12");
+                                    innerElement.addValue("enumVal", MyEnum.NO);
+                                }
+                      );
+                },
+                element -> {
+                    element.addValue("cls", MyInterface.class);
+                    AnnotationCreator elementNested = element.addNested("innerNested", MyAnnotation.class);
+                    elementNested.addValue("value", "nested2");
+                    elementNested.addValue("enumVal", MyEnum.YES);
+
+                    element.addValue("clsArray", new Class[]{
+                            MyInterface.class,
+                            boolean[].class
+                    });
+
+                    element.addNestedArray("innerNestedArray", MyAnnotation.class,
+                                           innerElement -> {
+                                               innerElement.addValue("value", "nested21");
+                                               innerElement.addValue("enumVal", MyEnum.YES);
+                                           },
+                                           innerElement -> {
+                                               innerElement.addValue("value", "nested22");
+                                               innerElement.addValue("enumVal", MyEnum.NO);
+                                           }
+                    );
+                }
+        );
     }
 
     private void verifyFullAnnotation(MyFullAnnotation annotation) {

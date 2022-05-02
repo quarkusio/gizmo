@@ -16,9 +16,7 @@
 
 package io.quarkus.gizmo;
 
-import java.lang.annotation.Annotation;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -42,6 +40,29 @@ class AnnotationCreatorImpl implements AnnotationCreator {
         // TODO: If value is a Map, check if all its keys are elements for the annotation, and there are no
         //       missing required elements
         values.put(name, value);
+    }
+
+    @Override
+    public AnnotationCreator addNested(String name, String annotationType) {
+        AnnotationCreatorImpl nested = new AnnotationCreatorImpl(annotationType, retentionPolicy);
+        Map<String, Object> nestedAnnotationValues = nested.getValues();
+        nestedAnnotationValues.put("annotationType", annotationType);
+        addValue(name, nestedAnnotationValues);
+        return nested;
+    }
+
+    @Override
+    public void addNestedArray(String name, String annotationType, AnnotationCreatorConsumer... annotationArrayCreator) {
+        @SuppressWarnings("rawtypes")
+        Map[] nestedArray = new Map[annotationArrayCreator.length];
+        for (int i = 0; i < annotationArrayCreator.length; i++) {
+            AnnotationCreatorImpl nested = new AnnotationCreatorImpl(annotationType, retentionPolicy);
+            Map<String, Object> nestedAnnotationValues = nested.getValues();
+            nestedAnnotationValues.put("annotationType", annotationType);
+            annotationArrayCreator[i].accept(nested);
+            nestedArray[i] = nestedAnnotationValues;
+        }
+        addValue(name, nestedArray);
     }
 
     public Map<String, Object> getValues() {
