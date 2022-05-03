@@ -577,7 +577,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 loadResultHandle(methodVisitor, resolvedIndex, BytecodeCreatorImpl.this, "I");
                 switch (result.getType()) {
                     case "I":
-                        methodVisitor.visitInsn(Opcodes.AALOAD);
+                        methodVisitor.visitInsn(Opcodes.IALOAD);
                         break;
                     case "J":
                         methodVisitor.visitInsn(Opcodes.LALOAD);
@@ -642,7 +642,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     methodVisitor.visitInsn(Opcodes.IASTORE);
                 } else if (arrayType.equals("C")) {
                     methodVisitor.visitInsn(Opcodes.CASTORE);
-                } else if (arrayType.equals("L")) {
+                } else if (arrayType.equals("J")) {
                     methodVisitor.visitInsn(Opcodes.LASTORE);
                 } else if (arrayType.equals("F")) {
                     methodVisitor.visitInsn(Opcodes.FASTORE);
