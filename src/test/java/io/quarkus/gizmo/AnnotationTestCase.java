@@ -53,7 +53,7 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testClassFullAnnotation() throws ClassNotFoundException {
+    public void testClassFullAnnotationUsingJandex() throws ClassNotFoundException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             addFullAnnotationUsingJandex(creator);
@@ -65,10 +65,10 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testClassFullAnnotationWithoutJandex() throws ClassNotFoundException {
+    public void testClassFullAnnotationUsingNestedCreator() throws ClassNotFoundException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
-            addFullAnnotationWithoutJandex(creator.addAnnotation(MyFullAnnotation.class));
+            addFullAnnotationUsingNestedCreator(creator);
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -143,7 +143,7 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testMethodFullAnnotation() throws ClassNotFoundException, NoSuchMethodException {
+    public void testMethodFullAnnotationUsingJandex() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
@@ -159,11 +159,11 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testMethodFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchMethodException {
+    public void testMethodFullAnnotationUsingNestedCreator() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
-                addFullAnnotationWithoutJandex(methodCreator.addAnnotation(MyFullAnnotation.class));
+                addFullAnnotationUsingNestedCreator(methodCreator);
                 methodCreator.returnValue(null);
             }
         }
@@ -227,11 +227,28 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testMethodParamFullAnnotation() throws ClassNotFoundException, NoSuchMethodException {
+    public void testMethodParamFullAnnotationUsingJandex() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class, String.class)) {
                 addFullAnnotationUsingJandex(methodCreator.getParameterAnnotations(0));
+                methodCreator.returnValue(null);
+            }
+        }
+
+        MyFullAnnotation annotation = cl.loadClass("com.MyTest")
+                .getMethod("test", String.class)
+                .getParameters()[0]
+                .getAnnotation(MyFullAnnotation.class);
+        verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testMethodParamFullAnnotationUsingNestedCreator() throws ClassNotFoundException, NoSuchMethodException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class, String.class)) {
+                addFullAnnotationUsingNestedCreator(methodCreator.getParameterAnnotations(0));
                 methodCreator.returnValue(null);
             }
         }
@@ -287,7 +304,7 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testFieldFullAnnotation() throws ClassNotFoundException, NoSuchFieldException {
+    public void testFieldFullAnnotationUsingJandex() throws ClassNotFoundException, NoSuchFieldException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
@@ -301,11 +318,11 @@ public class AnnotationTestCase {
     }
 
     @Test
-    public void testFieldFullAnnotationWithoutJandex() throws ClassNotFoundException, NoSuchFieldException {
+    public void testFieldFullAnnotationUsingNestedCreator() throws ClassNotFoundException, NoSuchFieldException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             FieldCreator fieldCreator = creator.getFieldCreator("test", String.class);
-            addFullAnnotationWithoutJandex(fieldCreator.addAnnotation(MyFullAnnotation.class));
+            addFullAnnotationUsingNestedCreator(fieldCreator);
         }
 
         MyFullAnnotation annotation = cl.loadClass("com.MyTest")
@@ -477,114 +494,77 @@ public class AnnotationTestCase {
         ));
     }
 
-    // Substitute for Map.of, which is only available in Java 11+
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static Map mapOf(Object... entries) {
-        if (entries.length % 2 != 0) {
-            throw new IllegalArgumentException("entries (" + Arrays.toString(entries) + ") has odd length (" + entries.length +
-                                                       "), thus cannot be put into key/value pairs.");
-        }
-        Map out = new HashMap();
-        for (int i = 0; i < entries.length; i += 2) {
-            Object key = entries[i];
-            Object value = entries[i+1];
-            out.put(key, value);
-        }
-        return out;
-    }
+    private void addFullAnnotationUsingNestedCreator(AnnotatedElement element) {
+        AnnotationCreator creator = element.addAnnotation(MyFullAnnotation.class);
 
-    private void addFullAnnotationWithoutJandex(AnnotationCreator annotationCreator) {
-        annotationCreator.addValue("bool", true);
-        annotationCreator.addValue("ch", 'c');
-        annotationCreator.addValue("b", (byte) 42);
-        annotationCreator.addValue("s", (short) 42);
-        annotationCreator.addValue("i", 42);
-        annotationCreator.addValue("l", 42L);
-        annotationCreator.addValue("f", 42.0F);
-        annotationCreator.addValue("d", 42.0);
-        annotationCreator.addValue("str", "str");
-        annotationCreator.addValue("enumerated", MyEnum.YES);
-        annotationCreator.addValue("cls", MyInterface.class);
+        creator.addValue("bool", true);
+        creator.addValue("ch", 'c');
+        creator.addValue("b", (byte) 42);
+        creator.addValue("s", (short) 42);
+        creator.addValue("i", 42);
+        creator.addValue("l", 42L);
+        creator.addValue("f", 42.0F);
+        creator.addValue("d", 42.0);
+        creator.addValue("str", "str");
+        creator.addValue("enumerated", MyEnum.YES);
+        creator.addValue("cls", MyInterface.class);
+        creator.addValue("nested", AnnotationCreator.of(MyNestedAnnotation.class)
+                .add("cls", MyInterface.class)
+                .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
+                        .add("value", "nested")
+                        .add("enumVal", MyEnum.YES))
+                .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                .add("innerNestedArray", new AnnotationCreator[] {
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested1")
+                                .add("enumVal", MyEnum.YES),
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested2")
+                                .add("enumVal", MyEnum.NO)
+                })
+        );
 
-        annotationCreator.addValue("nested",
-                                   mapOf("annotationType", MyNestedAnnotation.class,
-                                         "bool", true,
-                                         "ch", 'c',
-                                         "b", (byte) 42,
-                                         "s", (short) 42,
-                                         "i", 42,
-                                         "l", 42L,
-                                         "f", 42.0F,
-                                         "d", 42.0,
-                                         "str", "str",
-                                         "enumerated", MyEnum.YES,
-                                         "cls", MyInterface.class,
-                                         "innerNested", mapOf("annotationType", MyAnnotation.class,
-                                                              "value", "nested",
-                                                              "enumVal", MyEnum.YES),
-                                         "clsArray", new Class[]{
-                                                 MyInterface.class,
-                                                 boolean[].class
-                                         },
-                                         "innerNestedArray", new Map[]{
-                                                  mapOf("annotationType", MyAnnotation.class,
-                                                        "value", "nested1",
-                                                        "enumVal", MyEnum.YES
-                                                  ),
-                                                  mapOf("annotationType", MyAnnotation.class,
-                                                        "value", "nested2",
-                                                        "enumVal", MyEnum.NO
-                                                  )
-                                         }));
-        annotationCreator.addValue("boolArray", new boolean[] {true, false});
-        annotationCreator.addValue("chArray", new char[] {'c', 'd'});
-        annotationCreator.addValue("bArray", new byte[] {(byte) 42, (byte) 43});
-        annotationCreator.addValue("sArray", new short[] {(short) 42, (short) 43});
-        annotationCreator.addValue("iArray", new int[] {42, 43});
-        annotationCreator.addValue("lArray", new long[] {42L, 43L});
-        annotationCreator.addValue("fArray", new float[] {42.0F, 43.0F});
-        annotationCreator.addValue("dArray", new double[] {42.0, 43.0});
-        annotationCreator.addValue("strArray", new String[] {"foo", "bar"});
-        annotationCreator.addValue("enumeratedArray", new MyEnum[] {MyEnum.YES, MyEnum.NO});
-        annotationCreator.addValue("clsArray", new Class[] {MyInterface.class, char[][].class});
-        annotationCreator.addValue("nestedArray", new Map[]{
-              mapOf("annotationType", MyNestedAnnotation.class,
-                            "cls", MyInterface.class,
-                            "innerNested", mapOf("annotationType", MyAnnotation.class,
-                                                 "value", "nested1",
-                                                 "enumVal", MyEnum.YES),
-                            "clsArray", new Class[]{
-                                    MyInterface.class,
-                                    boolean[].class
-                            },
-                            "innerNestedArray", new Map[]{
-                                    mapOf("annotationType", MyAnnotation.class,
-                                          "value", "nested11",
-                                          "enumVal", MyEnum.YES
-                                          ),
-                                    mapOf("annotationType", MyAnnotation.class,
-                                          "value", "nested12",
-                                          "enumVal", MyEnum.NO
-                                    )
-                            }),
-              mapOf("annotationType", MyNestedAnnotation.class,
-                    "cls", MyInterface.class,
-                    "innerNested", mapOf("annotationType", MyAnnotation.class,
-                                         "value", "nested2",
-                                         "enumVal", MyEnum.YES),
-                    "clsArray", new Class[]{
-                            MyInterface.class,
-                            boolean[].class,
-                    },
-                    "innerNestedArray", new Map[]{
-                            mapOf("annotationType", MyAnnotation.class,
-                                  "value", "nested21",
-                                  "enumVal",MyEnum.YES),
-                            mapOf("annotationType", MyAnnotation.class,
-                                  "value", "nested22",
-                                  "enumVal",MyEnum.NO)
-                    })
-              });
+        creator.addValue("boolArray", new boolean[] {true, false});
+        creator.addValue("chArray", new char[] {'c', 'd'});
+        creator.addValue("bArray", new byte[] {(byte) 42, (byte) 43});
+        creator.addValue("sArray", new short[] {(short) 42, (short) 43});
+        creator.addValue("iArray", new int[] {42, 43});
+        creator.addValue("lArray", new long[] {42L, 43L});
+        creator.addValue("fArray", new float[] {42.0F, 43.0F});
+        creator.addValue("dArray", new double[] {42.0, 43.0});
+        creator.addValue("strArray", new String[] {"foo", "bar"});
+        creator.addValue("enumeratedArray", new MyEnum[] {MyEnum.YES, MyEnum.NO});
+        creator.addValue("clsArray", new Class[] {MyInterface.class, char[][].class});
+        creator.addValue("nestedArray", new AnnotationCreator[] {
+                AnnotationCreator.of(MyNestedAnnotation.class)
+                        .add("cls", MyInterface.class)
+                        .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested1")
+                                .add("enumVal", MyEnum.YES))
+                        .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                        .add("innerNestedArray", new AnnotationCreator[] {
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested11")
+                                .add("enumVal", MyEnum.YES),
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested12")
+                                .add("enumVal", MyEnum.NO)
+                }),
+                AnnotationCreator.of(MyNestedAnnotation.class)
+                        .add("cls", MyInterface.class)
+                        .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested2")
+                                .add("enumVal", MyEnum.YES))
+                        .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                        .add("innerNestedArray", new AnnotationCreator[] {
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested21")
+                                .add("enumVal", MyEnum.YES),
+                        AnnotationCreator.of(MyAnnotation.class)
+                                .add("value", "nested22")
+                                .add("enumVal", MyEnum.NO)
+                }),
+        });
     }
 
     private void verifyFullAnnotation(MyFullAnnotation annotation) {

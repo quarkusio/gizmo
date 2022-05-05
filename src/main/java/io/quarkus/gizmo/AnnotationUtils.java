@@ -1,13 +1,11 @@
 package io.quarkus.gizmo;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.util.Map;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Type;
 
 final class AnnotationUtils {
 
@@ -28,24 +26,15 @@ final class AnnotationUtils {
                 visitAnnotationValue(nestedVisitor, annotationValue.name(), annotationValue);
             }
             nestedVisitor.visitEnd();
-        } else if (value instanceof Map) {
-            Map<String, Object> annotationValueMap = (Map<String, Object>) value;
-            if (!annotationValueMap.containsKey("annotationType")) {
-                throw new IllegalStateException("The annotationValueMap (" + annotationValueMap + ") does not have entry for " +
-                        "required value \"annotationType\".");
+        } else if (value instanceof AnnotationCreator) {
+            if (!(value instanceof AnnotationCreatorImpl)) {
+                throw new IllegalArgumentException("Custom implementations of AnnotationCreator are not accepted");
             }
-            Class<? extends Annotation> annotationType = (Class<? extends Annotation>) annotationValueMap.get("annotationType");
-            String descriptor = Type.getDescriptor(annotationType);
+            AnnotationCreatorImpl nested = (AnnotationCreatorImpl) value;
+            String descriptor = DescriptorUtils.objectToDescriptor(nested.getAnnotationType());
             AnnotationVisitor nestedVisitor = visitor.visitAnnotation(key, descriptor);
-            for (Map.Entry<String, Object> annotationInstanceValueEntry : annotationValueMap.entrySet()) {
-                final String parameterName = annotationInstanceValueEntry.getKey();
-                final Object parameterValue = annotationInstanceValueEntry.getValue();
-
-                if (parameterName.equals("annotationType")) {
-                    continue;
-                }
-
-                visitAnnotationValue(nestedVisitor, parameterName, parameterValue);
+            for (Map.Entry<String, Object> member : nested.getValues().entrySet()) {
+                visitAnnotationValue(nestedVisitor, member.getKey(), member.getValue());
             }
             nestedVisitor.visitEnd();
         } else if (value instanceof AnnotationValue) {
