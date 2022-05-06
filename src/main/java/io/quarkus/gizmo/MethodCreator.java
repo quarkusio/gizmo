@@ -57,4 +57,19 @@ public interface MethodCreator extends MemberCreator<MethodCreator>, BytecodeCre
 
     AnnotatedElement getParameterAnnotations(int param);
 
+    /**
+     * Sets names of all this method's parameters. The length of {@code parameterNames}
+     * must be equal to the number of this method's parameters. Removes previously set
+     * parameter names if {@code parameterNames} is {@code null}.
+     * <p>
+     * It is required to set all parameter names in one go, because parameter names are stored in bytecode
+     * as a simple sequence, without positions.
+     * <p>
+     * When generating a method with mandated or synthetic parameters (such as an inner
+     * class constructor), remember that these parameters must have names too.
+     *
+     * @param parameterNames names of all parameters of this method
+     */
+    void setParameterNames(String[] parameterNames);
+
 }
