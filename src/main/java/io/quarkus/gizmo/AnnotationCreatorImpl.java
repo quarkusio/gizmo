@@ -16,9 +16,7 @@
 
 package io.quarkus.gizmo;
 
-import java.lang.annotation.Annotation;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,8 +37,7 @@ class AnnotationCreatorImpl implements AnnotationCreator {
     @Override
     public void addValue(String name, Object value) {
         // TODO: Maybe typecheck value to ensure it matches the corresponding element type?
-        // TODO: If value is a Map, check if all its keys are elements for the annotation, and there are no
-        //       missing required elements
+        // TODO: If value is a nested annotation, check for nonexistent or missing elements?
         values.put(name, value);
     }
 
