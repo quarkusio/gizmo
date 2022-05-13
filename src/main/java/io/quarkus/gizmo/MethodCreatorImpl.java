@@ -19,6 +19,7 @@ package io.quarkus.gizmo;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +42,8 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private final String declaringClassName;
     private final ClassCreator classCreator;
     private String signature;
+
+    private String[] parameterNames;
 
     MethodCreatorImpl(BytecodeCreatorImpl enclosing, MethodDescriptor methodDescriptor, String declaringClassName, ClassCreator classCreator) {
         super(enclosing, true);
@@ -73,6 +76,23 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         AnnotationParameters p = new AnnotationParameters();
         parameterAnnotations.put(param, p);
         return p;
+    }
+
+    @Override
+    public void setParameterNames(String[] parameterNames) {
+        if (parameterNames == null) {
+            this.parameterNames = null;
+            return;
+        }
+
+        if (methodDescriptor.getParameterTypes().length != parameterNames.length) {
+            throw new IllegalArgumentException("Method " + methodDescriptor.getDeclaringClass() + "#"
+                    + methodDescriptor.getName() + " has " + methodDescriptor.getParameterTypes().length
+                    + " parameters, but provided parameter names array has " + parameterNames.length + ": "
+                    + Arrays.toString(parameterNames));
+        }
+
+        this.parameterNames = parameterNames;
     }
 
     @Override
@@ -117,6 +137,11 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
                     AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
                 }
                 av.visitEnd();
+            }
+        }
+        if (parameterNames != null) {
+            for (String parameterName : parameterNames) {
+                visitor.visitParameter(parameterName, 0);
             }
         }
         visitor.visitEnd();
