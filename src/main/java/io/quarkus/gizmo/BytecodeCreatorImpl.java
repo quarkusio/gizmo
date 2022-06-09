@@ -1134,6 +1134,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new BlockOperation(loop));
         return loop;
     }
+    
+    @Override
+    public ForEachLoop forEach(ResultHandle iterable) {
+        ForEachLoopImpl loop = new ForEachLoopImpl(this, Objects.requireNonNull(iterable));
+        operations.add(new BlockOperation(loop));
+        return loop;
+    }
 
     @Override
     public ResultHandle add(ResultHandle a1, ResultHandle a2) {

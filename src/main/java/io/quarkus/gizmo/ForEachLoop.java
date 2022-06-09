@@ -15,24 +15,22 @@
  */
 package io.quarkus.gizmo;
 
-import java.util.function.Function;
+/**
+ * A for-each construct.
+ */
+public interface ForEachLoop extends Loop {
 
-class WhileLoopImpl extends LoopImpl implements WhileLoop {
+    /**
+     * 
+     * @return the current element
+     */
+    ResultHandle element();
 
-    private final BranchResult result;
-
-    WhileLoopImpl(BytecodeCreatorImpl enclosing, Function<BytecodeCreator, BranchResult> conditionFun) {
-        super(enclosing);
-        BranchResult branchResult = conditionFun.apply(this);
-        if (branchResult == null) {
-            throw new IllegalArgumentException("BranchResult must not be null");
-        }
-        this.result = branchResult;
-    }
-
-    @Override
-    protected BranchResult result() {
-        return result;
-    }
+    /**
+     * The block is executed for each element.
+     *
+     * @return the block
+     */
+    BytecodeCreator block();
 
 }
