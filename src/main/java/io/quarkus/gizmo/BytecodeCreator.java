@@ -16,7 +16,6 @@
 
 package io.quarkus.gizmo;
 
-import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -851,6 +850,15 @@ public interface BytecodeCreator extends AutoCloseable {
      */
     WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun);
 
+    
+    /**
+     * Create a new for-each loop construct.
+     * 
+     * @param iterable
+     * @return the for-each construct
+     */
+    ForEachLoop forEach(ResultHandle iterable);
+ 
     /**
      * Adds the two result handles together and returns the result
      * @param a1 The first number

@@ -18,7 +18,7 @@ package io.quarkus.gizmo;
 /**
  * A while loop statement.
  */
-public interface WhileLoop {
+public interface WhileLoop extends Loop {
 
     /**
      * The block is executed until the condition evaluates to false.
@@ -26,23 +26,5 @@ public interface WhileLoop {
      * @return the while block
      */
     BytecodeCreator block();
-
-    /**
-     * Writes bytecode into the provided {@link BytecodeCreator} to make it jump back to the
-     * start of the loop, effectively issuing a Java 'continue' statement. Generally this
-     * will be applied to a branch of an if statement.
-     *
-     * @param creator The creator that should return to the start of the loop
-     */
-    void doContinue(BytecodeCreator creator);
-
-    /**
-     * Writes bytecode into the provided {@link BytecodeCreator} to make it exit the
-     * loop, effectively issuing a Java 'break' statement. Generally this
-     * will be applied to a branch of an if statement.
-     *
-     * @param creator The creator that should break from the loop
-     */
-    void doBreak(BytecodeCreator creator);
 
 }

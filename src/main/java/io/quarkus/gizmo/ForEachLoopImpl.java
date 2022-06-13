@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Red Hat, Inc.
+ * Copyright 2022 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,21 @@
  */
 package io.quarkus.gizmo;
 
-import java.util.function.Function;
+class ForEachLoopImpl extends LoopImpl implements ForEachLoop {
 
-class WhileLoopImpl extends LoopImpl implements WhileLoop {
-
+    private final ResultHandle element;
     private final BranchResult result;
 
-    WhileLoopImpl(BytecodeCreatorImpl enclosing, Function<BytecodeCreator, BranchResult> conditionFun) {
+    ForEachLoopImpl(BytecodeCreatorImpl enclosing, ResultHandle iterable) {
         super(enclosing);
-        BranchResult branchResult = conditionFun.apply(this);
-        if (branchResult == null) {
-            throw new IllegalArgumentException("BranchResult must not be null");
-        }
-        this.result = branchResult;
+        ResultHandle iterator = Gizmo.iterableOperations(enclosing).on(iterable).iterator();
+        this.result = ifTrue(Gizmo.iteratorOperations(this).on(iterator).hasNext());
+        this.element = Gizmo.iteratorOperations(result.trueBranch()).on(iterator).next();
+    }
+
+    @Override
+    public ResultHandle element() {
+        return element;
     }
 
     @Override
