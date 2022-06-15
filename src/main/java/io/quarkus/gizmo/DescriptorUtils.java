@@ -38,6 +38,16 @@ public class DescriptorUtils {
             void.class
     };
 
+    public static String methodTypesToSignature(Object returnType, Object[] params) {
+        StringBuilder sb = new StringBuilder("(");
+        for (Object i : params) {
+            sb.append(objectToSignature(i));
+        }
+        sb.append(")");
+        sb.append(objectToSignature(returnType));
+        return sb.toString();
+    }
+
     public static String methodSignatureToDescriptor(String returnType, String... params) {
         StringBuilder sb = new StringBuilder("(");
         for (String i : params) {
@@ -80,15 +90,38 @@ public class DescriptorUtils {
         } else if (boolean.class.equals(c)) {
             return "Z";
         } else if (c.isArray()) {
-            return c.getName().replace('.', '/');
+            return normalizeClassName(c.getName());
         } else {
             return extToInt(c.getName());
         }
     }
 
+    public static String parameterizedClassToStringRepresentation(ParameterizedClass c) {
+        StringBuilder ret = new StringBuilder();
+        ret.append("L");
+        Object wrapperType = c.getType();
+        if (wrapperType instanceof String) {
+            ret.append(normalizeClassName((String) wrapperType));
+        } else if (wrapperType instanceof Class) {
+            ret.append(normalizeClassName(((Class) wrapperType).getName()));
+        } else {
+            throw new IllegalArgumentException("Wrapper type in the Parameterized class must be a Class, ParameterizedClass "
+                    + "or String, got " + wrapperType);
+        }
+
+        if (c.getParameterTypes().length > 0) {
+            ret.append("<");
+            for (Object paramType : c.getParameterTypes()) {
+                ret.append(objectToDescriptor(paramType));
+            }
+            ret.append(">");
+        }
+        ret.append(";");
+        return ret.toString();
+    }
+
     public static String extToInt(String className) {
-        String repl = className.replace('.', '/');
-        return 'L' + repl + ';';
+        return 'L' + normalizeClassName(className) + ';';
     }
 
     public static boolean isPrimitive(String descriptor) {
@@ -127,7 +160,7 @@ public class DescriptorUtils {
                 return s; //primitive
             }
             if (s.startsWith("[")) {
-                return s.replace('.', '/');
+                return normalizeClassName(s);
             }
             if (s.endsWith(";")) {
                 //jvm internal name
@@ -138,11 +171,13 @@ public class DescriptorUtils {
                     return classToStringRepresentation(prim);
                 }
             }
-            return "L" + s.replace('.', '/') + ';';
+            return "L" + normalizeClassName(s) + ';';
         } else if (param instanceof Class) {
             return classToStringRepresentation((Class<?>) param);
+        } else if (param instanceof ParameterizedClass) {
+            return objectToDescriptor(((ParameterizedClass) param).getType());
         }
-        throw new IllegalArgumentException("Must be a Class or String, got " + param);
+        throw new IllegalArgumentException("Must be a Class, ParameterizedClass or String, got " + param);
     }
 
     /**
@@ -159,12 +194,27 @@ public class DescriptorUtils {
         return ret;
     }
 
+    /**
+     * Similar to the {@link #objectToDescriptor(Object)} method but supporting parameterized types.
+     *
+     * @param param The param
+     * @return A descriptor
+     */
+    public static String objectToSignature(Object param) {
+        if (param instanceof ParameterizedClass) {
+            return parameterizedClassToStringRepresentation((ParameterizedClass) param);
+        } else if (param instanceof Type) {
+            return typeToString((Type) param);
+        }
+
+        return objectToDescriptor(param);
+    }
+
     public static String objectToInternalClassName(Object param) {
         if (param instanceof String) {
-            String s = (String) param;
-            return s.replace('.', '/');
+            return normalizeClassName((String) param);
         } else if (param instanceof Class) {
-            return ((Class) param).getName().replace('.', '/');
+            return normalizeClassName(((Class) param).getName());
         }
         throw new IllegalArgumentException("Must be a Class or String, got " + param);
     }
@@ -196,30 +246,34 @@ public class DescriptorUtils {
             return "V";
         } else if (type.kind() == Type.Kind.ARRAY) {
             ArrayType array = type.asArrayType();
-            return array.name().toString().replace('.', '/');
+            return normalizeClassName(array.name().toString());
         } else if (type.kind() == Type.Kind.PARAMETERIZED_TYPE) {
             ParameterizedType pt = type.asParameterizedType();
             StringBuilder ret = new StringBuilder();
             ret.append("L");
-            ret.append(pt.name().toString().replace('.', '/'));
+            ret.append(normalizeClassName(pt.name().toString()));
             ret.append(";");
             return ret.toString();
         } else if (type.kind() == Type.Kind.CLASS) {
             ClassType pt = type.asClassType();
             StringBuilder ret = new StringBuilder();
             ret.append("L");
-            ret.append(pt.name().toString().replace('.', '/'));
+            ret.append(normalizeClassName(pt.name().toString()));
             ret.append(";");
             return ret.toString();
         } else if (type.kind() == Type.Kind.TYPE_VARIABLE) {
             TypeVariable pt = type.asTypeVariable();
             StringBuilder ret = new StringBuilder();
             ret.append("L");
-            ret.append(pt.name().toString().replace('.', '/'));
+            ret.append(normalizeClassName(pt.name().toString()));
             ret.append(";");
             return ret.toString();
         } else {
             throw new RuntimeException("Invalid type for descriptor " + type);
         }
+    }
+
+    public static String normalizeClassName(String className) {
+        return className.replace('.', '/');
     }
 }

@@ -21,42 +21,51 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.jboss.jandex.MethodInfo;
-
+import org.jboss.jandex.Type;
 
 public class MethodDescriptor {
 
     private final String declaringClass;
     private final String name;
     private final String returnType;
+    private final Object rawReturnType;
     private final String[] parameterTypes;
+    private final Object[] rawParameterTypes;
     private final String descriptor;
 
-    private MethodDescriptor(String declaringClass, String name, String returnType, String... parameterTypes) {
+    private MethodDescriptor(String declaringClass, String name, Object returnType, Object... parameterTypes) {
         this.declaringClass = declaringClass;
         this.name = name;
-        this.returnType = returnType;
-        this.parameterTypes = parameterTypes;
-        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(returnType, parameterTypes);
-        for (String p : parameterTypes) {
+        this.rawReturnType = returnType;
+        this.rawParameterTypes = parameterTypes;
+        // Return type does not support parameterized types
+        this.returnType = DescriptorUtils.objectToDescriptor(returnType);
+        this.parameterTypes = DescriptorUtils.objectsToDescriptor(parameterTypes);
+        this.descriptor = DescriptorUtils.methodSignatureToDescriptor(this.returnType, this.parameterTypes);
+        for (String p : this.parameterTypes) {
             if (p.length() != 1) {
                 if (!(p.startsWith("L") && p.endsWith(";") || p.startsWith("["))) {
                     throw new IllegalArgumentException("Invalid parameter type " + p + " it must be in the JVM descriptor format");
                 }
             }
         }
-        if (returnType.length() != 1) {
-            if (!(returnType.startsWith("L") && returnType.endsWith(";") || returnType.startsWith("["))) {
-                throw new IllegalArgumentException("Invalid return type " + returnType + " it must be in the JVM descriptor format");
+        if (this.returnType.length() != 1) {
+            if (!(this.returnType.startsWith("L") && this.returnType.endsWith(";") || this.returnType.startsWith("["))) {
+                throw new IllegalArgumentException("Invalid return type " + this.returnType + " it must be in the JVM descriptor format");
             }
         }
     }
 
     private MethodDescriptor(MethodInfo info) {
         this.name = info.name();
+        this.rawReturnType = info.returnType();
         this.returnType = DescriptorUtils.typeToString(info.returnType());
+        this.rawParameterTypes = new Object[info.parameters().size()];
         String[] paramTypes = new String[info.parameters().size()];
         for (int i = 0; i < paramTypes.length; ++i) {
-            paramTypes[i] = DescriptorUtils.typeToString(info.parameters().get(i));
+            Type paramType = info.parameters().get(i);
+            paramTypes[i] = DescriptorUtils.typeToString(paramType);
+            this.rawParameterTypes[i] = paramType;
         }
         this.parameterTypes = paramTypes;
         this.declaringClass = info.declaringClass().toString().replace('.', '/');
@@ -64,15 +73,11 @@ public class MethodDescriptor {
     }
 
     public static MethodDescriptor ofMethod(String declaringClass, String name, String returnType, String... parameterTypes) {
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, returnType, parameterTypes);
     }
 
     public static MethodDescriptor ofMethod(Class<?> declaringClass, String name, Class<?> returnType, Class<?>... parameterTypes) {
-        String[] args = new String[parameterTypes.length];
-        for (int i = 0; i < args.length; ++i) {
-            args[i] = DescriptorUtils.classToStringRepresentation(parameterTypes[i]);
-        }
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.classToStringRepresentation(returnType), args);
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, returnType, parameterTypes);
     }
 
     public static MethodDescriptor ofMethod(Method method) {
@@ -80,7 +85,7 @@ public class MethodDescriptor {
     }
 
     public static MethodDescriptor ofMethod(Object declaringClass, String name, Object returnType, Object... parameterTypes) {
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, returnType, parameterTypes);
     }
 
     public static MethodDescriptor ofConstructor(String declaringClass, String... parameterTypes) {
@@ -107,8 +112,16 @@ public class MethodDescriptor {
         return returnType;
     }
 
+    public Object getRawReturnType() {
+        return rawReturnType;
+    }
+
     public String[] getParameterTypes() {
         return parameterTypes;
+    }
+
+    public Object[] getRawParameterTypes() {
+        return rawParameterTypes;
     }
 
     public String getDeclaringClass() {

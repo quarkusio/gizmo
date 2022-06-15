@@ -50,6 +50,7 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
         this.methodDescriptor = methodDescriptor;
         this.declaringClassName = declaringClassName;
         this.classCreator = classCreator;
+        this.signature = DescriptorUtils.methodTypesToSignature(methodDescriptor.getRawReturnType(), methodDescriptor.getRawParameterTypes());
     }
 
     @Override
