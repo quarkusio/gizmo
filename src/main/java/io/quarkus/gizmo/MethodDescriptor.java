@@ -54,9 +54,9 @@ public class MethodDescriptor {
     private MethodDescriptor(MethodInfo info) {
         this.name = info.name();
         this.returnType = DescriptorUtils.typeToString(info.returnType());
-        String[] paramTypes = new String[info.parameters().size()];
+        String[] paramTypes = new String[info.parametersCount()];
         for (int i = 0; i < paramTypes.length; ++i) {
-            paramTypes[i] = DescriptorUtils.typeToString(info.parameters().get(i));
+            paramTypes[i] = DescriptorUtils.typeToString(info.parameterType(i));
         }
         this.parameterTypes = paramTypes;
         this.declaringClass = info.declaringClass().toString().replace('.', '/');
