@@ -50,6 +50,32 @@ public class LoadClassTestCase {
     }
 
     @Test
+    public void testLoadNonPublicClass() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle stringHandle = method.loadClass("java.util.Collections$EmptyList");
+            method.returnValue(stringHandle);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertThrows(IllegalAccessError.class, myInterface::get);
+    }
+
+    @Test
+    public void testLoadNonPublicClassFromTCCL() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle stringHandle = method.loadClassFromTCCL("java.util.Collections$EmptyList");
+            method.returnValue(stringHandle);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals(Class.forName("java.util.Collections$EmptyList"), myInterface.get());
+    }
+
+    @Test
     public void testLoadVoidClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
