@@ -1,0 +1,257 @@
+= Basic Usage
+
+== Creating a Class
+
+In order to generate bytecode of a new class we need to create a `ClassCreator` instance.
+We can start with the convenient `ClassCreator.Builder`.
+
+[source,java]
+----
+ClassCreator creator = ClassCreator.builder() <1>
+                             .classOutput(cl) <2>
+                             .className("com.MyTest") <3>
+                             .build() <4>
+----
+<1> Create a new `ClassCreator.Builder` instance.
+<2> Set the `ClassOutput` that is used to write the bytecode of the class.
+<3> Specify the fully-qualified class name.
+<4> Build the `ClassCreator` instance.
+
+By default, the generated class is `public` and _synthetic_ (as defined by the Java Language Specification).
+If you need to make it `final` then use the `ClassCreator.Builder#setFinal()` method.
+
+The `ClassCreator.Builder#superClass()` and ``ClassCreator.Builder#interfaces()` methods can be used to specify the superclass and implemented interfaces.
+
+== Adding Fields
+
+Once we have a `ClassCreator` instance we can start adding fields and methods.
+Fields can be added via the `FieldCreator` interface returned from the `ClassCreator#getFieldCreator()` methods.
+By default, the generated field is `private`.
+You can use the `FieldCreator#setModifiers()` method to control the modifiers of the generated field.
+
+.`FieldCreator` Example
+[source,java]
+----
+import org.objectweb.asm.Opcodes.ACC_FINAL;
+import org.objectweb.asm.Opcodes.ACC_PROTECTED;
+
+void addField(ClassCreator fooClazz) {
+  FieldCreator myField = fooClazz.getFieldCreator("score", Integer.class); <1>
+  myField.setModifiers(ACC_FINAL | ACC_PROTECTED); <2>
+}
+----
+<1> Creates a field `score` of type `Integer`.
+<2> Makes the field `protected final`.
+
+== Adding Methods
+
+A method can be added through a `MethodCreator` interface returned from the `ClassCreator#getMethodCreator()` methods.
+By default, the generated method is `public`.
+You can use the `MethodCreator#setModifiers()` method to control the modifiers of the generated method.
+
+The bytecode of the method is generated via `BytecodeCreator`.
+See <<method_bytecode>> for more information about how to generate some most common operations.
+
+.`MethodCreator` Example
+[source,java]
+----
+import org.objectweb.asm.Opcodes.ACC_PRIVATE;
+
+void addMethod(ClassCreator fooClazz) {
+  MethodCreator alwaysReturnFalse = fooClazz.getMethodCreator("alwaysReturnFalse", boolean.class); <1>
+  alwaysReturnFalse.setModifiers(ACC_PRIVATE);
+  // Note that MethodCreator also implements BytecodeCreator
+  alwaysReturnFalse.returnValue(alwaysReturnFalse.load(false)); <2> <3>
+}
+----
+<1> Create a method with the following signature `private boolean alwaysReturnFalse()`.
+<2> A `MethodCreator` must always define a return statement.
+<3> This is an equivalent of `return false;`.
+
+[[method_bytecode]]
+== Generating Method Bytecode
+
+The `BytecodeCreator` interface allows you to generate some most common bytecode operations.
+It's not intended to cover all the functionality provided by JVM and Java language though.
+Most operations return and accept a `ResultHandle`.
+Simply put a result handle represents a value on the stack.
+It could be a result of a method invocation, a method argument, a constant, a result of a read from a field, etc.
+It's immutable.
+`AssignableResultHandle` on the other hand, is more like a local variable that can be assigned via `BytecodeCreator.assign()`.
+
+=== Working with Fields
+
+An instance field can be read with the `BytecodeCreator#readInstanceField()` method.
+A static field can be read with the `BytecodeCreator#readStaticField()` method.
+And the corresponding `writeInstanceField()` and `writeStaticField()` methods are used to write a field value.
+
+.Field Operations Example
+[source,java]
+----
+void fieldOperations(MethodCreator method, ResultHandle foo) {
+  // Boolean booleanTrue = Boolean.TRUE;
+  FieldDescriptor trueField = FieldDescriptor.of(Boolean.class, "TRUE", Boolean.class);
+  ResultHandle booleanTrue = method.readStaticField(trueField);
+  // foo.bar = booleanTrue;
+  FieldDescriptor barField = FieldDescriptor.of(Foo.class, "bar", Boolean.class);
+  method.writeInstanceField(fooField, foo, booleanTrue);
+}
+----
+
+=== Invoking Methods
+
+The JVM instruction set has several bytecode instructions for a method invocation.
+Gizmo covers `invokestatic`, `invokeinterface`, `invokevirtual` and `invokespecial`. 
+
+`BytecodeCreator#invokeStaticMethod()` is used to invoke static methods.
+
+NOTE: If you need to invoke a static method of an interface then `BytecodeCreator#invokeStaticInterfaceMethod()` must be used.
+
+.`java.lang.Boolean.parseBoolean(String)` Invocation Example
+[source,java]
+----
+void invokeParseBoolean(MethodCreator method) {
+  // String val = "true";
+  ResultHandle str = method.load("true");
+  MethodDescriptor parseBoolean = MethodDescriptor.ofMethod(Boolean.class, "parseBoolean", boolean.class, String.class);
+  // boolean result = Boolean.parseBoolean(val);
+  ResultHandle result = method.invokeStaticMethod(parseBoolean, str);
+  // System.out.printl(val)
+  Gizmo.systemOutPrintln(method, result);
+}
+----
+
+`BytecodeCreator#invokeInterfaceMethod()` is used to invoke a method of an interface.
+
+.`java.util.Collection#size()` Invocation Example
+[source,java]
+----
+void invokeSize(MethodCreator method, ResultHandle someCollection) {
+  MethodDescriptor size = MethodDescriptor.ofMethod(Collection.class, "size", int.class);
+  // System.out.printl(someCollection.size())
+  Gizmo.systemOutPrintln(method, method.invokeInterfaceMethod(size, someCollection));
+}
+----
+
+`BytecodeCreator#invokeVirtualMethod()` is used to invoke a _virtual_ method, i.e. a public, package-private and protected methods of a class.
+
+.`java.lan.String#toLowerCase()` Invocation Example
+[source,java]
+----
+void invokeToLowerCase(MethodCreator method) {
+  // String val = "HELLO";
+  ResultHandle str = method.load("HELLO");
+  MethodDescriptor toLowerCase = MethodDescriptor.ofMethod(String.class, "toLowerCase", String.class);
+  // String result = str.toLowerCase();
+  ResultHandle result = method.invokeVirtualMethod(toLowerCase, str);
+  // System.out.printl(result)
+  Gizmo.systemOutPrintln(method, result);
+}
+----
+
+`BytecodeCreator#invokeSpecialMethod()` is used to invoke private instance methods, superclass methods or constructors.
+
+.Private Method Invocation Example
+[source,java]
+----
+void invokeSuperToString(MethodCreator method) {
+  MethodDescriptor myPrivateMethod = MethodDescriptor.of(Foo.class,"privateMethod", String.class);
+  // String result = privateMethod();
+  ResultHandle result = method.invokeSpecialMethod(myPrivateMethod, method.getThis()); <1>
+  // System.out.printl(result)
+  Gizmo.systemOutPrintln(method, result);
+}
+----
+<1> `BytecodeCreator.getThis()` represents the current object
+
+=== Loops
+
+Sometimes you need to generate the bytecode to iterate over a collection of elements.
+There are two constructs that could be useful: `ForEachLoop` and `WhileLoop`.
+In the following snippet we're going to generate a bytecode to iterate over all elements of an `java.lang.Iterable` instance.
+
+.`ForEachLoop` Example
+[source,java]
+----
+void iterate(MethodCreator method, ResultHandle iterable) {
+    // for (Object element : iterable) { 
+    //   System.out.println(element);
+    // }
+    ForEachLoop loop = method.forEach(list);
+    BytecodeCreator block = loop.block();
+    Gizmo.systemOutPrintln(block, loop.element());
+}
+----
+
+NOTE: Unlike the for-each in Java the `ForEachLoop` does not support arrays, i.e. it's only possible to iterate over an instance of `Iterable`.
+
+And the next snippet is using the `WhileLoop` and `java.util.Iterator` instead.
+
+.`WhileLoop` Example
+[source,java]
+----
+import io.quarkus.gizmo.Gizmo.JdkIterator.HAS_NEXT;
+import io.quarkus.gizmo.Gizmo.JdkIterator.NEXT;
+
+void iterate(MethodCreator method, ResultHandle iterator) {
+    // while (iterator.hasNext()) { 
+    //   System.out.println(iterator.next());
+    // }
+    WhileLoop loop = method.whileLoop(bc -> bc.invokeInterfaceMethod(HAS_NEXT, iterator));
+    BytecodeCreator block = loop.block();
+    Gizmo.systemOutPrintln(block, block.invokeInterfaceMethod(NEXT, iterator));
+}
+----
+
+=== If Statements
+
+Gizmo provides some basic control flow constructs.
+The `BytecodeCreator` declares several methods that start with the `if` prefix.
+A typical example is the `ifTrue()` method which can be used to generate a simple `if-then` bytecode.
+
+`ifTrue()` Example
+[source,java]
+----
+void ifTrue(MethodCreator method, ResultHandle value) {
+   // if (value) { 
+   //  System.out.println("Value is true");
+   // }
+   BranchResult result = method.ifTrue(value);
+   BytecodeCreator trueBranch = result.trueBranch();
+   Gizmo.systemOutPrintln(trueBranch, trueBranch.load("Value is true"));
+}
+----
+
+NOTE: There are other variants such as `ifNull()` and `ifFalse()`.
+
+If you need a more complex `if-then-else` bytecode then you can try the `ifThenElse()` method and the returned `IfThenElse` construct.
+
+`ifThenElse()` Example
+[source,java]
+----
+void ifThenElse(MethodCreator method, ResultHandle value) {
+   // String val;
+   // if (val.equals("foo")) {
+   //   val = "FOO";
+   // } else if (val.equals("bar")) {
+   //   val = "BAR!";
+   // } else if (val.equals("baz")) {
+   //   var = "BAZ!";
+   // } else {
+   //   val = "OTHER!";
+   // }
+   IfThenElse ifValue = method.ifThenElse(Gizmo.equals(method, value, method.load("foo")));
+
+   BytecodeCreator ifFooNext = ifValue.then();
+   ifFooNext.assign(ret, ifFooNext.load("FOO!"));
+    
+   BytecodeCreator ifBar = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("bar")));
+   ifBar.assign(ret, ifBar.load("BAR!"));
+    
+   BytecodeCreator ifBaz = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("baz")));
+   ifBaz.assign(ret, ifBaz.load("BAZ!"));
+    
+   BytecodeCreator elseThen = ifValue.elseThen();
+   elseThen.assign(ret, elseThen.load("OTHER!"));
+}
+----
