@@ -352,7 +352,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         Objects.requireNonNull(className);
         final Class<?> primitiveType = matchPossiblyPrimitive(className);
         if (primitiveType == null) {
-            if (useTccl && !className.startsWith("java.")) {
+            if (useTccl) {
                 if (cachedTccl == null) {
                     ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
                     cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
