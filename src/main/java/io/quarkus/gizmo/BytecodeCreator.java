@@ -40,8 +40,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a virtual method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeVirtualMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args);
@@ -50,8 +50,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a virtual method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeVirtualMethod(MethodInfo descriptor, ResultHandle object, ResultHandle... args) {
@@ -62,8 +62,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a interface method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args);
@@ -72,8 +72,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a interface method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeInterfaceMethod(MethodInfo descriptor, ResultHandle object, ResultHandle... args) {
@@ -84,7 +84,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a static method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param args       The method parameters
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeStaticMethod(MethodDescriptor descriptor, ResultHandle... args);
@@ -93,7 +93,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Invokes a static method, and returns a {@link ResultHandle} with the result, or null if the method is void.
      *
      * @param descriptor The method descriptor
-     * @param args       The method parameters
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeStaticMethod(MethodInfo descriptor, ResultHandle... args) {
@@ -101,20 +101,21 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
-     * Invokes a static method of an interface, and returns a {@link ResultHandle} with the result, or null if the method is void.
+     * Invokes a static method of an interface, and returns a {@link ResultHandle} with the result, or null if the method is
+     * void.
      *
      * @param descriptor The method descriptor
-     * @param args       The method parameters
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeStaticInterfaceMethod(MethodDescriptor descriptor, ResultHandle... args);
 
-
     /**
-     * Invokes a static method of an interface, and returns a {@link ResultHandle} with the result, or null if the method is void.
+     * Invokes a static method of an interface, and returns a {@link ResultHandle} with the result, or null if the method is
+     * void.
      *
      * @param descriptor The method descriptor
-     * @param args       The method parameters
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeStaticInterfaceMethod(MethodInfo descriptor, ResultHandle... args) {
@@ -127,8 +128,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Special methods are constructor invocations, or invocations on a superclass method of the current class.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeSpecialMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args);
@@ -139,8 +140,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Special methods are constructor invocations, or invocations on a superclass method of the current class.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeSpecialMethod(MethodInfo descriptor, ResultHandle object, ResultHandle... args) {
@@ -153,8 +154,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Special interface method invocations are invocations of a superinterface method of the current class.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args);
@@ -165,8 +166,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Special interface method invocations are invocations of a superinterface method of the current class.
      *
      * @param descriptor The method descriptor
-     * @param object     A {@link ResultHandle} representing the object to invoke on
-     * @param args       The method parameters
+     * @param object A {@link ResultHandle} representing the object to invoke on
+     * @param args The method parameters
      * @return The method result, or null if a void method
      */
     default ResultHandle invokeSpecialInterfaceMethod(MethodInfo descriptor, ResultHandle object, ResultHandle... args) {
@@ -178,7 +179,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * representing the result
      *
      * @param descriptor The constructor descriptor
-     * @param args       The constructor parameters
+     * @param args The constructor parameters
      * @return The new instance
      */
     ResultHandle newInstance(MethodDescriptor descriptor, ResultHandle... args);
@@ -188,7 +189,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * representing the result
      *
      * @param descriptor The constructor descriptor
-     * @param args       The constructor parameters
+     * @param args The constructor parameters
      * @return The new instance
      */
     default ResultHandle newInstance(MethodInfo descriptor, ResultHandle... args) {
@@ -291,7 +292,6 @@ public interface BytecodeCreator extends AutoCloseable {
         return readStaticField(FieldDescriptor.of(val.getDeclaringClass(), val.name(), val.getDeclaringClass()));
     }
 
-
     /**
      * Returns a {@link ResultHandle} representing the specified class
      *
@@ -303,6 +303,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return A {@link ResultHandle} representing the specified class
      */
     ResultHandle loadClass(String className);
+
     /**
      * Returns a {@link ResultHandle} representing the specified class
      *
@@ -380,8 +381,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Writes the specified value to an instance field
      *
      * @param fieldDescriptor The field to write to
-     * @param instance        A {@link ResultHandle} representing the instance that contains the field
-     * @param value           A {@link ResultHandle} representing the value
+     * @param instance A {@link ResultHandle} representing the instance that contains the field
+     * @param value A {@link ResultHandle} representing the value
      */
     void writeInstanceField(FieldDescriptor fieldDescriptor, ResultHandle instance, ResultHandle value);
 
@@ -389,8 +390,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Writes the specified value to an instance field
      *
      * @param fieldDescriptor The field to write to
-     * @param instance        A {@link ResultHandle} representing the instance that contains the field
-     * @param value           A {@link ResultHandle} representing the value
+     * @param instance A {@link ResultHandle} representing the instance that contains the field
+     * @param value A {@link ResultHandle} representing the value
      */
     default void writeInstanceField(FieldInfo fieldDescriptor, ResultHandle instance, ResultHandle value) {
         writeInstanceField(FieldDescriptor.of(fieldDescriptor), instance, value);
@@ -401,7 +402,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * in a local variable, so even if the field value changes the {@link ResultHandle} will represent the same result.
      *
      * @param fieldDescriptor The field to read from
-     * @param instance        A {@link ResultHandle} representing the instance that contains the field
+     * @param instance A {@link ResultHandle} representing the instance that contains the field
      * @return A {@link ResultHandle} representing the field value at the current point in time
      */
     ResultHandle readInstanceField(FieldDescriptor fieldDescriptor, ResultHandle instance);
@@ -411,7 +412,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * in a local variable, so even if the field value changes the {@link ResultHandle} will represent the same result.
      *
      * @param fieldDescriptor The field to read from
-     * @param instance        A {@link ResultHandle} representing the instance that contains the field
+     * @param instance A {@link ResultHandle} representing the instance that contains the field
      * @return A {@link ResultHandle} representing the field value at the current point in time
      */
     default ResultHandle readInstanceField(FieldInfo fieldDescriptor, ResultHandle instance) {
@@ -422,7 +423,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Writes the specified value to an static field
      *
      * @param fieldDescriptor The field to write to
-     * @param value           A {@link ResultHandle} representing the value
+     * @param value A {@link ResultHandle} representing the value
      */
     void writeStaticField(FieldDescriptor fieldDescriptor, ResultHandle value);
 
@@ -430,7 +431,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Writes the specified value to an static field
      *
      * @param fieldDescriptor The field to write to
-     * @param value           A {@link ResultHandle} representing the value
+     * @param value A {@link ResultHandle} representing the value
      */
     default void writeStaticField(FieldInfo fieldDescriptor, ResultHandle value) {
         writeStaticField(FieldDescriptor.of(fieldDescriptor), value);
@@ -515,7 +516,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNonZero(ResultHandle resultHandle);
-    
+
     /**
      * An if statement.
      * <p>
@@ -527,7 +528,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifZero(ResultHandle resultHandle);
-    
+
     /**
      * An if statement. An alias for {@link BytecodeCreator#ifNonZero(ResultHandle)}.
      *
@@ -535,7 +536,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifTrue(ResultHandle resultHandle);
-    
+
     /**
      * An if statement. An alias for {@link BytecodeCreator#ifZero(ResultHandle)}.
      *
@@ -545,23 +546,25 @@ public interface BytecodeCreator extends AutoCloseable {
     BranchResult ifFalse(ResultHandle resultHandle);
 
     /**
-     * An if statement. If the value is {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
+     * An if statement. If the value is {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the
+     * {@link BranchResult#falseBranch} will be
      * run.
      *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNull(ResultHandle resultHandle);
-    
+
     /**
-     * An if statement. If the value is not {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch} will be
+     * An if statement. If the value is not {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise
+     * the {@link BranchResult#falseBranch} will be
      * run.
      * 
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifNotNull(ResultHandle resultHandle);
-    
+
     /**
      * An if statement.
      * <p>
@@ -573,7 +576,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifGreaterThanZero(ResultHandle resultHandle);
-    
+
     /**
      * An if statement.
      * <p>
@@ -660,6 +663,16 @@ public interface BytecodeCreator extends AutoCloseable {
     BranchResult ifIntegerLessThan(ResultHandle value1, ResultHandle value2);
 
     /**
+     * Create a new if-then-else construct.
+     * <p>
+     * The {@link IfThenElse#then()} block is executed if the condition result handle evaluates to {@code true}.
+     * 
+     * @param condition
+     * @return the if-then-else construct
+     */
+    IfThenElse ifThenElse(ResultHandle condition);
+
+    /**
      * Checks if the given resultHandle is an instance of the target type
      *
      * @param resultHandle the result handle
@@ -691,7 +704,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifIntegerLessEqual(ResultHandle value1, ResultHandle value2);
-    
+
     /**
      * An if statement.
      * <p>
@@ -703,7 +716,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The branch result that is used to build the if statement
      */
     BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2);
-    
+
     /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter
@@ -760,7 +773,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Throws an exception. The exception must have a constructor that takes a single String argument
      *
      * @param exceptionType The exception type
-     * @param message       The exception message
+     * @param message The exception message
      */
     default <T extends Throwable> void throwException(Class<T> exceptionType, String message) {
         try {
@@ -776,8 +789,8 @@ public interface BytecodeCreator extends AutoCloseable {
      * Rethrows an exception. The exception must have a constructor that takes (String, Throwable)
      *
      * @param exceptionType The exception type
-     * @param message       The exception message
-     * @param existing      The exception to wrap
+     * @param message The exception message
+     * @param existing The exception to wrap
      */
     default <T extends Throwable> void throwException(Class<T> exceptionType, String message, ResultHandle existing) {
         try {
@@ -785,7 +798,8 @@ public interface BytecodeCreator extends AutoCloseable {
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Exception does not have appropriate constructor");
         }
-        ResultHandle res = newInstance(MethodDescriptor.ofConstructor(exceptionType, String.class, Throwable.class), load(message), existing);
+        ResultHandle res = newInstance(MethodDescriptor.ofConstructor(exceptionType, String.class, Throwable.class),
+                load(message), existing);
         throwException(res);
     }
 
@@ -840,7 +854,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return the nested scope
      */
     BytecodeCreator createScope();
-    
+
     /**
      * Create a new while loop statement.
      * 
@@ -850,7 +864,6 @@ public interface BytecodeCreator extends AutoCloseable {
      */
     WhileLoop whileLoop(Function<BytecodeCreator, BranchResult> conditionFun);
 
-    
     /**
      * Create a new for-each loop construct.
      * 
@@ -858,9 +871,10 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return the for-each construct
      */
     ForEachLoop forEach(ResultHandle iterable);
- 
+
     /**
      * Adds the two result handles together and returns the result
+     * 
      * @param a1 The first number
      * @param a2 The second number
      * @return The result
@@ -869,6 +883,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Increments a ResultHandle
+     * 
      * @param toIncrement The number to increment
      * @return The result
      */
@@ -877,10 +892,11 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
-     * Indicate that the scope is no longer in use.  The scope may refuse additional instructions after this method
+     * Indicate that the scope is no longer in use. The scope may refuse additional instructions after this method
      * is called.
      */
     @Override
-    default void close() {}
-    
+    default void close() {
+    }
+
 }
