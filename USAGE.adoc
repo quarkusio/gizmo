@@ -2,7 +2,7 @@
 
 == Creating a Class
 
-In order to generate bytecode of a new class we need to create a `ClassCreator` instance.
+In order to generate bytecode of a new class, we need to create a `ClassCreator` instance.
 We can start with the convenient `ClassCreator.Builder`.
 
 [source,java]
@@ -20,11 +20,11 @@ ClassCreator creator = ClassCreator.builder() <1>
 By default, the generated class is `public` and _synthetic_ (as defined by the Java Language Specification).
 If you need to make it `final` then use the `ClassCreator.Builder#setFinal()` method.
 
-The `ClassCreator.Builder#superClass()` and ``ClassCreator.Builder#interfaces()` methods can be used to specify the superclass and implemented interfaces.
+The `ClassCreator.Builder#superClass()` and `ClassCreator.Builder#interfaces()` methods can be used to specify the superclass and implemented interfaces.
 
 == Adding Fields
 
-Once we have a `ClassCreator` instance we can start adding fields and methods.
+Once we have a `ClassCreator` instance, we can start adding fields and methods.
 Fields can be added via the `FieldCreator` interface returned from the `ClassCreator#getFieldCreator()` methods.
 By default, the generated field is `private`.
 You can use the `FieldCreator#setModifiers()` method to control the modifiers of the generated field.
@@ -40,8 +40,8 @@ void addField(ClassCreator fooClazz) {
   myField.setModifiers(ACC_FINAL | ACC_PROTECTED); <2>
 }
 ----
-<1> Creates a field `score` of type `Integer`.
-<2> Makes the field `protected final`.
+<1> Create a field `score` of type `Integer`.
+<2> Make the field `protected final`.
 
 == Adding Methods
 
@@ -50,7 +50,7 @@ By default, the generated method is `public`.
 You can use the `MethodCreator#setModifiers()` method to control the modifiers of the generated method.
 
 The bytecode of the method is generated via `BytecodeCreator`.
-See <<method_bytecode>> for more information about how to generate some most common operations.
+See <<method_bytecode>> for more information about how to generate some of the most common operations.
 
 .`MethodCreator` Example
 [source,java]
@@ -65,19 +65,19 @@ void addMethod(ClassCreator fooClazz) {
 }
 ----
 <1> Create a method with the following signature `private boolean alwaysReturnFalse()`.
-<2> A `MethodCreator` must always define a return statement.
+<2> A `MethodCreator` must always define a return statement. Use `returnValue(null)` for `void` methods.
 <3> This is an equivalent of `return false;`.
 
 [[method_bytecode]]
 == Generating Method Bytecode
 
-The `BytecodeCreator` interface allows you to generate some most common bytecode operations.
-It's not intended to cover all the functionality provided by JVM and Java language though.
+The `BytecodeCreator` interface allows you to generate some of the most common bytecode operations.
+It's not intended to cover all the functionality provided by the JVM and the Java language though.
 Most operations return and accept a `ResultHandle`.
 Simply put a result handle represents a value on the stack.
 It could be a result of a method invocation, a method argument, a constant, a result of a read from a field, etc.
 It's immutable.
-`AssignableResultHandle` on the other hand, is more like a local variable that can be assigned via `BytecodeCreator.assign()`.
+`AssignableResultHandle`, on the other hand, is more like a local variable that can be assigned via `BytecodeCreator.assign()`.
 
 === Working with Fields
 
@@ -168,7 +168,7 @@ void invokeSuperToString(MethodCreator method) {
 
 Sometimes you need to generate the bytecode to iterate over a collection of elements.
 There are two constructs that could be useful: `ForEachLoop` and `WhileLoop`.
-In the following snippet we're going to generate a bytecode to iterate over all elements of an `java.lang.Iterable` instance.
+In the following snippet we're going to generate a bytecode to iterate over all elements of a `java.lang.Iterable` instance.
 
 .`ForEachLoop` Example
 [source,java]
