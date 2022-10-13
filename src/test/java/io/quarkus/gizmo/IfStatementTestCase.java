@@ -1,5 +1,6 @@
 package io.quarkus.gizmo;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -109,7 +110,26 @@ public class IfStatementTestCase {
         ReferenceEqualsTest myTest = (ReferenceEqualsTest) cl.loadClass("com.MyTest").newInstance();
         Item item1 = new Item(1000);
         Item item2 = new Item(1000);
-        assertTrue(item1.equals(item2));
+        assertEquals(item1, item2);
+        assertFalse(myTest.referenceEquals(item1, item2));
+        assertTrue(myTest.referenceEquals(item1, item1));
+    }
+
+    @Test
+    public void testIfReferencesNotEqual() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(ReferenceEqualsTest.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("referenceEquals", boolean.class, Object.class, Object.class);
+            BranchResult branch = method.ifReferencesNotEqual(method.getMethodParam(0), method.getMethodParam(1));
+            branch.trueBranch().returnValue(branch.trueBranch().load(false));
+            branch.falseBranch().returnValue(branch.falseBranch().load(true));
+        }
+        ReferenceEqualsTest myTest = (ReferenceEqualsTest) cl.loadClass("com.MyTest").newInstance();
+        Item item1 = new Item(1000);
+        Item item2 = new Item(1000);
+        assertEquals(item1, item2);
         assertFalse(myTest.referenceEquals(item1, item2));
         assertTrue(myTest.referenceEquals(item1, item1));
     }

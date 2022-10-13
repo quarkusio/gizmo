@@ -1068,7 +1068,12 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2) {
         return ifValues(ref1, ref2, Opcodes.IF_ACMPEQ, "Ljava/lang/Object;");
     }
-    
+
+    @Override
+    public BranchResult ifReferencesNotEqual(ResultHandle ref1, ResultHandle ref2) {
+        return ifValues(ref1, ref2, Opcodes.IF_ACMPNE, "Ljava/lang/Object;");
+    }
+
     @Override
     public IfThenElse ifThenElse(ResultHandle value) {
         IfThenElseImpl ifThen = new IfThenElseImpl(this, Objects.requireNonNull(value));

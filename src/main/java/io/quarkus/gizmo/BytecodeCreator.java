@@ -763,6 +763,21 @@ public interface BytecodeCreator extends AutoCloseable {
     BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2);
 
     /**
+     * An if statement.
+     * <p>
+     * If references are <em>not</em> equal (as in object identity) the {@link BranchResult#trueBranch} code will be
+     * executed, otherwise the {@link BranchResult#falseBranch} will be run.
+     * <p>
+     * This method is dual to {@link #ifReferencesEqual(ResultHandle, ResultHandle)} and can be used
+     * to emit bytecode that is closer to what javac emits, when useful.
+     *
+     * @param ref1
+     * @param ref2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifReferencesNotEqual(ResultHandle ref1, ResultHandle ref2);
+
+    /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter
      */
