@@ -1192,6 +1192,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle add(ResultHandle a1, ResultHandle a2) {
+        return emitArithmetic(Opcodes.IADD, a1, a2);
+    }
+
+    @Override
+    public ResultHandle multiply(ResultHandle a1, ResultHandle a2) {
+        return emitArithmetic(Opcodes.IMUL, a1, a2);
+    }
+
+    private ResultHandle emitArithmetic(int intOpcode, ResultHandle a1, ResultHandle a2) {
         Objects.requireNonNull(a1);
         Objects.requireNonNull(a2);
         if (!a1.getType().equals(a2.getType())) {
@@ -1205,13 +1214,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 loadResultHandle(methodVisitor, a1, BytecodeCreatorImpl.this, a1.getType());
                 loadResultHandle(methodVisitor, a2, BytecodeCreatorImpl.this, a2.getType());
                 if (a1.getType().equals("J")) {
-                    methodVisitor.visitInsn(Opcodes.LADD);
+                    methodVisitor.visitInsn(longArithmeticOpcode(intOpcode));
                 } else if (a1.getType().equals("D")) {
-                    methodVisitor.visitInsn(Opcodes.DADD);
+                    methodVisitor.visitInsn(doubleArithmeticOpcode(intOpcode));
                 } else if (a1.getType().equals("F")) {
-                    methodVisitor.visitInsn(Opcodes.FADD);
+                    methodVisitor.visitInsn(floatArithmeticOpcode(intOpcode));
                 } else {
-                    methodVisitor.visitInsn(Opcodes.IADD);
+                    methodVisitor.visitInsn(intOpcode);
                 }
                 storeResultHandle(methodVisitor, ret);
             }
@@ -1232,6 +1241,75 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         });
         return ret;
+    }
+
+    private int longArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.LADD;
+            case Opcodes.ISUB:
+                return Opcodes.LSUB;
+            case Opcodes.IMUL:
+                return Opcodes.LMUL;
+            case Opcodes.IDIV:
+                return Opcodes.LDIV;
+            case Opcodes.IREM:
+                return Opcodes.LREM;
+            case Opcodes.INEG:
+                return Opcodes.LNEG;
+            case Opcodes.ISHL:
+                return Opcodes.LSHL;
+            case Opcodes.ISHR:
+                return Opcodes.LSHR;
+            case Opcodes.IUSHR:
+                return Opcodes.LUSHR;
+            case Opcodes.IAND:
+                return Opcodes.LAND;
+            case Opcodes.IOR:
+                return Opcodes.LOR;
+            case Opcodes.IXOR:
+                return Opcodes.LXOR;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for long arithmetic: " + intOpcode);
+        }
+    }
+
+    private int floatArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.FADD;
+            case Opcodes.ISUB:
+                return Opcodes.FSUB;
+            case Opcodes.IMUL:
+                return Opcodes.FMUL;
+            case Opcodes.IDIV:
+                return Opcodes.FDIV;
+            case Opcodes.IREM:
+                return Opcodes.FREM;
+            case Opcodes.INEG:
+                return Opcodes.FNEG;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for float arithmetic: " + intOpcode);
+        }
+    }
+
+    private int doubleArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.DADD;
+            case Opcodes.ISUB:
+                return Opcodes.DSUB;
+            case Opcodes.IMUL:
+                return Opcodes.DMUL;
+            case Opcodes.IDIV:
+                return Opcodes.DDIV;
+            case Opcodes.IREM:
+                return Opcodes.DREM;
+            case Opcodes.INEG:
+                return Opcodes.DNEG;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for double arithmetic: " + intOpcode);
+        }
     }
 
     private ResultHandle allocateResult(String returnType) {

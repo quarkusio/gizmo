@@ -882,6 +882,15 @@ public interface BytecodeCreator extends AutoCloseable {
     ResultHandle add(ResultHandle a1, ResultHandle a2);
 
     /**
+     * Multiplies the two result handles together and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle multiply(ResultHandle a1, ResultHandle a2);
+
+    /**
      * Increments a ResultHandle
      * 
      * @param toIncrement The number to increment
