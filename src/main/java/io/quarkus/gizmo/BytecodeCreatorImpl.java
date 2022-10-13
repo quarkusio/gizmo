@@ -787,17 +787,17 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             if (handle.getConstant() == null) {
                 methodVisitor.visitInsn(Opcodes.ACONST_NULL);
             } else {
-                methodVisitor.visitLdcInsn(handle.getConstant());
+                emitLoadConstant(methodVisitor, handle.getConstant());
                 if (!dontCast && !expectedType.equals(handle.getType())) {
-                    //both objects, we just do a checkcast
                     if (expectedType.length() > 1 && handle.getType().length() > 1) {
+                        // both objects, we just do a checkcast
                         if (!expectedType.equals("Ljava/lang/Object;")) {
                             methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, DescriptorUtils.getTypeStringFromDescriptorFormat(expectedType));
                         }
                     } else if (expectedType.length() == 1 && handle.getType().length() == 1) {
-                        //ignore
+                        // both primitives, ignore
                     } else if (expectedType.length() == 1) {
-                        //autounboxing support
+                        // expected primitive, must auto-unbox
                         String type = boxingMap.get(expectedType);
                         if (type == null) {
                             throw new RuntimeException("Unknown primitive type " + expectedType);
@@ -805,12 +805,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
                         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
                     } else {
-                        //autoboxing support
+                        // expected primitive wrapper, must auto-box
                         String type = boxingMap.get(handle.getType());
                         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
                     }
                 }
-
             }
             return;
         }
@@ -831,15 +830,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         }
         if (!dontCast && !expectedType.equals(handle.getType())) {
-            //both objects, we just do a checkcast
             if (expectedType.length() > 1 && handle.getType().length() > 1) {
+                // both objects, we just do a checkcast
                 if (!expectedType.equals("Ljava/lang/Object;")) {
                     methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, DescriptorUtils.getTypeStringFromDescriptorFormat(expectedType));
                 }
             } else if (expectedType.length() == 1 && handle.getType().length() == 1) {
-                //ignore
+                // both primitives, ignore
             } else if (expectedType.length() == 1) {
-                //autounboxing support
+                // expected primitive, must auto-unbox
                 String type = boxingMap.get(expectedType);
                 if (type == null) {
                     throw new RuntimeException("Unknown primitive type " + expectedType);
@@ -847,10 +846,52 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
                 methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
             } else {
-                //autoboxing support
+                // expected primitive wrapper, must auto-box
                 String type = boxingMap.get(handle.getType());
                 methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
             }
+        }
+    }
+
+    private static void emitLoadConstant(MethodVisitor methodVisitor, Object constant) {
+        if (constant instanceof Byte || constant instanceof Short) {
+            constant = ((Number) constant).intValue();
+        }
+
+        if (Boolean.FALSE.equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_0);
+        } else if (Boolean.TRUE.equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_1);
+        } else if (Integer.valueOf(-1).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_M1);
+        } else if (Integer.valueOf(0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_0);
+        } else if (Integer.valueOf(1).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_1);
+        } else if (Integer.valueOf(2).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_2);
+        } else if (Integer.valueOf(3).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_3);
+        } else if (Integer.valueOf(4).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_4);
+        } else if (Integer.valueOf(5).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_5);
+        } else if (Long.valueOf(0L).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.LCONST_0);
+        } else if (Long.valueOf(1L).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.LCONST_1);
+        } else if (Float.valueOf(0.0F).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.FCONST_0);
+        } else if (Float.valueOf(1.0F).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.FCONST_1);
+        } else if (Double.valueOf(0.0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.DCONST_0);
+        } else if (Double.valueOf(1.0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.DCONST_1);
+        } else {
+            // if original constant was `byte` or `short`, it is `int` now,
+            // but that makes no difference
+            methodVisitor.visitLdcInsn(constant);
         }
     }
 
