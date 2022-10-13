@@ -1163,7 +1163,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             void writeBytecode(MethodVisitor methodVisitor) {
                 loadResultHandle(methodVisitor, a1, BytecodeCreatorImpl.this, a1.getType());
                 loadResultHandle(methodVisitor, a2, BytecodeCreatorImpl.this, a2.getType());
-                if (a1.getType().equals("Z")) {
+                if (a1.getType().equals("J")) {
                     methodVisitor.visitInsn(Opcodes.LADD);
                 } else if (a1.getType().equals("D")) {
                     methodVisitor.visitInsn(Opcodes.DADD);
