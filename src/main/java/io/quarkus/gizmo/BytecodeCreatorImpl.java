@@ -903,6 +903,58 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle compareLong(ResultHandle value1, ResultHandle value2) {
+        return emitCompare(Opcodes.LCMP, "J", value1, value2);
+    }
+
+    @Override
+    public ResultHandle compareFloat(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater) {
+        return emitCompare(nanComparesAsGreater ? Opcodes.FCMPG : Opcodes.FCMPL, "F", value1, value2);
+    }
+
+    @Override
+    public ResultHandle compareDouble(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater) {
+        return emitCompare(nanComparesAsGreater ? Opcodes.DCMPG : Opcodes.DCMPL, "D", value1, value2);
+    }
+
+    private ResultHandle emitCompare(int opcode, String expectedType, ResultHandle value1, ResultHandle value2) {
+        Objects.requireNonNull(value1);
+        Objects.requireNonNull(value2);
+        if (!expectedType.equals(value1.getType()) || !expectedType.equals(value2.getType())) {
+            throw new IllegalArgumentException("Arguments must both be of type " + expectedType);
+        }
+        final ResultHandle resolved1 = resolve(checkScope(value1));
+        final ResultHandle resolved2 = resolve(checkScope(value2));
+        final ResultHandle result = allocateResult("I");
+        assert result != null;
+        operations.add(new Operation() {
+            @Override
+            void writeBytecode(final MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, resolved1, BytecodeCreatorImpl.this, resolved1.getType(), true);
+                loadResultHandle(methodVisitor, resolved2, BytecodeCreatorImpl.this, resolved2.getType(), true);
+                methodVisitor.visitInsn(opcode);
+                storeResultHandle(methodVisitor, result);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return new LinkedHashSet<>(Arrays.asList(resolved1, resolved2));
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return resolved1;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return result;
+            }
+        });
+        return result;
+    }
+
+    @Override
     public BranchResult ifNonZero(ResultHandle resultHandle) {
         return ifValue(resultHandle, Opcodes.IFNE, "I");
     }

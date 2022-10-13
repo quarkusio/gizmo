@@ -506,6 +506,51 @@ public interface BytecodeCreator extends AutoCloseable {
     TryBlock tryBlock();
 
     /**
+     * Compares two {@code long} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code long}.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @return the comparison result
+     */
+    ResultHandle compareLong(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * Compares two {@code float} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code float}.
+     * <p>
+     * If one of the values is NaN, the result is 1 if {@code nanComparesAsGreater} is true and -1 if not.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @param nanComparesAsGreater whether presence of NaN should result in "greater"
+     * @return the comparison result
+     */
+    ResultHandle compareFloat(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater);
+
+    /**
+     * Compares two {@code double} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code double}.
+     * <p>
+     * If one of the values is NaN, the result is 1 if {@code nanComparesAsGreater} is true and -1 if not.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @param nanComparesAsGreater whether presence of NaN should result in "greater"
+     * @return the comparison result
+     */
+    ResultHandle compareDouble(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater);
+
+    /**
      * An if statement.
      * <p>
      * resultHandle must be an integer type or boolean. If this value is true or non-zero the
