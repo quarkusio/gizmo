@@ -155,6 +155,42 @@ public final class Gizmo {
     }
 
     /**
+     * Creates a {@code StringBuilder} generator that helps to generate a chain of
+     * {@code append} calls and a final {@code toString} call.
+     *
+     * <pre>
+     * StringBuilderGenerator str = Gizmo.newStringBuilder(bytecode);
+     * str.append("constant");
+     * str.append(someResultHandle);
+     * ResultHandle result = str.callToString();
+     * </pre>
+     *
+     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
+     * it accepts {@code ResultHandle}s of all types for which {@code StringBuilder}
+     * has an overload:
+     * <ul>
+     *     <li>primitive types</li>
+     *     <li>{@code char[]}</li>
+     *     <li>{@code java.lang.String}</li>
+     *     <li>{@code java.lang.Object}</li>
+     * </ul>
+     *
+     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
+     * and if {@code Arrays.toString} should be used, it must be generated manually.
+     * <p>
+     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
+     * provided. Other {@code StringBuilder} methods are not provided either. This is just
+     * a simple utility for generating code that concatenates strings, e.g. for implementing
+     * the {@code toString} method.
+     *
+     * @param target
+     * @return the generator
+     */
+    public static StringBuilderGenerator newStringBuilder(BytecodeCreator target) {
+        return new StringBuilderGenerator(target);
+    }
+
+    /**
      * Generates the bytecode that calls the no-args {@link HashMap} constructor.
      * 
      * @param target
@@ -725,6 +761,83 @@ public final class Gizmo {
 
         }
 
+    }
+
+    public static class StringBuilderGenerator {
+        private static final MethodDescriptor CONSTRUCTOR = MethodDescriptor.ofConstructor(StringBuilder.class);
+        private static final MethodDescriptor APPEND_BOOLEAN = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, boolean.class);
+        private static final MethodDescriptor APPEND_INT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, int.class);
+        private static final MethodDescriptor APPEND_LONG = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, long.class);
+        private static final MethodDescriptor APPEND_FLOAT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, float.class);
+        private static final MethodDescriptor APPEND_DOUBLE = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, double.class);
+        private static final MethodDescriptor APPEND_CHAR = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, char.class);
+        private static final MethodDescriptor APPEND_CHAR_ARRAY = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, char[].class);
+        private static final MethodDescriptor APPEND_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, String.class);
+        private static final MethodDescriptor APPEND_CHAR_SEQUENCE = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, CharSequence.class);
+        private static final MethodDescriptor APPEND_OBJECT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, Object.class);
+        private static final MethodDescriptor TO_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "toString", String.class);
+
+        private final BytecodeCreator bytecode;
+        private final ResultHandle instance;
+
+        private StringBuilderGenerator(BytecodeCreator bytecode) {
+            this.bytecode = bytecode;
+            this.instance = bytecode.newInstance(CONSTRUCTOR);
+        }
+
+        public StringBuilderGenerator append(ResultHandle value) {
+            switch (value.getType()) {
+                case "Z": // boolean
+                    bytecode.invokeVirtualMethod(APPEND_BOOLEAN, instance, value);
+                    break;
+                case "B": // byte
+                case "S": // short
+                case "I": // int
+                    bytecode.invokeVirtualMethod(APPEND_INT, instance, value);
+                    break;
+                case "J": // long
+                    bytecode.invokeVirtualMethod(APPEND_LONG, instance, value);
+                    break;
+                case "F": // float
+                    bytecode.invokeVirtualMethod(APPEND_FLOAT, instance, value);
+                    break;
+                case "D": // double
+                    bytecode.invokeVirtualMethod(APPEND_DOUBLE, instance, value);
+                    break;
+                case "C": // char
+                    bytecode.invokeVirtualMethod(APPEND_CHAR, instance, value);
+                    break;
+                case "[C": // char[]
+                    bytecode.invokeVirtualMethod(APPEND_CHAR_ARRAY, instance, value);
+                    break;
+                case "Ljava/lang/String;":
+                    bytecode.invokeVirtualMethod(APPEND_STRING, instance, value);
+                    break;
+                case "Ljava/lang/CharSequence;":
+                    bytecode.invokeVirtualMethod(APPEND_CHAR_SEQUENCE, instance, value);
+                    break;
+                default:
+                    bytecode.invokeVirtualMethod(APPEND_OBJECT, instance, value);
+                    break;
+            }
+            return this;
+        }
+
+        public StringBuilderGenerator append(char constant) {
+            return append(bytecode.load(constant));
+        }
+
+        public StringBuilderGenerator append(String constant) {
+            return append(bytecode.load(constant));
+        }
+
+        public ResultHandle callToString() {
+            return bytecode.invokeVirtualMethod(TO_STRING, instance);
+        }
+
+        public ResultHandle getInstance() {
+            return instance;
+        }
     }
 
     public static final MethodDescriptor TO_STRING = MethodDescriptor.ofMethod(Object.class, "toString", String.class);

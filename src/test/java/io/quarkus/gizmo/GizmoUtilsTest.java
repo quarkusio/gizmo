@@ -167,4 +167,55 @@ public class GizmoUtilsTest {
         }
     }
 
+    @Test
+    public void stringBuilder() throws ReflectiveOperationException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder()
+                .classOutput(cl)
+                .className("com.MyTest")
+                .interfaces(Supplier.class)
+                .build()) {
+
+            MethodCreator createCharSequence = creator.getMethodCreator("createCharSequence", CharSequence.class);
+            Gizmo.StringBuilderGenerator str = Gizmo.newStringBuilder(createCharSequence);
+            str.append("ghi");
+            createCharSequence.returnValue(str.getInstance());
+
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+
+            Gizmo.StringBuilderGenerator strBuilder = Gizmo.newStringBuilder(method);
+
+            strBuilder.append(method.load(true));
+            strBuilder.append(method.load((byte) 1));
+            strBuilder.append(method.load((short) 2));
+            strBuilder.append(method.load(3));
+            strBuilder.append(method.load(4L));
+            strBuilder.append(method.load(5.0F));
+            strBuilder.append(method.load(6.0));
+            strBuilder.append(method.load('a'));
+            ResultHandle charArrayValue = method.newArray(char.class, 2);
+            method.writeArrayValue(charArrayValue, 0, method.load('b'));
+            method.writeArrayValue(charArrayValue, 1, method.load('c'));
+            strBuilder.append(charArrayValue);
+            strBuilder.append(method.load("def"));
+            strBuilder.append(method.invokeVirtualMethod(MethodDescriptor.ofMethod(creator.getClassName(),
+                    "createCharSequence", CharSequence.class), method.getThis()));
+            strBuilder.append(method.newInstance(MethodDescriptor.ofConstructor(MyObject.class)));
+            strBuilder.append(method.loadNull());
+            strBuilder.append("...");
+            strBuilder.append('!');
+
+            method.returnValue(strBuilder.callToString());
+        }
+
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
+        assertEquals("true12345.06.0abcdefghijklmnull...!", myInterface.get());
+    }
+
+    public static class MyObject {
+        @Override
+        public String toString() {
+            return "jklm";
+        }
+    }
 }
