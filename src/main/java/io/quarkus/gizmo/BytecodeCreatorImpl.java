@@ -1177,7 +1177,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
             @Override
             Set<ResultHandle> getInputResultHandles() {
-                return new HashSet<>(Arrays.asList(a1, a2));
+                return new LinkedHashSet<>(Arrays.asList(a1, a2));
             }
 
             @Override
@@ -1581,7 +1581,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         @Override
         Set<ResultHandle> getInputResultHandles() {
             if (value2 != null) {
-                Set<ResultHandle> ret = new HashSet<>(2);
+                Set<ResultHandle> ret = new LinkedHashSet<>(2);
                 ret.add(value1);
                 ret.add(value2);
                 return ret;
