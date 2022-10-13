@@ -803,6 +803,52 @@ public interface BytecodeCreator extends AutoCloseable {
     void returnValue(ResultHandle returnValue);
 
     /**
+     * Marks a return from a {@code void} method or a constructor.
+     * <p>
+     * Equivalent to {@code returnValue(null)}.
+     *
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnVoid() {
+        returnValue(null);
+    }
+
+    /**
+     * Creates a return statement that returns the {@code null} reference.
+     * <p>
+     * Equivalent to {@code returnValue(loadNull())}.
+     *
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnNull() {
+        returnValue(loadNull());
+    }
+
+    /**
+     * Creates a return statement that returns given boolean constant.
+     * <p>
+     * Equivalent to {@code returnValue(load(value))}.
+     *
+     * @param value the boolean constant
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnBoolean(boolean value) {
+        returnValue(load(value));
+    }
+
+    /**
+     * Creates a return statement that returns given integer constant.
+     * <p>
+     * Equivalent to {@code returnValue(load(value))}.
+     *
+     * @param value the integer constant
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnInt(int value) {
+        returnValue(load(value));
+    }
+
+    /**
      * Throws an exception
      *
      * @param exception A result handle representing the exception to throw
