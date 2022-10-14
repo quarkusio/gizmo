@@ -29,15 +29,15 @@ Fields can be added via the `FieldCreator` interface returned from the `ClassCre
 By default, the generated field is `private`.
 You can use the `FieldCreator#setModifiers()` method to control the modifiers of the generated field.
 
-.`FieldCreator` Example
+.FieldCreator Example
 [source,java]
 ----
 import org.objectweb.asm.Opcodes.ACC_FINAL;
 import org.objectweb.asm.Opcodes.ACC_PROTECTED;
 
 void addField(ClassCreator fooClazz) {
-  FieldCreator myField = fooClazz.getFieldCreator("score", Integer.class); <1>
-  myField.setModifiers(ACC_FINAL | ACC_PROTECTED); <2>
+    FieldCreator myField = fooClazz.getFieldCreator("score", Integer.class); <1>
+    myField.setModifiers(ACC_FINAL | ACC_PROTECTED); <2>
 }
 ----
 <1> Create a field `score` of type `Integer`.
@@ -52,16 +52,16 @@ You can use the `MethodCreator#setModifiers()` method to control the modifiers o
 The bytecode of the method is generated via `BytecodeCreator`.
 See <<method_bytecode>> for more information about how to generate some of the most common operations.
 
-.`MethodCreator` Example
+.MethodCreator Example
 [source,java]
 ----
 import org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
 void addMethod(ClassCreator fooClazz) {
-  MethodCreator alwaysReturnFalse = fooClazz.getMethodCreator("alwaysReturnFalse", boolean.class); <1>
-  alwaysReturnFalse.setModifiers(ACC_PRIVATE);
-  // Note that MethodCreator also implements BytecodeCreator
-  alwaysReturnFalse.returnValue(alwaysReturnFalse.load(false)); <2> <3>
+    MethodCreator alwaysReturnFalse = fooClazz.getMethodCreator("alwaysReturnFalse", boolean.class); <1>
+    alwaysReturnFalse.setModifiers(ACC_PRIVATE);
+    // Note that MethodCreator also implements BytecodeCreator
+    alwaysReturnFalse.returnValue(alwaysReturnFalse.load(false)); <2> <3>
 }
 ----
 <1> Create a method with the following signature `private boolean alwaysReturnFalse()`.
@@ -89,12 +89,12 @@ And the corresponding `writeInstanceField()` and `writeStaticField()` methods ar
 [source,java]
 ----
 void fieldOperations(MethodCreator method, ResultHandle foo) {
-  // Boolean booleanTrue = Boolean.TRUE;
-  FieldDescriptor trueField = FieldDescriptor.of(Boolean.class, "TRUE", Boolean.class);
-  ResultHandle booleanTrue = method.readStaticField(trueField);
-  // foo.bar = booleanTrue;
-  FieldDescriptor barField = FieldDescriptor.of(Foo.class, "bar", Boolean.class);
-  method.writeInstanceField(fooField, foo, booleanTrue);
+    // Boolean booleanTrue = Boolean.TRUE;
+    FieldDescriptor trueField = FieldDescriptor.of(Boolean.class, "TRUE", Boolean.class);
+    ResultHandle booleanTrue = method.readStaticField(trueField);
+    // foo.bar = booleanTrue;
+    FieldDescriptor barField = FieldDescriptor.of(Foo.class, "bar", Boolean.class);
+    method.writeInstanceField(fooField, foo, booleanTrue);
 }
 ----
 
@@ -107,45 +107,45 @@ Gizmo covers `invokestatic`, `invokeinterface`, `invokevirtual` and `invokespeci
 
 NOTE: If you need to invoke a static method of an interface then `BytecodeCreator#invokeStaticInterfaceMethod()` must be used.
 
-.`java.lang.Boolean.parseBoolean(String)` Invocation Example
+.Boolean.parseBoolean(String) Invocation Example
 [source,java]
 ----
 void invokeParseBoolean(MethodCreator method) {
-  // String val = "true";
-  ResultHandle str = method.load("true");
-  MethodDescriptor parseBoolean = MethodDescriptor.ofMethod(Boolean.class, "parseBoolean", boolean.class, String.class);
-  // boolean result = Boolean.parseBoolean(val);
-  ResultHandle result = method.invokeStaticMethod(parseBoolean, str);
-  // System.out.printl(val)
-  Gizmo.systemOutPrintln(method, result);
+    // String val = "true";
+    ResultHandle str = method.load("true");
+    MethodDescriptor parseBoolean = MethodDescriptor.ofMethod(Boolean.class, "parseBoolean", boolean.class, String.class);
+    // boolean result = Boolean.parseBoolean(val);
+    ResultHandle result = method.invokeStaticMethod(parseBoolean, str);
+    // System.out.printl(val)
+    Gizmo.systemOutPrintln(method, result);
 }
 ----
 
 `BytecodeCreator#invokeInterfaceMethod()` is used to invoke a method of an interface.
 
-.`java.util.Collection#size()` Invocation Example
+.Collection.size() Invocation Example
 [source,java]
 ----
 void invokeSize(MethodCreator method, ResultHandle someCollection) {
-  MethodDescriptor size = MethodDescriptor.ofMethod(Collection.class, "size", int.class);
-  // System.out.printl(someCollection.size())
-  Gizmo.systemOutPrintln(method, method.invokeInterfaceMethod(size, someCollection));
+    MethodDescriptor size = MethodDescriptor.ofMethod(Collection.class, "size", int.class);
+    // System.out.printl(someCollection.size())
+    Gizmo.systemOutPrintln(method, method.invokeInterfaceMethod(size, someCollection));
 }
 ----
 
 `BytecodeCreator#invokeVirtualMethod()` is used to invoke a _virtual_ method, i.e. a public, package-private and protected methods of a class.
 
-.`java.lan.String#toLowerCase()` Invocation Example
+.String.toLowerCase() Invocation Example
 [source,java]
 ----
 void invokeToLowerCase(MethodCreator method) {
-  // String val = "HELLO";
-  ResultHandle str = method.load("HELLO");
-  MethodDescriptor toLowerCase = MethodDescriptor.ofMethod(String.class, "toLowerCase", String.class);
-  // String result = str.toLowerCase();
-  ResultHandle result = method.invokeVirtualMethod(toLowerCase, str);
-  // System.out.printl(result)
-  Gizmo.systemOutPrintln(method, result);
+    // String val = "HELLO";
+    ResultHandle str = method.load("HELLO");
+    MethodDescriptor toLowerCase = MethodDescriptor.ofMethod(String.class, "toLowerCase", String.class);
+    // String result = str.toLowerCase();
+    ResultHandle result = method.invokeVirtualMethod(toLowerCase, str);
+    // System.out.printl(result)
+    Gizmo.systemOutPrintln(method, result);
 }
 ----
 
@@ -155,11 +155,11 @@ void invokeToLowerCase(MethodCreator method) {
 [source,java]
 ----
 void invokeSuperToString(MethodCreator method) {
-  MethodDescriptor myPrivateMethod = MethodDescriptor.of(Foo.class,"privateMethod", String.class);
-  // String result = privateMethod();
-  ResultHandle result = method.invokeSpecialMethod(myPrivateMethod, method.getThis()); <1>
-  // System.out.printl(result)
-  Gizmo.systemOutPrintln(method, result);
+    MethodDescriptor myPrivateMethod = MethodDescriptor.of(Foo.class,"privateMethod", String.class);
+    // String result = privateMethod();
+    ResultHandle result = method.invokeSpecialMethod(myPrivateMethod, method.getThis()); <1>
+    // System.out.printl(result)
+    Gizmo.systemOutPrintln(method, result);
 }
 ----
 <1> `BytecodeCreator.getThis()` represents the current object
@@ -170,7 +170,7 @@ Sometimes you need to generate the bytecode to iterate over a collection of elem
 There are two constructs that could be useful: `ForEachLoop` and `WhileLoop`.
 In the following snippet we're going to generate a bytecode to iterate over all elements of a `java.lang.Iterable` instance.
 
-.`ForEachLoop` Example
+.ForEachLoop Example
 [source,java]
 ----
 void iterate(MethodCreator method, ResultHandle iterable) {
@@ -187,7 +187,7 @@ NOTE: Unlike the for-each in Java the `ForEachLoop` does not support arrays, i.e
 
 And the next snippet is using the `WhileLoop` and `java.util.Iterator` instead.
 
-.`WhileLoop` Example
+.WhileLoop Example
 [source,java]
 ----
 import io.quarkus.gizmo.Gizmo.JdkIterator.HAS_NEXT;
@@ -209,7 +209,7 @@ Gizmo provides some basic control flow constructs.
 The `BytecodeCreator` declares several methods that start with the `if` prefix.
 A typical example is the `ifTrue()` method which can be used to generate a simple `if-then` bytecode.
 
-`ifTrue()` Example
+.ifTrue() Example
 [source,java]
 ----
 void ifTrue(MethodCreator method, ResultHandle value) {
@@ -226,32 +226,354 @@ NOTE: There are other variants such as `ifNull()` and `ifFalse()`.
 
 If you need a more complex `if-then-else` bytecode then you can try the `ifThenElse()` method and the returned `IfThenElse` construct.
 
-`ifThenElse()` Example
+.ifThenElse() Example
 [source,java]
 ----
 void ifThenElse(MethodCreator method, ResultHandle value) {
-   // String val;
-   // if (val.equals("foo")) {
-   //   val = "FOO";
-   // } else if (val.equals("bar")) {
-   //   val = "BAR!";
-   // } else if (val.equals("baz")) {
-   //   var = "BAZ!";
-   // } else {
-   //   val = "OTHER!";
-   // }
-   IfThenElse ifValue = method.ifThenElse(Gizmo.equals(method, value, method.load("foo")));
+    // String val;
+    // if (val.equals("foo")) {
+    //   val = "FOO";
+    // } else if (val.equals("bar")) {
+    //   val = "BAR!";
+    // } else if (val.equals("baz")) {
+    //   var = "BAZ!";
+    // } else {
+    //   val = "OTHER!";
+    // }
+    IfThenElse ifValue = method.ifThenElse(Gizmo.equals(method, value, method.load("foo")));
 
-   BytecodeCreator ifFooNext = ifValue.then();
-   ifFooNext.assign(ret, ifFooNext.load("FOO!"));
+    BytecodeCreator ifFooNext = ifValue.then();
+    ifFooNext.assign(ret, ifFooNext.load("FOO!"));
     
-   BytecodeCreator ifBar = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("bar")));
-   ifBar.assign(ret, ifBar.load("BAR!"));
+    BytecodeCreator ifBar = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("bar")));
+    ifBar.assign(ret, ifBar.load("BAR!"));
     
-   BytecodeCreator ifBaz = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("baz")));
-   ifBaz.assign(ret, ifBaz.load("BAZ!"));
+    BytecodeCreator ifBaz = ifValue.elseIf(b -> Gizmo.equals(b, value, b.load("baz")));
+    ifBaz.assign(ret, ifBaz.load("BAZ!"));
     
-   BytecodeCreator elseThen = ifValue.elseThen();
-   elseThen.assign(ret, elseThen.load("OTHER!"));
+    BytecodeCreator elseThen = ifValue.elseThen();
+    elseThen.assign(ret, elseThen.load("OTHER!"));
+}
+----
+
+== High-level Utilities
+
+The `Gizmo` class contains many utilities for generating common code sequences.
+
+=== Common Methods
+
+`Gizmo.toString(BytecodeCreator target, ResultHandle obj)` generates an invocation of `obj.toString()` into `target`.
+It returns a `ResultHandle` of type `java.lang.String`.
+Note that this code sequence fails at runtime with `NullPointerException` when `obj` represents the `null` reference.
+
+`Gizmo.equals(BytecodeCreator target, ResultHandle obj1, ResultHandle obj2)` generates an invocation of `obj1.equals(obj2)` into `target`.
+It returns a `ResultHandle` of type `boolean`.
+Note that this code sequence fails at runtime with `NullPointerException` when `obj1` represents the `null` reference.
+
+`Gizmo.systemOutPrintln(BytecodeCreator target, ResultHandle obj)` generates an invocation of `System.out.println(obj)` into `target`.
+Note that this code sequence fails at runtime with `ClassCastException` when `obj` is not of type `String`.
+
+Similarly, `Gizmo.systemErrPrintln(BytecodeCreator target, ResultHandle obj)` generates an invocation of `System.err.println(obj)` into `target`.
+Note that this code sequence fails at runtime with `ClassCastException` when `obj` is not of type `String`.
+
+`Gizmo.newArrayList(BytecodeCreator target)` generates an invocation of `new ArrayList()` into `target`.
+There's also a variant that takes a statically known initial capacity: `Gizmo.newArrayList(BytecodeCreator target, int initialCapacity)`.
+
+`Gizmo.newHashSet(BytecodeCreator target)` generates an invocation of `new HashSet()` into `target`.
+
+`Gizmo.newHashMap(BytecodeCreator target)` generates an invocation of `new HashMap()` into target.
+
+=== StringBuilders
+
+`Gizmo.newStringBuilder(BytecodeCreator target)` generates an invocation of `new StringBuilder()` into `target` and returns a `StringBuilderGenerator`.
+The generator has an `append(ResultHandle)` method that generates an invocation of the correct overload of `myStringBuilder.append()`.
+There's also a variant of `append()` that takes statically known `char` and `String` constants.
+After the string is built, `StringBuilderGenerator.callToString()` generates an invocation of `myStringBuilder.toString()` to finally build the `String` object.
+
+.Gizmo.newStringBuilder() Example
+[source,java]
+----
+void buildString(BytecodeCreator bytecode) {
+    // StringBuilder str = new StringBuilder();
+    StringBuilderGenerator str = Gizmo.newStringBuilder(bytecode);
+    // str.append(1);
+    str.append(bytecode.load(1));
+    // str.append('+');
+    str.append(bytecode.load('+'));
+    // str.append(1L);
+    str.append(bytecode.load(1L));
+    // str.append("=");
+    str.append(bytecode.load("="));
+    // str.append("???");
+    str.append("???");
+    // String result = str.toString();
+    ResultHandle result = str.callToString();
+    // System.out.println(result);
+    Gizmo.systemOutPrintln(bytecode, result);
+}
+----
+
+=== Operations Helpers
+
+Several helper methods and classes are provided to generate method invocations on commonly used classes and their instances.
+They are all structured similarly.
+For example, when you call `Gizmo.listOperations(BytecodeCreator)`, you get a `JdkList`.
+If you call `JdkList.on(ResultHandle)`, where the parameter represents a `java.util.List`, you get a `JdkListInstance`.
+`JdkList` has methods to generate invocations of _static_ methods from `java.util.List`, while `JdkListInstance` allows generating invocations of _instance_ methods.
+Similar methods and classes exists for other types, such as `Set`, `Map`, `Collection`, or `Optional`.
+
+Further, the classes such as `JdkList` are structured in an inheritance hierarchy that mirrors the actual inheritance hierarchy of `List` etc.
+So `JdkList` extends `JdkCollection`, which in turn extends `JdkIterable`:
+
+[source]
+----
+          JdkIterable             JdkMap
+               ^
+               |
+         JdkCollection            JdkOptional
+           ^       ^
+           |       |
+        JdkList  JdkSet
+----
+
+Similarly, `JdkListInstance` extends `JdkCollectionInstance`, which in turn extends `JdkIterableInstance`:
+
+[source]
+----
+      JdkIterableInstance         JdkMapInstance
+               ^
+               |
+     JdkCollectionInstance        JdkOptionalInstance
+         ^          ^
+         |          |
+JdkListInstance  JdkSetInstance
+----
+
+Therefore, if you have a `JdkListInstance`, you can generate a `size()` invocation, because `JdkCollectionInstance` has a method for it.
+
+=== Iterable Operations
+
+`Gizmo.iterableOperations(BytecodeCreator target)` returns `JdkIterable` with no additional methods.
+
+`JdkIterable.on(ResultHandle iterable)` returns `JdkIterableInstance` with these methods:
+
+- `iterator()` to generate an invocation of `myIterable.iterator()`
+
+=== Iterator Operations
+
+`Gizmo.iteratorOperations(BytecodeCreator target)` returns `JdkIterator` with no additional methods.
+
+`JdkIterator.on(ResultHandle iterator)` returns `JdkIteratorInstance` with these methods:
+
+- `hasNext()` to generate an invocation of `myIterator.hasNext()`
+- `next()` to generate an invocation of `myIterator.next()`
+
+.Gizmo.iterableOperations() and iteratorOperations() Example
+[source,java]
+----
+void iterate(BytecodeCreator bytecode, ResultHandle iterable) {
+    // Iterator iterator = iterable.iterator();
+    ResultHandle iterator = Gizmo.iterableOperations(bytecode).on(iterable).iterator();
+
+    // while (iterator.hasNext()) {
+    //     Object next = iterator.next();
+    //     System.out.println((String) next);
+    // }
+    WhileLoop loop = bytecode.whileLoop(bc -> bc.ifTrue(
+          Gizmo.iteratorOperations(bc).on(iterator).hasNext()));
+    BytecodeCreator block = loop.block();
+
+    ResultHandle next = Gizmo.iteratorOperations(block).on(iterator).next();
+    Gizmo.systemOutPrintln(block, next);
+}
+----
+
+=== Collection Operations
+
+`Gizmo.collectionOperations(BytecodeCreator target)` returns `JdkCollection` with no additional methods.
+
+`JdkCollection.on(ResultHandle colletion)` returns `JdkCollectionInstance` with these methods:
+
+- `size()` to generate an invocation of `myCollection.size()`
+- `isEmpty()` to generate an invocation of `myCollection.isEmpty()`
+- `contains(ResultHandle obj)` to generate an invocation of `myCollection.contains(Object)`
+- `add(ResultHandle element)` to generate an invocation of `myCollection.add(Object)`
+- `addAll(ResultHandle collection)` to generate an invocation of `myCollection.addAll(Collection)`
+- `clear()` to generate an invocation of `myCollection.clear()`
+
+.Gizmo.collectionOperations() Example
+[source,java]
+----
+void printSize(BytecodeCreator bytecode, ResultHandle collection) {
+    JdkCollectionInstance collectionOps = Gizmo.collectionOperations(bytecode).on(collection);
+    // int size = collection.size();
+    ResultHandle size = collectionOps.size();
+    // String sizeStr = "" + size;
+    ResultHandle sizeStr = Gizmo.toString(bytecode, size); <1>
+    // System.out.println(sizeStr);
+    Gizmo.systemOutPrintln(bytecode, sizeStr);
+}
+----
+
+<1> Here, we emit a `toString()` call on a primitive type (`size` is an `int`).
+    Gizmo will insert an auto-boxing operation, so the `toString()` method is actually called on `java.lang.Integer`.
+
+=== List Operations
+
+`Gizmo.listOperations(BytecodeCreator target)` returns `JdkList` with these methods:
+
+- `of(ResultHandle e1)` to generate an invocation of `List.of(Object)`
+- `of(ResultHandle e1, ResultHandle e2)` to generate an invocation of `List.of(Object, Object)`
+- `of(ResultHandle e1, ResultHandle e2, ResultHandle e3)` to generate an invocation of `List.of(Object, Object, Object)`
+
+`JdkList.on(ResultHandle list)` returns `JdkListInstance` with these methods:
+
+- `get(int index)` to generate an invocation of `myList.get(int)`
+- `get(ResultHandle index)` to generate an invocation of `myList.get(index)`.
+
+.Gizmo.listOperations() Example
+[source,java]
+----
+void createListAndPrintFirst(BytecodeCreator bytecode) {
+    JdkList listOps = Gizmo.listOperations(bytecode);
+    // List list = List.of("element", "2nd element");
+    ResultHandle list = listOps.of(bytecode.load("element"), bytecode.load("2nd element"));
+
+    JdkListInstance listInstanceOps = listOps.on(list);
+    // Object firstElement = list.get(0);
+    ResultHandle firstElement = listInstanceOps.get(0);
+
+    // System.out.println((String) firstElement);
+    Gizmo.systemOutPrintln(bytecode, firstElement);
+}
+----
+
+=== Set Operations
+
+`Gizmo.setOperations(BytecodeCreator target)` returns `JdkSet` with these methods:
+
+- `of(ResultHandle e1)` to generate an invocation of `Set.of(Object)`
+- `of(ResultHandle e1, ResultHandle e2)` to generate an invocation of `Set.of(Object, Object)`
+- `of(ResultHandle e1, ResultHandle e2, ResultHandle e3)` to generate an invocation of `Set.of(Object, Object, Object)`
+
+`JdkSet.on(ResultHandle set)` returns `JdkSetInstance` with no additional methods.
+
+.Gizmo.setOperations() Example
+[source,java]
+----
+void createSetAndPrint(BytecodeCreator bytecode) {
+    Gizmo.JdkSet setOps = Gizmo.setOperations(bytecode);
+    // Set set = Set.of("element", "2nd element");
+    ResultHandle set = setOps.of(bytecode.load("element"), bytecode.load("2nd element"));
+
+    // String setStr = set.toString();
+    ResultHandle setStr = Gizmo.toString(bytecode, set);
+    // System.out.println(setStr);
+    Gizmo.systemOutPrintln(bytecode, setStr);
+}
+----
+
+=== Map Operations
+
+`Gizmo.mapOperations(BytecodeCreator target)` returns `JdkMap` with these methods:
+
+- `of(ResultHandle k1, ResultHandle v1)` to generate an invocation of `Map.of(Object, Object)`
+
+`JdkMap.on(ResultHandle map)` returns `JdkMapInstance` with these methods:
+
+- `get(ResultHandle key)` to generate an invocation of `myMap.get(Object)`
+- `put(ResultHandle key, ResultHandle val)` to generate an invocation of `myMap.put(Object, Object)`
+- `size()` to generate an invocation of `myMap.size()`
+- `isEmpty()` to generate an invocation of `myMap.isEmpty()`
+- `containsKey(ResultHandle key)` to generate an invocation of `myMap.containsKey(Object)`
+
+.Gizmo.mapOperations() Example
+[source,java]
+----
+void createMapAndLookup(BytecodeCreator bytecode) {
+    JdkMap mapOps = Gizmo.mapOperations(bytecode);
+    // Map map = Map.of("key", "value");
+    ResultHandle map = mapOps.of(bytecode.load("key"), bytecode.load("value"));
+
+    JdkMapInstance mapInstanceOps = mapOps.on(map);
+    // Object value = map.get("key");
+    ResultHandle value = mapInstanceOps.get(bytecode.load("key"));
+    // System.out.println((String) value);
+    Gizmo.systemOutPrintln(bytecode, value);
+}
+----
+
+=== Optional Operations
+
+`Gizmo.optionalOperations(BytecodeCreator target)` returns `JdkOptional` with these methods:
+
+- `of(ResultHandle value)` to generate an invocation of `Optional.of(Object)`
+- `ofNullable(ResultHandle value)` to generate an invocation of `Optional.ofNullable(Object)`
+
+`JdkOptional.on(ResultHandle optional)` returns `JdkOptionalInstance` with these methods:
+
+- `isPresent()` to generate an invocation of `myOptional.isPresent()`
+- `isEmpty()` to generate an invocation of `myOptional.isEmpty()`
+- `get()` to generate an invocation of `myOptional.get()`
+
+.Gizmo.optionalOperations() Example
+[source,java]
+----
+void createOptionalAndPrint(BytecodeCreator bytecode) {
+    JdkOptional optionalOps = Gizmo.optionalOperations(bytecode);
+    // Optional optional = Optional.of("value");
+    ResultHandle optional = optionalOps.of(bytecode.load("value"));
+
+    JdkOptionalInstance optionalInstanceOps = optionalOps.on(optional);
+    // if (optional.isPresent()) {
+    //     Object value = optional.get();
+    //     System.out.println((String) value);
+    // }
+    BytecodeCreator ifPresent = bytecode.ifTrue(optionalInstanceOps.isPresent()).trueBranch();
+    ResultHandle value = Gizmo.optionalOperations(ifPresent).on(optional).get();
+    Gizmo.systemOutPrintln(ifPresent, value);
+}
+----
+
+== Generating `equals`, `hashCode` and `toString`
+
+When creating a DTO-style class, it is often possible to generate the `equals`, `hashCode` and `toString` from a template.
+Similarly to IDEs generating their source code, Gizmo has utility methods to generate their bytecode.
+
+To generate a structural `equals` method into given `ClassCreator`, based on given fields, use:
+
+- `Gizmo.generateEquals(ClassCreator clazz, FieldDescriptor\... fields)`
+- `Gizmo.generateEquals(ClassCreator clazz, Collection<FieldDescriptor> fields)`
+
+To generate a structural `equals` and `hashCode` methods into given `ClassCreator`, based on given fields, use:
+
+- `Gizmo.generateEqualsAndHashCode(ClassCreator clazz, FieldDescriptor\... fields)`
+- `Gizmo.generateEqualsAndHashCode(ClassCreator clazz, Collection<FieldDescriptor> fields)`
+
+Finally, to generate a naive `toString` method into given `ClassCreator`, based on given fields, use:
+
+- `Gizmo.generateNaiveToString(ClassCreator clazz, FieldDescriptor\... fields)`
+- `Gizmo.generateNaiveToString(ClassCreator clazz, Collection<FieldDescriptor> fields)`
+
+These methods require explicitly passing the set of fields to consider.
+When you know that all fields must be considered, it is easy to express that.
+
+.Gizmo.generateEqualsAndHashCode() and generateNaiveToString() Example
+[source,java]
+----
+void createDTO(ClassOutput output) {
+    try (ClassCreator creator = ClassCreator.builder()
+            .classOutput(output)
+            .className("com.example.Person")
+            .build()) {
+
+        creator.getFieldCreator("name", String.class).setModifiers(Opcodes.ACC_FINAL);
+        creator.getFieldCreator("age", int.class).setModifiers(Opcodes.ACC_FINAL);
+
+        // generate constructor here
+
+        Gizmo.generateEqualsAndHashCode(creator, creator.getExistingFields());
+        Gizmo.generateNaiveToString(creator, creator.getExistingFields());
+    }
 }
 ----

@@ -489,8 +489,8 @@ public final class Gizmo {
          * 
          * @return bytecode generator for instance methods
          */
-        public JdkOptionalInstance on(ResultHandle list) {
-            return new JdkOptionalInstance(list);
+        public JdkOptionalInstance on(ResultHandle optional) {
+            return new JdkOptionalInstance(optional);
         }
 
         /**
@@ -612,8 +612,8 @@ public final class Gizmo {
          * 
          * @return bytecode generator for instance methods
          */
-        public JdkIteratorInstance on(ResultHandle iterable) {
-            return new JdkIteratorInstance(iterable);
+        public JdkIteratorInstance on(ResultHandle iterator) {
+            return new JdkIteratorInstance(iterator);
         }
 
         public class JdkIteratorInstance extends InstanceInvocationGenerator {
@@ -848,8 +848,8 @@ public final class Gizmo {
             super(target);
         }
 
-        public JdkSetInstance on(ResultHandle list) {
-            return new JdkSetInstance(list);
+        public JdkSetInstance on(ResultHandle set) {
+            return new JdkSetInstance(set);
         }
 
         public ResultHandle of(ResultHandle e1) {
@@ -894,8 +894,16 @@ public final class Gizmo {
             super(target);
         }
 
-        public JdkMapInstance instance(ResultHandle list) {
-            return new JdkMapInstance(list);
+        /**
+         * @deprecated use {@link #on(ResultHandle)}
+         */
+        @Deprecated
+        public JdkMapInstance instance(ResultHandle map) {
+            return new JdkMapInstance(map);
+        }
+
+        public JdkMapInstance on(ResultHandle map) {
+            return new JdkMapInstance(map);
         }
 
         public ResultHandle of(ResultHandle k1, ResultHandle v1) {
