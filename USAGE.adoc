@@ -177,7 +177,7 @@ void iterate(MethodCreator method, ResultHandle iterable) {
     // for (Object element : iterable) { 
     //   System.out.println(element);
     // }
-    ForEachLoop loop = method.forEach(list);
+    ForEachLoop loop = method.forEach(iterable);
     BytecodeCreator block = loop.block();
     Gizmo.systemOutPrintln(block, loop.element());
 }
