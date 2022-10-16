@@ -42,7 +42,8 @@ public final class Gizmo {
      * Generates the bytecode that calls {@link Object#equals(Object)}.
      * 
      * @param target
-     * @param obj
+     * @param obj1
+     * @param obj2
      * 
      * @return the result
      */
