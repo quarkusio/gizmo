@@ -130,6 +130,11 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         return className;
     }
 
+    public String getSimpleClassName() {
+        int index = className.lastIndexOf('/');
+        return index < 0 ? className : className.substring(index + 1);
+    }
+
     MethodDescriptor getSupertypeAccessor(MethodDescriptor descriptor, String supertype, boolean isInterface) {
         if (superclassAccessors.containsKey(descriptor)) {
             return superclassAccessors.get(descriptor);
@@ -246,6 +251,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
     public Set<MethodDescriptor> getExistingMethods() {
         return methods.keySet();
+    }
+
+    public Set<FieldDescriptor> getExistingFields() {
+        return fields.keySet();
     }
 
     ClassOutput getClassOutput() {

@@ -506,6 +506,51 @@ public interface BytecodeCreator extends AutoCloseable {
     TryBlock tryBlock();
 
     /**
+     * Compares two {@code long} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code long}.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @return the comparison result
+     */
+    ResultHandle compareLong(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * Compares two {@code float} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code float}.
+     * <p>
+     * If one of the values is NaN, the result is 1 if {@code nanComparesAsGreater} is true and -1 if not.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @param nanComparesAsGreater whether presence of NaN should result in "greater"
+     * @return the comparison result
+     */
+    ResultHandle compareFloat(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater);
+
+    /**
+     * Compares two {@code double} values and pushes the resulting integer to the stack. If {@code value1}
+     * is greater than {@code value2}, the result is 1; if {@code value1} is equal to {@code value2},
+     * the result is 0; if {@code value1} is less than {@code value2}, the result is -1.
+     * One of the {@code if*} methods should be used to process the result. Both parameters
+     * must be of type {@code double}.
+     * <p>
+     * If one of the values is NaN, the result is 1 if {@code nanComparesAsGreater} is true and -1 if not.
+     *
+     * @param value1 first {@code long} value to compare
+     * @param value2 second {@code long} value to compare
+     * @param nanComparesAsGreater whether presence of NaN should result in "greater"
+     * @return the comparison result
+     */
+    ResultHandle compareDouble(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater);
+
+    /**
      * An if statement.
      * <p>
      * resultHandle must be an integer type or boolean. If this value is true or non-zero the
@@ -718,6 +763,21 @@ public interface BytecodeCreator extends AutoCloseable {
     BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2);
 
     /**
+     * An if statement.
+     * <p>
+     * If references are <em>not</em> equal (as in object identity) the {@link BranchResult#trueBranch} code will be
+     * executed, otherwise the {@link BranchResult#falseBranch} will be run.
+     * <p>
+     * This method is dual to {@link #ifReferencesEqual(ResultHandle, ResultHandle)} and can be used
+     * to emit bytecode that is closer to what javac emits, when useful.
+     *
+     * @param ref1
+     * @param ref2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifReferencesNotEqual(ResultHandle ref1, ResultHandle ref2);
+
+    /**
      * @param i The method parameter number, zero indexed
      * @return A {@link ResultHandle} representing the parameter
      */
@@ -741,6 +801,52 @@ public interface BytecodeCreator extends AutoCloseable {
      * @param returnValue The value to return
      */
     void returnValue(ResultHandle returnValue);
+
+    /**
+     * Marks a return from a {@code void} method or a constructor.
+     * <p>
+     * Equivalent to {@code returnValue(null)}.
+     *
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnVoid() {
+        returnValue(null);
+    }
+
+    /**
+     * Creates a return statement that returns the {@code null} reference.
+     * <p>
+     * Equivalent to {@code returnValue(loadNull())}.
+     *
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnNull() {
+        returnValue(loadNull());
+    }
+
+    /**
+     * Creates a return statement that returns given boolean constant.
+     * <p>
+     * Equivalent to {@code returnValue(load(value))}.
+     *
+     * @param value the boolean constant
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnBoolean(boolean value) {
+        returnValue(load(value));
+    }
+
+    /**
+     * Creates a return statement that returns given integer constant.
+     * <p>
+     * Equivalent to {@code returnValue(load(value))}.
+     *
+     * @param value the integer constant
+     * @see #returnValue(ResultHandle)
+     */
+    default void returnInt(int value) {
+        returnValue(load(value));
+    }
 
     /**
      * Throws an exception
@@ -880,6 +986,15 @@ public interface BytecodeCreator extends AutoCloseable {
      * @return The result
      */
     ResultHandle add(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Multiplies the two result handles together and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle multiply(ResultHandle a1, ResultHandle a2);
 
     /**
      * Increments a ResultHandle

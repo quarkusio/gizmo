@@ -86,4 +86,13 @@ public class FieldDescriptor {
     public int hashCode() {
         return Objects.hash(declaringClass, name, type);
     }
+
+    @Override
+    public String toString() {
+        return "FieldDescriptor{" +
+                "declaringClass='" + declaringClass + '\'' +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

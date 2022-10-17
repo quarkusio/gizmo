@@ -43,7 +43,7 @@ public class ResultHandle {
         verifyType(type);
     }
 
-    //params need to be in a different order to avoid ambiguality
+    //params need to be in a different order to avoid ambiguity
     ResultHandle(String type, BytecodeCreatorImpl owner, Object constant) {
         if (owner != null) {
             Objects.requireNonNull(constant);
@@ -133,7 +133,7 @@ public class ResultHandle {
          */
         LOCAL_VARIABLE,
         /**
-         * A constant loaded via ldc or ACONST_NULL
+         * A constant loaded via LDC, ACONST_NULL, ICONST_* etc.
          */
         CONSTANT,
         /**

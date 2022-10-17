@@ -787,17 +787,17 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             if (handle.getConstant() == null) {
                 methodVisitor.visitInsn(Opcodes.ACONST_NULL);
             } else {
-                methodVisitor.visitLdcInsn(handle.getConstant());
+                emitLoadConstant(methodVisitor, handle.getConstant());
                 if (!dontCast && !expectedType.equals(handle.getType())) {
-                    //both objects, we just do a checkcast
                     if (expectedType.length() > 1 && handle.getType().length() > 1) {
+                        // both objects, we just do a checkcast
                         if (!expectedType.equals("Ljava/lang/Object;")) {
                             methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, DescriptorUtils.getTypeStringFromDescriptorFormat(expectedType));
                         }
                     } else if (expectedType.length() == 1 && handle.getType().length() == 1) {
-                        //ignore
+                        // both primitives, ignore
                     } else if (expectedType.length() == 1) {
-                        //autounboxing support
+                        // expected primitive, must auto-unbox
                         String type = boxingMap.get(expectedType);
                         if (type == null) {
                             throw new RuntimeException("Unknown primitive type " + expectedType);
@@ -805,12 +805,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
                         methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
                     } else {
-                        //autoboxing support
+                        // expected primitive wrapper, must auto-box
                         String type = boxingMap.get(handle.getType());
                         methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
                     }
                 }
-
             }
             return;
         }
@@ -831,15 +830,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         }
         if (!dontCast && !expectedType.equals(handle.getType())) {
-            //both objects, we just do a checkcast
             if (expectedType.length() > 1 && handle.getType().length() > 1) {
+                // both objects, we just do a checkcast
                 if (!expectedType.equals("Ljava/lang/Object;")) {
                     methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, DescriptorUtils.getTypeStringFromDescriptorFormat(expectedType));
                 }
             } else if (expectedType.length() == 1 && handle.getType().length() == 1) {
-                //ignore
+                // both primitives, ignore
             } else if (expectedType.length() == 1) {
-                //autounboxing support
+                // expected primitive, must auto-unbox
                 String type = boxingMap.get(expectedType);
                 if (type == null) {
                     throw new RuntimeException("Unknown primitive type " + expectedType);
@@ -847,10 +846,52 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
                 methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
             } else {
-                //autoboxing support
+                // expected primitive wrapper, must auto-box
                 String type = boxingMap.get(handle.getType());
                 methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
             }
+        }
+    }
+
+    private static void emitLoadConstant(MethodVisitor methodVisitor, Object constant) {
+        if (constant instanceof Byte || constant instanceof Short) {
+            constant = ((Number) constant).intValue();
+        }
+
+        if (Boolean.FALSE.equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_0);
+        } else if (Boolean.TRUE.equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_1);
+        } else if (Integer.valueOf(-1).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_M1);
+        } else if (Integer.valueOf(0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_0);
+        } else if (Integer.valueOf(1).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_1);
+        } else if (Integer.valueOf(2).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_2);
+        } else if (Integer.valueOf(3).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_3);
+        } else if (Integer.valueOf(4).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_4);
+        } else if (Integer.valueOf(5).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.ICONST_5);
+        } else if (Long.valueOf(0L).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.LCONST_0);
+        } else if (Long.valueOf(1L).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.LCONST_1);
+        } else if (Float.valueOf(0.0F).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.FCONST_0);
+        } else if (Float.valueOf(1.0F).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.FCONST_1);
+        } else if (Double.valueOf(0.0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.DCONST_0);
+        } else if (Double.valueOf(1.0).equals(constant)) {
+            methodVisitor.visitInsn(Opcodes.DCONST_1);
+        } else {
+            // if original constant was `byte` or `short`, it is `int` now,
+            // but that makes no difference
+            methodVisitor.visitLdcInsn(constant);
         }
     }
 
@@ -859,6 +900,58 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         final TryBlockImpl tryBlock = new TryBlockImpl(this);
         operations.add(new BlockOperation(tryBlock));
         return tryBlock;
+    }
+
+    @Override
+    public ResultHandle compareLong(ResultHandle value1, ResultHandle value2) {
+        return emitCompare(Opcodes.LCMP, "J", value1, value2);
+    }
+
+    @Override
+    public ResultHandle compareFloat(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater) {
+        return emitCompare(nanComparesAsGreater ? Opcodes.FCMPG : Opcodes.FCMPL, "F", value1, value2);
+    }
+
+    @Override
+    public ResultHandle compareDouble(ResultHandle value1, ResultHandle value2, boolean nanComparesAsGreater) {
+        return emitCompare(nanComparesAsGreater ? Opcodes.DCMPG : Opcodes.DCMPL, "D", value1, value2);
+    }
+
+    private ResultHandle emitCompare(int opcode, String expectedType, ResultHandle value1, ResultHandle value2) {
+        Objects.requireNonNull(value1);
+        Objects.requireNonNull(value2);
+        if (!expectedType.equals(value1.getType()) || !expectedType.equals(value2.getType())) {
+            throw new IllegalArgumentException("Arguments must both be of type " + expectedType);
+        }
+        final ResultHandle resolved1 = resolve(checkScope(value1));
+        final ResultHandle resolved2 = resolve(checkScope(value2));
+        final ResultHandle result = allocateResult("I");
+        assert result != null;
+        operations.add(new Operation() {
+            @Override
+            void writeBytecode(final MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, resolved1, BytecodeCreatorImpl.this, resolved1.getType(), true);
+                loadResultHandle(methodVisitor, resolved2, BytecodeCreatorImpl.this, resolved2.getType(), true);
+                methodVisitor.visitInsn(opcode);
+                storeResultHandle(methodVisitor, result);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return new LinkedHashSet<>(Arrays.asList(resolved1, resolved2));
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return resolved1;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return result;
+            }
+        });
+        return result;
     }
 
     @Override
@@ -975,7 +1068,12 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public BranchResult ifReferencesEqual(ResultHandle ref1, ResultHandle ref2) {
         return ifValues(ref1, ref2, Opcodes.IF_ACMPEQ, "Ljava/lang/Object;");
     }
-    
+
+    @Override
+    public BranchResult ifReferencesNotEqual(ResultHandle ref1, ResultHandle ref2) {
+        return ifValues(ref1, ref2, Opcodes.IF_ACMPNE, "Ljava/lang/Object;");
+    }
+
     @Override
     public IfThenElse ifThenElse(ResultHandle value) {
         IfThenElseImpl ifThen = new IfThenElseImpl(this, Objects.requireNonNull(value));
@@ -1151,6 +1249,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle add(ResultHandle a1, ResultHandle a2) {
+        return emitArithmetic(Opcodes.IADD, a1, a2);
+    }
+
+    @Override
+    public ResultHandle multiply(ResultHandle a1, ResultHandle a2) {
+        return emitArithmetic(Opcodes.IMUL, a1, a2);
+    }
+
+    private ResultHandle emitArithmetic(int intOpcode, ResultHandle a1, ResultHandle a2) {
         Objects.requireNonNull(a1);
         Objects.requireNonNull(a2);
         if (!a1.getType().equals(a2.getType())) {
@@ -1163,21 +1270,21 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             void writeBytecode(MethodVisitor methodVisitor) {
                 loadResultHandle(methodVisitor, a1, BytecodeCreatorImpl.this, a1.getType());
                 loadResultHandle(methodVisitor, a2, BytecodeCreatorImpl.this, a2.getType());
-                if (a1.getType().equals("Z")) {
-                    methodVisitor.visitInsn(Opcodes.LADD);
+                if (a1.getType().equals("J")) {
+                    methodVisitor.visitInsn(longArithmeticOpcode(intOpcode));
                 } else if (a1.getType().equals("D")) {
-                    methodVisitor.visitInsn(Opcodes.DADD);
+                    methodVisitor.visitInsn(doubleArithmeticOpcode(intOpcode));
                 } else if (a1.getType().equals("F")) {
-                    methodVisitor.visitInsn(Opcodes.FADD);
+                    methodVisitor.visitInsn(floatArithmeticOpcode(intOpcode));
                 } else {
-                    methodVisitor.visitInsn(Opcodes.IADD);
+                    methodVisitor.visitInsn(intOpcode);
                 }
                 storeResultHandle(methodVisitor, ret);
             }
 
             @Override
             Set<ResultHandle> getInputResultHandles() {
-                return new HashSet<>(Arrays.asList(a1, a2));
+                return new LinkedHashSet<>(Arrays.asList(a1, a2));
             }
 
             @Override
@@ -1191,6 +1298,75 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         });
         return ret;
+    }
+
+    private int longArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.LADD;
+            case Opcodes.ISUB:
+                return Opcodes.LSUB;
+            case Opcodes.IMUL:
+                return Opcodes.LMUL;
+            case Opcodes.IDIV:
+                return Opcodes.LDIV;
+            case Opcodes.IREM:
+                return Opcodes.LREM;
+            case Opcodes.INEG:
+                return Opcodes.LNEG;
+            case Opcodes.ISHL:
+                return Opcodes.LSHL;
+            case Opcodes.ISHR:
+                return Opcodes.LSHR;
+            case Opcodes.IUSHR:
+                return Opcodes.LUSHR;
+            case Opcodes.IAND:
+                return Opcodes.LAND;
+            case Opcodes.IOR:
+                return Opcodes.LOR;
+            case Opcodes.IXOR:
+                return Opcodes.LXOR;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for long arithmetic: " + intOpcode);
+        }
+    }
+
+    private int floatArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.FADD;
+            case Opcodes.ISUB:
+                return Opcodes.FSUB;
+            case Opcodes.IMUL:
+                return Opcodes.FMUL;
+            case Opcodes.IDIV:
+                return Opcodes.FDIV;
+            case Opcodes.IREM:
+                return Opcodes.FREM;
+            case Opcodes.INEG:
+                return Opcodes.FNEG;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for float arithmetic: " + intOpcode);
+        }
+    }
+
+    private int doubleArithmeticOpcode(int intOpcode) {
+        switch (intOpcode) {
+            case Opcodes.IADD:
+                return Opcodes.DADD;
+            case Opcodes.ISUB:
+                return Opcodes.DSUB;
+            case Opcodes.IMUL:
+                return Opcodes.DMUL;
+            case Opcodes.IDIV:
+                return Opcodes.DDIV;
+            case Opcodes.IREM:
+                return Opcodes.DREM;
+            case Opcodes.INEG:
+                return Opcodes.DNEG;
+            default:
+                throw new IllegalArgumentException("Invalid opcode for double arithmetic: " + intOpcode);
+        }
     }
 
     private ResultHandle allocateResult(String returnType) {
@@ -1581,7 +1757,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         @Override
         Set<ResultHandle> getInputResultHandles() {
             if (value2 != null) {
-                Set<ResultHandle> ret = new HashSet<>(2);
+                Set<ResultHandle> ret = new LinkedHashSet<>(2);
                 ret.add(value1);
                 ret.add(value2);
                 return ret;
