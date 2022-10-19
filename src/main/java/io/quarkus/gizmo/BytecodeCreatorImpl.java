@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1249,15 +1248,30 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle add(ResultHandle a1, ResultHandle a2) {
-        return emitArithmetic(Opcodes.IADD, a1, a2);
+        return emitBinaryArithmetic(Opcodes.IADD, a1, a2);
     }
 
     @Override
     public ResultHandle multiply(ResultHandle a1, ResultHandle a2) {
-        return emitArithmetic(Opcodes.IMUL, a1, a2);
+        return emitBinaryArithmetic(Opcodes.IMUL, a1, a2);
     }
 
-    private ResultHandle emitArithmetic(int intOpcode, ResultHandle a1, ResultHandle a2) {
+    @Override
+    public ResultHandle bitwiseAnd(ResultHandle a1, ResultHandle a2) {
+        return emitBinaryArithmetic(Opcodes.IAND, a1, a2);
+    }
+
+    @Override
+    public ResultHandle bitwiseOr(ResultHandle a1, ResultHandle a2) {
+        return emitBinaryArithmetic(Opcodes.IOR, a1, a2);
+    }
+
+    @Override
+    public ResultHandle bitwiseXor(ResultHandle a1, ResultHandle a2) {
+        return emitBinaryArithmetic(Opcodes.IXOR, a1, a2);
+    }
+
+    private ResultHandle emitBinaryArithmetic(int intOpcode, ResultHandle a1, ResultHandle a2) {
         Objects.requireNonNull(a1);
         Objects.requireNonNull(a2);
         if (!a1.getType().equals(a2.getType())) {

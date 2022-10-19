@@ -997,6 +997,33 @@ public interface BytecodeCreator extends AutoCloseable {
     ResultHandle multiply(ResultHandle a1, ResultHandle a2);
 
     /**
+     * Computes the bitwise AND of the two result handles and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle bitwiseAnd(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Computes the bitwise OR of the two result handles and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle bitwiseOr(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Computes the bitwise XOR of the two result handles and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle bitwiseXor(ResultHandle a1, ResultHandle a2);
+
+    /**
      * Increments a ResultHandle
      * 
      * @param toIncrement The number to increment

@@ -1023,6 +1023,9 @@ public final class Gizmo {
     }
 
     private static class EqualsHashCodeToStringGenerator {
+        private static final MethodDescriptor FLOAT_TO_INT_BITS = MethodDescriptor.ofMethod(Float.class, "floatToIntBits", int.class, float.class);
+        private static final MethodDescriptor DOUBLE_TO_LONG_BITS = MethodDescriptor.ofMethod(Double.class, "doubleToLongBits", long.class, double.class);
+
         private static final MethodDescriptor BOOLEAN_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, boolean[].class, boolean[].class);
         private static final MethodDescriptor BYTE_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, byte[].class, byte[].class);
         private static final MethodDescriptor SHORT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, short[].class, short[].class);
@@ -1111,13 +1114,13 @@ public final class Gizmo {
                                 .falseBranch().returnBoolean(false);
                         break;
                     case "F": // float
-                        // could use `Float.compare` instead of `==`
-                        equals.ifZero(equals.compareFloat(thisValue, thatValue, false))
+                        // this is consistent with Arrays.equals() and it's also what IntelliJ generates
+                        equals.ifIntegerEqual(equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thisValue), equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thatValue))
                                 .falseBranch().returnBoolean(false);
                         break;
                     case "D": // double
-                        // could use `Double.compare` instead of `==`
-                        equals.ifZero(equals.compareDouble(thisValue, thatValue, false))
+                        // this is consistent with Arrays.equals() and it's also what IntelliJ generates
+                        equals.ifZero(equals.compareLong(equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thisValue), equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thatValue)))
                                 .falseBranch().returnBoolean(false);
                         break;
                     case "[Z": // boolean[]
