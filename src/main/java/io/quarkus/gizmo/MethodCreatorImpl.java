@@ -33,7 +33,6 @@ import org.objectweb.asm.Opcodes;
 
 class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
-    private int modifiers = Opcodes.ACC_PUBLIC;
     private final List<String> exceptions = new ArrayList<>();
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
     private final Map<Integer, AnnotationParameters> parameterAnnotations = new LinkedHashMap<>();
@@ -41,7 +40,9 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
     private final MethodDescriptor methodDescriptor;
     private final String declaringClassName;
     private final ClassCreator classCreator;
+
     private String signature;
+    private int modifiers = Opcodes.ACC_PUBLIC;
 
     private String[] parameterNames;
 
@@ -102,6 +103,20 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public MethodCreator setModifiers(int mods) {
+        boolean isOnInterface = classCreator.isInterface();
+        if (isOnInterface && (mods & Opcodes.ACC_PROTECTED) != 0) {
+            throw new IllegalArgumentException("Interface method may not be protected: " + methodDescriptor);
+        }
+        if (isOnInterface && (mods & Opcodes.ACC_FINAL) != 0) {
+            throw new IllegalArgumentException("Interface method may not be final: " + methodDescriptor);
+        }
+        if (isOnInterface && (mods & Opcodes.ACC_SYNCHRONIZED) != 0) {
+            throw new IllegalArgumentException("Interface method may not be synchronized: " + methodDescriptor);
+        }
+        if (isOnInterface && (mods & Opcodes.ACC_NATIVE) != 0) {
+            throw new IllegalArgumentException("Interface method may not be native: " + methodDescriptor);
+        }
+
         this.modifiers = mods;
         return this;
     }
