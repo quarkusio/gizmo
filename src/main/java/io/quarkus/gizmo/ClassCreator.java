@@ -49,7 +49,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     private final BytecodeCreatorImpl enclosing;
     private final ClassOutput classOutput;
     private final String superClass;
-    private final int extraAccess;
+    private final int access;
     private final String[] interfaces;
     private final Map<MethodDescriptor, MethodCreatorImpl> methods = new LinkedHashMap<>();
     private final Map<FieldDescriptor, FieldCreatorImpl> fields = new LinkedHashMap<>();
@@ -59,11 +59,11 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new LinkedHashMap<>();
     private final AtomicInteger accessorCount = new AtomicInteger();
 
-    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int extraAccess, String... interfaces) {
+    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int access, String... interfaces) {
         this.enclosing = enclosing;
         this.classOutput = classOutput;
         this.superClass = superClass.replace('.', '/');
-        this.extraAccess = extraAccess;
+        this.access = access;
         this.interfaces = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
             this.interfaces[i] = interfaces[i].replace('.', '/');
@@ -174,10 +174,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             cv = file;
         }
         String[] interfaces = this.interfaces.clone();
-        cv.visit(Opcodes.V11, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
+        cv.visit(Opcodes.V11, access, className, signature, superClass, interfaces);
         cv.visitSource(null, null);
 
-        boolean requiresCtor = true;
+        boolean requiresCtor = (access & Opcodes.ACC_INTERFACE) == 0;
         for (MethodDescriptor m : methods.keySet()) {
             if (m.getName().equals("<init>")) {
                 requiresCtor = false;
@@ -275,7 +275,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         private BytecodeCreatorImpl enclosing;
 
-        private int extraAccess;
+        private int access = ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC;
 
         Builder() {
             superClass(Object.class);
@@ -313,9 +313,20 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         public Builder setFinal(boolean isFinal) {
             if (isFinal) {
-                extraAccess |= Opcodes.ACC_FINAL;
+                access |= Opcodes.ACC_FINAL;
             } else {
-                extraAccess &= ~Opcodes.ACC_FINAL;
+                access &= ~Opcodes.ACC_FINAL;
+            }
+            return this;
+        }
+
+        public Builder setInterface(boolean isInterface) {
+            if (isInterface) {
+                access &= ~Opcodes.ACC_SUPER;
+                access |= Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT;
+            } else {
+                access &= ~Opcodes.ACC_INTERFACE & ~Opcodes.ACC_ABSTRACT;
+                access |= Opcodes.ACC_SUPER;
             }
             return this;
         }
@@ -335,7 +346,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
+            return new ClassCreator(enclosing, classOutput, className, signature, superClass, access, interfaces.toArray(new String[0]));
         }
 
     }
