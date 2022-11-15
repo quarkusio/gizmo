@@ -352,14 +352,19 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         final Class<?> primitiveType = matchPossiblyPrimitive(className);
         if (primitiveType == null) {
             if (useTccl) {
-                if (cachedTccl == null) {
-                    ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
-                    cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
+                if (!isNonPrimitiveSafeJavaClass(className)) {
+                    if (cachedTccl == null) {
+                        ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
+                        cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
+                    }
+                    return invokeStaticMethod(CL_FOR_NAME,
+                            load(className), load(false), cachedTccl);
+                } else {
+                    // JDK classes are never loaded from a custom classloader, so there is no reason to involve the TCCL
+                    return loadClassConstant(className);
                 }
-                return invokeStaticMethod(CL_FOR_NAME,
-                        load(className), load(false), cachedTccl);
             } else {
-                return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+                return loadClassConstant(className);
             }
         } else {
             Class<?> pt = primitiveType;
@@ -390,6 +395,10 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         }
     }
 
+    private ResultHandle loadClassConstant(String className) {
+        return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+    }
+
     private Class<?> matchPossiblyPrimitive(final String className) {
         switch (className) {
             case "boolean" : return Boolean.class;
@@ -403,6 +412,18 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             case "void" : return Void.class;
             default: return null;
         }
+    }
+
+    /**
+     * Returns {@code true} if the {@param className} is a non-primitive Java type that is guaranteed to be
+     * absolutely safe to load from a constant.
+     * Also works for arrays of these types.
+     * <p>
+     * Note that it's not safe to load all JDK classes using this,
+     * see <a href="https://github.com/quarkusio/gizmo/pull/126">this</a> for example.
+     */
+    private boolean isNonPrimitiveSafeJavaClass(String className) {
+        return className.startsWith("java.lang") || className.startsWith("[Ljava.lang");
     }
 
     @Override
