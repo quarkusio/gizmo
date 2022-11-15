@@ -50,7 +50,7 @@ public class LoadClassTestCase {
     }
 
     @Test
-    public void testLoadNonPublicClass() throws Exception {
+    public void testLoadNonPublicJdkClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
@@ -63,7 +63,7 @@ public class LoadClassTestCase {
     }
 
     @Test
-    public void testLoadNonPublicClassFromTCCL() throws Exception {
+    public void testLoadNonPublicJdkClassFromTCCL() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
@@ -73,6 +73,19 @@ public class LoadClassTestCase {
         Class<?> clazz = cl.loadClass("com.MyTest");
         Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
         Assert.assertEquals(Class.forName("java.util.Collections$EmptyList"), myInterface.get());
+    }
+
+    @Test
+    public void testLoadNonPublicJdkClassFromTCCL2() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle stringHandle = method.loadClassFromTCCL("java.lang.Thread$Caches");
+            method.returnValue(stringHandle);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals(Class.forName("java.lang.Thread$Caches"), myInterface.get());
     }
 
     @Test
