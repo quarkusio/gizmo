@@ -53,6 +53,20 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     private static final Map<String, AtomicInteger> functionCountersByClass = new ConcurrentHashMap<>();
 
     private static final String FUNCTION = "$$function$$";
+    private static final Set<String> SAFE_CLASSES_TO_LOAD_AS_CONSTANTS =
+            Set.of(String.class.getName(),
+                    Boolean.class.getName(),
+                    Character.class.getName(),
+                    Byte.class.getName(),
+                    Short.class.getName(),
+                    Integer.class.getName(),
+                    Long.class.getName(),
+                    Float.class.getName(),
+                    Double.class.getName(),
+                    List.class.getName(),
+                    ArrayList.class.getName(),
+                    Map.class.getName(),
+                    HashMap.class.getName());
 
     protected final List<Operation> operations = new ArrayList<>();
 
@@ -352,14 +366,19 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         final Class<?> primitiveType = matchPossiblyPrimitive(className);
         if (primitiveType == null) {
             if (useTccl) {
-                if (cachedTccl == null) {
-                    ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
-                    cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
+                if (!isNonPrimitiveSafeJavaClass(className)) {
+                    if (cachedTccl == null) {
+                        ResultHandle currentThread = invokeStaticMethod(THREAD_CURRENT_THREAD);
+                        cachedTccl = invokeVirtualMethod(THREAD_GET_TCCL, currentThread);
+                    }
+                    return invokeStaticMethod(CL_FOR_NAME,
+                            load(className), load(false), cachedTccl);
+                } else {
+                    // JDK classes are never loaded from a custom classloader, so there is no reason to involve the TCCL
+                    return loadClassConstant(className);
                 }
-                return invokeStaticMethod(CL_FOR_NAME,
-                        load(className), load(false), cachedTccl);
             } else {
-                return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+                return loadClassConstant(className);
             }
         } else {
             Class<?> pt = primitiveType;
@@ -390,6 +409,10 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         }
     }
 
+    private ResultHandle loadClassConstant(String className) {
+        return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
+    }
+
     private Class<?> matchPossiblyPrimitive(final String className) {
         switch (className) {
             case "boolean" : return Boolean.class;
@@ -403,6 +426,17 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             case "void" : return Void.class;
             default: return null;
         }
+    }
+
+    /**
+     * Returns {@code true} if the {@param className} is a non-primitive Java type that is guaranteed to be
+     * absolutely safe to load from a constant.
+     * <p>
+     * Note that it's not safe to load all JDK classes using this,
+     * see <a href="https://github.com/quarkusio/gizmo/pull/126">this</a> for an example.
+     */
+    private boolean isNonPrimitiveSafeJavaClass(String className) {
+        return SAFE_CLASSES_TO_LOAD_AS_CONSTANTS.contains(className);
     }
 
     @Override
