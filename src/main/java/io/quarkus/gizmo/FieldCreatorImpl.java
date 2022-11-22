@@ -26,16 +26,24 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
+import static org.objectweb.asm.Opcodes.ACC_FINAL;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+
 class FieldCreatorImpl implements FieldCreator {
 
     private final FieldDescriptor fieldDescriptor;
     private final List<AnnotationCreatorImpl> annotations = new ArrayList<>();
+    private final boolean isOnInterface;
     private String signature;
     private int modifiers;
 
-    public FieldCreatorImpl(FieldDescriptor fieldDescriptor) {
+    FieldCreatorImpl(FieldDescriptor fieldDescriptor, boolean isOnInterface) {
         this.fieldDescriptor = fieldDescriptor;
-        this.modifiers = Opcodes.ACC_PRIVATE;
+        this.isOnInterface = isOnInterface;
+        this.modifiers = isOnInterface ? (ACC_PUBLIC | ACC_STATIC | ACC_FINAL) : ACC_PRIVATE;
     }
 
     @Override
@@ -50,6 +58,12 @@ class FieldCreatorImpl implements FieldCreator {
 
     @Override
     public FieldCreator setModifiers(int modifiers) {
+        if (isOnInterface
+                && modifiers != (ACC_PUBLIC | ACC_STATIC | ACC_FINAL)
+                && modifiers != (ACC_PUBLIC | ACC_STATIC | ACC_FINAL | ACC_SYNTHETIC)) {
+            throw new IllegalArgumentException("Interface field may only be public static final: " + fieldDescriptor);
+        }
+
         this.modifiers = modifiers;
         return this;
     }

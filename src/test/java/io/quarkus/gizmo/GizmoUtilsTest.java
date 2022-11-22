@@ -323,8 +323,8 @@ public class GizmoUtilsTest {
             FieldDescriptor char2DArrayDesc = creator.getFieldCreator("char2DArrayValue", char[][].class).getFieldDescriptor();
             FieldDescriptor string2DArrayDesc = creator.getFieldCreator("string2DArrayValue", String[][].class).getFieldDescriptor();
 
-            MethodCreator ctor = creator.getMethodCreator("<init>", void.class, params);
-            ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, "<init>", void.class), ctor.getThis());
+            MethodCreator ctor = creator.getMethodCreator(MethodDescriptor.INIT, void.class, params);
+            ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class), ctor.getThis());
 
             ctor.writeInstanceField(booleanDesc, ctor.getThis(), ctor.getMethodParam(0));
             ctor.writeInstanceField(byteDesc, ctor.getThis(), ctor.getMethodParam(1));

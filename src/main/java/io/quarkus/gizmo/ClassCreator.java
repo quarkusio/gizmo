@@ -16,6 +16,8 @@
 
 package io.quarkus.gizmo;
 
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+import static org.objectweb.asm.Opcodes.ACC_INTERFACE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_SUPER;
 import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
@@ -43,13 +45,17 @@ import org.objectweb.asm.Opcodes;
 public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureElement<ClassCreator> {
 
     public static Builder builder() {
-        return new Builder();
+        return new Builder(ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC);
+    }
+
+    public static Builder interfaceBuilder() {
+        return new Builder(ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC);
     }
 
     private final BytecodeCreatorImpl enclosing;
     private final ClassOutput classOutput;
     private final String superClass;
-    private final int extraAccess;
+    private final int access;
     private final String[] interfaces;
     private final Map<MethodDescriptor, MethodCreatorImpl> methods = new LinkedHashMap<>();
     private final Map<FieldDescriptor, FieldCreatorImpl> fields = new LinkedHashMap<>();
@@ -59,11 +65,11 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new LinkedHashMap<>();
     private final AtomicInteger accessorCount = new AtomicInteger();
 
-    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int extraAccess, String... interfaces) {
+    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int access, String... interfaces) {
         this.enclosing = enclosing;
         this.classOutput = classOutput;
         this.superClass = superClass.replace('.', '/');
-        this.extraAccess = extraAccess;
+        this.access = access;
         this.interfaces = new String[interfaces.length];
         for (int i = 0; i < interfaces.length; ++i) {
             this.interfaces[i] = interfaces[i].replace('.', '/');
@@ -77,6 +83,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
+        if (this.isInterface() && MethodDescriptor.INIT.equals(methodDescriptor.getName())) {
+            throw new IllegalArgumentException("Constructor may not be declared on an interface: " + methodDescriptor);
+        }
+
         if (methods.containsKey(methodDescriptor)) {
             return methods.get(methodDescriptor);
         }
@@ -112,7 +122,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public FieldCreator getFieldCreator(FieldDescriptor fieldDescriptor) {
         FieldCreatorImpl field = fields.get(fieldDescriptor);
         if (field == null) {
-            field = new FieldCreatorImpl(fieldDescriptor);
+            field = new FieldCreatorImpl(fieldDescriptor, this.isInterface());
             fields.put(fieldDescriptor, field);
         }
         return field;
@@ -133,6 +143,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public String getSimpleClassName() {
         int index = className.lastIndexOf('/');
         return index < 0 ? className : className.substring(index + 1);
+    }
+
+    public boolean isInterface() {
+        return (access & ACC_INTERFACE) != 0;
     }
 
     MethodDescriptor getSupertypeAccessor(MethodDescriptor descriptor, String supertype, boolean isInterface) {
@@ -174,12 +188,12 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             cv = file;
         }
         String[] interfaces = this.interfaces.clone();
-        cv.visit(Opcodes.V11, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC | extraAccess, className, signature, superClass, interfaces);
+        cv.visit(Opcodes.V11, access, className, signature, superClass, interfaces);
         cv.visitSource(null, null);
 
-        boolean requiresCtor = true;
+        boolean requiresCtor = !this.isInterface();
         for (MethodDescriptor m : methods.keySet()) {
-            if (m.getName().equals("<init>")) {
+            if (m.getName().equals(MethodDescriptor.INIT)) {
                 requiresCtor = false;
                 break;
             }
@@ -190,9 +204,9 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             if (cv instanceof GizmoClassVisitor) {
                 ((GizmoClassVisitor)cv).append("// Auto-generated constructor").newLine();
             }
-            MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+            MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, MethodDescriptor.INIT, "()V", null, null);
             mv.visitVarInsn(ALOAD, 0); // push `this` to the operand stack
-            mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false); // call the constructor of super class
+            mv.visitMethodInsn(INVOKESPECIAL, superClass, MethodDescriptor.INIT, "()V", false); // call the constructor of super class
             mv.visitInsn(RETURN);
             mv.visitMaxs(0, 1);
             mv.visitEnd();
@@ -275,10 +289,11 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         private BytecodeCreatorImpl enclosing;
 
-        private int extraAccess;
+        private int access;
 
-        Builder() {
+        Builder(int access) {
             superClass(Object.class);
+            this.access = access;
             this.interfaces = new ArrayList<>();
         }
 
@@ -303,6 +318,12 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         }
 
         public Builder superClass(String superClass) {
+            if ((access & ACC_INTERFACE) != 0
+                    && !"java.lang.Object".equals(superClass)
+                    && !"java/lang/Object".equals(superClass)) {
+                throw new IllegalArgumentException("Interface may only have java.lang.Object as a superclass: " + className);
+            }
+
             this.superClass = superClass;
             return this;
         }
@@ -312,10 +333,14 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         }
 
         public Builder setFinal(boolean isFinal) {
+            if ((access & ACC_INTERFACE) != 0 && isFinal) {
+                throw new IllegalArgumentException("Interface may not be final: " + className);
+            }
+
             if (isFinal) {
-                extraAccess |= Opcodes.ACC_FINAL;
+                access |= Opcodes.ACC_FINAL;
             } else {
-                extraAccess &= ~Opcodes.ACC_FINAL;
+                access &= ~Opcodes.ACC_FINAL;
             }
             return this;
         }
@@ -335,7 +360,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            return new ClassCreator(enclosing, classOutput, className, signature, superClass, extraAccess, interfaces.toArray(new String[0]));
+            return new ClassCreator(enclosing, classOutput, className, signature, superClass, access, interfaces.toArray(new String[0]));
         }
 
     }
