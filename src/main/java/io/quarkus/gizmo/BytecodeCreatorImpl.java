@@ -142,6 +142,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle invokeVirtualMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
         Objects.requireNonNull(object);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(object)), resolve(checkScope(args)), false, false));
         return ret;
@@ -151,6 +152,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle invokeInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
         Objects.requireNonNull(object);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(object)), resolve(checkScope(args)), true, false));
         return ret;
@@ -159,6 +161,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle invokeStaticMethod(MethodDescriptor descriptor, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(args)), false));
         return ret;
@@ -167,6 +170,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     public ResultHandle invokeStaticInterfaceMethod(MethodDescriptor descriptor, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(args)), true));
         return ret;
@@ -176,6 +180,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle invokeSpecialMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
         Objects.requireNonNull(object);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(object)), resolve(checkScope(args)), false, true));
         return ret;
@@ -185,6 +190,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
         Objects.requireNonNull(object);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult(descriptor.getReturnType());
         operations.add(new InvokeOperation(ret, descriptor, resolve(checkScope(object)), resolve(checkScope(args)), true, true));
         return ret;
@@ -193,6 +199,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle newInstance(MethodDescriptor descriptor, ResultHandle... args) {
         Objects.requireNonNull(descriptor);
+        requireNonNullHandles(args);
         ResultHandle ret = allocateResult("L" + descriptor.getDeclaringClass() + ";");
         operations.add(new NewInstanceOperation(ret, descriptor, resolve(checkScope(args))));
         return ret;
@@ -567,6 +574,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle arrayLength(ResultHandle array) {
+        Objects.requireNonNull(array);
         ResultHandle result = new ResultHandle("I", this);
         ResultHandle resolvedArray = resolve(checkScope(array));
         operations.add(new Operation() {
@@ -597,6 +605,8 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public ResultHandle readArrayValue(ResultHandle array, ResultHandle index) {
+        Objects.requireNonNull(array);
+        Objects.requireNonNull(index);
         if (!array.getType().startsWith("[")) {
             throw new IllegalArgumentException("Not array type: " + array.getType());
         }
@@ -657,6 +667,9 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     @Override
     public void writeArrayValue(ResultHandle array, ResultHandle index, ResultHandle value) {
+        Objects.requireNonNull(array);
+        Objects.requireNonNull(index);
+        Objects.requireNonNull(value);
         ResultHandle resolvedArray = resolve(checkScope(array));
         ResultHandle resolvedIndex = resolve(checkScope(index));
         ResultHandle resolvedValue = resolve(checkScope(value));
@@ -1556,6 +1569,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         BytecodeCreatorImpl falseBranch = new BytecodeCreatorImpl(this);
         operations.add(new IfOperation(opcode, opType, resolvedResultHandle1, resolvedResultHandle2, trueBranch, falseBranch));
         return new BranchResultImpl(trueBranch, falseBranch);
+    }
+    
+    private ResultHandle[] requireNonNullHandles(ResultHandle[] handles) {
+        for (ResultHandle h : handles) {
+            Objects.requireNonNull(h);
+        }
+        return handles;
     }
 
     static abstract class Operation {
