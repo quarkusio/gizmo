@@ -83,7 +83,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
-        if (this.isInterface() && "<init>".equals(methodDescriptor.getName())) {
+        if (this.isInterface() && MethodDescriptor.INIT.equals(methodDescriptor.getName())) {
             throw new IllegalArgumentException("Constructor may not be declared on an interface: " + methodDescriptor);
         }
 
@@ -193,7 +193,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
         boolean requiresCtor = !this.isInterface();
         for (MethodDescriptor m : methods.keySet()) {
-            if (m.getName().equals("<init>")) {
+            if (m.getName().equals(MethodDescriptor.INIT)) {
                 requiresCtor = false;
                 break;
             }
@@ -204,9 +204,9 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             if (cv instanceof GizmoClassVisitor) {
                 ((GizmoClassVisitor)cv).append("// Auto-generated constructor").newLine();
             }
-            MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+            MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, MethodDescriptor.INIT, "()V", null, null);
             mv.visitVarInsn(ALOAD, 0); // push `this` to the operand stack
-            mv.visitMethodInsn(INVOKESPECIAL, superClass, "<init>", "()V", false); // call the constructor of super class
+            mv.visitMethodInsn(INVOKESPECIAL, superClass, MethodDescriptor.INIT, "()V", false); // call the constructor of super class
             mv.visitInsn(RETURN);
             mv.visitMaxs(0, 1);
             mv.visitEnd();

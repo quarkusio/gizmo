@@ -24,6 +24,16 @@ import org.jboss.jandex.MethodInfo;
 
 
 public class MethodDescriptor {
+    /**
+     * The constant string {@code <init>}. Used to denote an instance initialization method,
+     * which typically corresponds to a constructor.
+     */
+    public static final String INIT = "<init>";
+
+    /**
+     * The constant string {@code <clinit>}. Used to denote a class initialization method.
+     */
+    public static final String CLINIT = "<clinit>";
 
     private final String declaringClass;
     private final String name;
@@ -84,15 +94,15 @@ public class MethodDescriptor {
     }
 
     public static MethodDescriptor ofConstructor(String declaringClass, String... parameterTypes) {
-        return ofMethod(declaringClass, "<init>", void.class.getName(), parameterTypes);
+        return ofMethod(declaringClass, INIT, void.class.getName(), parameterTypes);
     }
 
     public static MethodDescriptor ofConstructor(Class<?> declaringClass, Class<?>... parameterTypes) {
-        return ofMethod(declaringClass, "<init>", void.class, (Object[]) parameterTypes);
+        return ofMethod(declaringClass, INIT, void.class, (Object[]) parameterTypes);
     }
 
     public static MethodDescriptor ofConstructor(Object declaringClass, Object... parameterTypes) {
-        return ofMethod(declaringClass, "<init>", void.class, (Object[]) parameterTypes);
+        return ofMethod(declaringClass, INIT, void.class, (Object[]) parameterTypes);
     }
 
     public static MethodDescriptor of(MethodInfo methodInfo) {

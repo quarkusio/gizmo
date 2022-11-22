@@ -113,7 +113,7 @@ public class InterfaceTestCase {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.interfaceBuilder().classOutput(cl).className("com.MyInterface").build()) {
             assertThrows(IllegalArgumentException.class, () -> {
-                creator.getMethodCreator("<init>", void.class);
+                creator.getMethodCreator(MethodDescriptor.INIT, void.class);
             });
         }
     }

@@ -68,8 +68,8 @@ class FunctionCreatorImpl implements FunctionCreator {
             outerCtorArgs[count++] = e.getKey();
         }
 
-        MethodCreator ctorCreator = classCreator.getMethodCreator("<init>", "V", types);
-        ctorCreator.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, "<init>", void.class), ctorCreator.getThis());
+        MethodCreator ctorCreator = classCreator.getMethodCreator(MethodDescriptor.INIT, "V", types);
+        ctorCreator.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class), ctorCreator.getThis());
         //now we init the fields
         for (int i = 0; i < crh.length; ++i) {
             ctorCreator.writeInstanceField(crh[i].descriptor, ctorCreator.getThis(), ctorCreator.getMethodParam(i));
