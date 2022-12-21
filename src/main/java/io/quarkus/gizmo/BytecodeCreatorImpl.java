@@ -801,6 +801,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new BlockOperation(enclosed));
         return enclosed;
     }
+    
+    /**
+     * Go the the top of the given scope. Unlike {@link #continueScope(BytecodeCreator)} this method does not verify if this
+     * bytecode creator is scoped within the given bytecode creator.
+     * 
+     * @param scope
+     */
+    void jumpTo(BytecodeCreator scope) {
+        operations.add(new JumpOperation(((BytecodeCreatorImpl) scope).top));
+    }
 
     static void storeResultHandle(MethodVisitor methodVisitor, ResultHandle handle) {
         if (handle.getResultType() == ResultHandle.ResultType.UNUSED) {
@@ -1316,6 +1326,23 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle bitwiseXor(ResultHandle a1, ResultHandle a2) {
         return emitBinaryArithmetic(Opcodes.IXOR, a1, a2);
+    }
+
+    @Override
+    public Switch.StringSwitch stringSwitch(ResultHandle value) {
+        Objects.requireNonNull(value);
+        StringSwitchImpl stringSwitch = new StringSwitchImpl(value, this);
+        operations.add(new BlockOperation(stringSwitch));
+        return stringSwitch;
+    }
+
+    @Override
+    public <E extends Enum<E>> Switch.EnumSwitch<E> enumSwitch(ResultHandle value, Class<E> enumClass) {
+        Objects.requireNonNull(value);
+        Objects.requireNonNull(enumClass);
+        EnumSwitchImpl<E> enumSwitch = new EnumSwitchImpl<>(value, enumClass, this);
+        operations.add(new BlockOperation(enumSwitch));
+        return enumSwitch;
     }
 
     private ResultHandle emitBinaryArithmetic(int intOpcode, ResultHandle a1, ResultHandle a2) {

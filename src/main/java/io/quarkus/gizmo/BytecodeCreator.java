@@ -1034,6 +1034,24 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
+     * Create a new switch construct for a string value.
+     * 
+     * @param value The string value to switch on
+     * @return the switch construct
+     */
+    Switch.StringSwitch stringSwitch(ResultHandle value);
+
+    /**
+     * Create a new switch construct for an enum constant.
+     * 
+     * @param <E>
+     * @param value The enum constant to switch on
+     * @param enumClass
+     * @return the switch construct
+     */
+    <E extends Enum<E>> Switch.EnumSwitch<E> enumSwitch(ResultHandle value, Class<E> enumClass);
+
+    /**
      * Indicate that the scope is no longer in use. The scope may refuse additional instructions after this method
      * is called.
      */
