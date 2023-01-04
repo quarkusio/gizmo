@@ -20,7 +20,7 @@ import org.objectweb.asm.MethodVisitor;
 
 class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Switch.EnumSwitch<E> {
 
-    private final Map<Integer, Consumer<BytecodeCreator>> ordinalToCaseBlocks;
+    private final Map<Integer, BytecodeCreatorImpl> ordinalToCaseBlocks;
 
     public EnumSwitchImpl(ResultHandle value, Class<E> enumClass, BytecodeCreatorImpl enclosing) {
         super(enclosing);
@@ -68,20 +68,16 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
                 Map<Integer, Label> ordinalToLabel = new HashMap<>();
                 List<BytecodeCreatorImpl> caseBlocks = new ArrayList<>();
 
-                BytecodeCreatorImpl defaultBlock = new BytecodeCreatorImpl(EnumSwitchImpl.this);
-                if (defaultBlockConsumer != null) {
-                    defaultBlockConsumer.accept(defaultBlock);
-                }
-
                 // Initialize the case blocks
-                for (Entry<Integer, Consumer<BytecodeCreator>> caseEntry : ordinalToCaseBlocks.entrySet()) {
-                    BytecodeCreatorImpl caseBlock = new BytecodeCreatorImpl(EnumSwitchImpl.this);
-                    Consumer<BytecodeCreator> blockConsumer = caseEntry.getValue();
-                    blockConsumer.accept(caseBlock);
-                    if (blockConsumer != EMPTY_BLOCK && !fallThrough) {
+                for (Entry<Integer, BytecodeCreatorImpl> caseEntry : ordinalToCaseBlocks.entrySet()) {
+                    BytecodeCreatorImpl caseBlock = caseEntry.getValue();
+                    if (caseBlock != null && !fallThrough) {
                         caseBlock.breakScope(EnumSwitchImpl.this);
+                    } else if (caseBlock == null) {
+                        // Add empty fall through block
+                        caseBlock = new BytecodeCreatorImpl(EnumSwitchImpl.this);
+                        caseEntry.setValue(caseBlock);
                     }
-                    caseBlock.findActiveResultHandles(inputHandles);
                     caseBlocks.add(caseBlock);
                     ordinalToLabel.put(caseEntry.getKey(), caseBlock.getTop());
                 }
@@ -152,19 +148,35 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
         for (Iterator<E> it = values.iterator(); it.hasNext();) {
             E e = it.next();
             if (it.hasNext()) {
-                addCaseBlock(e, EMPTY_BLOCK);
+                addCaseBlock(e, null);
             } else {
                 addCaseBlock(e, caseBlockConsumer);
             }
         }
     }
 
+    @Override
+    void findActiveResultHandles(final Set<ResultHandle> handlesToAllocate) {
+        super.findActiveResultHandles(handlesToAllocate);
+        for (BytecodeCreatorImpl caseBlock : ordinalToCaseBlocks.values()) {
+            if (caseBlock != null) {
+                caseBlock.findActiveResultHandles(handlesToAllocate);
+            }
+        }
+        defaultBlock.findActiveResultHandles(handlesToAllocate);
+    }
+
     private void addCaseBlock(E value, Consumer<BytecodeCreator> caseBlockConsumer) {
         int ordinal = value.ordinal();
         if (ordinalToCaseBlocks.containsKey(ordinal)) {
-            throw new IllegalArgumentException("A case block for the enum value " + value + " already exists");
+            throw new IllegalArgumentException("A case block for the enum value [" + value + "] already exists");
         }
-        ordinalToCaseBlocks.put(ordinal, caseBlockConsumer);
+        BytecodeCreatorImpl caseBlock = null;
+        if (caseBlockConsumer != null) {
+            caseBlock = new BytecodeCreatorImpl(this);
+            caseBlockConsumer.accept(caseBlock);
+        }
+        ordinalToCaseBlocks.put(ordinal, caseBlock);
     }
 
     private MethodCreatorImpl findMethodCreator(BytecodeCreatorImpl enclosing) {

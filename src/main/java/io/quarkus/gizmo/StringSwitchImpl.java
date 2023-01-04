@@ -16,12 +16,12 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
 class StringSwitchImpl extends AbstractSwitch<String> implements Switch.StringSwitch {
-    
-    private final Map<Integer, List<Entry<String, Consumer<BytecodeCreator>>>> hashToCaseBlocks;
+
+    private final Map<String, BytecodeCreatorImpl> caseBlocks;
 
     public StringSwitchImpl(ResultHandle value, BytecodeCreatorImpl enclosing) {
         super(enclosing);
-        this.hashToCaseBlocks = new LinkedHashMap<>();
+        this.caseBlocks = new LinkedHashMap<>();
         ResultHandle strHash = invokeVirtualMethod(MethodDescriptor.ofMethod(Object.class, "hashCode", int.class), value);
 
         Set<ResultHandle> inputHandles = new HashSet<>();
@@ -34,24 +34,31 @@ class StringSwitchImpl extends AbstractSwitch<String> implements Switch.StringSw
             void writeBytecode(MethodVisitor methodVisitor) {
                 Map<Integer, Label> hashToLabel = new HashMap<>();
                 List<BytecodeCreatorImpl> lookupBlocks = new ArrayList<>();
-                Map<String, BytecodeCreatorImpl> caseBlocks = new LinkedHashMap<>();
-                BytecodeCreatorImpl defaultBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
-                if (defaultBlockConsumer != null) {
-                    defaultBlockConsumer.accept(defaultBlock);
+                Map<Integer, List<Entry<String, BytecodeCreatorImpl>>> hashToCaseBlocks = new LinkedHashMap<>();
+
+                for (Entry<String, BytecodeCreatorImpl> e : caseBlocks.entrySet()) {
+                    int hashCode = e.getKey().hashCode();
+                    List<Entry<String, BytecodeCreatorImpl>> list = hashToCaseBlocks.get(hashCode);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        hashToCaseBlocks.put(hashCode, list);
+                    }
+                    list.add(e);
                 }
 
                 // Initialize the case blocks and lookup blocks
-                for (Entry<Integer, List<Entry<String, Consumer<BytecodeCreator>>>> hashEntry : hashToCaseBlocks.entrySet()) {
+                for (Entry<Integer, List<Entry<String, BytecodeCreatorImpl>>> hashEntry : hashToCaseBlocks.entrySet()) {
                     BytecodeCreatorImpl lookupBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
-                    for (Entry<String, Consumer<BytecodeCreator>> caseEntry : hashEntry.getValue()) {
-                        BytecodeCreatorImpl caseBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
-                        Consumer<BytecodeCreator> blockConsumer = caseEntry.getValue();
-                        blockConsumer.accept(caseBlock);
-                        if (blockConsumer != EMPTY_BLOCK && !fallThrough) {
+                    for (Entry<String, BytecodeCreatorImpl> caseEntry : hashEntry.getValue()) {
+                        BytecodeCreatorImpl caseBlock = caseEntry.getValue();
+                        if (caseBlock != null && !fallThrough) {
                             caseBlock.breakScope(StringSwitchImpl.this);
+                        } else if (caseBlock == null) {
+                            // TODO empty block
+                            caseBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
+                            caseEntry.setValue(caseBlock);
                         }
-                        caseBlock.findActiveResultHandles(inputHandles);
-                        caseBlocks.put(caseEntry.getKey(), caseBlock);
+                        // caseBlock.findActiveResultHandles(inputHandles);
                         BytecodeCreatorImpl isEqual = (BytecodeCreatorImpl) lookupBlock
                                 .ifTrue(Gizmo.equals(lookupBlock, lookupBlock.load(caseEntry.getKey()), value)).trueBranch();
                         isEqual.jumpTo(caseBlock);
@@ -102,6 +109,7 @@ class StringSwitchImpl extends AbstractSwitch<String> implements Switch.StringSw
             }
 
         });
+
     }
 
     @Override
@@ -118,27 +126,34 @@ class StringSwitchImpl extends AbstractSwitch<String> implements Switch.StringSw
         for (Iterator<String> it = values.iterator(); it.hasNext();) {
             String s = it.next();
             if (it.hasNext()) {
-                addCaseBlock(s, EMPTY_BLOCK);
+                addCaseBlock(s, null);
             } else {
                 addCaseBlock(s, caseBlockConsumer);
             }
         }
     }
 
-    private void addCaseBlock(String value, Consumer<BytecodeCreator> blockConsumer) {
-        int hashCode = value.hashCode();
-        List<Entry<String, Consumer<BytecodeCreator>>> caseBlocks = hashToCaseBlocks.get(hashCode);
-        if (caseBlocks == null) {
-            caseBlocks = new ArrayList<>();
-            hashToCaseBlocks.put(hashCode, caseBlocks);
-        } else {
-            for (Entry<String, Consumer<BytecodeCreator>> e : caseBlocks) {
-                if (e.getKey().equals(value)) {
-                    throw new IllegalArgumentException("A case block for the string value " + value + " already exists");
-                }
+    @Override
+    void findActiveResultHandles(final Set<ResultHandle> handlesToAllocate) {
+        super.findActiveResultHandles(handlesToAllocate);
+        for (BytecodeCreatorImpl caseBlock : caseBlocks.values()) {
+            if (caseBlock != null) {
+                caseBlock.findActiveResultHandles(handlesToAllocate);
             }
         }
-        caseBlocks.add(Map.entry(value, blockConsumer));
+        defaultBlock.findActiveResultHandles(handlesToAllocate);
+    }
+
+    private void addCaseBlock(String value, Consumer<BytecodeCreator> blockConsumer) {
+        if (caseBlocks.containsKey(value)) {
+            throw new IllegalArgumentException("A case block for the string value [" + value + "] already exists");
+        }
+        BytecodeCreatorImpl caseBlock = null;
+        if (blockConsumer != null) {
+            caseBlock = new BytecodeCreatorImpl(this);
+            blockConsumer.accept(caseBlock);
+        }
+        caseBlocks.put(value, caseBlock);
     }
 
 }

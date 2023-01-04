@@ -5,14 +5,12 @@ import java.util.function.Consumer;
 
 abstract class AbstractSwitch<T> extends BytecodeCreatorImpl implements Switch<T> {
 
-    protected static final Consumer<BytecodeCreator> EMPTY_BLOCK = bc -> {
-    };
-
     protected boolean fallThrough;
-    protected Consumer<BytecodeCreator> defaultBlockConsumer;
+    protected final BytecodeCreatorImpl defaultBlock;
 
     AbstractSwitch(BytecodeCreatorImpl enclosing) {
         super(enclosing);
+        this.defaultBlock = new BytecodeCreatorImpl(this);
     }
 
     @Override
@@ -23,7 +21,7 @@ abstract class AbstractSwitch<T> extends BytecodeCreatorImpl implements Switch<T
     @Override
     public void defaultCase(Consumer<BytecodeCreator> defatultBlockConsumer) {
         Objects.requireNonNull(defatultBlockConsumer);
-        this.defaultBlockConsumer = defatultBlockConsumer;
+        defatultBlockConsumer.accept(defaultBlock);
     }
 
     @Override
