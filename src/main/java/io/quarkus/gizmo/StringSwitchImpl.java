@@ -49,19 +49,23 @@ class StringSwitchImpl extends AbstractSwitch<String> implements Switch.StringSw
                 // Initialize the case blocks and lookup blocks
                 for (Entry<Integer, List<Entry<String, BytecodeCreatorImpl>>> hashEntry : hashToCaseBlocks.entrySet()) {
                     BytecodeCreatorImpl lookupBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
-                    for (Entry<String, BytecodeCreatorImpl> caseEntry : hashEntry.getValue()) {
+                    for (Iterator<Entry<String, BytecodeCreatorImpl>> it = hashEntry.getValue().iterator(); it.hasNext();) {
+                        Entry<String, BytecodeCreatorImpl> caseEntry = it.next();
                         BytecodeCreatorImpl caseBlock = caseEntry.getValue();
                         if (caseBlock != null && !fallThrough) {
                             caseBlock.breakScope(StringSwitchImpl.this);
                         } else if (caseBlock == null) {
-                            // TODO empty block
+                            // Add an empty fall through block
                             caseBlock = new BytecodeCreatorImpl(StringSwitchImpl.this);
                             caseEntry.setValue(caseBlock);
                         }
-                        // caseBlock.findActiveResultHandles(inputHandles);
                         BytecodeCreatorImpl isEqual = (BytecodeCreatorImpl) lookupBlock
                                 .ifTrue(Gizmo.equals(lookupBlock, lookupBlock.load(caseEntry.getKey()), value)).trueBranch();
                         isEqual.jumpTo(caseBlock);
+                        if (!it.hasNext()) {
+                            // None of the labels is equal to the tested value - skip to the default block
+                            lookupBlock.jumpTo(defaultBlock);
+                        }
                     }
                     hashToLabel.put(hashEntry.getKey(), lookupBlock.getTop());
                     lookupBlock.findActiveResultHandles(inputHandles);
