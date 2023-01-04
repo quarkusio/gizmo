@@ -79,7 +79,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     public ClassCreator(ClassOutput classOutput, String name, String signature, String superClass, String... interfaces) {
-        this(null, classOutput, name, signature, superClass, 0, interfaces);
+        this(null, classOutput, name, signature, superClass, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, interfaces);
     }
 
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
