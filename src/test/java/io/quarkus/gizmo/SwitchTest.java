@@ -254,7 +254,7 @@ public class SwitchTest {
             //     default: -> return null;
             // }
             EnumSwitch<Status> s = method.enumSwitch(method.getMethodParam(0), Status.class);
-            s.caseOf(List.of(Status.ON, Status.OFF), bc -> {
+            s.caseOf(List.of(Status.OFF, Status.ON), bc -> {
                 bc.returnValue(Gizmo.toString(bc, method.getMethodParam(0)));
             });
             s.caseOf(Status.UNKNOWN, bc -> {
@@ -287,8 +287,8 @@ public class SwitchTest {
             // }
             EnumSwitch<Status> s = method.enumSwitch(method.getMethodParam(0), Status.class);
             s.fallThrough();
-            s.caseOf(Status.ON, bc -> bc.assign(ret, bc.load("on")));
             s.caseOf(Status.OFF, bc -> bc.assign(ret, bc.load("off")));
+            s.caseOf(Status.ON, bc -> bc.assign(ret, bc.load("on")));
             s.defaultCase(bc -> bc.assign(ret, bc.load("??")));
             method.returnValue(ret);
         }
@@ -371,6 +371,74 @@ public class SwitchTest {
             }
             method.returnNull();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testStringSwitchConsumesHandleFromEnclosingScope()
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle prefix = Gizmo.toString(method, method.load("p_"));
+            ResultHandle placeholder = Gizmo.toString(method, method.load("placeholder"));
+            AssignableResultHandle ret = method.createVariable(String.class);
+            // String placeholder = "placeholder".toString();
+            // String prefix = "_p".toString();
+            // String ret;
+            // switch(arg) {
+            //     case "bar" -> ret = prefix + "barr";
+            //     default -> ret = placeholder;
+            // }
+            // return ret;
+            StringSwitch s = method.stringSwitch(method.getMethodParam(0));
+            s.caseOf("bar", bc -> {
+                bc.assign(ret,
+                        bc.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class),
+                                prefix, bc.load("barr")));
+            });
+            s.defaultCase(bc -> bc.assign(ret, placeholder));
+
+            method.returnValue(ret);
+        }
+        Function<String, String> myInterface = (Function<String, String>) cl.loadClass("com.MyTest").newInstance();
+        assertEquals("p_barr", myInterface.apply("bar"));
+        assertEquals("placeholder", myInterface.apply("unknown"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testEnumSwitchConsumesHandleFromEnclosingScope()
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
+            ResultHandle prefix = Gizmo.toString(method, method.load("p_"));
+            ResultHandle placeholder = Gizmo.toString(method, method.load("placeholder"));
+            AssignableResultHandle ret = method.createVariable(String.class);
+            // String placeholder = "placeholder".toString();
+            // String prefix = "_p".toString();
+            // String ret;
+            // switch(status) {
+            //     case ON -> ret = prefix + "on";
+            //     default: -> return placeholder;
+            // }
+            // return ret;
+            EnumSwitch<Status> s = method.enumSwitch(method.getMethodParam(0), Status.class);
+            s.caseOf(Status.ON, bc -> {
+                bc.assign(ret,
+                        bc.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class),
+                                prefix, bc.load("on")));
+            });
+            s.defaultCase(bc -> bc.assign(ret, placeholder));
+
+            method.returnValue(ret);
+        }
+        Function<Status, String> myInterface = (Function<Status, String>) cl.loadClass("com.MyTest").newInstance();
+        assertEquals("p_on", myInterface.apply(Status.ON));
+        assertEquals("placeholder", myInterface.apply(Status.UNKNOWN));
     }
 
     public enum Status {
