@@ -74,7 +74,7 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
                     if (caseBlock != null && !fallThrough) {
                         caseBlock.breakScope(EnumSwitchImpl.this);
                     } else if (caseBlock == null) {
-                        // Add empty fall through block
+                        // Add an empty fall through block
                         caseBlock = new BytecodeCreatorImpl(EnumSwitchImpl.this);
                         caseEntry.setValue(caseBlock);
                     }
