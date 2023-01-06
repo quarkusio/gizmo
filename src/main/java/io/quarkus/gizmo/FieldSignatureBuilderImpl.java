@@ -5,12 +5,13 @@ import java.util.Objects;
 import io.quarkus.gizmo.SignatureBuilder.FieldSignatureBuilder;
 
 class FieldSignatureBuilderImpl implements FieldSignatureBuilder {
-
     private Type type;
 
     @Override
     public String build() {
-        return type.toSignature();
+        StringBuilder signature = new StringBuilder();
+        type.appendToSignature(signature);
+        return signature.toString();
     }
 
     @Override
@@ -18,5 +19,4 @@ class FieldSignatureBuilderImpl implements FieldSignatureBuilder {
         this.type = Objects.requireNonNull(type);
         return this;
     }
-
 }

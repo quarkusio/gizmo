@@ -23,52 +23,73 @@ public class SignaturesTest {
 
         // void test(long l)
         assertEquals("(J)V",
-                SignatureBuilder.forMethod().addParameter(Type.longType()).build());
+                SignatureBuilder.forMethod().addParameterType(Type.longType()).build());
 
         // List<String> test(List<?> list)
         assertEquals("(Ljava/util/List<*>;)Ljava/util/List<Ljava/lang/String;>;",
                 SignatureBuilder.forMethod()
                         .setReturnType(Type.parameterizedType(Type.classType(List.class), Type.classType(String.class)))
-                        .addParameter(Type.parameterizedType(Type.classType(List.class), Type.wildcardTypeUnbounded()))
+                        .addParameterType(Type.parameterizedType(Type.classType(List.class), Type.wildcardTypeUnbounded()))
                         .build());
 
         // Object test()
         assertEquals("()Ljava/lang/Object;",
                 SignatureBuilder.forMethod().setReturnType(Type.classType(DotName.OBJECT_NAME)).build());
 
-        // <T extends Comparable<T>>  String[] test(T t)
+        // <T extends Comparable<T>> String[] test(T t)
         assertEquals("<T::Ljava/lang/Comparable<TT;>;>(TT;)[Ljava/lang/String;",
                 SignatureBuilder.forMethod()
-                        .setReturnType(Type.arrayType(Type.classType(String.class)))
-                        .addParameter(Type.typeVariable("T"))
                         .addTypeParameter(Type.typeVariable("T", null,
                                 Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T"))))
+                        .setReturnType(Type.arrayType(Type.classType(String.class)))
+                        .addParameterType(Type.typeVariable("T"))
                         .build());
 
         // <R> List<R> test(int a, T t)
-        assertEquals("(ITT;)Ljava/util/List<TR;>;",
+        assertEquals("<R:Ljava/lang/Object;>(ITT;)Ljava/util/List<TR;>;",
                 SignatureBuilder.forMethod()
+                        .addTypeParameter(Type.typeVariable("R"))
                         .setReturnType(
                                 Type.parameterizedType(Type.classType(DotName.createSimple(List.class)),
                                         Type.typeVariable("R")))
-                        .addParameter(Type.intType())
-                        .addParameter(Type.typeVariable("T")).build());
+                        .addParameterType(Type.intType())
+                        .addParameterType(Type.typeVariable("T"))
+                        .build());
+
+        // <R, S extends R> List<S> test(int a, T t)
+        assertEquals("<R:Ljava/lang/Object;S:TR;>(ITT;)Ljava/util/List<TS;>;",
+                SignatureBuilder.forMethod()
+                        .addTypeParameter(Type.typeVariable("R"))
+                        .addTypeParameter(Type.typeVariable("S", Type.typeVariable("R")))
+                        .setReturnType(
+                                Type.parameterizedType(Type.classType(DotName.createSimple(List.class)),
+                                        Type.typeVariable("S")))
+                        .addParameterType(Type.intType())
+                        .addParameterType(Type.typeVariable("T"))
+                        .build());
+
+        // <R extends Serializable & Comparable<R>> List<R> test(int a, T t)
+        assertEquals("<R::Ljava/io/Serializable;:Ljava/lang/Comparable<TR;>;>(ITT;)Ljava/util/List<TR;>;",
+                SignatureBuilder.forMethod()
+                        .addTypeParameter(Type.typeVariable("R", null,
+                                Type.classType(Serializable.class),
+                                Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("R"))))
+                        .setReturnType(
+                                Type.parameterizedType(Type.classType(List.class), Type.typeVariable("R")))
+                        .addParameterType(Type.intType())
+                        .addParameterType(Type.typeVariable("T"))
+                        .build());
 
         // boolean test(int i)
         assertEquals("(I)Z",
                 SignatureBuilder.forMethod()
                         .setReturnType(Type.booleanType())
-                        .addParameter(Type.intType()).build());
+                        .addParameterType(Type.intType()).build());
 
         // <T extends Number & Comparable<T>, U extends Comparable<U>, V extends Exception> T bbb(U arg, W arg2, OuterParam<W> self)
         assertEquals(
                 "<T:Ljava/lang/Number;:Ljava/lang/Comparable<TT;>;U::Ljava/lang/Comparable<TU;>;V:Ljava/lang/Exception;>(TU;TW;Ltest/OuterParam<TW;>;)TT;",
                 SignatureBuilder.forMethod()
-                        .setReturnType(Type.typeVariable("T"))
-                        .addParameter(Type.typeVariable("U"))
-                        .addParameter(Type.typeVariable("W"))
-                        .addParameter(Type.parameterizedType(Type.classType("test/OuterParam"),
-                                Type.typeVariable("W")))
                         .addTypeParameter(Type.typeVariable("T", Type.classType(Number.class),
                                 Type.parameterizedType(
                                         Type.classType(Comparable.class),
@@ -76,24 +97,29 @@ public class SignaturesTest {
                         .addTypeParameter(Type.typeVariable("U", null,
                                 Type.parameterizedType(Type.classType(Comparable.class),
                                         Type.typeVariable("U"))))
-                        .addTypeParameter(Type.typeVariable("V", Type.classType(Exception.class))).build());
+                        .addTypeParameter(Type.typeVariable("V", Type.classType(Exception.class)))
+                        .setReturnType(Type.typeVariable("T"))
+                        .addParameterType(Type.typeVariable("U"))
+                        .addParameterType(Type.typeVariable("W"))
+                        .addParameterType(Type.parameterizedType(Type.classType("test/OuterParam"),
+                                Type.typeVariable("W")))
+                        .build());
 
-        // <T extends Number & Comparable<T>, U extends Comparable<U>, V extends Exception> T test(List<? extends U> arg, W arg2, Foo arg3) throws IllegalArgumentException, V
+        // <T extends Number & Comparable<T>, U extends Comparable<U>, V extends Exception> T test(List<? extends U> arg, W arg2, NestedParam<P>.Inner arg3) throws IllegalArgumentException, V
         assertEquals(
                 "<T:Ljava/lang/Number;:Ljava/lang/Comparable<TT;>;U::Ljava/lang/Comparable<TU;>;V:Ljava/lang/Exception;>(Ljava/util/List<+TU;>;TW;Lio/quarkus/gizmo/SignaturesTest$NestedParam<TP;>.Inner;)TT;^Ljava/lang/IllegalArgumentException;^TV;",
                 SignatureBuilder.forMethod()
-                        .setReturnType(Type.typeVariable("T"))
                         .addTypeParameter(Type.typeVariable("T", Type.classType(Number.class),
                                 Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T"))))
                         .addTypeParameter(Type.typeVariable("U", null,
                                 Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("U"))))
                         .addTypeParameter(Type.typeVariable("V", Type.classType(Exception.class)))
-                        .addParameter(Type.parameterizedType(Type.classType(List.class),
+                        .setReturnType(Type.typeVariable("T"))
+                        .addParameterType(Type.parameterizedType(Type.classType(List.class),
                                 Type.wildcardTypeWithUpperBound(Type.typeVariable("U"))))
-                        .addParameter(Type.typeVariable("W"))
-                        .addParameter(Type.parameterizedType(Type.classType(NestedParam.class), Type.typeVariable("P"))
-                                .nestedClassType(
-                                        NestedParam.Inner.class.getSimpleName()))
+                        .addParameterType(Type.typeVariable("W"))
+                        .addParameterType(Type.parameterizedType(Type.classType(NestedParam.class), Type.typeVariable("P"))
+                                .innerClass(NestedParam.Inner.class.getSimpleName()))
                         .addException(Type.classType(IllegalArgumentException.class))
                         .addException(Type.typeVariable("V"))
                         .build());
@@ -164,7 +190,7 @@ public class SignaturesTest {
         assertEquals("Lio/quarkus/gizmo/SignaturesTest$NestedParam<TP;>.InnerParam<TP;>;",
                 SignatureBuilder.forField()
                         .setType(Type.parameterizedType(Type.classType(NestedParam.class), Type.typeVariable("P"))
-                                .nestedParameterizedType(InnerParam.class.getSimpleName(), Type.typeVariable("P")))
+                                .innerParameterizedType(InnerParam.class.getSimpleName(), Type.typeVariable("P")))
                         .build());
     }
 
@@ -190,6 +216,34 @@ public class SignaturesTest {
                         .setSuperClass(Type.parameterizedType(Type.classType(List.class), Type.typeVariable("T")))
                         .addSuperInterface(Type.classType(Serializable.class))
                         .addSuperInterface(Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T")))
+                        .build());
+
+        // public class OuterParam<T extends Serializable> {
+        //     public interface NestedParam<U> {
+        //     }
+        //
+        //     public class InnerParam<U extends Number> {
+        //         public class InnerInnerRaw {
+        //             public class InnerInnerInnerParam<V> {
+        //                 public class Test<X extends String, Y extends Integer>
+        //                         extends OuterParam<X>.InnerParam<Y>.InnerInnerRaw.InnerInnerInnerParam<String>
+        //                         implements NestedParam<V> {
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        assertEquals("<X:Ljava/lang/String;Y:Ljava/lang/Integer;>Lio/quarkus/gizmo/test/OuterParam<TX;>.InnerParam<TY;>.InnerInnerRaw.InnerInnerInnerParam<Ljava/lang/String;>;Lio/quarkus/gizmo/test/OuterParam$NestedParam<TV;>;",
+                SignatureBuilder.forClass()
+                        .addTypeParameter(Type.typeVariable("X", Type.classType(String.class)))
+                        .addTypeParameter(Type.typeVariable("Y", Type.classType(Integer.class)))
+                        .setSuperClass(
+                                Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam"), Type.typeVariable("X"))
+                                        .innerParameterizedType("InnerParam", Type.typeVariable("Y"))
+                                        .innerClass("InnerInnerRaw")
+                                        .innerParameterizedType("InnerInnerInnerParam", Type.classType(String.class))
+                        )
+                        .addSuperInterface(Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam$NestedParam"), Type.typeVariable("V")))
                         .build());
 
         try {

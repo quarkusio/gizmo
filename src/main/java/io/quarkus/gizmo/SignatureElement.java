@@ -10,7 +10,7 @@ public interface SignatureElement<S> {
     /**
      * Use the convenient {@link SignatureBuilder} to build signatures for classes, methods and fields.
      * 
-     * @param signature The signature as defined in JVMS 17, chapter "4.7.9.1. Signatures"
+     * @param signature The generic signature as defined in JVMS 17, chapter "4.7.9.1. Signatures"
      * @return the element
      * @see SignatureBuilder
      */

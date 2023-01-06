@@ -7,12 +7,12 @@ import java.util.Objects;
 import io.quarkus.gizmo.SignatureBuilder.MethodSignatureBuilder;
 import io.quarkus.gizmo.Type.ClassType;
 import io.quarkus.gizmo.Type.TypeVariable;
+import io.quarkus.gizmo.Type.VoidType;
 
 class MethodSignatureBuilderImpl implements MethodSignatureBuilder {
-
-    private Type returnType = Type.voidType();
-    private List<Type> parameterTypes = new ArrayList<>();
     private List<TypeVariable> typeParameters = new ArrayList<>();
+    private Type returnType = VoidType.INSTANCE;
+    private List<Type> parameterTypes = new ArrayList<>();
     private List<Type> exceptions = new ArrayList<>();
 
     @Override
@@ -28,22 +28,24 @@ class MethodSignatureBuilderImpl implements MethodSignatureBuilder {
             signature.append('>');
         }
 
-        // params
+        // param types
         signature.append('(');
         for (Type parameterType : parameterTypes) {
-            signature.append(parameterType.toSignature());
+            parameterType.appendToSignature(signature);
         }
         signature.append(')');
 
         // return type
-        signature.append(returnType.toSignature());
+        returnType.appendToSignature(signature);
 
-        // exceptions
+        // exception types
         if (!exceptions.isEmpty()) {
             for (Type exceptionType : exceptions) {
-                signature.append('^').append(exceptionType.toSignature());
+                signature.append('^');
+                exceptionType.appendToSignature(signature);
             }
         }
+
         return signature.toString();
     }
 
@@ -60,7 +62,7 @@ class MethodSignatureBuilderImpl implements MethodSignatureBuilder {
     }
 
     @Override
-    public MethodSignatureBuilder addParameter(Type parameterType) {
+    public MethodSignatureBuilder addParameterType(Type parameterType) {
         this.parameterTypes.add(Objects.requireNonNull(parameterType));
         return this;
     }
@@ -76,5 +78,4 @@ class MethodSignatureBuilderImpl implements MethodSignatureBuilder {
         this.exceptions.add(Objects.requireNonNull(exceptionType));
         return this;
     }
-
 }

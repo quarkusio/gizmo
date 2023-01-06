@@ -3,17 +3,14 @@ package io.quarkus.gizmo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.jandex.DotName;
-
 import io.quarkus.gizmo.SignatureBuilder.ClassSignatureBuilder;
 import io.quarkus.gizmo.Type.ClassType;
 import io.quarkus.gizmo.Type.ParameterizedType;
 import io.quarkus.gizmo.Type.TypeVariable;
 
 class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
-
-    private Type superClass = Type.classType(DotName.OBJECT_NAME);
     private List<TypeVariable> typeParameters = new ArrayList<>();
+    private Type superClass = ClassType.OBJECT;
     private List<Type> superInterfaces = new ArrayList<>();
 
     @Override
@@ -30,12 +27,12 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
         }
 
         // superclass
-        signature.append(superClass.toSignature());
+        superClass.appendToSignature(signature);
 
         // interfaces
         if (!superInterfaces.isEmpty()) {
             for (Type superInterface : superInterfaces) {
-                signature.append(superInterface.toSignature());
+                superInterface.appendToSignature(signature);
             }
         }
         return signature.toString();
@@ -58,6 +55,7 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
         if (containsWildcard(superClass)) {
             throw new IllegalArgumentException("A super type may not specify a wilcard");
         }
+
         this.superClass = superClass;
         return this;
     }
@@ -81,7 +79,7 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
         if (type.isWildcard()) {
             return true;
         } else if (type.isParameterizedType()) {
-            for (Type typeArgument : type.asParameterizedType().typeArguments) {
+            for (Type typeArgument : type.asParameterizedType().getTypeArguments()) {
                 if (containsWildcard(typeArgument)) {
                     return true;
                 }
@@ -89,5 +87,4 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
         }
         return false;
     }
-
 }
