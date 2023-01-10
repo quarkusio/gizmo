@@ -10,6 +10,7 @@ import java.util.Map;
 import org.jboss.jandex.DotName;
 import org.junit.Test;
 
+import io.quarkus.gizmo.SignatureBuilder.ClassSignatureBuilder;
 import io.quarkus.gizmo.SignaturesTest.Nested.Inner.Inner2;
 import io.quarkus.gizmo.SignaturesTest.NestedParam.InnerParam;
 
@@ -233,17 +234,19 @@ public class SignaturesTest {
         //         }
         //     }
         // }
-        assertEquals("<X:Ljava/lang/String;Y:Ljava/lang/Integer;>Lio/quarkus/gizmo/test/OuterParam<TX;>.InnerParam<TY;>.InnerInnerRaw.InnerInnerInnerParam<Ljava/lang/String;>;Lio/quarkus/gizmo/test/OuterParam$NestedParam<TV;>;",
+        assertEquals(
+                "<X:Ljava/lang/String;Y:Ljava/lang/Integer;>Lio/quarkus/gizmo/test/OuterParam<TX;>.InnerParam<TY;>.InnerInnerRaw.InnerInnerInnerParam<Ljava/lang/String;>;Lio/quarkus/gizmo/test/OuterParam$NestedParam<TV;>;",
                 SignatureBuilder.forClass()
                         .addTypeParameter(Type.typeVariable("X", Type.classType(String.class)))
                         .addTypeParameter(Type.typeVariable("Y", Type.classType(Integer.class)))
                         .setSuperClass(
-                                Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam"), Type.typeVariable("X"))
+                                Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam"),
+                                        Type.typeVariable("X"))
                                         .innerParameterizedType("InnerParam", Type.typeVariable("Y"))
                                         .innerClass("InnerInnerRaw")
-                                        .innerParameterizedType("InnerInnerInnerParam", Type.classType(String.class))
-                        )
-                        .addInterface(Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam$NestedParam"), Type.typeVariable("V")))
+                                        .innerParameterizedType("InnerInnerInnerParam", Type.classType(String.class)))
+                        .addInterface(Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam$NestedParam"),
+                                Type.typeVariable("V")))
                         .build());
 
         try {
@@ -252,6 +255,22 @@ public class SignaturesTest {
             fail();
         } catch (Exception expected) {
         }
+    }
+
+    @Test
+    public void testClassCreatorSignatureBuilder() {
+        // class Foo<T> extends List<T> implements Serializable, Comparable<T>
+        ClassSignatureBuilder classSignature = SignatureBuilder.forClass()
+                .addTypeParameter(Type.typeVariable("T"))
+                .setSuperClass(Type.parameterizedType(Type.classType(List.class), Type.typeVariable("T")))
+                .addInterface(Type.classType(Serializable.class))
+                .addInterface(Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T")));
+
+        ClassCreator creator = ClassCreator.builder().signature(classSignature).className("org.acme.Foo").build();
+        assertEquals("java/util/List", creator.getSuperClass());
+        assertEquals(2, creator.getInterfaces().length);
+        assertEquals("java/io/Serializable", creator.getInterfaces()[0]);
+        assertEquals("java/lang/Comparable", creator.getInterfaces()[1]);
     }
 
     public static class Nested {

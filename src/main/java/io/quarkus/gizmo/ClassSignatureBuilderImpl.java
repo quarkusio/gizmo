@@ -9,9 +9,10 @@ import io.quarkus.gizmo.Type.ParameterizedType;
 import io.quarkus.gizmo.Type.TypeVariable;
 
 class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
-    private List<TypeVariable> typeParameters = new ArrayList<>();
-    private Type superClass = ClassType.OBJECT;
-    private List<Type> superInterfaces = new ArrayList<>();
+    
+    List<TypeVariable> typeParameters = new ArrayList<>();
+    Type superClass = ClassType.OBJECT;
+    List<Type> superInterfaces = new ArrayList<>();
 
     @Override
     public String build() {

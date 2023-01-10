@@ -260,8 +260,8 @@ public abstract class Type {
     public static final class ClassType extends Type {
         public static final ClassType OBJECT = new ClassType("java/lang/Object", null);
 
-        private final String name; // always slash-delimited
-        private final Type owner;
+        final String name; // always slash-delimited
+        final Type owner;
 
         ClassType(String name, Type owner) {
             this.name = Objects.requireNonNull(name);
@@ -344,9 +344,10 @@ public abstract class Type {
     }
 
     public static final class ParameterizedType extends Type {
-        private final ClassType genericClass;
-        private final List<Type> typeArguments;
-        private final Type owner;
+        
+        final ClassType genericClass;
+        final List<Type> typeArguments;
+        final Type owner;
 
         ParameterizedType(ClassType genericClass, List<Type> typeArguments, Type owner) {
             this.genericClass = Objects.requireNonNull(genericClass);
