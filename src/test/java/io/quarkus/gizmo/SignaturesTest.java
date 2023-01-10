@@ -214,8 +214,8 @@ public class SignaturesTest {
                 SignatureBuilder.forClass()
                         .addTypeParameter(Type.typeVariable("T"))
                         .setSuperClass(Type.parameterizedType(Type.classType(List.class), Type.typeVariable("T")))
-                        .addSuperInterface(Type.classType(Serializable.class))
-                        .addSuperInterface(Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T")))
+                        .addInterface(Type.classType(Serializable.class))
+                        .addInterface(Type.parameterizedType(Type.classType(Comparable.class), Type.typeVariable("T")))
                         .build());
 
         // public class OuterParam<T extends Serializable> {
@@ -243,7 +243,7 @@ public class SignaturesTest {
                                         .innerClass("InnerInnerRaw")
                                         .innerParameterizedType("InnerInnerInnerParam", Type.classType(String.class))
                         )
-                        .addSuperInterface(Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam$NestedParam"), Type.typeVariable("V")))
+                        .addInterface(Type.parameterizedType(Type.classType("io.quarkus.gizmo.test.OuterParam$NestedParam"), Type.typeVariable("V")))
                         .build());
 
         try {

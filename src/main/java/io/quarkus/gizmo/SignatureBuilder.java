@@ -37,9 +37,9 @@ public interface SignatureBuilder {
         
         ClassSignatureBuilder setSuperClass(ParameterizedType superClass);
 
-        ClassSignatureBuilder addSuperInterface(ClassType interfaceType);
+        ClassSignatureBuilder addInterface(ClassType interfaceType);
         
-        ClassSignatureBuilder addSuperInterface(ParameterizedType interfaceType);
+        ClassSignatureBuilder addInterface(ParameterizedType interfaceType);
     }
 
     /**

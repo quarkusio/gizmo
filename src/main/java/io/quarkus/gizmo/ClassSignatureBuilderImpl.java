@@ -61,13 +61,13 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
     }
 
     @Override
-    public ClassSignatureBuilder addSuperInterface(ClassType interfaceType) {
+    public ClassSignatureBuilder addInterface(ClassType interfaceType) {
         superInterfaces.add(interfaceType);
         return this;
     }
 
     @Override
-    public ClassSignatureBuilder addSuperInterface(ParameterizedType interfaceType) {
+    public ClassSignatureBuilder addInterface(ParameterizedType interfaceType) {
         if (containsWildcard(interfaceType)) {
             throw new IllegalArgumentException("A super type may not specify a wilcard");
         }
