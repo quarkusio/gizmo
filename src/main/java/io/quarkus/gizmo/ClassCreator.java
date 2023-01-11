@@ -42,6 +42,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import io.quarkus.gizmo.SignatureBuilder.ClassSignatureBuilder;
+
 public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureElement<ClassCreator> {
 
     public static Builder builder() {
@@ -65,7 +67,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     private final Map<MethodDescriptor, MethodDescriptor> superclassAccessors = new LinkedHashMap<>();
     private final AtomicInteger accessorCount = new AtomicInteger();
 
-    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass, int access, String... interfaces) {
+    ClassCreator(BytecodeCreatorImpl enclosing, ClassOutput classOutput, String name, String signature, String superClass,
+            int access, String... interfaces) {
         this.enclosing = enclosing;
         this.classOutput = classOutput;
         this.superClass = superClass.replace('.', '/');
@@ -159,7 +162,8 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         for (int i = 0; i < params.length; ++i) {
             params[i] = ctor.getMethodParam(i);
         }
-        MethodDescriptor superDescriptor = MethodDescriptor.ofMethod(supertype, descriptor.getName(), descriptor.getReturnType(), descriptor.getParameterTypes());
+        MethodDescriptor superDescriptor = MethodDescriptor.ofMethod(supertype, descriptor.getName(),
+                descriptor.getReturnType(), descriptor.getParameterTypes());
         ResultHandle ret;
         if (isInterface) {
             ret = ctor.invokeSpecialInterfaceMethod(superDescriptor, ctor.getThis(), params);
@@ -183,7 +187,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         Writer sourceWriter = classOutput.getSourceWriter(className);
         ClassVisitor cv;
         if (sourceWriter != null) {
-             cv = new GizmoClassVisitor(Gizmo.ASM_API_VERSION, file, sourceWriter);
+            cv = new GizmoClassVisitor(Gizmo.ASM_API_VERSION, file, sourceWriter);
         } else {
             cv = file;
         }
@@ -202,7 +206,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         if (requiresCtor) {
             // constructor
             if (cv instanceof GizmoClassVisitor) {
-                ((GizmoClassVisitor)cv).append("// Auto-generated constructor").newLine();
+                ((GizmoClassVisitor) cv).append("// Auto-generated constructor").newLine();
             }
             MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, MethodDescriptor.INIT, "()V", null, null);
             mv.visitVarInsn(ALOAD, 0); // push `this` to the operand stack
@@ -220,9 +224,10 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         for (Map.Entry<MethodDescriptor, MethodCreatorImpl> method : methods.entrySet()) {
             method.getValue().write(cv);
         }
-        for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = cv.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
-            for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
+        for (AnnotationCreatorImpl annotation : annotations) {
+            AnnotationVisitor av = cv.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()),
+                    annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
+            for (Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
             }
             av.visitEnd();
@@ -234,7 +239,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     }
 
     /**
-     * Finish the class creator.  If a class output was configured for this class creator, the class bytes
+     * Finish the class creator. If a class output was configured for this class creator, the class bytes
      * will immediately be written there.
      */
     @Override
@@ -317,6 +322,30 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             return this;
         }
 
+        /**
+         * The raw types of the superclass and superinterfaces are extracted and passed to {@link #superClass(String)} and
+         * {@link #interfaces(String...)} respectively.
+         * 
+         * @param signatureBuilder
+         * @return self
+         */
+        public Builder signature(ClassSignatureBuilder signatureBuilder) {
+            ClassSignatureBuilderImpl signatureBuilderImpl = (ClassSignatureBuilderImpl) signatureBuilder;
+            Type superClass = signatureBuilderImpl.superClass;
+            if (superClass != null) {
+                superClass(getRawType(superClass));
+            }
+            if (!signatureBuilderImpl.superInterfaces.isEmpty()) {
+                String[] interfaces = new String[signatureBuilderImpl.superInterfaces.size()];
+                int idx = 0;
+                for (Type superInterface : signatureBuilderImpl.superInterfaces) {
+                    interfaces[idx++] = getRawType(superInterface);
+                }
+                interfaces(interfaces);
+            }
+            return signature(signatureBuilder.build());
+        }
+
         public Builder superClass(String superClass) {
             if ((access & ACC_INTERFACE) != 0
                     && !"java.lang.Object".equals(superClass)
@@ -360,7 +389,16 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         public ClassCreator build() {
             Objects.requireNonNull(className);
             Objects.requireNonNull(superClass);
-            return new ClassCreator(enclosing, classOutput, className, signature, superClass, access, interfaces.toArray(new String[0]));
+            return new ClassCreator(enclosing, classOutput, className, signature, superClass, access,
+                    interfaces.toArray(new String[0]));
+        }
+        
+        private String getRawType(Type type) {
+            if (type.isClass()) {
+                return type.asClass().name;
+            } else {
+                return type.asParameterizedType().genericClass.name;
+            }
         }
 
     }
