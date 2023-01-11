@@ -9,7 +9,7 @@ import io.quarkus.gizmo.Type.ParameterizedType;
 import io.quarkus.gizmo.Type.TypeVariable;
 
 class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
-    
+
     List<TypeVariable> typeParameters = new ArrayList<>();
     Type superClass = ClassType.OBJECT;
     List<Type> superInterfaces = new ArrayList<>();
@@ -54,7 +54,7 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
     @Override
     public ClassSignatureBuilder setSuperClass(ParameterizedType superClass) {
         if (containsWildcard(superClass)) {
-            throw new IllegalArgumentException("A super type may not specify a wilcard");
+            throw new IllegalArgumentException("An extended class type may not specify a wildcard");
         }
 
         this.superClass = superClass;
@@ -70,7 +70,7 @@ class ClassSignatureBuilderImpl implements ClassSignatureBuilder {
     @Override
     public ClassSignatureBuilder addInterface(ParameterizedType interfaceType) {
         if (containsWildcard(interfaceType)) {
-            throw new IllegalArgumentException("A super type may not specify a wilcard");
+            throw new IllegalArgumentException("An implemented interface type may not specify a wildcard");
         }
         superInterfaces.add(interfaceType);
         return this;
