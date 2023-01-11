@@ -3,7 +3,7 @@
 A bytecode generation library.
 
 [![Version](https://img.shields.io/maven-central/v/io.quarkus.gizmo/gizmo?logo=apache-maven&style=for-the-badge)](https://search.maven.org/artifact/io.quarkus.gizmo/gizmo)
-[![GitHub Actions Status](<https://img.shields.io/github/workflow/status/QuarkusIO/gizmo/Gizmo CI?logo=GitHub&style=for-the-badge>)](https://github.com/quarkusio/gizmo/actions?query=workflow%3A%22Gizmo+CI%22)
+[![GitHub Actions Status](<https://img.shields.io/github/actions/workflow/status/quarkusio/gizmo/maven.yml?branch=main&logo=GitHub&style=for-the-badge>)](https://github.com/quarkusio/gizmo/actions?query=workflow%3A%22Gizmo+CI%22)
 
 ## About
 
