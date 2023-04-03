@@ -38,7 +38,7 @@
         <version.jandex>3.0.5</version.jandex>
         <version.junit>4.13.2</version.junit>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <jacoco.version>0.8.8</jacoco.version>
+        <jacoco.version>0.8.9</jacoco.version>
         <jacoco.agent.argLine />
     </properties>
 
