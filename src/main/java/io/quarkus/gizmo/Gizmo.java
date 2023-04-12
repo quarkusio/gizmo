@@ -193,6 +193,43 @@ public final class Gizmo {
     }
 
     /**
+     * Creates a {@code StringBuilder} generator that helps to generate a chain of
+     * {@code append} calls and a final {@code toString} call.
+     *
+     * <pre>
+     * StringBuilderGenerator str = Gizmo.newStringBuilder(bytecode, capacity);
+     * str.append("constant");
+     * str.append(someResultHandle);
+     * ResultHandle result = str.callToString();
+     * </pre>
+     *
+     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
+     * it accepts {@code ResultHandle}s of all types for which {@code StringBuilder}
+     * has an overload:
+     * <ul>
+     *     <li>primitive types</li>
+     *     <li>{@code char[]}</li>
+     *     <li>{@code java.lang.String}</li>
+     *     <li>{@code java.lang.Object}</li>
+     * </ul>
+     *
+     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
+     * and if {@code Arrays.toString} should be used, it must be generated manually.
+     * <p>
+     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
+     * provided. Other {@code StringBuilder} methods are not provided either. This is just
+     * a simple utility for generating code that concatenates strings, e.g. for implementing
+     * the {@code toString} method.
+     *
+     * @param target
+     * @param capacity
+     * @return the generator
+     */
+    public static StringBuilderGenerator newStringBuilder(BytecodeCreator target, int capacity) {
+        return new StringBuilderGenerator(target, capacity);
+    }
+
+    /**
      * Generates a structural {@code equals} method in given {@code clazz} that compares
      * given {@code fields}. The generated code is similar to what IDEs would typically
      * generate from a template:
@@ -947,6 +984,7 @@ public final class Gizmo {
 
     public static class StringBuilderGenerator {
         private static final MethodDescriptor CONSTRUCTOR = MethodDescriptor.ofConstructor(StringBuilder.class);
+        private static final MethodDescriptor CONSTRUCTOR_WITH_CAPACITY = MethodDescriptor.ofConstructor(StringBuilder.class, int.class);
         private static final MethodDescriptor APPEND_BOOLEAN = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, boolean.class);
         private static final MethodDescriptor APPEND_INT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, int.class);
         private static final MethodDescriptor APPEND_LONG = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, long.class);
@@ -965,6 +1003,11 @@ public final class Gizmo {
         private StringBuilderGenerator(BytecodeCreator bytecode) {
             this.bytecode = bytecode;
             this.instance = bytecode.newInstance(CONSTRUCTOR);
+        }
+
+        private StringBuilderGenerator(BytecodeCreator bytecode, int capacity) {
+            this.bytecode = bytecode;
+            this.instance = bytecode.newInstance(CONSTRUCTOR_WITH_CAPACITY, bytecode.load(capacity));
         }
 
         public StringBuilderGenerator append(ResultHandle value) {
