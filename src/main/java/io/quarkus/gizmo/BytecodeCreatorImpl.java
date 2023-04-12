@@ -67,6 +67,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     ArrayList.class.getName(),
                     Map.class.getName(),
                     HashMap.class.getName());
+    static final int MAX_STRING_LENGTH = 65535;
 
     protected final List<Operation> operations = new ArrayList<>();
 
@@ -311,11 +312,25 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     @Override
     public ResultHandle load(String val) {
         Objects.requireNonNull(val);
-        if (val.length() > 65535) {
-            //TODO: we could auto split this, but I don't think we really want strings this long
-            throw new IllegalArgumentException("Cannot load strings larger than " + 65535 + " bytes");
+        int length = val.length();
+        if (length > MAX_STRING_LENGTH) {
+            int div = length / MAX_STRING_LENGTH;
+            int mod = length % MAX_STRING_LENGTH;
+
+            Gizmo.StringBuilderGenerator sb = Gizmo.newStringBuilder(this, length);
+            for (int i = 0; i < div; i++) {
+                int beginIndex = i * MAX_STRING_LENGTH;
+                int endIndex = beginIndex + MAX_STRING_LENGTH;
+                sb.append(val.substring(beginIndex, endIndex));
+            }
+            if (mod > 0) {
+                sb.append(val.substring(div * MAX_STRING_LENGTH));
+            }
+            return sb.callToString();
+
+        } else {
+            return new ResultHandle("Ljava/lang/String;", this, val);
         }
-        return new ResultHandle("Ljava/lang/String;", this, val);
     }
 
     @Override
