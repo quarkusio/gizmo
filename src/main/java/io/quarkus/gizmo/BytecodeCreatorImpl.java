@@ -309,6 +309,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     }
 
+    /**
+     * Implementation detail: when the string to be loaded is larger than {@link BytecodeCreatorImpl#MAX_STRING_LENGTH},
+     * then a {@link StringBuilder} is used to construct the final String. This is done because strings constants cannot be larger
+     * than {@link BytecodeCreatorImpl#MAX_STRING_LENGTH}.
+     */
     @Override
     public ResultHandle load(String val) {
         Objects.requireNonNull(val);
