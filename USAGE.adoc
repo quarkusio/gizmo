@@ -256,6 +256,75 @@ void ifThenElse(MethodCreator method, ResultHandle value) {
 }
 ----
 
+=== Switch Constructs
+
+Gizmo has two constructs to generate the bytecode output similar to Java switch statement/expressions.
+The `BytecodeCreator#stringSwitch()` method creates a new Switch construct for a `String` value.
+While the `BytecodeCreator#enumSwitch()` method creates a new Switch construct for an enum value.
+
+By default, the fall through is disabled.
+A case block is treated as a switch rule block; i.e. it's not necessary to add the break statement to prevent the fall through.
+
+.Fall Through Disabled Example
+[source,java]
+----
+// String ret;
+// switch (arg) {
+//     case "boom", "foo" -> ret = "foooboom";
+//     case "bar" -> ret = "barr";
+//     case "baz" -> ret = "bazz";
+//     default -> ret = null;
+// }
+// return ret;
+StringSwitch s = method.stringSwitch(strResultHandle);
+s.caseOf(List.of("boom", "foo"), bc -> {
+   bc.assign(ret, bc.load("foooboom"));
+});
+s.caseOf("bar", bc -> {
+   bc.assign(ret, bc.load("barr"));
+});
+s.caseOf("baz", bc -> {
+   bc.assign(ret, bc.load("bazz"));
+});
+s.defaultCase(bc -> bc.assign(ret, bc.loadNull()));
+----
+
+However, if fall through is enabled then a case block is treated as a labeled statement group; i.e. it's necessary to add the break statement to prevent the fall through.
+
+.Fall Through Enabled Example
+[source,java]
+----
+// String ret;
+// switch (arg) {
+//     case "boom":
+//     case "foo":
+//          ret = "fooo";
+//          break;
+//      case "bar":
+//          ret = "barr"
+//      case "baz"
+//          ret = "bazz";
+//          break;
+//      default:
+//          ret = null;
+// }
+// return ret;
+StringSwitch s = method.stringSwitch(strResultHandle);
+s.fallThrough();
+s.caseOf(List.of("boom", "foo"), bc -> {
+   bc.assign(ret, bc.load("fooo"));
+   s.doBreak(bc);
+});
+s.caseOf("bar", bc -> {
+   bc.assign(ret, bc.load("barr"));
+});
+s.caseOf("baz", bc -> {
+   bc.assign(ret, bc.load("bazz"));
+   s.doBreak(bc);
+});
+s.defaultCase(bc -> bc.assign(ret, bc.loadNull()));
+----
+
 == High-level Utilities
 
 The `Gizmo` class contains many utilities for generating common code sequences.

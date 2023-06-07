@@ -40,7 +40,7 @@ public class SwitchTest {
             AssignableResultHandle ret = method.createVariable(String.class);
             // String ret;
             // switch(arg) {
-            //     case "boom", "foo" -> ret = "fooo";
+            //     case "boom", "foo" -> ret = "foooboom";
             //     case "bar" -> ret = "barr";
             //     case "baz" -> ret = "bazz";
             //     default -> ret = null;
