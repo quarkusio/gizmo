@@ -646,3 +646,47 @@ void createDTO(ClassOutput output) {
     }
 }
 ----
+
+== Transforming an Existing Class
+
+In order to transform the bytecode of an existing class, we need to create a `ClassTransformer` instance.
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer(classVisitor);
+// ...do some transformations
+ct.close(); <2>
+classVisitor.visitEnd();
+----
+<1> `ClassTransformer` is backed by a `org.objectweb.asm.ClassVisitor` instance.
+<2> The `ClassVisitor#close()` method must be always called before `ClassVisitor#visitEnd()`.
+
+=== Adding Fields
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer(classVisitor);
+// public final String bar;
+FieldCreator fc = ct.addField(FieldDescriptor.of("org/acme/Foo", "bar", String.class)); <1>
+fc.setModifiers(Opcodes.ACC_PUBLIC | OpCodes.ACC_FINAL);
+ct.close(); <2>
+----
+<1> Use the `FieldCreator` API to configure the new field.
+<2> Writes the bytecode to the existing class.
+
+=== Adding Methods
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer(classVisitor);
+// public final String transform(String val) {
+//    return val.toUpperCase();
+// }
+MethodCreator transform = ct.addMethod(MethodDescriptor.ofMethod("org/acme/Foo", "transform", String.class, String.class)); <1>
+ResultHandle ret = transform.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "toUpperCase", String.class),
+                transform.getMethodParam(0));
+transform.returnValue(ret);    
+ct.close(); <2>
+----
+<1> Use the `MethodCreator` API to configure the new method.
+<2> Writes the bytecode to the existing class.
