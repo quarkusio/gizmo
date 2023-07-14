@@ -103,20 +103,21 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
 
     @Override
     public MethodCreator setModifiers(int mods) {
-        boolean isOnInterface = classCreator.isInterface();
-        if (isOnInterface && (mods & Opcodes.ACC_PROTECTED) != 0) {
-            throw new IllegalArgumentException("Interface method may not be protected: " + methodDescriptor);
+        if (classCreator != null) {
+            boolean isOnInterface = classCreator.isInterface();
+            if (isOnInterface && (mods & Opcodes.ACC_PROTECTED) != 0) {
+                throw new IllegalArgumentException("Interface method may not be protected: " + methodDescriptor);
+            }
+            if (isOnInterface && (mods & Opcodes.ACC_FINAL) != 0) {
+                throw new IllegalArgumentException("Interface method may not be final: " + methodDescriptor);
+            }
+            if (isOnInterface && (mods & Opcodes.ACC_SYNCHRONIZED) != 0) {
+                throw new IllegalArgumentException("Interface method may not be synchronized: " + methodDescriptor);
+            }
+            if (isOnInterface && (mods & Opcodes.ACC_NATIVE) != 0) {
+                throw new IllegalArgumentException("Interface method may not be native: " + methodDescriptor);
+            } 
         }
-        if (isOnInterface && (mods & Opcodes.ACC_FINAL) != 0) {
-            throw new IllegalArgumentException("Interface method may not be final: " + methodDescriptor);
-        }
-        if (isOnInterface && (mods & Opcodes.ACC_SYNCHRONIZED) != 0) {
-            throw new IllegalArgumentException("Interface method may not be synchronized: " + methodDescriptor);
-        }
-        if (isOnInterface && (mods & Opcodes.ACC_NATIVE) != 0) {
-            throw new IllegalArgumentException("Interface method may not be native: " + methodDescriptor);
-        }
-
         this.modifiers = mods;
         return this;
     }
