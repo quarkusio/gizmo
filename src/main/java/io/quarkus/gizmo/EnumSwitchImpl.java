@@ -33,27 +33,18 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
         ResultHandle switchTable;
         MethodCreatorImpl methodCreator = findMethodCreator(enclosing);
         if (methodCreator != null) {
-            // Generate a static method that returns the switch table 
-            char sep = '$';
-            ClassCreator classCreator = methodCreator.getClassCreator();
             // $GIZMO_SWITCH_TABLE$org$acme$MyEnum()
             StringBuilder methodName = new StringBuilder();
-            methodName.append(sep).append("GIZMO_SWITCH_TABLE");
+            methodName.append("$GIZMO_SWITCH_TABLE");
             for (String part : enumClass.getName().split("\\.")) {
-                methodName.append(sep).append(part);
+                methodName.append('$').append(part);
             }
-            MethodDescriptor gizmoSwitchTableDescriptor = MethodDescriptor.ofMethod(classCreator.getClassName(),
-                    methodName.toString(), int[].class);
-            if (!classCreator.getExistingMethods()
-                    .contains(gizmoSwitchTableDescriptor)) {
-                MethodCreator gizmoSwitchTable = classCreator.getMethodCreator(gizmoSwitchTableDescriptor)
-                        .setModifiers(ACC_PRIVATE | ACC_STATIC);
-                gizmoSwitchTable.returnValue(generateSwitchTable(enumClass, gizmoSwitchTable, enumOrdinal));
-            }
-            switchTable = invokeStaticMethod(gizmoSwitchTableDescriptor);
+
+            // Call a static method that returns the switch table
+            switchTable = callSwitchTableMethod(methodName.toString(), enumClass, enumOrdinal);
         } else {
             // This is suboptimal - the switch table is generated for each switch construct 
-            switchTable = generateSwitchTable(enumClass, methodCreator, enumOrdinal);
+            switchTable = generateSwitchTable(enumClass, enclosing, enumOrdinal);
         }
         ResultHandle effectiveOrdinal = readArrayValue(switchTable, ordinal);
 
@@ -189,7 +180,21 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
         return null;
     }
 
-    private ResultHandle generateSwitchTable(Class<E> enumClass, BytecodeCreator bytecodeCreator,
+    protected ResultHandle callSwitchTableMethod(String methodName, Class<E> enumClass, MethodDescriptor enumOrdinal) {
+        MethodCreatorImpl methodCreator = findMethodCreator(getOwner()); // never returns null here
+        ClassCreator classCreator = methodCreator.getClassCreator();
+
+        MethodDescriptor gizmoSwitchTableDescriptor = MethodDescriptor.ofMethod(classCreator.getClassName(),
+                methodName, int[].class);
+        if (!classCreator.getExistingMethods().contains(gizmoSwitchTableDescriptor)) {
+            MethodCreator gizmoSwitchTable = classCreator.getMethodCreator(gizmoSwitchTableDescriptor)
+                    .setModifiers(ACC_PRIVATE | ACC_STATIC);
+            gizmoSwitchTable.returnValue(generateSwitchTable(enumClass, gizmoSwitchTable, enumOrdinal));
+        }
+        return invokeStaticMethod(gizmoSwitchTableDescriptor);
+    }
+
+    protected final ResultHandle generateSwitchTable(Class<E> enumClass, BytecodeCreator bytecodeCreator,
             MethodDescriptor enumOrdinal) {
         E[] constants = enumClass.getEnumConstants();
         ResultHandle switchTable = bytecodeCreator.newArray(int.class, constants.length);

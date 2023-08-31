@@ -420,7 +420,7 @@ JdkListInstance  JdkSetInstance
 
 Therefore, if you have a `JdkListInstance`, you can generate a `size()` invocation, because `JdkCollectionInstance` has a method for it.
 
-=== Iterable Operations
+==== Iterable Operations
 
 `Gizmo.iterableOperations(BytecodeCreator target)` returns `JdkIterable` with no additional methods.
 
@@ -428,7 +428,7 @@ Therefore, if you have a `JdkListInstance`, you can generate a `size()` invocati
 
 - `iterator()` to generate an invocation of `myIterable.iterator()`
 
-=== Iterator Operations
+==== Iterator Operations
 
 `Gizmo.iteratorOperations(BytecodeCreator target)` returns `JdkIterator` with no additional methods.
 
@@ -457,7 +457,7 @@ void iterate(BytecodeCreator bytecode, ResultHandle iterable) {
 }
 ----
 
-=== Collection Operations
+==== Collection Operations
 
 `Gizmo.collectionOperations(BytecodeCreator target)` returns `JdkCollection` with no additional methods.
 
@@ -487,7 +487,7 @@ void printSize(BytecodeCreator bytecode, ResultHandle collection) {
 <1> Here, we emit a `toString()` call on a primitive type (`size` is an `int`).
     Gizmo will insert an auto-boxing operation, so the `toString()` method is actually called on `java.lang.Integer`.
 
-=== List Operations
+==== List Operations
 
 `Gizmo.listOperations(BytecodeCreator target)` returns `JdkList` with these methods:
 
@@ -517,7 +517,7 @@ void createListAndPrintFirst(BytecodeCreator bytecode) {
 }
 ----
 
-=== Set Operations
+==== Set Operations
 
 `Gizmo.setOperations(BytecodeCreator target)` returns `JdkSet` with these methods:
 
@@ -542,7 +542,7 @@ void createSetAndPrint(BytecodeCreator bytecode) {
 }
 ----
 
-=== Map Operations
+==== Map Operations
 
 `Gizmo.mapOperations(BytecodeCreator target)` returns `JdkMap` with these methods:
 
@@ -572,7 +572,7 @@ void createMapAndLookup(BytecodeCreator bytecode) {
 }
 ----
 
-=== Optional Operations
+==== Optional Operations
 
 `Gizmo.optionalOperations(BytecodeCreator target)` returns `JdkOptional` with these methods:
 
@@ -604,7 +604,7 @@ void createOptionalAndPrint(BytecodeCreator bytecode) {
 }
 ----
 
-== Generating `equals`, `hashCode` and `toString`
+=== Generating `equals`, `hashCode` and `toString`
 
 When creating a DTO-style class, it is often possible to generate the `equals`, `hashCode` and `toString` from a template.
 Similarly to IDEs generating their source code, Gizmo has utility methods to generate their bytecode.
@@ -646,3 +646,153 @@ void createDTO(ClassOutput output) {
     }
 }
 ----
+
+== Transforming an Existing Class
+
+In addition to _creating_ classes, Gizmo also provides a limited form of class _transformation_.
+In order to transform the bytecode of an existing class, we need to create a `ClassTransformer` instance, configure the class transformation, and then apply it to a `ClassVisitor`.
+The result is another `ClassVisitor` that should be used instead of the original.
+
+[source,java]
+----
+ClassTransformer transformer = new ClassTransformer(className); <1>
+// ...do some transformations
+ClassVisitor visitor = transformer.applyTo(originalVisitor); <2>
+----
+<1> `ClassTransformer` needs to know the name of class that is being transformed.
+<2> `ClassTransformer#applyTo()` takes a `ClassVisitor` and returns another `ClassVisitor` that performs the transformation.
+The `ClassVisitor` passed to `applyTo` must not have been visited yet.
+
+=== Adding Fields
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+// public final String bar;
+FieldCreator fc = ct.addField("bar", String.class); <1>
+fc.setModifiers(Opcodes.ACC_PUBLIC | OpCodes.ACC_FINAL);
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Use the `FieldCreator` API to configure the new field.
+
+=== Adding Methods
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+// public final String transform(String val) {
+//    return val.toUpperCase();
+// }
+MethodCreator transform = ct.addMethod("transform", String.class, String.class); <1>
+ResultHandle ret = transform.invokeVirtualMethod(
+        MethodDescriptor.ofMethod(String.class, "toUpperCase", String.class),
+        transform.getMethodParam(0));
+transform.returnValue(ret);    
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Use the `MethodCreator` API to configure the new method.
+
+=== Adding and Removing Modifiers
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+ct.removeModifiers(OpCodes.ACC_FINAL); <1>
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Use `removeModifiers` to remove modifiers from the class.
+The complementary method is called `addModifiers`.
+
+=== Implementing New Interfaces
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+ct.addInterface(Function.class); <1>
+
+MethodCreator method = ct.addMethod("apply", Object.class, Object.class); <2>
+method.returnValue(...);
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Call `addInterface` to add an interface to the list of interfaces of the class.
+<2> Use `addMethod` to implement all the methods prescribed by the interface.
+
+
+=== Modifying Methods and Fields
+
+The methods `modifyMethod` return a `MethodTransformer`, which is used to configure transformations on a given method.
+Similarly, the `modifyField` methods return `FieldTransformer`.
+
+==== Renaming
+
+Renaming a method and then adding a new method with the old name is an easy way to "intercept" the previous method.
+Say the class `org.acme.Foo` has the following method:
+
+[source,java]
+----
+public String transform(int value) {
+    return "result: " + value;
+}
+----
+
+Then, the following transformation:
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+ct.modifyMethod("transform", String.class, int.class).rename("transform$"); <1>
+
+MethodCreator transform = ct.addMethod("transform", String.class, int.class); <2>
+ResultHandle originalResult = transform.invokeVirtualMethod(
+        MethodDescriptor.ofMethod("org.acme.Foo", "transform$", String.class, int.class),
+        transform.getThis(), transform.getMethodParam(0));
+ResultHandle result = Gizmo.newStringBuilder(transform)
+        .append("intercepted: ")
+        .append(originalResult)
+        .callToString();
+transform.returnValue(result);
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Rename the `transform` method to `transform$`.
+<2> Add a new `transform` method that delegates to `transform$`.
+
+modifies the class to look like this:
+
+[source,java]
+----
+// previous method, renamed but otherwise kept intact
+public String transform$(int value) {
+    return "result: " + value;
+}
+
+// new method, delegates to the renamed old method (but does not necessarily have to)
+public String transform(int value) {
+    return "intercepted: " + transform$(value);
+}
+----
+
+Fields may be renamed in a similar fashion.
+
+==== Adding and Removing Modifiers
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+ct.modifyField("val", String.class).removeModifiers(Modifier.FINAL); <1>
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Use `removeModifiers` to remove modifiers from given member.
+In this case, it's the field `val` of type `String`.
+The complementary method is, again, called `addModifiers`.

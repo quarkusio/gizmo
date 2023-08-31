@@ -1,7 +1,7 @@
 package io.quarkus.gizmo;
 
 public enum  MyEnum {
-
     YES,
-    NO
+    NO,
+    UNKNOWN,
 }
