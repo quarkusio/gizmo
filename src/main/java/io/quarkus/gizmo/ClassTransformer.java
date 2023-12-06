@@ -44,6 +44,9 @@ public class ClassTransformer {
     private final Map<NamedDescriptor, MethodTransformer> modifiedMethods = new HashMap<>();
     private final Map<NamedDescriptor, FieldTransformer> modifiedFields = new HashMap<>();
 
+    private final Set<NamedDescriptor> removedMethods = new HashSet<>();
+    private final Set<NamedDescriptor> removedFields = new HashSet<>();
+
     /**
      * @param className the name of the transformed class
      */
@@ -122,10 +125,45 @@ public class ClassTransformer {
      * @param returnType return type of the new method
      * @param parameters parameter types of the new method
      * @return a new {@link MethodCreator}
-     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or {@link String}
+     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or
+     *         {@link String}
      */
     public MethodCreator addMethod(String name, Object returnType, Object... parameters) {
         return addMethod(MethodDescriptor.ofMethod(className, name, returnType, parameters));
+    }
+
+    /**
+     * Removes the method with the given name, return type and parameters.
+     * <p>
+     * It's illegal to remove a modified method.
+     * 
+     * @param name
+     * @param returnType
+     * @param parameters
+     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or
+     *         {@link String}
+     */
+    public void removeMethod(String name, Object returnType, Object... parameters) {
+        removeMethod(MethodDescriptor.ofMethod(className, name, returnType, parameters));
+    }
+
+    /**
+     * Removes the given method.
+     * <p>
+     * It's illegal to remove a modified method.
+     * 
+     * @param method
+     */
+    public void removeMethod(MethodDescriptor method) {
+        Objects.requireNonNull(method);
+        NamedDescriptor namedDescriptor = new NamedDescriptor(method.getName(), method.getDescriptor());
+        if (removedMethods.contains(namedDescriptor)) {
+            throw new IllegalStateException("Method already removed: " + method);
+        }
+        if (modifiedMethods.containsKey(namedDescriptor)) {
+            throw new IllegalStateException("Modified method cannot be removed: " + method);
+        }
+        removedMethods.add(namedDescriptor);
     }
 
     /**
@@ -156,25 +194,65 @@ public class ClassTransformer {
     }
 
     /**
+     * Removes the field of the given name and type.
+     * <p>
+     * It's illegal to remove a modified field.
+     * 
+     * @param name
+     * @param type
+     * @throws IllegalArgumentException if the {@code type} is not a {@link Class} or {@link String}
+     */
+    public void removeField(String name, Object type) {
+        removeField(FieldDescriptor.of(className, name, DescriptorUtils.objectToDescriptor(type)));
+    }
+
+    /**
+     * Removes the given field.
+     * <p>
+     * It's illegal to remove a modified field.
+     * 
+     * @param field
+     */
+    public void removeField(FieldDescriptor field) {
+        Objects.requireNonNull(field);
+        NamedDescriptor namedDescriptor = new NamedDescriptor(field.getName(), field.getType());
+        if (removedFields.contains(namedDescriptor)) {
+            throw new IllegalStateException("Field already removed: " + field);
+        }
+        if (modifiedFields.containsKey(namedDescriptor)) {
+            throw new IllegalStateException("Modified field cannot be removed: " + field);
+        }
+        removedFields.add(namedDescriptor);
+    }
+
+    /**
      * Returns a {@link MethodTransformer} to configure a transformation of given {@code method}.
+     * <p>
+     * It's illegal to modify a removed method.
      *
      * @param method descriptor of the method to transform
      * @return a {@link MethodTransformer}
      */
     public MethodTransformer modifyMethod(MethodDescriptor method) {
-        NamedDescriptor key = new NamedDescriptor(method.getName(), method.getDescriptor());
-        return modifiedMethods.computeIfAbsent(key, ignored -> new MethodTransformer());
+        NamedDescriptor namedDescriptor = new NamedDescriptor(method.getName(), method.getDescriptor());
+        if (removedMethods.contains(namedDescriptor)) {
+            throw new IllegalStateException("Removed method cannot be modified: " + method);
+        }
+        return modifiedMethods.computeIfAbsent(namedDescriptor, ignored -> new MethodTransformer());
     }
 
     /**
      * Returns a {@link MethodTransformer} to configure a transformation of a method with given
      * {@code name}, {@code returnType} and {@code parameters}.
+     * <p>
+     * It's illegal to modify a removed method.
      *
      * @param name name of the method
      * @param returnType return type of the method
      * @param parameters parameter types of the method
      * @return a {@link MethodTransformer}
-     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or {@link String}
+     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or
+     *         {@link String}
      */
     public MethodTransformer modifyMethod(String name, Object returnType, Object... parameters) {
         return modifyMethod(MethodDescriptor.ofMethod(className, name, returnType, parameters));
@@ -182,23 +260,30 @@ public class ClassTransformer {
 
     /**
      * Returns a {@link FieldTransformer} to configure a transformation of given {@code field}.
+     * <p>
+     * It's illegal to modify a removed field.
      *
      * @param field descriptor of the field to transform
      * @return a {@link FieldTransformer}
      */
     public FieldTransformer modifyField(FieldDescriptor field) {
-        NamedDescriptor key = new NamedDescriptor(field.getName(), field.getType());
-        return modifiedFields.computeIfAbsent(key, ignored -> new FieldTransformer());
+        NamedDescriptor namedDescriptor = new NamedDescriptor(field.getName(), field.getType());
+        if (removedFields.contains(namedDescriptor)) {
+            throw new IllegalStateException("Removed field cannot be modified: " + field);
+        }
+        return modifiedFields.computeIfAbsent(namedDescriptor, ignored -> new FieldTransformer());
     }
 
     /**
      * Returns a {@link FieldTransformer} to configure a transformation of a field with given
      * {@code name} and {@code type}.
+     * <p>
+     * It's illegal to modify a removed field.
      *
      * @param name name of the field
      * @param type type of the field
      * @return a {@link FieldTransformer}
-     * @throws IllegalArgumentException if the {@code returnType} or any of the {@code parameters} is not a {@link Class} or {@link String}
+     * @throws IllegalArgumentException if the {@code type} is not a {@link Class} or {@link String}
      */
     public FieldTransformer modifyField(String name, Object type) {
         return modifyField(FieldDescriptor.of(className, name, DescriptorUtils.objectToDescriptor(type)));
@@ -246,7 +331,11 @@ public class ClassTransformer {
 
             @Override
             public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
-                FieldTransformer fieldTransformer = modifiedFields.get(new NamedDescriptor(name, descriptor));
+                NamedDescriptor namedDescriptor = new NamedDescriptor(name, descriptor);
+                if (removedFields.contains(namedDescriptor)) {
+                    return null;
+                }
+                FieldTransformer fieldTransformer = modifiedFields.get(namedDescriptor);
                 if (fieldTransformer != null) {
                     access |= fieldTransformer.addedModifiers;
                     access &= ~fieldTransformer.removedModifiers;
@@ -257,8 +346,13 @@ public class ClassTransformer {
             }
 
             @Override
-            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-                MethodTransformer methodTransformer = modifiedMethods.get(new NamedDescriptor(name, descriptor));
+            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+                    String[] exceptions) {
+                NamedDescriptor namedDescriptor = new NamedDescriptor(name, descriptor);
+                if (removedMethods.contains(namedDescriptor)) {
+                    return null;
+                }
+                MethodTransformer methodTransformer = modifiedMethods.get(namedDescriptor);
                 if (methodTransformer != null) {
                     access |= methodTransformer.addedModifiers;
                     access &= ~methodTransformer.removedModifiers;
@@ -271,7 +365,8 @@ public class ClassTransformer {
             @Override
             public void visitEnd() {
                 if (!seenInitialVisit) {
-                    throw new IllegalStateException("The ClassTransformer was applied to a ClassVisitor that was already visited");
+                    throw new IllegalStateException(
+                            "The ClassTransformer was applied to a ClassVisitor that was already visited");
                 }
 
                 for (FieldCreator fieldCreator : addedFields.values()) {

@@ -677,6 +677,19 @@ ClassVisitor visitor = ct.applyTo(...);
 ----
 <1> Use the `FieldCreator` API to configure the new field.
 
+=== Removing Fields
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+// public final String bar;
+ct.removeField("bar", String.class); <1>
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Removes the field with name `bar` and type `java.lang.String`.
+
 === Adding Methods
 
 [source,java]
@@ -695,6 +708,21 @@ transform.returnValue(ret);
 ClassVisitor visitor = ct.applyTo(...);
 ----
 <1> Use the `MethodCreator` API to configure the new method.
+
+=== Removing Methods
+
+[source,java]
+----
+ClassTransformer ct = new ClassTransformer("org.acme.Foo");
+
+// public final String transform(String val) {
+//    return val.toUpperCase();
+// }
+ct.removeMethod("transform", String.class, String.class); <1>
+
+ClassVisitor visitor = ct.applyTo(...);
+----
+<1> Removes the method with name `transform`, return type `java.lang.String` and parameter `java.lang.String`.
 
 === Adding and Removing Modifiers
 

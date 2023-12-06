@@ -210,7 +210,6 @@ public class ClassTransformerTest {
         assertTrue(Modifier.isFinal(clazz.getDeclaredMethod("test", int.class).getModifiers()));
     }
 
-
     @Test
     public void addInterfaceAndMethodWithEnumSwitch() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -268,11 +267,105 @@ public class ClassTransformerTest {
         });
     }
 
+    @Test
+    public void testRemoveField() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        String className = MyTest.class.getName().replace('.', '/');
+        String objectName = "java/lang/Object";
+        ClassReader cr = new ClassReader("io.quarkus.gizmo.ClassTransformerTest$MyTest");
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V11, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, className, null, objectName,
+                new String[] {});
+        cw.visitSource(null, null);
+
+        ClassTransformer classTransformer = new ClassTransformer(className);
+
+        classTransformer.removeField("val", String.class);
+        assertThrows(NullPointerException.class, () -> {
+            classTransformer.removeField(null);
+        });
+        IllegalStateException ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.removeField("val", String.class);
+        });
+        assertTrue(ise.getMessage().startsWith("Field already removed"));
+
+        classTransformer.modifyField("modified", boolean.class).rename("deifidom");
+        ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.removeField("modified", boolean.class);
+        });
+        assertTrue(ise.getMessage().startsWith("Modified field cannot be removed"));
+
+        ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.modifyField("val", String.class);
+        });
+        assertTrue(ise.getMessage().startsWith("Removed field cannot be modified"));
+
+        ClassVisitor cv = classTransformer.applyTo(cw);
+        cr.accept(cv, 0);
+        cl.write(className, cw.toByteArray());
+
+        Class<?> clazz = cl.loadClass(MyTest.class.getName());
+        assertThrows(NoSuchFieldException.class, () -> {
+            clazz.getDeclaredField("val");
+        });
+    }
+
+    @Test
+    public void testRemoveMethod() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        String className = MyTest.class.getName().replace('.', '/');
+        String objectName = "java/lang/Object";
+        ClassReader cr = new ClassReader("io.quarkus.gizmo.ClassTransformerTest$MyTest");
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V11, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, className, null, objectName,
+                new String[] {});
+        cw.visitSource(null, null);
+
+        ClassTransformer classTransformer = new ClassTransformer(className);
+
+        MethodDescriptor testMethod = MethodDescriptor.ofMethod(className, "test", String.class, int.class);
+        MethodDescriptor modifiedMethod = MethodDescriptor.ofMethod(className, "modified", String.class, int.class);
+
+        classTransformer.removeMethod(testMethod);
+        assertThrows(NullPointerException.class, () -> {
+            classTransformer.removeMethod(null);
+        });
+        IllegalStateException ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.removeMethod("test", String.class, int.class);
+        });
+        assertTrue(ise.getMessage().startsWith("Method already removed"));
+
+        classTransformer.modifyMethod(modifiedMethod).rename("deifidom");
+        ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.removeMethod(modifiedMethod);
+        });
+        assertTrue(ise.getMessage().startsWith("Modified method cannot be removed"));
+
+        ise = assertThrows(IllegalStateException.class, () -> {
+            classTransformer.modifyMethod(testMethod);
+        });
+        assertTrue(ise.getMessage().startsWith("Removed method cannot be modified"));
+
+        ClassVisitor cv = classTransformer.applyTo(cw);
+        cr.accept(cv, 0);
+        cl.write(className, cw.toByteArray());
+
+        Class<?> clazz = cl.loadClass(MyTest.class.getName());
+        assertThrows(NoSuchMethodException.class, () -> {
+            clazz.getDeclaredMethod("test", int.class);
+        });
+    }
+
     public static class MyTest {
 
         final String val = "test";
+        boolean modified = false;
 
         public String test(int arg) {
+            return val + arg;
+        }
+
+        public String modified(int arg) {
             return val + arg;
         }
 
