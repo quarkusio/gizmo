@@ -795,6 +795,119 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle convertPrimitive(ResultHandle value, Class<?> conversionTarget) {
+        Objects.requireNonNull(value);
+        Objects.requireNonNull(conversionTarget);
+        if (!boxingMap.containsKey(value.getType())) {
+            throw new IllegalArgumentException("Value is not of a primitive type: " + value);
+        }
+        if (!conversionTarget.isPrimitive()) {
+            throw new IllegalArgumentException("Conversion target is not a primitive type: " + conversionTarget);
+        }
+
+        // I = identity, W = widening, N = narrowing, space = no conversion exists
+        // (see https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1)
+        //
+        // from \ to | boolean byte short char int long float double
+        // ----------+----------------------------------------------
+        //   boolean |    I
+        //      byte |          I     W   W+N   W   W     W     W
+        //     short |          N     I    N    W   W     W     W
+        //      char |          N     N    I    W   W     W     W
+        //       int |          N     N    N    I   W     W     W
+        //      long |          N     N    N    N   I     W     W
+        //     float |          N     N    N    N   N     I     W
+        //    double |          N     N    N    N   N     N     I
+        //
+        // note that `byte`, `short` and `char` are represented as `int` on the JVM stack,
+        // so the conversions between these types are implicit
+
+        Type sourceType = Type.getType(value.getType());
+        Type targetType = Type.getType(conversionTarget);
+        if (sourceType.equals(targetType)) {
+            return value;
+        }
+        if (sourceType == Type.BOOLEAN_TYPE) {
+            throw new IllegalArgumentException("Cannot convert boolean value to " + conversionTarget + ": " + value);
+        }
+        if (targetType == Type.BOOLEAN_TYPE) {
+            throw new IllegalArgumentException("Cannot convert value to boolean: " + value);
+        }
+
+        ResultHandle result = allocateResult(targetType.getDescriptor());
+        operations.add(new Operation() {
+            @Override
+            void writeBytecode(MethodVisitor methodVisitor) {
+                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, result.getType());
+
+                if (sourceType == Type.BYTE_TYPE
+                       || sourceType == Type.SHORT_TYPE
+                       || sourceType == Type.CHAR_TYPE
+                       || sourceType == Type.INT_TYPE) {
+                    if (targetType == Type.LONG_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2L); // widening
+                    } else if (targetType == Type.FLOAT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2F); // widening
+                    } else if (targetType == Type.DOUBLE_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2D); // widening
+                    }
+                } else if (sourceType == Type.LONG_TYPE) {
+                    if (targetType == Type.BYTE_TYPE
+                        || targetType == Type.SHORT_TYPE
+                        || targetType == Type.CHAR_TYPE
+                        || targetType == Type.INT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.L2I); // narrowing
+                    } else if (targetType == Type.FLOAT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.L2F); // widening
+                    } else if (targetType == Type.DOUBLE_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.L2D); // widening
+                    }
+                } else if (sourceType == Type.FLOAT_TYPE) {
+                    if (targetType == Type.BYTE_TYPE
+                        || targetType == Type.SHORT_TYPE
+                        || targetType == Type.CHAR_TYPE
+                        || targetType == Type.INT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.F2I); // narrowing
+                    } else if (targetType == Type.LONG_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.F2L); // narrowing
+                    } else if (targetType == Type.DOUBLE_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.F2D); // widening
+                    }
+                } else if (sourceType == Type.DOUBLE_TYPE) {
+                    if (targetType == Type.BYTE_TYPE
+                        || targetType == Type.SHORT_TYPE
+                        || targetType == Type.CHAR_TYPE
+                        || targetType == Type.INT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.D2I); // narrowing
+                    } else if (targetType == Type.LONG_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.D2L); // narrowing
+                    } else if (targetType == Type.FLOAT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.D2F); // narrowing
+                    }
+                }
+
+                storeResultHandle(methodVisitor, result);
+            }
+
+            @Override
+            Set<ResultHandle> getInputResultHandles() {
+                return Collections.singleton(value);
+            }
+
+            @Override
+            ResultHandle getTopResultHandle() {
+                return value;
+            }
+
+            @Override
+            ResultHandle getOutgoingResultHandle() {
+                return result;
+            }
+        });
+        return result;
+    }
+
+    @Override
     public boolean isScopedWithin(final BytecodeCreator other) {
         return other == this || owner != null && owner.isScopedWithin(other);
     }
