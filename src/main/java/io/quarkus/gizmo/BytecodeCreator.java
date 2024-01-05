@@ -1016,6 +1016,15 @@ public interface BytecodeCreator extends AutoCloseable {
     ResultHandle multiply(ResultHandle a1, ResultHandle a2);
 
     /**
+     * Divides the first result handle by the second and returns the result
+     *
+     * @param a1 The first number
+     * @param a2 The second number
+     * @return The result
+     */
+    ResultHandle divide(ResultHandle a1, ResultHandle a2);
+
+    /**
      * Computes the bitwise AND of the two result handles and returns the result
      *
      * @param a1 The first number
