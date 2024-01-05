@@ -70,19 +70,20 @@ public class ArithmeticTestCase {
             multiplyLongs.returnValue(multiplyLongs.multiply(long1, long2));
 
             MethodCreator multiplyFloats = creator.getMethodCreator("multiplyFloats", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-            ResultHandle float1 = multiplyLongs.load(6.0F);
-            ResultHandle float2 = multiplyLongs.load(7.0F);
+            ResultHandle float1 = multiplyFloats.load(6.0F);
+            ResultHandle float2 = multiplyFloats.load(7.0F);
             multiplyFloats.returnValue(multiplyFloats.multiply(float1, float2));
 
             MethodCreator multiplyDoubles = creator.getMethodCreator("multiplyDoubles", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
-            ResultHandle double1 = multiplyLongs.load(8.0F);
-            ResultHandle double2 = multiplyLongs.load(9.0F);
+            ResultHandle double1 = multiplyDoubles.load(8.0D);
+            ResultHandle double2 = multiplyDoubles.load(9.0D);
             multiplyDoubles.returnValue(multiplyDoubles.multiply(double1, double2));
         }
+
         Class<?> clazz = cl.loadClass("com.MyTest");
         assertEquals(6, clazz.getMethod("multiplyInts").invoke(null));
         assertEquals(20L, clazz.getMethod("multiplyLongs").invoke(null));
         assertEquals(42.0F, clazz.getMethod("multiplyFloats").invoke(null));
-        assertEquals(72.0F, clazz.getMethod("multiplyDoubles").invoke(null));
+        assertEquals(72.0D, clazz.getMethod("multiplyDoubles").invoke(null));
     }
 }
