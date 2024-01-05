@@ -85,4 +85,41 @@ public class ArithmeticTestCase {
         assertEquals(42.0F, clazz.getMethod("multiplyFloats").invoke(null));
         assertEquals(72.0D, clazz.getMethod("multiplyDoubles").invoke(null));
     }
+
+    @Test
+    public void testDivision() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            MethodCreator divideInts = creator.getMethodCreator("divideInts", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle int1 = divideInts.load(2);
+            ResultHandle int2 = divideInts.load(3);
+            divideInts.returnValue(divideInts.divide(int1, int2));
+
+            MethodCreator divideImproperInts = creator.getMethodCreator("divideImproperInts", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle int11 = divideInts.load(18);
+            ResultHandle int22 = divideInts.load(5);
+            divideImproperInts.returnValue(divideImproperInts.divide(int11, int22));
+
+            MethodCreator divideLongs = creator.getMethodCreator("divideLongs", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle long1 = divideLongs.load(5L);
+            ResultHandle long2 = divideLongs.load(4L);
+            divideLongs.returnValue(divideLongs.divide(long1, long2));
+
+            MethodCreator divideFloats = creator.getMethodCreator("divideFloats", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle float1 = divideLongs.load(6.0F);
+            ResultHandle float2 = divideLongs.load(7.0F);
+            divideFloats.returnValue(divideFloats.divide(float1, float2));
+
+            MethodCreator divideDoubles = creator.getMethodCreator("divideDoubles", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle double1 = divideLongs.load(8.0D);
+            ResultHandle double2 = divideLongs.load(9.0D);
+            divideDoubles.returnValue(divideDoubles.divide(double1, double2));
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        assertEquals(0, clazz.getMethod("divideInts").invoke(null));
+        assertEquals(3, clazz.getMethod("divideImproperInts").invoke(null));
+        assertEquals(1L, clazz.getMethod("divideLongs").invoke(null));
+        assertEquals(0.85714287F, clazz.getMethod("divideFloats").invoke(null));
+        assertEquals(0.8888888888888888D, clazz.getMethod("divideDoubles").invoke(null));
+    }
 }
