@@ -1000,20 +1000,47 @@ public interface BytecodeCreator extends AutoCloseable {
     /**
      * Adds the two result handles together and returns the result
      * 
-     * @param a1 The first number
-     * @param a2 The second number
+     * @param a1 The first number, aka the <em>augend</em>
+     * @param a2 The second number, aka the <em>addend</em>
      * @return The result
      */
     ResultHandle add(ResultHandle a1, ResultHandle a2);
 
     /**
+     * Subtracts the second result handle from the first result and returns the result
+     *
+     * @param a1 The first number, aka the <em>minuend</em>
+     * @param a2 The second number, aka the <em>subtrahend</em>
+     * @return The result
+     */
+    ResultHandle subtract(ResultHandle a1, ResultHandle a2);
+
+    /**
      * Multiplies the two result handles together and returns the result
      *
-     * @param a1 The first number
-     * @param a2 The second number
+     * @param a1 The first number, aka the <em>multiplier</em>
+     * @param a2 The second number, aka the <em>multiplicand</em>
      * @return The result
      */
     ResultHandle multiply(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Divides the first result handle by the second and returns the result
+     *
+     * @param a1 The first number, aka the <em>numerator</em>
+     * @param a2 The second number, aka the <em>denominator</em>
+     * @return The result
+     */
+    ResultHandle divide(ResultHandle a1, ResultHandle a2);
+
+    /**
+     * Computes the remainder after division of the first result handle by the second and returns the result
+     *
+     * @param a1 The first number, aka the <em>numerator</em>
+     * @param a2 The second number, aka the <em>denominator</em>
+     * @return The result
+     */
+    ResultHandle remainder(ResultHandle a1, ResultHandle a2);
 
     /**
      * Computes the bitwise AND of the two result handles and returns the result
