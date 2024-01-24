@@ -60,20 +60,20 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     private static final Map<String, AtomicInteger> functionCountersByClass = new ConcurrentHashMap<>();
 
     private static final String FUNCTION = "$$function$$";
-    private static final Set<String> SAFE_CLASSES_TO_LOAD_AS_CONSTANTS =
-            Set.of(String.class.getName(),
-                    Boolean.class.getName(),
-                    Character.class.getName(),
-                    Byte.class.getName(),
-                    Short.class.getName(),
-                    Integer.class.getName(),
-                    Long.class.getName(),
-                    Float.class.getName(),
-                    Double.class.getName(),
-                    List.class.getName(),
-                    ArrayList.class.getName(),
-                    Map.class.getName(),
-                    HashMap.class.getName());
+    private static final Set<String> SAFE_CLASSES_TO_LOAD_AS_CONSTANTS = Set.of(
+            String.class.getName(),
+            Boolean.class.getName(),
+            Character.class.getName(),
+            Byte.class.getName(),
+            Short.class.getName(),
+            Integer.class.getName(),
+            Long.class.getName(),
+            Float.class.getName(),
+            Double.class.getName(),
+            List.class.getName(),
+            ArrayList.class.getName(),
+            Map.class.getName(),
+            HashMap.class.getName());
     static final int MAX_STRING_LENGTH = 65535;
 
     protected final List<Operation> operations = new ArrayList<>();
@@ -291,8 +291,8 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     /**
      * Implementation detail: when the string to be loaded is larger than {@link BytecodeCreatorImpl#MAX_STRING_LENGTH},
-     * then a {@link StringBuilder} is used to construct the final String. This is done because strings constants cannot be larger
-     * than {@link BytecodeCreatorImpl#MAX_STRING_LENGTH}.
+     * then a {@link StringBuilder} is used to construct the final String. This is done because strings constants
+     * cannot be larger than {@link BytecodeCreatorImpl#MAX_STRING_LENGTH}.
      */
     @Override
     public ResultHandle load(String val) {
@@ -1032,7 +1032,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             return;
         }
         if (!isScopedWithin(handle.getOwner())) {
-//            throw new IllegalStateException("Wrong owner for ResultHandle " + handle);
+            // throw new IllegalStateException("Wrong owner for ResultHandle " + handle);
         }
         if (handle.getResultType() != ResultHandle.ResultType.SINGLE_USE) {
             if (handle.getType().equals("S") || handle.getType().equals("Z") || handle.getType().equals("I") || handle.getType().equals("B") || handle.getType().equals("C")) {
