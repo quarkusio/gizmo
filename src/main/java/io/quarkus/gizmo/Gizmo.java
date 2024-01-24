@@ -74,7 +74,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle firstElement = Gizmo.invokeList(methodBytecode).instance(myList).get(1);
+     * ResultHandle firstElement = Gizmo.listOperations(methodBytecode).instance(myList).get(1);
      * </pre>
      * 
      * @param target
@@ -86,7 +86,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle size = Gizmo.invokeCollection(methodBytecode).instance(myList).size();
+     * ResultHandle size = Gizmo.collectionOperations(methodBytecode).instance(myList).size();
      * </pre>
      * 
      * @param target
@@ -98,7 +98,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle set = Gizmo.invokeSet(methodBytecode).of(element);
+     * ResultHandle set = Gizmo.setOperations(methodBytecode).of(element);
      * </pre>
      * 
      * @param target
@@ -110,7 +110,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle optionalFoo = Gizmo.invokeOptional(methodBytecode).ofNullable(foo);
+     * ResultHandle optionalFoo = Gizmo.optionalOperations(methodBytecode).ofNullable(foo);
      * </pre>
      * 
      * @param target
@@ -122,7 +122,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle iterator = Gizmo.invokeIterable(methodBytecode).instance(myCollection).iterator();
+     * ResultHandle iterator = Gizmo.iterableOperations(methodBytecode).instance(myCollection).iterator();
      * </pre>
      * 
      * @param target
@@ -134,7 +134,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle hasNext = Gizmo.invokeIterator(methodBytecode).instance(myIterator).hasNext();
+     * ResultHandle hasNext = Gizmo.iteratorOperations(methodBytecode).instance(myIterator).hasNext();
      * </pre>
      * 
      * @param target
@@ -146,7 +146,7 @@ public final class Gizmo {
 
     /**
      * <pre>
-     * ResultHandle mapping = Gizmo.invokeMap(methodBytecode).instance(myMap).get(myKey);
+     * ResultHandle mapping = Gizmo.mapOperations(methodBytecode).instance(myMap).get(myKey);
      * </pre>
      * 
      * @param target
@@ -171,10 +171,10 @@ public final class Gizmo {
      * it accepts {@code ResultHandle}s of all types for which {@code StringBuilder}
      * has an overload:
      * <ul>
-     *     <li>primitive types</li>
-     *     <li>{@code char[]}</li>
-     *     <li>{@code java.lang.String}</li>
-     *     <li>{@code java.lang.Object}</li>
+     * <li>primitive types</li>
+     * <li>{@code char[]}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.Object}</li>
      * </ul>
      *
      * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
@@ -207,10 +207,10 @@ public final class Gizmo {
      * it accepts {@code ResultHandle}s of all types for which {@code StringBuilder}
      * has an overload:
      * <ul>
-     *     <li>primitive types</li>
-     *     <li>{@code char[]}</li>
-     *     <li>{@code java.lang.String}</li>
-     *     <li>{@code java.lang.Object}</li>
+     * <li>primitive types</li>
+     * <li>{@code char[]}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.Object}</li>
      * </ul>
      *
      * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
@@ -234,17 +234,17 @@ public final class Gizmo {
      * given {@code fields}. The generated code is similar to what IDEs would typically
      * generate from a template:
      * <ol>
-     *     <li>Reference equality is tested. If {@code this} is idential to the
-     *     <em>other</em> object, {@code true} is returned.</li>
-     *     <li>Type of the <em>other</em> object is tested using {@code instanceof}.
-     *     If the <em>other</em> object is not an instance of this class, {@code false}
-     *     is returned.</li>
-     *     <li>All fields are compared. Primitive types are compared using {@code ==},
-     *     object types are compared using {@code Objects.equals}, single-dimension arrays
-     *     are compared using {@code Arrays.equals}, and multi-dimensional arrays are
-     *     compared using {@code Arrays.deepEquals}. If one of the comparisons fails,
-     *     {@code false} is returned.</li>
-     *     <li>Otherwise, {@code true} is returned.</li>
+     * <li>Reference equality is tested. If {@code this} is idential to the
+     * <em>other</em> object, {@code true} is returned.</li>
+     * <li>Type of the <em>other</em> object is tested using {@code instanceof}.
+     * If the <em>other</em> object is not an instance of this class, {@code false}
+     * is returned.</li>
+     * <li>All fields are compared. Primitive types are compared using {@code ==},
+     * object types are compared using {@code Objects.equals}, single-dimension arrays
+     * are compared using {@code Arrays.equals}, and multi-dimensional arrays are
+     * compared using {@code Arrays.deepEquals}. If one of the comparisons fails,
+     * {@code false} is returned.</li>
+     * <li>Otherwise, {@code true} is returned.</li>
      * </ol>
      * <p>
      * If the class already has an {@code equals} method, an exception is thrown.
@@ -262,17 +262,17 @@ public final class Gizmo {
      * given {@code fields}. The generated code is similar to what IDEs would typically
      * generate from a template:
      * <ol>
-     *     <li>Reference equality is tested. If {@code this} is idential to the
-     *     <em>other</em> object, {@code true} is returned.</li>
-     *     <li>Type of the <em>other</em> object is tested using {@code instanceof}.
-     *     If the <em>other</em> object is not an instance of this class, {@code false}
-     *     is returned.</li>
-     *     <li>All fields are compared. Primitive types are compared using {@code ==},
-     *     object types are compared using {@code Objects.equals}, single-dimension arrays
-     *     are compared using {@code Arrays.equals}, and multi-dimensional arrays are
-     *     compared using {@code Arrays.deepEquals}. If one of the comparisons fails,
-     *     {@code false} is returned.</li>
-     *     <li>Otherwise, {@code true} is returned.</li>
+     * <li>Reference equality is tested. If {@code this} is idential to the
+     * <em>other</em> object, {@code true} is returned.</li>
+     * <li>Type of the <em>other</em> object is tested using {@code instanceof}.
+     * If the <em>other</em> object is not an instance of this class, {@code false}
+     * is returned.</li>
+     * <li>All fields are compared. Primitive types are compared using {@code ==},
+     * object types are compared using {@code Objects.equals}, single-dimension arrays
+     * are compared using {@code Arrays.equals}, and multi-dimensional arrays are
+     * compared using {@code Arrays.deepEquals}. If one of the comparisons fails,
+     * {@code false} is returned.</li>
+     * <li>Otherwise, {@code true} is returned.</li>
      * </ol>
      * <p>
      * If the class already has an {@code equals} method, an exception is thrown.
@@ -293,15 +293,15 @@ public final class Gizmo {
      * of the generated {@code equals} method. The {@code hashCode} method is generated
      * like so:
      * <ol>
-     *     <li>If no field is given, 0 is returned.</li>
-     *     <li>Otherwise, a result variable is allocated with initial value of 1.</li>
-     *     <li>For each field, a hash code is computed. Hash code for primitive types
-     *     is computed using {@code Integer.hashCode} and equivalent methods, for object
-     *     types using {@code Objects.hashCode}, for single-dimension arrays using
-     *     {@code Arrays.hashCode}, and for multi-dimensional arrays using
-     *     {@code Arrays.deepHashCode}. Then, the result is updated like so:
-     *     {@code result = 31 * result + fieldHashCode}.</li>
-     *     <li>At the end, the result is returned.</li>
+     * <li>If no field is given, 0 is returned.</li>
+     * <li>Otherwise, a result variable is allocated with initial value of 1.</li>
+     * <li>For each field, a hash code is computed. Hash code for primitive types
+     * is computed using {@code Integer.hashCode} and equivalent methods, for object
+     * types using {@code Objects.hashCode}, for single-dimension arrays using
+     * {@code Arrays.hashCode}, and for multi-dimensional arrays using
+     * {@code Arrays.deepHashCode}. Then, the result is updated like so:
+     * {@code result = 31 * result + fieldHashCode}.</li>
+     * <li>At the end, the result is returned.</li>
      * </ol>
      * <p>
      * If the class already has an {@code equals} or {@code hashCode} method, an exception
@@ -322,15 +322,15 @@ public final class Gizmo {
      * of the generated {@code equals} method. The {@code hashCode} method is generated
      * like so:
      * <ol>
-     *     <li>If no field is given, 0 is returned.</li>
-     *     <li>Otherwise, a result variable is allocated with initial value of 1.</li>
-     *     <li>For each field, a hash code is computed. Hash code for primitive types
-     *     is computed using {@code Integer.hashCode} and equivalent methods, for object
-     *     types using {@code Objects.hashCode}, for single-dimension arrays using
-     *     {@code Arrays.hashCode}, and for multi-dimensional arrays using
-     *     {@code Arrays.deepHashCode}. Then, the result is updated like so:
-     *     {@code result = 31 * result + fieldHashCode}.</li>
-     *     <li>At the end, the result is returned.</li>
+     * <li>If no field is given, 0 is returned.</li>
+     * <li>Otherwise, a result variable is allocated with initial value of 1.</li>
+     * <li>For each field, a hash code is computed. Hash code for primitive types
+     * is computed using {@code Integer.hashCode} and equivalent methods, for object
+     * types using {@code Objects.hashCode}, for single-dimension arrays using
+     * {@code Arrays.hashCode}, and for multi-dimensional arrays using
+     * {@code Arrays.deepHashCode}. Then, the result is updated like so:
+     * {@code result = 31 * result + fieldHashCode}.</li>
+     * <li>At the end, the result is returned.</li>
      * </ol>
      * <p>
      * If the class already has an {@code equals} or {@code hashCode} method, an exception
@@ -350,17 +350,17 @@ public final class Gizmo {
      * {@code fields}. The generated code is similar to what IDEs would typically generate
      * from a template:
      * <ol>
-     *     <li>An empty {@code StringBuilder} is allocated.</li>
-     *     <li>Simple name of the class is appended.</li>
-     *     <li>An opening parenthesis {@code '('} is appended.</li>
-     *     <li>For each field, its name is appended, followed by the equals sign {@code '='},
-     *     followed by the field value. Primitive types and object types are appended
-     *     to the {@code StringBuilder} directly, {@code Arrays.toString} is used for
-     *     single-dimension arrays, and {@code Arrays.deepToString} for multi-dimensional
-     *     arrays. A comma followed by a space {@code ", "} are appended between fields.
-     *     </li>
-     *     <li>A closing parenthesis {@code ')'} is appended.</li>
-     *     <li>The {@code StringBuilder.toString} outcome is returned.</li>
+     * <li>An empty {@code StringBuilder} is allocated.</li>
+     * <li>Simple name of the class is appended.</li>
+     * <li>An opening parenthesis {@code '('} is appended.</li>
+     * <li>For each field, its name is appended, followed by the equals sign {@code '='},
+     * followed by the field value. Primitive types and object types are appended
+     * to the {@code StringBuilder} directly, {@code Arrays.toString} is used for
+     * single-dimension arrays, and {@code Arrays.deepToString} for multi-dimensional
+     * arrays. A comma followed by a space {@code ", "} are appended between fields.
+     * </li>
+     * <li>A closing parenthesis {@code ')'} is appended.</li>
+     * <li>The {@code StringBuilder.toString} outcome is returned.</li>
      * </ol>
      * <p>
      * If the class already has a {@code toString} method, an exception is thrown.
@@ -378,17 +378,17 @@ public final class Gizmo {
      * {@code fields}. The generated code is similar to what IDEs would typically generate
      * from a template:
      * <ol>
-     *     <li>An empty {@code StringBuilder} is allocated.</li>
-     *     <li>Simple name of the class is appended.</li>
-     *     <li>An opening parenthesis {@code '('} is appended.</li>
-     *     <li>For each field, its name is appended, followed by the equals sign {@code '='},
-     *     followed by the field value. Primitive types and object types are appended
-     *     to the {@code StringBuilder} directly, {@code Arrays.toString} is used for
-     *     single-dimension arrays, and {@code Arrays.deepToString} for multi-dimensional
-     *     arrays. A comma followed by a space {@code ", "} are appended between fields.
-     *     </li>
-     *     <li>A closing parenthesis {@code ')'} is appended.</li>
-     *     <li>The {@code StringBuilder.toString} outcome is returned.</li>
+     * <li>An empty {@code StringBuilder} is allocated.</li>
+     * <li>Simple name of the class is appended.</li>
+     * <li>An opening parenthesis {@code '('} is appended.</li>
+     * <li>For each field, its name is appended, followed by the equals sign {@code '='},
+     * followed by the field value. Primitive types and object types are appended
+     * to the {@code StringBuilder} directly, {@code Arrays.toString} is used for
+     * single-dimension arrays, and {@code Arrays.deepToString} for multi-dimensional
+     * arrays. A comma followed by a space {@code ", "} are appended between fields.
+     * </li>
+     * <li>A closing parenthesis {@code ')'} is appended.</li>
+     * <li>The {@code StringBuilder.toString} outcome is returned.</li>
      * </ol>
      * <p>
      * If the class already has a {@code toString} method, an exception is thrown.
@@ -788,11 +788,15 @@ public final class Gizmo {
     public static class JdkList extends JdkCollection {
 
         public static final MethodDescriptor GET = MethodDescriptor.ofMethod(List.class, "get", Object.class, int.class);
+        public static final MethodDescriptor OF = MethodDescriptor.ofMethod(List.class, "of", List.class);
         public static final MethodDescriptor OF1 = MethodDescriptor.ofMethod(List.class, "of", List.class, Object.class);
         public static final MethodDescriptor OF2 = MethodDescriptor.ofMethod(List.class, "of", List.class, Object.class,
                 Object.class);
         public static final MethodDescriptor OF3 = MethodDescriptor.ofMethod(List.class, "of", List.class, Object.class,
                 Object.class, Object.class);
+        public static final MethodDescriptor OFN = MethodDescriptor.ofMethod(List.class, "of", List.class, Object[].class);
+        public static final MethodDescriptor COPY_OF = MethodDescriptor.ofMethod(List.class, "copyOf", List.class,
+                Collection.class);
 
         public JdkList(BytecodeCreator target) {
             super(target);
@@ -808,8 +812,17 @@ public final class Gizmo {
 
         /**
          * 
+         * @return the list
+         * @see List#of()
+         */
+        public ResultHandle of() {
+            return target.invokeStaticInterfaceMethod(OF);
+        }
+
+        /**
+         * 
          * @param e1
-         * @return the result handle
+         * @return the list
          * @see List#of(Object)
          */
         public ResultHandle of(ResultHandle e1) {
@@ -820,7 +833,7 @@ public final class Gizmo {
          * 
          * @param e1
          * @param e2
-         * @return the result handle
+         * @return the list
          * @see List#of(Object, Object)
          */
         public ResultHandle of(ResultHandle e1, ResultHandle e2) {
@@ -832,11 +845,33 @@ public final class Gizmo {
          * @param e1
          * @param e2
          * @param e3
-         * @return the result handle
+         * @return the list
          * @see List#of(Object, Object, Object)
          */
         public ResultHandle of(ResultHandle e1, ResultHandle e2, ResultHandle e3) {
             return target.invokeStaticInterfaceMethod(OF3, e1, e2, e3);
+        }
+
+        /**
+         * 
+         * @return the list
+         * @see List#of(Object...)
+         */
+        public ResultHandle of(ResultHandle... elements) {
+            ResultHandle arr = target.newArray(Object.class, elements.length);
+            for (int i = 0; i < elements.length; i++) {
+                target.writeArrayValue(arr, i, elements[i]);
+            }
+            return target.invokeStaticInterfaceMethod(OFN, arr);
+        }
+
+        /**
+         * 
+         * @return the list
+         * @see List#copyOf(Collection)
+         */
+        public ResultHandle copyOf(ResultHandle collection) {
+            return target.invokeStaticInterfaceMethod(COPY_OF, collection);
         }
 
         public class JdkListInstance extends JdkCollectionInstance {
@@ -876,11 +911,15 @@ public final class Gizmo {
      */
     public static class JdkSet extends JdkCollection {
 
+        public static final MethodDescriptor OF = MethodDescriptor.ofMethod(Set.class, "of", Set.class);
         public static final MethodDescriptor OF1 = MethodDescriptor.ofMethod(Set.class, "of", Set.class, Object.class);
         public static final MethodDescriptor OF2 = MethodDescriptor.ofMethod(Set.class, "of", Set.class, Object.class,
                 Object.class);
         public static final MethodDescriptor OF3 = MethodDescriptor.ofMethod(Set.class, "of", Set.class, Object.class,
                 Object.class, Object.class);
+        public static final MethodDescriptor OFN = MethodDescriptor.ofMethod(Set.class, "of", Set.class, Object[].class);
+        public static final MethodDescriptor COPY_OF = MethodDescriptor.ofMethod(Set.class, "copyOf", Set.class,
+                Collection.class);
 
         public JdkSet(BytecodeCreator target) {
             super(target);
@@ -890,16 +929,62 @@ public final class Gizmo {
             return new JdkSetInstance(set);
         }
 
+        /**
+         * 
+         * @return the set
+         * @see Set#of()
+         */
+        public ResultHandle of() {
+            return target.invokeStaticInterfaceMethod(OF);
+        }
+
+        /**
+         * 
+         * @return the set
+         * @see Set#of(Object)
+         */
         public ResultHandle of(ResultHandle e1) {
             return target.invokeStaticInterfaceMethod(OF1, e1);
         }
 
+        /**
+         * 
+         * @return the set
+         * @see Set#of(Object, Object)
+         */
         public ResultHandle of(ResultHandle e1, ResultHandle e2) {
             return target.invokeStaticInterfaceMethod(OF2, e1, e2);
         }
 
+        /**
+         * 
+         * @return the set
+         * @see Set#of(Object, Object, Object)
+         */
         public ResultHandle of(ResultHandle e1, ResultHandle e2, ResultHandle e3) {
             return target.invokeStaticInterfaceMethod(OF3, e1, e2, e3);
+        }
+
+        /**
+         * 
+         * @return the set
+         * @see Set#of(Object...)
+         */
+        public ResultHandle of(ResultHandle... elements) {
+            ResultHandle arr = target.newArray(Object.class, elements.length);
+            for (int i = 0; i < elements.length; i++) {
+                target.writeArrayValue(arr, i, elements[i]);
+            }
+            return target.invokeStaticInterfaceMethod(OFN, arr);
+        }
+
+        /**
+         * 
+         * @return the set
+         * @see Set#copyOf(Collection)
+         */
+        public ResultHandle copyOf(ResultHandle collection) {
+            return target.invokeStaticInterfaceMethod(COPY_OF, collection);
         }
 
         public class JdkSetInstance extends JdkCollectionInstance {
@@ -921,8 +1006,10 @@ public final class Gizmo {
         public static final MethodDescriptor GET = MethodDescriptor.ofMethod(Map.class, "get", Object.class, Object.class);
         public static final MethodDescriptor PUT = MethodDescriptor.ofMethod(Map.class, "put", Object.class, Object.class,
                 Object.class);
+        public static final MethodDescriptor OF = MethodDescriptor.ofMethod(Map.class, "of", Map.class);
         public static final MethodDescriptor OF1 = MethodDescriptor.ofMethod(Map.class, "of", Map.class, Object.class,
                 Object.class);
+        public static final MethodDescriptor COPY_OF = MethodDescriptor.ofMethod(Map.class, "copyOf", Map.class, Map.class);
         public static final MethodDescriptor SIZE = MethodDescriptor.ofMethod(Map.class, "size", int.class);
         public static final MethodDescriptor IS_EMPTY = MethodDescriptor.ofMethod(Map.class, "isEmpty", boolean.class);
         public static final MethodDescriptor CONTAINS_KEY = MethodDescriptor.ofMethod(Map.class, "containsKey", boolean.class,
@@ -944,8 +1031,33 @@ public final class Gizmo {
             return new JdkMapInstance(map);
         }
 
+        /**
+         * 
+         * @return the map
+         * @see Map#of()
+         */
+        public ResultHandle of() {
+            return target.invokeStaticInterfaceMethod(OF);
+        }
+
+        /**
+         * 
+         * @param k1
+         * @param v1
+         * @return the map
+         * @see Map#of(Object, Object)
+         */
         public ResultHandle of(ResultHandle k1, ResultHandle v1) {
             return target.invokeStaticInterfaceMethod(OF1, k1, v1);
+        }
+
+        /**
+         * 
+         * @return the map
+         * @see Map#of(Object, Object)
+         */
+        public ResultHandle copyOf(ResultHandle map) {
+            return target.invokeStaticInterfaceMethod(COPY_OF, map);
         }
 
         public class JdkMapInstance extends InstanceInvocationGenerator {
@@ -984,18 +1096,30 @@ public final class Gizmo {
 
     public static class StringBuilderGenerator {
         private static final MethodDescriptor CONSTRUCTOR = MethodDescriptor.ofConstructor(StringBuilder.class);
-        private static final MethodDescriptor CONSTRUCTOR_WITH_CAPACITY = MethodDescriptor.ofConstructor(StringBuilder.class, int.class);
-        private static final MethodDescriptor APPEND_BOOLEAN = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, boolean.class);
-        private static final MethodDescriptor APPEND_INT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, int.class);
-        private static final MethodDescriptor APPEND_LONG = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, long.class);
-        private static final MethodDescriptor APPEND_FLOAT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, float.class);
-        private static final MethodDescriptor APPEND_DOUBLE = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, double.class);
-        private static final MethodDescriptor APPEND_CHAR = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, char.class);
-        private static final MethodDescriptor APPEND_CHAR_ARRAY = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, char[].class);
-        private static final MethodDescriptor APPEND_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, String.class);
-        private static final MethodDescriptor APPEND_CHAR_SEQUENCE = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, CharSequence.class);
-        private static final MethodDescriptor APPEND_OBJECT = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class, Object.class);
-        private static final MethodDescriptor TO_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "toString", String.class);
+        private static final MethodDescriptor CONSTRUCTOR_WITH_CAPACITY = MethodDescriptor.ofConstructor(StringBuilder.class,
+                int.class);
+        private static final MethodDescriptor APPEND_BOOLEAN = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, boolean.class);
+        private static final MethodDescriptor APPEND_INT = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, int.class);
+        private static final MethodDescriptor APPEND_LONG = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, long.class);
+        private static final MethodDescriptor APPEND_FLOAT = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, float.class);
+        private static final MethodDescriptor APPEND_DOUBLE = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, double.class);
+        private static final MethodDescriptor APPEND_CHAR = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, char.class);
+        private static final MethodDescriptor APPEND_CHAR_ARRAY = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, char[].class);
+        private static final MethodDescriptor APPEND_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, String.class);
+        private static final MethodDescriptor APPEND_CHAR_SEQUENCE = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, CharSequence.class);
+        private static final MethodDescriptor APPEND_OBJECT = MethodDescriptor.ofMethod(StringBuilder.class, "append",
+                StringBuilder.class, Object.class);
+        private static final MethodDescriptor TO_STRING = MethodDescriptor.ofMethod(StringBuilder.class, "toString",
+                String.class);
 
         private final BytecodeCreator bytecode;
         private final ResultHandle instance;
@@ -1066,51 +1190,93 @@ public final class Gizmo {
     }
 
     private static class EqualsHashCodeToStringGenerator {
-        private static final MethodDescriptor FLOAT_TO_INT_BITS = MethodDescriptor.ofMethod(Float.class, "floatToIntBits", int.class, float.class);
-        private static final MethodDescriptor DOUBLE_TO_LONG_BITS = MethodDescriptor.ofMethod(Double.class, "doubleToLongBits", long.class, double.class);
+        private static final MethodDescriptor FLOAT_TO_INT_BITS = MethodDescriptor.ofMethod(Float.class, "floatToIntBits",
+                int.class, float.class);
+        private static final MethodDescriptor DOUBLE_TO_LONG_BITS = MethodDescriptor.ofMethod(Double.class, "doubleToLongBits",
+                long.class, double.class);
 
-        private static final MethodDescriptor BOOLEAN_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, boolean[].class, boolean[].class);
-        private static final MethodDescriptor BYTE_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, byte[].class, byte[].class);
-        private static final MethodDescriptor SHORT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, short[].class, short[].class);
-        private static final MethodDescriptor INT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, int[].class, int[].class);
-        private static final MethodDescriptor LONG_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, long[].class, long[].class);
-        private static final MethodDescriptor FLOAT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, float[].class, float[].class);
-        private static final MethodDescriptor DOUBLE_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, double[].class, double[].class);
-        private static final MethodDescriptor CHAR_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, char[].class, char[].class);
-        private static final MethodDescriptor OBJECT_EQUALS = MethodDescriptor.ofMethod(Objects.class, "equals", boolean.class, Object.class, Object.class);
-        private static final MethodDescriptor OBJECT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals", boolean.class, Object[].class, Object[].class);
-        private static final MethodDescriptor ARRAY_DEEP_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "deepEquals", boolean.class, Object[].class, Object[].class);
+        private static final MethodDescriptor BOOLEAN_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, boolean[].class, boolean[].class);
+        private static final MethodDescriptor BYTE_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, byte[].class, byte[].class);
+        private static final MethodDescriptor SHORT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, short[].class, short[].class);
+        private static final MethodDescriptor INT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, int[].class, int[].class);
+        private static final MethodDescriptor LONG_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, long[].class, long[].class);
+        private static final MethodDescriptor FLOAT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, float[].class, float[].class);
+        private static final MethodDescriptor DOUBLE_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, double[].class, double[].class);
+        private static final MethodDescriptor CHAR_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, char[].class, char[].class);
+        private static final MethodDescriptor OBJECT_EQUALS = MethodDescriptor.ofMethod(Objects.class, "equals", boolean.class,
+                Object.class, Object.class);
+        private static final MethodDescriptor OBJECT_ARRAY_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "equals",
+                boolean.class, Object[].class, Object[].class);
+        private static final MethodDescriptor ARRAY_DEEP_EQUALS = MethodDescriptor.ofMethod(Arrays.class, "deepEquals",
+                boolean.class, Object[].class, Object[].class);
 
-        private static final MethodDescriptor BOOLEAN_HASH_CODE = MethodDescriptor.ofMethod(Boolean.class, "hashCode", int.class, boolean.class);
-        private static final MethodDescriptor BOOLEAN_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, boolean[].class);
-        private static final MethodDescriptor BYTE_HASH_CODE = MethodDescriptor.ofMethod(Byte.class, "hashCode", int.class, byte.class);
-        private static final MethodDescriptor BYTE_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, byte[].class);
-        private static final MethodDescriptor SHORT_HASH_CODE = MethodDescriptor.ofMethod(Short.class, "hashCode", int.class, short.class);
-        private static final MethodDescriptor SHORT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, short[].class);
-        private static final MethodDescriptor INT_HASH_CODE = MethodDescriptor.ofMethod(Integer.class, "hashCode", int.class, int.class);
-        private static final MethodDescriptor INT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, int[].class);
-        private static final MethodDescriptor LONG_HASH_CODE = MethodDescriptor.ofMethod(Long.class, "hashCode", int.class, long.class);
-        private static final MethodDescriptor LONG_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, long[].class);
-        private static final MethodDescriptor FLOAT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, float[].class);
-        private static final MethodDescriptor FLOAT_HASH_CODE = MethodDescriptor.ofMethod(Float.class, "hashCode", int.class, float.class);
-        private static final MethodDescriptor DOUBLE_HASH_CODE = MethodDescriptor.ofMethod(Double.class, "hashCode", int.class, double.class);
-        private static final MethodDescriptor DOUBLE_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, double[].class);
-        private static final MethodDescriptor CHAR_HASH_CODE = MethodDescriptor.ofMethod(Character.class, "hashCode", int.class, char.class);
-        private static final MethodDescriptor CHAR_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, char[].class);
-        private static final MethodDescriptor OBJECT_HASH_CODE = MethodDescriptor.ofMethod(Objects.class, "hashCode", int.class, Object.class);
-        private static final MethodDescriptor OBJECT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode", int.class, Object[].class);
-        private static final MethodDescriptor ARRAY_DEEP_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "deepHashCode", int.class, Object[].class);
+        private static final MethodDescriptor BOOLEAN_HASH_CODE = MethodDescriptor.ofMethod(Boolean.class, "hashCode",
+                int.class, boolean.class);
+        private static final MethodDescriptor BOOLEAN_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, boolean[].class);
+        private static final MethodDescriptor BYTE_HASH_CODE = MethodDescriptor.ofMethod(Byte.class, "hashCode", int.class,
+                byte.class);
+        private static final MethodDescriptor BYTE_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, byte[].class);
+        private static final MethodDescriptor SHORT_HASH_CODE = MethodDescriptor.ofMethod(Short.class, "hashCode", int.class,
+                short.class);
+        private static final MethodDescriptor SHORT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, short[].class);
+        private static final MethodDescriptor INT_HASH_CODE = MethodDescriptor.ofMethod(Integer.class, "hashCode", int.class,
+                int.class);
+        private static final MethodDescriptor INT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, int[].class);
+        private static final MethodDescriptor LONG_HASH_CODE = MethodDescriptor.ofMethod(Long.class, "hashCode", int.class,
+                long.class);
+        private static final MethodDescriptor LONG_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, long[].class);
+        private static final MethodDescriptor FLOAT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, float[].class);
+        private static final MethodDescriptor FLOAT_HASH_CODE = MethodDescriptor.ofMethod(Float.class, "hashCode", int.class,
+                float.class);
+        private static final MethodDescriptor DOUBLE_HASH_CODE = MethodDescriptor.ofMethod(Double.class, "hashCode", int.class,
+                double.class);
+        private static final MethodDescriptor DOUBLE_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, double[].class);
+        private static final MethodDescriptor CHAR_HASH_CODE = MethodDescriptor.ofMethod(Character.class, "hashCode", int.class,
+                char.class);
+        private static final MethodDescriptor CHAR_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, char[].class);
+        private static final MethodDescriptor OBJECT_HASH_CODE = MethodDescriptor.ofMethod(Objects.class, "hashCode", int.class,
+                Object.class);
+        private static final MethodDescriptor OBJECT_ARRAY_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "hashCode",
+                int.class, Object[].class);
+        private static final MethodDescriptor ARRAY_DEEP_HASH_CODE = MethodDescriptor.ofMethod(Arrays.class, "deepHashCode",
+                int.class, Object[].class);
 
-        private static final MethodDescriptor BOOLEAN_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, boolean[].class);
-        private static final MethodDescriptor BYTE_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, byte[].class);
-        private static final MethodDescriptor SHORT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, short[].class);
-        private static final MethodDescriptor INT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, int[].class);
-        private static final MethodDescriptor LONG_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, long[].class);
-        private static final MethodDescriptor FLOAT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, float[].class);
-        private static final MethodDescriptor DOUBLE_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, double[].class);
-        private static final MethodDescriptor CHAR_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, char[].class);
-        private static final MethodDescriptor OBJECT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString", String.class, Object[].class);
-        private static final MethodDescriptor ARRAY_DEEP_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "deepToString", String.class, Object[].class);
+        private static final MethodDescriptor BOOLEAN_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, boolean[].class);
+        private static final MethodDescriptor BYTE_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, byte[].class);
+        private static final MethodDescriptor SHORT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, short[].class);
+        private static final MethodDescriptor INT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, int[].class);
+        private static final MethodDescriptor LONG_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, long[].class);
+        private static final MethodDescriptor FLOAT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, float[].class);
+        private static final MethodDescriptor DOUBLE_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, double[].class);
+        private static final MethodDescriptor CHAR_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, char[].class);
+        private static final MethodDescriptor OBJECT_ARRAY_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "toString",
+                String.class, Object[].class);
+        private static final MethodDescriptor ARRAY_DEEP_TO_STRING = MethodDescriptor.ofMethod(Arrays.class, "deepToString",
+                String.class, Object[].class);
 
         private final ClassCreator clazz;
         private final Collection<FieldDescriptor> fields;
@@ -1121,7 +1287,8 @@ public final class Gizmo {
         }
 
         private void generateEquals() {
-            MethodDescriptor descriptor = MethodDescriptor.ofMethod(clazz.getClassName(), "equals", boolean.class, Object.class);
+            MethodDescriptor descriptor = MethodDescriptor.ofMethod(clazz.getClassName(), "equals", boolean.class,
+                    Object.class);
             if (clazz.getExistingMethods().contains(descriptor)) {
                 throw new IllegalStateException("Class already contains the 'equals' method: " + clazz.getClassName());
             }
@@ -1158,12 +1325,14 @@ public final class Gizmo {
                         break;
                     case "F": // float
                         // this is consistent with Arrays.equals() and it's also what IntelliJ generates
-                        equals.ifIntegerEqual(equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thisValue), equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thatValue))
+                        equals.ifIntegerEqual(equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thisValue),
+                                equals.invokeStaticMethod(FLOAT_TO_INT_BITS, thatValue))
                                 .falseBranch().returnBoolean(false);
                         break;
                     case "D": // double
                         // this is consistent with Arrays.equals() and it's also what IntelliJ generates
-                        equals.ifZero(equals.compareLong(equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thisValue), equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thatValue)))
+                        equals.ifZero(equals.compareLong(equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thisValue),
+                                equals.invokeStaticMethod(DOUBLE_TO_LONG_BITS, thatValue)))
                                 .falseBranch().returnBoolean(false);
                         break;
                     case "[Z": // boolean[]
@@ -1212,7 +1381,8 @@ public final class Gizmo {
                             equals.ifTrue(equals.invokeStaticMethod(ARRAY_DEEP_EQUALS, thisValue, thatValue))
                                     .falseBranch().returnBoolean(false);
                         } else {
-                            throw new IllegalArgumentException("Don't know how to generate equality computation for field: " + field);
+                            throw new IllegalArgumentException(
+                                    "Don't know how to generate equality computation for field: " + field);
                         }
                         break;
                 }
@@ -1302,7 +1472,8 @@ public final class Gizmo {
                             // any multidimensional array
                             componentHash = hashCode.invokeStaticMethod(ARRAY_DEEP_HASH_CODE, value);
                         } else {
-                            throw new IllegalArgumentException("Don't know how to generate hash code computation for field: " + field);
+                            throw new IllegalArgumentException(
+                                    "Don't know how to generate hash code computation for field: " + field);
                         }
                         break;
                 }
