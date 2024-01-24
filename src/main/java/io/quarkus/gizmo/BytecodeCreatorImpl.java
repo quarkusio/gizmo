@@ -1457,6 +1457,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle remainder(ResultHandle a1, ResultHandle a2) {
+        return emitBinaryArithmetic(Opcodes.IREM, a1, a2);
+    }
+
+    @Override
     public ResultHandle bitwiseAnd(ResultHandle a1, ResultHandle a2) {
         return emitBinaryArithmetic(Opcodes.IAND, a1, a2);
     }
