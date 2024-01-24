@@ -1442,6 +1442,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public ResultHandle subtract(ResultHandle a1, ResultHandle a2) {
+        return emitBinaryArithmetic(Opcodes.ISUB, a1, a2);
+    }
+
+    @Override
     public ResultHandle multiply(ResultHandle a1, ResultHandle a2) {
         return emitBinaryArithmetic(Opcodes.IMUL, a1, a2);
     }

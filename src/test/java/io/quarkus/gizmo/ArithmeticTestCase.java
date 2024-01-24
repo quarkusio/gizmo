@@ -56,6 +56,38 @@ public class ArithmeticTestCase {
     }
 
     @Test
+    public void testSubtraction() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            MethodCreator subInts = creator.getMethodCreator("subInts", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle int1 = subInts.load(2);
+            ResultHandle int2 = subInts.load(1);
+            subInts.returnValue(subInts.subtract(int1, int2));
+
+            MethodCreator subLongs = creator.getMethodCreator("subLongs", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle long1 = subLongs.load(5L);
+            ResultHandle long2 = subLongs.load(8L);
+            subLongs.returnValue(subLongs.subtract(long1, long2));
+
+            MethodCreator subFloats = creator.getMethodCreator("subFloats", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle float1 = subFloats.load(3.0F);
+            ResultHandle float2 = subFloats.load(3.0F);
+            subFloats.returnValue(subFloats.subtract(float1, float2));
+
+            MethodCreator subDoubles = creator.getMethodCreator("subDoubles", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            ResultHandle double1 = subDoubles.load(21.0);
+            ResultHandle double2 = subDoubles.load(6.0);
+            subDoubles.returnValue(subDoubles.subtract(double1, double2));
+        }
+
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        assertEquals(1, clazz.getMethod("subInts").invoke(null));
+        assertEquals(-3L, clazz.getMethod("subLongs").invoke(null));
+        assertEquals(0.0F, clazz.getMethod("subFloats").invoke(null));
+        assertEquals(15.0, clazz.getMethod("subDoubles").invoke(null));
+    }
+
+    @Test
     public void testMultiplication() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
