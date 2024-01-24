@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
@@ -15,12 +16,13 @@ import org.junit.Test;
 import io.quarkus.gizmo.Gizmo.CustomInvocationGenerator;
 import io.quarkus.gizmo.Gizmo.JdkList.JdkListInstance;
 import io.quarkus.gizmo.Gizmo.JdkOptional;
+import io.quarkus.gizmo.Gizmo.JdkSet.JdkSetInstance;
 
 public class GizmoUtilsTest {
 
-    @SuppressWarnings("deprecation")
     @Test
-    public void testList() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void testList() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
@@ -29,7 +31,8 @@ public class GizmoUtilsTest {
             MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
                     String.class);
             Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
-                return bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
+                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
+                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
             });
 
             // List<String> list = List.of("foo","bar");
@@ -38,19 +41,27 @@ public class GizmoUtilsTest {
             JdkListInstance listInstance = Gizmo.listOperations(method).on(list);
             // sb.append(list.get(1));
             append.invoke(listInstance.get(1));
-            append.invoke(method.load(":"));
             // sb.append(list.size());
             append.invoke(listInstance.size());
-            append.invoke(method.load(":"));
             // sb.append(list.contains("foo"));
             append.invoke(listInstance.contains(method.load("foo")));
-            append.invoke(method.load(":"));
 
             // ArrayList empty = new ArrayList();
             ResultHandle emptyArrayList = Gizmo.newArrayList(method);
             // sb.append(empty.size);
             append.invoke(Gizmo.collectionOperations(method).on(emptyArrayList).size());
-            append.invoke(method.load(":"));
+
+            // sb.append(List.of().isEmpty()) 
+            append.invoke(Gizmo.listOperations(method).on(Gizmo.listOperations(method).of()).isEmpty());
+
+            // List<String> copy = List.copyOf(list);
+            ResultHandle listCopy = Gizmo.listOperations(method).copyOf(list);
+            // sb.append(copy.size());
+            append.invoke(Gizmo.collectionOperations(method).on(listCopy).size());
+
+            ResultHandle varArgsList = Gizmo.listOperations(method).of(method.load(1), method.load(2), method.load(3),
+                    method.load(4));
+            append.invoke(Gizmo.collectionOperations(method).on(varArgsList).size());
 
             try {
                 Gizmo.listOperations(null);
@@ -65,13 +76,66 @@ public class GizmoUtilsTest {
 
             method.returnValue(Gizmo.toString(method, sb));
         }
-        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
-        assertEquals("bar:2:true:0:", myInterface.get());
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
+        ;
+        assertEquals("bar:2:true:0:true:2:4:", myInterface.get());
     }
 
-    @SuppressWarnings("deprecation")
+    public void testSet() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
+            MethodCreator method = creator.getMethodCreator("get", Object.class);
+            ResultHandle sb = method.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
+            MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
+                    String.class);
+            Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
+                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
+                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
+            });
+
+            // Set<String> set = Set.of("foo","bar");
+            ResultHandle set = Gizmo.setOperations(method).of(method.load("foo"), method.load("bar"));
+
+            JdkSetInstance setInstance = Gizmo.setOperations(method).on(set);
+            // sb.append(set.size());
+            append.invoke(setInstance.size());
+            // sb.append(set.contains("foo"));
+            append.invoke(setInstance.contains(method.load("foo")));
+
+            // sb.append(Set.of().isEmpty()) 
+            append.invoke(Gizmo.setOperations(method).on(Gizmo.setOperations(method).of()).isEmpty());
+
+            // Set<String> copy = Set.copyOf(set);
+            ResultHandle setCopy = Gizmo.setOperations(method).copyOf(set);
+            // sb.append(copy.size());
+            append.invoke(Gizmo.collectionOperations(method).on(setCopy).size());
+
+            ResultHandle varArgsSet = Gizmo.setOperations(method).of(method.load(1), method.load(2), method.load(3),
+                    method.load(4));
+            append.invoke(Gizmo.collectionOperations(method).on(varArgsSet).size());
+
+            try {
+                Gizmo.setOperations(null);
+                fail();
+            } catch (NullPointerException expected) {
+            }
+            try {
+                Gizmo.setOperations(method).on(null);
+                fail();
+            } catch (NullPointerException expected) {
+            }
+
+            method.returnValue(Gizmo.toString(method, sb));
+        }
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
+        assertEquals("2:true:true:2:4:", myInterface.get());
+    }
+
     @Test
-    public void testOptional() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void testOptional() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
@@ -84,13 +148,13 @@ public class GizmoUtilsTest {
             // return optionalFoo.isPresent();
             method.returnValue(Gizmo.optionalOperations(method).on(optionalFoo).isPresent());
         }
-        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
         assertEquals(true, myInterface.get());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
-    public void testIterable() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void testIterable() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
@@ -106,37 +170,64 @@ public class GizmoUtilsTest {
             // return it.hasNext();
             method.returnValue(Gizmo.iteratorOperations(method).on(iterator).hasNext());
         }
-        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
         assertEquals(false, myInterface.get());
     }
 
-    @SuppressWarnings("deprecation")
     @Test
-    public void testMap() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void testMap() throws InstantiationException, IllegalAccessException, ClassNotFoundException,
+            IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
+
+            ResultHandle sb = method.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
+            MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
+                    String.class);
+            Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
+                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
+                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
+            });
+
             // HashMap map = new HashMap();
             ResultHandle map = Gizmo.newHashMap(method);
             // map.put("alpha", "A");
-            Gizmo.mapOperations(method).instance(map).put(method.load("alpha"), method.load("A"));
+            Gizmo.mapOperations(method).on(map).put(method.load("alpha"), method.load("A"));
             // map.put("bravo", "B");
-            Gizmo.mapOperations(method).instance(map).put(method.load("bravo"), method.load("B"));
-            // if (map.size() < 2) return false;
-            method.ifIntegerLessThan(Gizmo.mapOperations(method).instance(map).size(), method.load(2)).trueBranch()
-                    .returnValue(method.load(false));
-            // if (map.isEmpty()) return false;
-            method.ifTrue(Gizmo.mapOperations(method).instance(map).isEmpty()).trueBranch()
-                    .returnValue(method.load(false));
-            // return map.get("alpha").equals(map.get("alpha"));
-            ResultHandle areEqual = Gizmo.equals(method, Gizmo.mapOperations(method).instance(map).get(method.load("alpha")),
-                    Gizmo.mapOperations(method).instance(map).get(method.load("alpha")));
-            method.returnValue(areEqual);
+            Gizmo.mapOperations(method).on(map).put(method.load("bravo"), method.load("B"));
+
+            // sb.append(map.size());
+            append.invoke(Gizmo.mapOperations(method).on(map).size());
+            // sb.append(map.isEmpty())
+            append.invoke(Gizmo.mapOperations(method).on(map).isEmpty());
+            // sp.append(map.get("alpha").equals(map.get("alpha"))
+            append.invoke(Gizmo.equals(method, Gizmo.mapOperations(method).on(map).get(method.load("alpha")),
+                    Gizmo.mapOperations(method).on(map).get(method.load("alpha"))));
+            // sb.append(Map.of().isEmpty()) 
+            append.invoke(Gizmo.mapOperations(method).on(Gizmo.mapOperations(method).of()).isEmpty());
+
+            // Map copy = Map.copyOf(map);
+            ResultHandle mapCopy = Gizmo.mapOperations(method).copyOf(map);
+            // sb.append(copy.containsKey("alpha"));
+            append.invoke(Gizmo.mapOperations(method).on(mapCopy).containsKey(method.load("alpha")));
+
+            try {
+                Gizmo.mapOperations(null);
+                fail();
+            } catch (NullPointerException expected) {
+            }
+            try {
+                Gizmo.mapOperations(method).on(null);
+                fail();
+            } catch (NullPointerException expected) {
+            }
+
+            method.returnValue(Gizmo.toString(method, sb));
         }
 
-        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
-        assertEquals(true, myInterface.get());
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
+        assertEquals("2:false:true:true:true:", myInterface.get());
     }
 
     @SuppressWarnings("deprecation")
@@ -210,7 +301,7 @@ public class GizmoUtilsTest {
             method.returnValue(strBuilder.callToString());
         }
 
-        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").newInstance();
+        Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
         assertEquals("true12345.06.0abcdefghijklmnull...!", myInterface.get());
     }
 
@@ -266,25 +357,25 @@ public class GizmoUtilsTest {
                 'a',
                 "bc",
 
-                new boolean[] {true},
-                new byte[] {7},
-                new short[] {8},
-                new int[] {9},
-                new long[] {10L},
-                new float[] {11.0F},
-                new double[] {12.0},
-                new char[] {'d', 'e'},
-                new String[] {"fg"},
+                new boolean[] { true },
+                new byte[] { 7 },
+                new short[] { 8 },
+                new int[] { 9 },
+                new long[] { 10L },
+                new float[] { 11.0F },
+                new double[] { 12.0 },
+                new char[] { 'd', 'e' },
+                new String[] { "fg" },
 
-                new boolean[][] {{true}, {true}},
-                new byte[][] {{13}, {14}},
-                new short[][] {{15}, {16}},
-                new int[][] {{17}, {18}},
-                new long[][] {{19}, {20}},
-                new float[][] {{21.0F}, {22.0F}},
-                new double[][] {{23.0}, {24.0}},
-                new char[][] {{'h', 'i'}, {'j', 'k'}},
-                new String[][] {{"lm"}, {"no"}},
+                new boolean[][] { { true }, { true } },
+                new byte[][] { { 13 }, { 14 } },
+                new short[][] { { 15 }, { 16 } },
+                new int[][] { { 17 }, { 18 } },
+                new long[][] { { 19 }, { 20 } },
+                new float[][] { { 21.0F }, { 22.0F } },
+                new double[][] { { 23.0 }, { 24.0 } },
+                new char[][] { { 'h', 'i' }, { 'j', 'k' } },
+                new String[][] { { "lm" }, { "no" } },
         };
 
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -303,7 +394,8 @@ public class GizmoUtilsTest {
             FieldDescriptor charDesc = creator.getFieldCreator("charValue", char.class).getFieldDescriptor();
             FieldDescriptor stringDesc = creator.getFieldCreator("stringValue", String.class).getFieldDescriptor();
 
-            FieldDescriptor booleanArrayDesc = creator.getFieldCreator("booleanArrayValue", boolean[].class).getFieldDescriptor();
+            FieldDescriptor booleanArrayDesc = creator.getFieldCreator("booleanArrayValue", boolean[].class)
+                    .getFieldDescriptor();
             FieldDescriptor byteArrayDesc = creator.getFieldCreator("byteArrayValue", byte[].class).getFieldDescriptor();
             FieldDescriptor shortArrayDesc = creator.getFieldCreator("shortArrayValue", short[].class).getFieldDescriptor();
             FieldDescriptor intArrayDesc = creator.getFieldCreator("intArrayValue", int[].class).getFieldDescriptor();
@@ -313,18 +405,24 @@ public class GizmoUtilsTest {
             FieldDescriptor charArrayDesc = creator.getFieldCreator("charArrayValue", char[].class).getFieldDescriptor();
             FieldDescriptor stringArrayDesc = creator.getFieldCreator("stringArrayValue", String[].class).getFieldDescriptor();
 
-            FieldDescriptor boolean2DArrayDesc = creator.getFieldCreator("boolean2DArrayValue", boolean[][].class).getFieldDescriptor();
+            FieldDescriptor boolean2DArrayDesc = creator.getFieldCreator("boolean2DArrayValue", boolean[][].class)
+                    .getFieldDescriptor();
             FieldDescriptor byte2DArrayDesc = creator.getFieldCreator("byte2DArrayValue", byte[][].class).getFieldDescriptor();
-            FieldDescriptor short2DArrayDesc = creator.getFieldCreator("short2DArrayValue", short[][].class).getFieldDescriptor();
+            FieldDescriptor short2DArrayDesc = creator.getFieldCreator("short2DArrayValue", short[][].class)
+                    .getFieldDescriptor();
             FieldDescriptor int2DArrayDesc = creator.getFieldCreator("int2DArrayValue", int[][].class).getFieldDescriptor();
             FieldDescriptor long2DArrayDesc = creator.getFieldCreator("long2DArrayValue", long[][].class).getFieldDescriptor();
-            FieldDescriptor float2DArrayDesc = creator.getFieldCreator("float2DArrayValue", float[][].class).getFieldDescriptor();
-            FieldDescriptor double2DArrayDesc = creator.getFieldCreator("double2DArrayValue", double[][].class).getFieldDescriptor();
+            FieldDescriptor float2DArrayDesc = creator.getFieldCreator("float2DArrayValue", float[][].class)
+                    .getFieldDescriptor();
+            FieldDescriptor double2DArrayDesc = creator.getFieldCreator("double2DArrayValue", double[][].class)
+                    .getFieldDescriptor();
             FieldDescriptor char2DArrayDesc = creator.getFieldCreator("char2DArrayValue", char[][].class).getFieldDescriptor();
-            FieldDescriptor string2DArrayDesc = creator.getFieldCreator("string2DArrayValue", String[][].class).getFieldDescriptor();
+            FieldDescriptor string2DArrayDesc = creator.getFieldCreator("string2DArrayValue", String[][].class)
+                    .getFieldDescriptor();
 
             MethodCreator ctor = creator.getMethodCreator(MethodDescriptor.INIT, void.class, params);
-            ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class), ctor.getThis());
+            ctor.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class),
+                    ctor.getThis());
 
             ctor.writeInstanceField(booleanDesc, ctor.getThis(), ctor.getMethodParam(0));
             ctor.writeInstanceField(byteDesc, ctor.getThis(), ctor.getMethodParam(1));
@@ -377,9 +475,13 @@ public class GizmoUtilsTest {
         assertNotEquals(obj1, obj3);
         assertNotEquals(obj1.hashCode(), obj3.hashCode());
 
-        assertEquals("MyTest(booleanValue=true, byteValue=1, shortValue=2, intValue=3, longValue=4, floatValue=5.0, doubleValue=6.0, charValue=a, stringValue=bc, booleanArrayValue=[true], byteArrayValue=[7], shortArrayValue=[8], intArrayValue=[9], longArrayValue=[10], floatArrayValue=[11.0], doubleArrayValue=[12.0], charArrayValue=[d, e], stringArrayValue=[fg], boolean2DArrayValue=[[true], [true]], byte2DArrayValue=[[13], [14]], short2DArrayValue=[[15], [16]], int2DArrayValue=[[17], [18]], long2DArrayValue=[[19], [20]], float2DArrayValue=[[21.0], [22.0]], double2DArrayValue=[[23.0], [24.0]], char2DArrayValue=[[h, i], [j, k]], string2DArrayValue=[[lm], [no]])", obj1.toString());
+        assertEquals(
+                "MyTest(booleanValue=true, byteValue=1, shortValue=2, intValue=3, longValue=4, floatValue=5.0, doubleValue=6.0, charValue=a, stringValue=bc, booleanArrayValue=[true], byteArrayValue=[7], shortArrayValue=[8], intArrayValue=[9], longArrayValue=[10], floatArrayValue=[11.0], doubleArrayValue=[12.0], charArrayValue=[d, e], stringArrayValue=[fg], boolean2DArrayValue=[[true], [true]], byte2DArrayValue=[[13], [14]], short2DArrayValue=[[15], [16]], int2DArrayValue=[[17], [18]], long2DArrayValue=[[19], [20]], float2DArrayValue=[[21.0], [22.0]], double2DArrayValue=[[23.0], [24.0]], char2DArrayValue=[[h, i], [j, k]], string2DArrayValue=[[lm], [no]])",
+                obj1.toString());
         assertEquals(obj1.toString(), obj2.toString());
 
-        assertEquals("MyTest(booleanValue=false, byteValue=1, shortValue=2, intValue=3, longValue=4, floatValue=5.0, doubleValue=6.0, charValue=a, stringValue=bc, booleanArrayValue=[true], byteArrayValue=[7], shortArrayValue=[8], intArrayValue=[9], longArrayValue=[10], floatArrayValue=[11.0], doubleArrayValue=[12.0], charArrayValue=[d, e], stringArrayValue=[fg], boolean2DArrayValue=[[true], [true]], byte2DArrayValue=[[13], [14]], short2DArrayValue=[[15], [16]], int2DArrayValue=[[17], [18]], long2DArrayValue=[[19], [20]], float2DArrayValue=[[21.0], [22.0]], double2DArrayValue=[[23.0], [24.0]], char2DArrayValue=[[h, i], [j, k]], string2DArrayValue=[[lm], [no]])", obj3.toString());
+        assertEquals(
+                "MyTest(booleanValue=false, byteValue=1, shortValue=2, intValue=3, longValue=4, floatValue=5.0, doubleValue=6.0, charValue=a, stringValue=bc, booleanArrayValue=[true], byteArrayValue=[7], shortArrayValue=[8], intArrayValue=[9], longArrayValue=[10], floatArrayValue=[11.0], doubleArrayValue=[12.0], charArrayValue=[d, e], stringArrayValue=[fg], boolean2DArrayValue=[[true], [true]], byte2DArrayValue=[[13], [14]], short2DArrayValue=[[15], [16]], int2DArrayValue=[[17], [18]], long2DArrayValue=[[19], [20]], float2DArrayValue=[[21.0], [22.0]], double2DArrayValue=[[23.0], [24.0]], char2DArrayValue=[[h, i], [j, k]], string2DArrayValue=[[lm], [no]])",
+                obj3.toString());
     }
 }
