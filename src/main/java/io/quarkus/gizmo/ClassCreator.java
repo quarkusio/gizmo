@@ -85,6 +85,14 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         this(null, classOutput, name, signature, superClass, ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC, interfaces);
     }
 
+    public MethodCreator getConstructorCreator(String... parameters) {
+        return getMethodCreator(MethodDescriptor.INIT, "V", parameters);
+    }
+
+    public MethodCreator getConstructorCreator(Class<?>... parameters) {
+        return getMethodCreator(MethodDescriptor.INIT, void.class, parameters);
+    }
+
     public MethodCreator getMethodCreator(MethodDescriptor methodDescriptor) {
         if (this.isInterface() && MethodDescriptor.INIT.equals(methodDescriptor.getName())) {
             throw new IllegalArgumentException("Constructor may not be declared on an interface: " + methodDescriptor);
