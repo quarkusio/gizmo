@@ -31,7 +31,7 @@
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo</artifactId>
     <name>Gizmo</name>
-    <version>1.8.0</version>
+    <version>1.8.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -50,7 +50,7 @@
         <url>https://github.com/quarkusio/gizmo</url>
         <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
-        <tag>1.8.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
