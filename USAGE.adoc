@@ -491,9 +491,12 @@ void printSize(BytecodeCreator bytecode, ResultHandle collection) {
 
 `Gizmo.listOperations(BytecodeCreator target)` returns `JdkList` with these methods:
 
+- `of()` to generate an invocation of `List.of()`
 - `of(ResultHandle e1)` to generate an invocation of `List.of(Object)`
 - `of(ResultHandle e1, ResultHandle e2)` to generate an invocation of `List.of(Object, Object)`
 - `of(ResultHandle e1, ResultHandle e2, ResultHandle e3)` to generate an invocation of `List.of(Object, Object, Object)`
+- `of(ResultHandle... elements)` to generate an invocation of `List.of(Object...)`
+- `copyOf(ResultHandle collection)` to generate an invocation of `List.copyOf(Collection)`
 
 `JdkList.on(ResultHandle list)` returns `JdkListInstance` with these methods:
 
@@ -521,9 +524,12 @@ void createListAndPrintFirst(BytecodeCreator bytecode) {
 
 `Gizmo.setOperations(BytecodeCreator target)` returns `JdkSet` with these methods:
 
+- `of()` to generate an invocation of `Set.of()`
 - `of(ResultHandle e1)` to generate an invocation of `Set.of(Object)`
 - `of(ResultHandle e1, ResultHandle e2)` to generate an invocation of `Set.of(Object, Object)`
 - `of(ResultHandle e1, ResultHandle e2, ResultHandle e3)` to generate an invocation of `Set.of(Object, Object, Object)`
+- `of(ResultHandle... elements)` to generate an invocation of `Set.of(Object...)`
+- `copyOf(ResultHandle collection)` to generate an invocation of `Set.copyOf(Collection)`
 
 `JdkSet.on(ResultHandle set)` returns `JdkSetInstance` with no additional methods.
 
@@ -546,7 +552,9 @@ void createSetAndPrint(BytecodeCreator bytecode) {
 
 `Gizmo.mapOperations(BytecodeCreator target)` returns `JdkMap` with these methods:
 
+- `of()` to generate an invocation of `Map.of()`
 - `of(ResultHandle k1, ResultHandle v1)` to generate an invocation of `Map.of(Object, Object)`
+- `copyOf(ResultHandle map)` to generate an invocation of `Map.copyOf(Map)` 
 
 `JdkMap.on(ResultHandle map)` returns `JdkMapInstance` with these methods:
 
