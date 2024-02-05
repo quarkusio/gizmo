@@ -26,18 +26,6 @@ import org.jboss.jandex.TypeVariable;
 //TODO: should not be public
 public class DescriptorUtils {
 
-    private static final Class<?>[] PRIMITIVES = {
-            byte.class,
-            boolean.class,
-            char.class,
-            short.class,
-            int.class,
-            long.class,
-            float.class,
-            double.class,
-            void.class
-    };
-
     public static String methodSignatureToDescriptor(String returnType, String... params) {
         StringBuilder sb = new StringBuilder("(");
         for (String i : params) {
@@ -133,7 +121,7 @@ public class DescriptorUtils {
                 //jvm internal name
                 return s;
             }
-            for (Class<?> prim : PRIMITIVES) {
+            for (Class<?> prim : PrimitiveUtils.PRIMITIVE_TYPES) {
                 if (s.equals(prim.getName())) {
                     return classToStringRepresentation(prim);
                 }

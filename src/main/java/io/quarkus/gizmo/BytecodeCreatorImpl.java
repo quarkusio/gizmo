@@ -16,6 +16,7 @@
 
 package io.quarkus.gizmo;
 
+import io.quarkus.gizmo.PrimitiveUtils.Boxing;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+
+import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveDescriptor;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
@@ -79,34 +82,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     private final Label bottom = new Label();
     private final StackTraceElement[] stack;
 
-    private static final Map<String, String> boxingMap;
-    private static final Map<String, String> boxingMethodMap;
-
     private ResultHandle cachedTccl;
-
-    static {
-        Map<String, String> b = new HashMap<>();
-        b.put("Z", Type.getInternalName(Boolean.class));
-        b.put("B", Type.getInternalName(Byte.class));
-        b.put("C", Type.getInternalName(Character.class));
-        b.put("S", Type.getInternalName(Short.class));
-        b.put("I", Type.getInternalName(Integer.class));
-        b.put("J", Type.getInternalName(Long.class));
-        b.put("F", Type.getInternalName(Float.class));
-        b.put("D", Type.getInternalName(Double.class));
-        boxingMap = Collections.unmodifiableMap(b);
-
-        b = new HashMap<>();
-        b.put("Z", "booleanValue");
-        b.put("B", "byteValue");
-        b.put("C", "charValue");
-        b.put("S", "shortValue");
-        b.put("I", "intValue");
-        b.put("J", "longValue");
-        b.put("F", "floatValue");
-        b.put("D", "doubleValue");
-        boxingMethodMap = Collections.unmodifiableMap(b);
-    }
 
     Label getTop() {
         return top;
@@ -390,7 +366,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private ResultHandle loadClass(final String className, final boolean useTccl) {
         Objects.requireNonNull(className);
-        final Class<?> primitiveType = matchPossiblyPrimitive(className);
+        final Class<?> primitiveType = PrimitiveUtils.WRAPPER_CLASS_BY_PRIMITIVE_KEYWORD.get(className);
         if (primitiveType == null) {
             if (useTccl) {
                 if (!isNonPrimitiveSafeJavaClass(className)) {
@@ -408,12 +384,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 return loadClassConstant(className);
             }
         } else {
-            Class<?> pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
             operations.add(new Operation() {
                 @Override
                 void writeBytecode(MethodVisitor methodVisitor) {
-                    methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(pt), "TYPE", "Ljava/lang/Class;");
+                    methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(primitiveType), "TYPE", "Ljava/lang/Class;");
                     storeResultHandle(methodVisitor, ret);
                 }
 
@@ -438,21 +413,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private ResultHandle loadClassConstant(String className) {
         return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
-    }
-
-    private Class<?> matchPossiblyPrimitive(final String className) {
-        switch (className) {
-            case "boolean" : return Boolean.class;
-            case "byte" : return Byte.class;
-            case "char" : return Character.class;
-            case "short" : return Short.class;
-            case "int" : return Integer.class;
-            case "long" : return Long.class;
-            case "float" : return Float.class;
-            case "double" : return Double.class;
-            case "void" : return Void.class;
-            default: return null;
-        }
     }
 
     /**
@@ -760,7 +720,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         Objects.requireNonNull(resultHandle);
         Objects.requireNonNull(castTarget);
         String intName = DescriptorUtils.objectToDescriptor(castTarget);
-        if (DescriptorUtils.isPrimitive(intName)) {
+        if (isPrimitiveDescriptor(intName)) {
             throw new IllegalArgumentException("Cannot checkcast to a primitive type: " + castTarget);
         }
         final ResultHandle result = allocateResult(intName);
@@ -796,7 +756,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle convertPrimitive(ResultHandle value, Class<?> conversionTarget) {
         Objects.requireNonNull(value);
         Objects.requireNonNull(conversionTarget);
-        if (!boxingMap.containsKey(value.getType())) {
+        if (!isPrimitiveDescriptor(value.getType())) {
             throw new IllegalArgumentException("Value is not of a primitive type: " + value);
         }
         if (!conversionTarget.isPrimitive()) {
@@ -1009,16 +969,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         // both primitives, ignore
                     } else if (expectedType.length() == 1) {
                         // expected primitive, must auto-unbox
-                        String type = boxingMap.get(expectedType);
-                        if (type == null) {
+                        Boxing boxing = PrimitiveUtils.boxingConversion(expectedType);
+                        if (boxing == null) {
                             throw new RuntimeException("Unknown primitive type " + expectedType);
                         }
-                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
-                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
+                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, boxing.wrapperInternalName());
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, boxing.wrapperInternalName(), boxing.unboxingMethod(), "()" + expectedType, false);
                     } else {
                         // expected primitive wrapper, must auto-box
-                        String type = boxingMap.get(handle.getType());
-                        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
+                        Boxing boxing = PrimitiveUtils.boxingConversion(handle.getType());
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, boxing.wrapperInternalName(), boxing.boxingMethod(), "(" + handle.getType() + ")" + boxing.wrapperDescriptor(), false);
                     }
                 }
             }
@@ -1050,16 +1010,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 // both primitives, ignore
             } else if (expectedType.length() == 1) {
                 // expected primitive, must auto-unbox
-                String type = boxingMap.get(expectedType);
-                if (type == null) {
+                Boxing boxing = PrimitiveUtils.boxingConversion(expectedType);
+                if (boxing == null) {
                     throw new RuntimeException("Unknown primitive type " + expectedType);
                 }
-                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
-                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
+                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, boxing.wrapperInternalName());
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, boxing.wrapperInternalName(), boxing.unboxingMethod(), "()" + expectedType, false);
             } else {
                 // expected primitive wrapper, must auto-box
-                String type = boxingMap.get(handle.getType());
-                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
+                Boxing boxing = PrimitiveUtils.boxingConversion(handle.getType());
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, boxing.wrapperInternalName(), boxing.boxingMethod(), "(" + handle.getType() + ")" + boxing.wrapperDescriptor(), false);
             }
         }
     }
