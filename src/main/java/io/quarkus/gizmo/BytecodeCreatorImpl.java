@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveOrWrapperDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.primitiveTypeFromWrapperDescriptor;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
@@ -756,7 +758,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle convertPrimitive(ResultHandle value, Class<?> conversionTarget) {
         Objects.requireNonNull(value);
         Objects.requireNonNull(conversionTarget);
-        if (!isPrimitiveDescriptor(value.getType())) {
+        if (!isPrimitiveOrWrapperDescriptor(value.getType())) {
             throw new IllegalArgumentException("Value is not of a primitive type: " + value);
         }
         if (!conversionTarget.isPrimitive()) {
@@ -782,10 +784,15 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         if (sourceType.equals(targetType)) {
             return value;
         }
-        if (sourceType == Type.BOOLEAN_TYPE) {
+        Type primitiveSourceType = isPrimitiveDescriptor(value.getType())
+                ? sourceType
+                : Type.getType(DescriptorUtils.objectToDescriptor(primitiveTypeFromWrapperDescriptor(value.getType())));
+        if (primitiveSourceType == Type.BOOLEAN_TYPE && targetType == Type.BOOLEAN_TYPE) {
+            // this branch is taken when `value.getType()` is `java.lang.Boolean`
+            // and the only thing the caller wants is an unboxing conversion
+        } else if (primitiveSourceType == Type.BOOLEAN_TYPE) {
             throw new IllegalArgumentException("Cannot convert boolean value to " + conversionTarget + ": " + value);
-        }
-        if (targetType == Type.BOOLEAN_TYPE) {
+        } else if (targetType == Type.BOOLEAN_TYPE) {
             throw new IllegalArgumentException("Cannot convert value to boolean: " + value);
         }
 
@@ -793,12 +800,12 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new Operation() {
             @Override
             void writeBytecode(MethodVisitor methodVisitor) {
-                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, sourceType.getDescriptor());
+                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, primitiveSourceType.getDescriptor());
 
-                if (sourceType == Type.BYTE_TYPE
-                       || sourceType == Type.SHORT_TYPE
-                       || sourceType == Type.CHAR_TYPE
-                       || sourceType == Type.INT_TYPE) {
+                if (primitiveSourceType == Type.BYTE_TYPE
+                       || primitiveSourceType == Type.SHORT_TYPE
+                       || primitiveSourceType == Type.CHAR_TYPE
+                       || primitiveSourceType == Type.INT_TYPE) {
                     if (targetType == Type.BYTE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2B); // narrowing
                     } else if (targetType == Type.SHORT_TYPE) {
@@ -812,7 +819,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2D); // widening
                     }
-                } else if (sourceType == Type.LONG_TYPE) {
+                } else if (primitiveSourceType == Type.LONG_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE
@@ -830,7 +837,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2D); // widening
                     }
-                } else if (sourceType == Type.FLOAT_TYPE) {
+                } else if (primitiveSourceType == Type.FLOAT_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE
@@ -848,7 +855,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2D); // widening
                     }
-                } else if (sourceType == Type.DOUBLE_TYPE) {
+                } else if (primitiveSourceType == Type.DOUBLE_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE

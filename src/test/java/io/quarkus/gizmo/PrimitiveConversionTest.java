@@ -19,9 +19,12 @@ package io.quarkus.gizmo;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PrimitiveConversionTest {
     public interface Primitives {
@@ -73,6 +76,41 @@ public class PrimitiveConversionTest {
         test(m -> m.load(42.0));
     }
 
+    @Test
+    public void fromByteWrapper() throws Exception {
+        test(m -> m.checkCast(m.load((byte) 42), Byte.class));
+    }
+
+    @Test
+    public void fromShortWrapper() throws Exception {
+        test(m -> m.checkCast(m.load((short) 42), Short.class));
+    }
+
+    @Test
+    public void fromCharWrapper() throws Exception {
+        test(m -> m.checkCast(m.load((char) 42), Character.class));
+    }
+
+    @Test
+    public void fromIntWrapper() throws Exception {
+        test(m -> m.checkCast(m.load(42), Integer.class));
+    }
+
+    @Test
+    public void fromLongWrapper() throws Exception {
+        test(m -> m.checkCast(m.load(42L), Long.class));
+    }
+
+    @Test
+    public void fromFloatWrapper() throws Exception {
+        test(m -> m.checkCast(m.load(42.0F), Float.class));
+    }
+
+    @Test
+    public void fromDoubleWrapper() throws Exception {
+        test(m -> m.checkCast(m.load(42.0), Double.class));
+    }
+
     private void test(Function<MethodCreator, ResultHandle> load42) throws ReflectiveOperationException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder()
@@ -97,5 +135,59 @@ public class PrimitiveConversionTest {
         assertEquals(42L, primitives.getlong());
         assertEquals(42.0F, primitives.getfloat(), 0.0001F);
         assertEquals(42.0, primitives.getdouble(), 0.0001);
+    }
+
+    @Test
+    public void primitiveBooleanToPrimitiveBoolean() throws ReflectiveOperationException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder()
+                .classOutput(cl)
+                .className("com.MyTest")
+                .interfaces(BooleanSupplier.class)
+                .build()) {
+            MethodCreator m = creator.getMethodCreator("getAsBoolean", boolean.class);
+            ResultHandle val = m.load(true);
+            ResultHandle converted = m.convertPrimitive(val, boolean.class);
+            m.returnValue(converted);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        BooleanSupplier supplier = (BooleanSupplier) clazz.getDeclaredConstructor().newInstance();
+        assertTrue(supplier.getAsBoolean());
+    }
+
+    @Test
+    public void primitiveBooleanToBooleanWrapper() throws ReflectiveOperationException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder()
+                .classOutput(cl)
+                .className("com.MyTest")
+                .interfaces(Supplier.class)
+                .build()) {
+            MethodCreator m = creator.getMethodCreator("get", Object.class);
+            ResultHandle val = m.load(true);
+            ResultHandle converted = m.checkCast(val, Boolean.class);
+            m.returnValue(converted);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier<?> supplier = (Supplier<?>) clazz.getDeclaredConstructor().newInstance();
+        assertTrue((Boolean) supplier.get());
+    }
+
+    @Test
+    public void booleanWrapperToPrimitiveBoolean() throws ReflectiveOperationException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder()
+                .classOutput(cl)
+                .className("com.MyTest")
+                .interfaces(BooleanSupplier.class)
+                .build()) {
+            MethodCreator m = creator.getMethodCreator("getAsBoolean", boolean.class);
+            ResultHandle val = m.checkCast(m.load(true), Boolean.class);
+            ResultHandle converted = m.convertPrimitive(val, boolean.class);
+            m.returnValue(converted);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        BooleanSupplier supplier = (BooleanSupplier) clazz.getDeclaredConstructor().newInstance();
+        assertTrue(supplier.getAsBoolean());
     }
 }

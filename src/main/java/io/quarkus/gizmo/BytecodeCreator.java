@@ -882,17 +882,19 @@ public interface BytecodeCreator extends AutoCloseable {
     }
 
     /**
-     * Converts given {@code value}, which must be of a primitive type, to the given {@code conversionTarget},
-     * which must be a primitive type, using primitive conversions defined by the Java language specification.
+     * Converts given {@code value}, which must be of a primitive type or a primitive wrapper class,
+     * to the given {@code conversionTarget}, which must be a primitive type, using primitive conversions
+     * defined by the Java language specification, unboxing if necessary.
      * <p>
      * Returns {@code value} directly when its static type is the same as {@code conversionTarget}.
      * <p>
      * Throws an exception if any of the arguments is {@code null}. Throws an exception when the static
-     * type of {@code value} is not a primitive type or when {@code conversionTarget} is not a primitive type.
-     * Throws an exception if no primitive conversion exists from the type of {@code value}
-     * to the {@code conversionTarget}. (Note that "throws an exception" in this paragraph does <em>not</em>
-     * mean that a bytecode sequence for throwing an exception is emitted; instead, the method
-     * {@code convertPrimitive} throws an exception directly and eagerly.)
+     * type of {@code value} is not a primitive type or a primitive wrapper class or when
+     * {@code conversionTarget} is not a primitive type. Throws an exception if no primitive conversion
+     * exists from the primitive type of {@code value} to the {@code conversionTarget}. (Note that
+     * "throws an exception" in this paragraph does <em>not</em> mean that a bytecode sequence for throwing
+     * an exception is emitted; instead, the method {@code convertPrimitive} throws an exception
+     * directly and eagerly.)
      *
      * @param value the value to be converted
      * @param conversionTarget the primitive type to which the {@code value} should be converted
