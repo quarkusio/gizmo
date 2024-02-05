@@ -39,6 +39,8 @@ import java.util.function.Function;
 
 import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveDescriptor;
 import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveOrWrapperDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.isWrapperDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.primitiveTypeFromDescriptor;
 import static io.quarkus.gizmo.PrimitiveUtils.primitiveTypeFromWrapperDescriptor;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
@@ -894,6 +896,44 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         });
         return result;
+    }
+
+    @Override
+    public ResultHandle smartCast(ResultHandle value, String castTarget) {
+        Objects.requireNonNull(value);
+        Objects.requireNonNull(castTarget);
+
+        String sourceType = value.getType();
+        String targetType = DescriptorUtils.objectToDescriptor(castTarget);
+
+        boolean primitiveSource = isPrimitiveDescriptor(sourceType);
+        boolean primitiveTarget = isPrimitiveDescriptor(targetType);
+
+        if (sourceType.equals(targetType)) {
+            return value;
+        } else if (primitiveSource && primitiveTarget) {
+            return convertPrimitive(value, primitiveTypeFromDescriptor(targetType));
+        } else if (!primitiveSource && !primitiveTarget) {
+            if (isWrapperDescriptor(sourceType) && isWrapperDescriptor(targetType)) {
+                // unboxes under the hood
+                value = convertPrimitive(value, primitiveTypeFromWrapperDescriptor(targetType));
+            }
+            // boxes under the hood if required
+            return checkCast(value, targetType);
+        } else if (primitiveSource /* && !primitiveTarget*/) {
+            if (!isWrapperDescriptor(targetType)) {
+                throw new IllegalArgumentException("Cannot convert primitive value to " + targetType + ": " + value);
+            }
+            ResultHandle tmp = convertPrimitive(value, primitiveTypeFromWrapperDescriptor(targetType));
+            // boxes under the hood
+            return checkCast(tmp, targetType);
+        } else /* if (!primitiveSource && primitiveTarget) */ {
+            if (!isWrapperDescriptor(sourceType)) {
+                throw new IllegalArgumentException("Cannot convert value to " + targetType + ": " + value);
+            }
+            // unboxes under the hood
+            return convertPrimitive(value, primitiveTypeFromDescriptor(targetType));
+        }
     }
 
     @Override

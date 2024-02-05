@@ -860,6 +860,9 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * Note that the {@code checkcast} instruction requires the target type to be a reference
      * type. This method throws an exception when {@code castTarget} is a primitive type.
+     * <p>
+     * A "smart" cast operation that performs any necessary combination of boxing, unboxing,
+     * primitive and reference conversions exists in {@link #smartCast(ResultHandle, String)}.
      *
      * @param resultHandle the result handle
      * @param castTarget the cast target type descriptor
@@ -872,6 +875,9 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * Note that the {@code checkcast} instruction requires the target type to be a reference
      * type. This method throws an exception when {@code castTarget} is a primitive type.
+     * <p>
+     * A "smart" cast operation that performs any necessary combination of boxing, unboxing,
+     * primitive and reference conversions exists in {@link #smartCast(ResultHandle, Class)}.
      *
      * @param resultHandle the result handle
      * @param castTarget the cast target class
@@ -895,12 +901,57 @@ public interface BytecodeCreator extends AutoCloseable {
      * "throws an exception" in this paragraph does <em>not</em> mean that a bytecode sequence for throwing
      * an exception is emitted; instead, the method {@code convertPrimitive} throws an exception
      * directly and eagerly.)
+     * <p>
+     * A "smart" cast operation that performs any necessary combination of boxing, unboxing,
+     * primitive and reference conversion exists in {@link #smartCast(ResultHandle, Class)}.
      *
      * @param value the value to be converted
      * @param conversionTarget the primitive type to which the {@code value} should be converted
      * @return the converted value
      */
     ResultHandle convertPrimitive(ResultHandle value, Class<?> conversionTarget);
+
+    /**
+     * Casts given {@code value} to the given {@code castTarget}, using the boxing, unboxing, primitive
+     * and reference conversions defined by the Java language specification.
+     * <p>
+     * Returns {@code value} directly when its static type is the same as {@code castTarget}.
+     * <p>
+     * Throws an exception if any of the arguments is {@code null}. Throws an exception when
+     * the static type of the value or the target type is a primitive type or a primitive
+     * wrapper class and no combination of conversions exists from the static type of the value
+     * to the target type. Other (reference) conversions are not checked statically.
+     * <p>
+     * This method is <em>not</em> equivalent to the casting conversion described by Java
+     * Language Specification; it is a superset.
+     *
+     * @param value the value to be casted
+     * @param castTarget the type to which the {@code value} should be casted
+     * @return the casted value
+     */
+    default ResultHandle smartCast(ResultHandle value, Class<?> castTarget) {
+        return smartCast(value, castTarget.getName());
+    }
+
+    /**
+     * Casts given {@code value} to the given {@code castTarget}, using the boxing, unboxing, primitive
+     * and reference conversions defined by the Java language specification.
+     * <p>
+     * Returns {@code value} directly when its static type is the same as {@code castTarget}.
+     * <p>
+     * Throws an exception if any of the arguments is {@code null}. Throws an exception when
+     * the static type of the value or the target type is a primitive type or a primitive
+     * wrapper class and no combination of conversions exists from the static type of the value
+     * to the target type. Other (reference) conversions are not checked statically.
+     * <p>
+     * This method is <em>not</em> equivalent to the casting conversion described by Java
+     * Language Specification; it is a superset.
+     *
+     * @param value the value to be casted
+     * @param castTarget the type to which the {@code value} should be casted
+     * @return the casted value
+     */
+    ResultHandle smartCast(ResultHandle value, String castTarget);
 
     /**
      * Throws an exception. The exception must have a constructor that takes a single String argument
