@@ -106,6 +106,12 @@ public class ResultHandle {
         resultType = ResultType.SINGLE_USE;
     }
 
+    /**
+     * Returns the "static" type of this value in the JVM descriptor format.
+     * That is, single character like {@code I} for primitive types,
+     * {@code Ljava/lang/Object;} for class types, and {@code [I} or
+     * {@code [[Ljava/lang/String;} for array types.
+     */
     String getType() {
         return type;
     }
