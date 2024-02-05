@@ -818,9 +818,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         //      long |          N     N    N    N   I     W     W
         //     float |          N     N    N    N   N     I     W
         //    double |          N     N    N    N   N     N     I
-        //
-        // note that `byte`, `short` and `char` are represented as `int` on the JVM stack,
-        // so the conversions between these types are implicit
 
         Type sourceType = Type.getType(value.getType());
         Type targetType = Type.getType(conversionTarget);
@@ -844,7 +841,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                        || sourceType == Type.SHORT_TYPE
                        || sourceType == Type.CHAR_TYPE
                        || sourceType == Type.INT_TYPE) {
-                    if (targetType == Type.LONG_TYPE) {
+                    if (targetType == Type.BYTE_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2B); // narrowing
+                    } else if (targetType == Type.SHORT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2S); // narrowing or widening
+                    } else if (targetType == Type.CHAR_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2C); // narrowing or widening+narrowing
+                    } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2L); // widening
                     } else if (targetType == Type.FLOAT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2F); // widening
@@ -857,6 +860,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.FLOAT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2F); // widening
                     } else if (targetType == Type.DOUBLE_TYPE) {
@@ -868,6 +878,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2L); // narrowing
                     } else if (targetType == Type.DOUBLE_TYPE) {
@@ -879,6 +896,13 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.D2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.D2L); // narrowing
                     } else if (targetType == Type.FLOAT_TYPE) {
