@@ -759,13 +759,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle checkCast(final ResultHandle resultHandle, final String castTarget) {
         Objects.requireNonNull(resultHandle);
         Objects.requireNonNull(castTarget);
-        final ResultHandle result;
-        String intName = castTarget.replace('.', '/');
-        if (intName.startsWith("[") || intName.endsWith(";")) {
-            result = allocateResult(intName);
-        } else {
-            result = allocateResult("L" + intName + ";");
+        String intName = DescriptorUtils.objectToDescriptor(castTarget);
+        if (DescriptorUtils.isPrimitive(intName)) {
+            throw new IllegalArgumentException("Cannot checkcast to a primitive type: " + castTarget);
         }
+        final ResultHandle result = allocateResult(intName);
         // seems like a waste of local vars but it's the safest approach since result type can't be mutated
         final ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
         assert result != null;

@@ -857,6 +857,9 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Perform a check cast operation which transforms the type of the given result handle.
+     * <p>
+     * Note that the {@code checkcast} instruction requires the target type to be a reference
+     * type. This method throws an exception when {@code castTarget} is a primitive type.
      *
      * @param resultHandle the result handle
      * @param castTarget the cast target type descriptor
@@ -866,6 +869,9 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Perform a check cast operation which transforms the type of the given result handle.
+     * <p>
+     * Note that the {@code checkcast} instruction requires the target type to be a reference
+     * type. This method throws an exception when {@code castTarget} is a primitive type.
      *
      * @param resultHandle the result handle
      * @param castTarget the cast target class
