@@ -838,7 +838,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new Operation() {
             @Override
             void writeBytecode(MethodVisitor methodVisitor) {
-                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, result.getType());
+                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, sourceType.getDescriptor());
 
                 if (sourceType == Type.BYTE_TYPE
                        || sourceType == Type.SHORT_TYPE
