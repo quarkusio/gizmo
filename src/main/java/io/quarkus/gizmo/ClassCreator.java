@@ -35,6 +35,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
@@ -49,7 +51,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
     public static Builder builder() {
         return new Builder(ACC_PUBLIC | ACC_SUPER | ACC_SYNTHETIC);
     }
-
+    
     public static Builder interfaceBuilder() {
         return new Builder(ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC);
     }
@@ -411,4 +413,21 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
 
     }
 
+    public static <T> T withClassCreator(String className, Function<ClassCreator, T> consumer){
+        try(ClassCreator classCreator = ClassCreator.builder().className(className).build()){
+            return consumer.apply(classCreator);
+        }
+    }
+
+    public static <T> T withClassCreator(ClassCreator.Builder builder, Function<ClassCreator, T> consumer){
+        try(ClassCreator classCreator = builder.build()){
+            return consumer.apply(classCreator);
+        }
+    }
+
+    public static void withClassCreator(ClassCreator.Builder builder, Consumer<ClassCreator> consumer){
+        try(ClassCreator classCreator = builder.build()){
+            consumer.accept(classCreator);
+        }
+    }
 }

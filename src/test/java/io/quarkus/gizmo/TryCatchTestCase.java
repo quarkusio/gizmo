@@ -19,6 +19,8 @@ package io.quarkus.gizmo;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static io.quarkus.gizmo.ClassCreator.withClassCreator;
+
 public class TryCatchTestCase {
 
     @Test
@@ -49,6 +51,29 @@ public class TryCatchTestCase {
             tb.invokeStaticMethod(MethodDescriptor.ofMethod(ExceptionClass.class.getName(), "throwIllegalState", "V"));
             method.returnValue(existingVal);
         }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Assert.assertTrue(clazz.isSynthetic());
+        MyInterface myInterface = (MyInterface) clazz.getDeclaredConstructor().newInstance();
+        Assert.assertEquals("complete", myInterface.transform("ignored"));
+    }
+
+    @Test
+    public void testLifeCycleInControlOfApi() throws Exception {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        withClassCreator(
+                ClassCreator.builder()
+                        .classOutput(cl)
+                        .className("com.MyTest")
+                        .interfaces(MyInterface.class),
+                creator -> {
+                    MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
+                    ResultHandle existingVal = method.load("complete");
+                    TryBlock tb = method.tryBlock();
+                    tb.addCatch(IllegalStateException.class).load(34);
+                    tb.invokeStaticMethod(MethodDescriptor.ofMethod(ExceptionClass.class.getName(), "throwIllegalState", "V"));
+                    method.returnValue(existingVal);
+                });
+
         Class<?> clazz = cl.loadClass("com.MyTest");
         Assert.assertTrue(clazz.isSynthetic());
         MyInterface myInterface = (MyInterface) clazz.getDeclaredConstructor().newInstance();
