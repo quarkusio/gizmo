@@ -604,7 +604,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * An if statement. If the value is not {@code null} the {@link BranchResult#trueBranch} code will be executed, otherwise
      * the {@link BranchResult#falseBranch} will be
      * run.
-     * 
+     *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
@@ -616,7 +616,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * resultHandle must be an integer type. If this value is greater than zero the
      * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
      * will be run.
-     * 
+     *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
@@ -628,7 +628,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * resultHandle must be an integer type. If this value is greater or equals to zero the
      * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
      * will be run.
-     * 
+     *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
@@ -640,7 +640,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * resultHandle must be an integer type. If this value is lower than zero the
      * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
      * will be run.
-     * 
+     *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
@@ -652,7 +652,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * resultHandle must be an integer type. If this value is lower or equals to zero the
      * {@link BranchResult#trueBranch} code will be executed, otherwise the {@link BranchResult#falseBranch}
      * will be run.
-     * 
+     *
      * @param resultHandle
      * @return The branch result that is used to build the if statement
      */
@@ -663,7 +663,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * Values must be integer types. If value1 is equal to value2 the {@link BranchResult#trueBranch} code will be executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param value1
      * @param value2
      * @return The branch result that is used to build the if statement
@@ -675,7 +675,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * Values must be integer types. If value1 is greater than value2 the {@link BranchResult#trueBranch} code will be executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param value1
      * @param value2
      * @return The branch result that is used to build the if statement
@@ -688,7 +688,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Values must be integer types. If value1 is greater or equal to value2 the {@link BranchResult#trueBranch} code will be
      * executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param value1
      * @param value2
      * @return The branch result that is used to build the if statement
@@ -700,7 +700,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * Values must be integer types. If value1 is less than value2 the {@link BranchResult#trueBranch} code will be executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param value1
      * @param value2
      * @return The branch result that is used to build the if statement
@@ -711,7 +711,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Create a new if-then-else construct.
      * <p>
      * The {@link IfThenElse#then()} block is executed if the condition result handle evaluates to {@code true}.
-     * 
+     *
      * @param condition
      * @return the if-then-else construct
      */
@@ -743,7 +743,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * Values must be integer types. If value1 is less or equal to value2 the {@link BranchResult#trueBranch} code will be
      * executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param value1
      * @param value2
      * @return The branch result that is used to build the if statement
@@ -755,7 +755,7 @@ public interface BytecodeCreator extends AutoCloseable {
      * <p>
      * If references are equal (object identity) the {@link BranchResult#trueBranch} code will be
      * executed, otherwise the {@link BranchResult#falseBranch} will be run.
-     * 
+     *
      * @param ref1
      * @param ref2
      * @return The branch result that is used to build the if statement
@@ -1041,7 +1041,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Create a new while loop statement.
-     * 
+     *
      * @param conditionFun A function used to create the condition. The true branch continues executing the block and the false
      *        branch terminates the statement.
      * @return the while loop statement
@@ -1050,7 +1050,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Create a new for-each loop construct.
-     * 
+     *
      * @param iterable
      * @return the for-each construct
      */
@@ -1058,7 +1058,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Adds the two result handles together and returns the result
-     * 
+     *
      * @param a1 The first number, aka the <em>augend</em>
      * @param a2 The second number, aka the <em>addend</em>
      * @return The result
@@ -1130,7 +1130,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Increments a ResultHandle
-     * 
+     *
      * @param toIncrement The number to increment
      * @return The result
      */
@@ -1140,7 +1140,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Create a new switch construct for a string value.
-     * 
+     *
      * @param value The string value to switch on
      * @return the switch construct
      */
@@ -1148,7 +1148,7 @@ public interface BytecodeCreator extends AutoCloseable {
 
     /**
      * Create a new switch construct for an enum constant.
-     * 
+     *
      * @param <E>
      * @param value The enum constant to switch on
      * @param enumClass

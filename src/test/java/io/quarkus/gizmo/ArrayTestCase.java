@@ -22,13 +22,13 @@ import java.util.function.Supplier;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class ArrayTestCase {
 
     @Test
     public void testNewArray() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(String.class, method.load(10));
             method.returnValue(arrayHandle);
@@ -45,7 +45,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayBoolean() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(boolean.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load(true));
@@ -63,7 +64,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayByte() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(byte.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load((byte) 42));
@@ -81,7 +83,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayShort() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(short.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load((short) 42));
@@ -99,7 +102,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayInt() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(int.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load(42));
@@ -117,7 +121,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayLong() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(long.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load(42L));
@@ -135,7 +140,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayFloat() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(float.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load(42.0F));
@@ -153,7 +159,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayDouble() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(double.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load(42.0));
@@ -171,7 +178,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayChar() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(char.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load('a'));
@@ -189,7 +197,8 @@ public class ArrayTestCase {
     @Test
     public void testWriteArrayObject() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(String.class, 1);
             method.writeArrayValue(arrayHandle, method.load(0), method.load("hello"));
@@ -207,7 +216,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayBoolean() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), boolean[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -226,7 +236,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayChar() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), char[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -245,7 +256,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayDouble() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), double[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -264,7 +276,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayFloat() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), float[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -283,7 +296,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayByte() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), byte[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -301,7 +315,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayShort() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), short[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -319,7 +334,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayInt() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), int[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -337,7 +353,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayLong() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), long[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -355,7 +372,8 @@ public class ArrayTestCase {
     @Test
     public void testReadArrayObject() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Function.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("apply", Object.class, Object.class);
             ResultHandle arrayHandle = method.checkCast(method.getMethodParam(0), Object[].class);
             ResultHandle ret = method.readArrayValue(arrayHandle, 0);
@@ -373,12 +391,14 @@ public class ArrayTestCase {
     @Test
     public void testArrayLength() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle arrayHandle = method.newArray(String.class, method.load(10));
             ResultHandle arrayLength = method.arrayLength(arrayHandle);
             method.returnValue(
-                    method.invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "valueOf", Integer.class, int.class), arrayLength));
+                    method.invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "valueOf", Integer.class, int.class),
+                            arrayLength));
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
         Supplier myInterface = (Supplier) clazz.getDeclaredConstructor().newInstance();

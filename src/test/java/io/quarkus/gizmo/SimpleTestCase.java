@@ -27,9 +27,11 @@ public class SimpleTestCase {
     @Test
     public void testSimpleGetMessage() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
-            ResultHandle message = method.invokeStaticMethod(MethodDescriptor.ofMethod(MessageClass.class.getName(), "getMessage", "Ljava/lang/String;"));
+            ResultHandle message = method.invokeStaticMethod(
+                    MethodDescriptor.ofMethod(MessageClass.class.getName(), "getMessage", "Ljava/lang/String;"));
             method.returnValue(message);
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
@@ -41,7 +43,8 @@ public class SimpleTestCase {
     @Test
     public void testSetStaticField() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Runnable.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Runnable.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("run", void.class);
             method.writeStaticField(FieldDescriptor.of(SimpleTestCase.class, "staticField", int.class), method.load(101));
             method.returnValue(null);
@@ -55,13 +58,18 @@ public class SimpleTestCase {
     @Test
     public void testStringTransform() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
-            ResultHandle message = method.invokeStaticMethod(MethodDescriptor.ofMethod(MessageClass.class.getName(), "getMessage", "Ljava/lang/String;"));
+            ResultHandle message = method.invokeStaticMethod(
+                    MethodDescriptor.ofMethod(MessageClass.class.getName(), "getMessage", "Ljava/lang/String;"));
             ResultHandle constant = method.load(":CONST:");
-            message = method.invokeVirtualMethod(MethodDescriptor.ofMethod("java/lang/String", "concat", "Ljava/lang/String;", "Ljava/lang/String;"), message, constant);
-            message = method.invokeVirtualMethod(MethodDescriptor.ofMethod("java/lang/String", "concat", "Ljava/lang/String;", "Ljava/lang/String;"), message, method.getMethodParam(0));
-
+            message = method.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod("java/lang/String", "concat", "Ljava/lang/String;", "Ljava/lang/String;"),
+                    message, constant);
+            message = method.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod("java/lang/String", "concat", "Ljava/lang/String;", "Ljava/lang/String;"),
+                    message, method.getMethodParam(0));
 
             method.returnValue(message);
         }
@@ -72,7 +80,8 @@ public class SimpleTestCase {
     @Test
     public void testUnboxing() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(IntInterface.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", int.class, Integer.class);
             method.returnValue(method.getMethodParam(0));
         }
@@ -83,7 +92,8 @@ public class SimpleTestCase {
     @Test
     public void testUnboxing2() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(IntInterface.class).build()) {
             MethodCreator method = creator.getMethodCreator("get", int.class, Integer.class);
             method.returnValue(method.newInstance(MethodDescriptor.ofConstructor(Integer.class, int.class), method.load(11)));
         }

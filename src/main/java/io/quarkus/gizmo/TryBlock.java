@@ -17,14 +17,14 @@
 package io.quarkus.gizmo;
 
 /**
- * A {@code try} block.  If the flow of control exits the bottom of the {@code try} block, it will resume after
+ * A {@code try} block. If the flow of control exits the bottom of the {@code try} block, it will resume after
  * the point the block was declared in the enclosing scope.
  */
 public interface TryBlock extends BytecodeCreator {
     /**
-     * Add a {@code catch} block.  The {@code catch} block will be emitted after the {@code try} block.
+     * Add a {@code catch} block. The {@code catch} block will be emitted after the {@code try} block.
      * If the flow of control exits the bottom of the {@code catch} block, it will resume after the point where
-     * the {@code try} block was declared in the enclosing scope.  The parent scope of the {@code catch} block is the
+     * the {@code try} block was declared in the enclosing scope. The parent scope of the {@code catch} block is the
      * same as the parent scope of the {@code try} block.
      *
      * @param exceptionType the exception type to catch (must not be {@code null})

@@ -136,7 +136,7 @@ public class ClassTransformer {
      * Removes the method with the given name, return type and parameters.
      * <p>
      * It's illegal to remove a modified method.
-     * 
+     *
      * @param name
      * @param returnType
      * @param parameters
@@ -151,7 +151,7 @@ public class ClassTransformer {
      * Removes the given method.
      * <p>
      * It's illegal to remove a modified method.
-     * 
+     *
      * @param method
      */
     public void removeMethod(MethodDescriptor method) {
@@ -168,7 +168,7 @@ public class ClassTransformer {
 
     /**
      * Returns a {@link FieldCreator} to configure a new field that will be added to this class.
-     * 
+     *
      * @param fieldDescriptor descriptor of the new field
      * @return a new {@link FieldCreator}
      */
@@ -183,7 +183,7 @@ public class ClassTransformer {
 
     /**
      * Returns a {@link FieldCreator} to configure a new field that will be added to this class.
-     * 
+     *
      * @param name name of the new field
      * @param type type of the new field
      * @return a new {@link FieldCreator}
@@ -197,7 +197,7 @@ public class ClassTransformer {
      * Removes the field of the given name and type.
      * <p>
      * It's illegal to remove a modified field.
-     * 
+     *
      * @param name
      * @param type
      * @throws IllegalArgumentException if the {@code type} is not a {@link Class} or {@link String}
@@ -210,7 +210,7 @@ public class ClassTransformer {
      * Removes the given field.
      * <p>
      * It's illegal to remove a modified field.
-     * 
+     *
      * @param field
      */
     public void removeField(FieldDescriptor field) {

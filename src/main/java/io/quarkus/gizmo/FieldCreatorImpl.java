@@ -16,6 +16,12 @@
 
 package io.quarkus.gizmo;
 
+import static org.objectweb.asm.Opcodes.ACC_FINAL;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +30,6 @@ import java.util.Map;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
-
-import static org.objectweb.asm.Opcodes.ACC_FINAL;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-import static org.objectweb.asm.Opcodes.ACC_STATIC;
-import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 
 class FieldCreatorImpl implements FieldCreator {
 
@@ -70,10 +69,12 @@ class FieldCreatorImpl implements FieldCreator {
 
     @Override
     public void write(ClassVisitor file) {
-        FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature, null);
-        for(AnnotationCreatorImpl annotation : annotations) {
-            AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()), annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
-            for(Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
+        FieldVisitor fieldVisitor = file.visitField(modifiers, fieldDescriptor.getName(), fieldDescriptor.getType(), signature,
+                null);
+        for (AnnotationCreatorImpl annotation : annotations) {
+            AnnotationVisitor av = fieldVisitor.visitAnnotation(DescriptorUtils.extToInt(annotation.getAnnotationType()),
+                    annotation.getRetentionPolicy() == RetentionPolicy.RUNTIME);
+            for (Map.Entry<String, Object> e : annotation.getValues().entrySet()) {
                 AnnotationUtils.visitAnnotationValue(av, e.getKey(), e.getValue());
             }
             av.visitEnd();

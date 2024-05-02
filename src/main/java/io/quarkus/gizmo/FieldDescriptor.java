@@ -40,19 +40,23 @@ public class FieldDescriptor {
     }
 
     public static FieldDescriptor of(String declaringClass, String name, String type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(type));
     }
 
     public static FieldDescriptor of(String declaringClass, String name, Class<?> type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(type));
     }
 
     public static FieldDescriptor of(Class<?> declaringClass, String name, String type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(type));
     }
 
     public static FieldDescriptor of(Class<?> declaringClass, String name, Class<?> type) {
-        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(type));
+        return new FieldDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(type));
     }
 
     public static FieldDescriptor of(FieldInfo fieldInfo) {
@@ -80,7 +84,8 @@ public class FieldDescriptor {
     }
 
     public boolean equals(final FieldDescriptor obj) {
-        return obj == this || obj != null && declaringClass.equals(obj.declaringClass) && name.equals(obj.name) && type.equals(obj.type);
+        return obj == this
+                || obj != null && declaringClass.equals(obj.declaringClass) && name.equals(obj.name) && type.equals(obj.type);
     }
 
     public int hashCode() {

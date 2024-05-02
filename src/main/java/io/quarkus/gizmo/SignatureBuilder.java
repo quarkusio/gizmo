@@ -6,7 +6,7 @@ import io.quarkus.gizmo.Type.TypeVariable;
 
 /**
  * Builds a generic signature as defined in JVMS 17, chapter "4.7.9.1. Signatures".
- * 
+ *
  * @see SignatureElement#setSignature(String)
  */
 public interface SignatureBuilder {
@@ -34,11 +34,11 @@ public interface SignatureBuilder {
         ClassSignatureBuilder addTypeParameter(TypeVariable typeParameter);
 
         ClassSignatureBuilder setSuperClass(ClassType superClass);
-        
+
         ClassSignatureBuilder setSuperClass(ParameterizedType superClass);
 
         ClassSignatureBuilder addInterface(ClassType interfaceType);
-        
+
         ClassSignatureBuilder addInterface(ParameterizedType interfaceType);
     }
 
@@ -53,7 +53,7 @@ public interface SignatureBuilder {
         MethodSignatureBuilder addParameterType(Type parameterType);
 
         MethodSignatureBuilder addException(ClassType exceptionType);
-        
+
         MethodSignatureBuilder addException(TypeVariable exceptionType);
     }
 

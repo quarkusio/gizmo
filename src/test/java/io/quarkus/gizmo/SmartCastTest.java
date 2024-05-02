@@ -16,32 +16,44 @@
 
 package io.quarkus.gizmo;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 public class SmartCastTest {
     public interface PrimitivesAndWrappers {
         byte getbyte();
+
         short getshort();
+
         int getint();
+
         long getlong();
+
         float getfloat();
+
         double getdouble();
+
         char getchar();
 
         Byte getbyteWrapper();
+
         Short getshortWrapper();
+
         Integer getintWrapper();
+
         Long getlongWrapper();
+
         Float getfloatWrapper();
+
         Double getdoubleWrapper();
+
         Character getcharWrapper();
     }
 

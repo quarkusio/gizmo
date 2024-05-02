@@ -5,12 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MyNestedAnnotation {
     Class<?> cls();
+
     MyAnnotation innerNested();
 
     Class<?>[] clsArray();
+
     MyAnnotation[] innerNestedArray();
 }

@@ -40,7 +40,7 @@ public class DescriptorUtils {
      * e.g. Ljava/lang/Object; to java/lang/Object
      */
     public static String getTypeStringFromDescriptorFormat(String descriptor) {
-        if(descriptor.startsWith("[")) {
+        if (descriptor.startsWith("[")) {
             return descriptor;
         }
         descriptor = descriptor.substring(1);

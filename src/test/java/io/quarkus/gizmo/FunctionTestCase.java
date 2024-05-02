@@ -21,7 +21,6 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class FunctionTestCase {
@@ -29,16 +28,21 @@ public class FunctionTestCase {
     @Test
     public void testSimpleFunction() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
 
             //create a function that appends '-func' to its input
             FunctionCreator functionCreator = method.createFunction(Function.class);
             BytecodeCreator fbc = functionCreator.getBytecode();
-            ResultHandle functionReturn = fbc.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), fbc.getMethodParam(0), fbc.load("-func"));
+            ResultHandle functionReturn = fbc.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), fbc.getMethodParam(0),
+                    fbc.load("-func"));
             fbc.returnValue(functionReturn);
 
-            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Function.class, "apply", Object.class, Object.class), functionCreator.getInstance(), method.getMethodParam(0));
+            ResultHandle ret = method.invokeInterfaceMethod(
+                    MethodDescriptor.ofMethod(Function.class, "apply", Object.class, Object.class),
+                    functionCreator.getInstance(), method.getMethodParam(0));
             method.returnValue(ret);
 
         }
@@ -51,16 +55,20 @@ public class FunctionTestCase {
     @Test
     public void testSimpleFunctionWithCapture() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
 
             //create a function that appends '-func' to its input
             FunctionCreator functionCreator = method.createFunction(Supplier.class);
             BytecodeCreator fbc = functionCreator.getBytecode();
-            ResultHandle functionReturn = fbc.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), method.getMethodParam(0), fbc.load("-func"));
+            ResultHandle functionReturn = fbc.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), method.getMethodParam(0),
+                    fbc.load("-func"));
             fbc.returnValue(functionReturn);
 
-            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class), functionCreator.getInstance());
+            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class),
+                    functionCreator.getInstance());
             method.returnValue(ret);
 
         }
@@ -77,7 +85,7 @@ public class FunctionTestCase {
                 .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
 
-            //create a function that appends '-func' to its input from inside an if statement 
+            //create a function that appends '-func' to its input from inside an if statement
             FunctionCreator functionCreator = method.createFunction(Supplier.class);
             BytecodeCreator fbc = functionCreator.getBytecode();
             BranchResult result = fbc.ifNonZero(fbc.load(true));
@@ -102,17 +110,22 @@ public class FunctionTestCase {
     @Test
     public void testInvokeSuperMethodFromFunction() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").superClass(Superclass.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").superClass(Superclass.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("getMessage", String.class);
 
             //create a function that calls super appends '-func' to its input
             FunctionCreator functionCreator = method.createFunction(Supplier.class);
             BytecodeCreator fbc = functionCreator.getBytecode();
-            ResultHandle superResult = fbc.invokeSpecialMethod(MethodDescriptor.ofMethod(Superclass.class, "getMessage", String.class), method.getThis());
-            ResultHandle functionReturn = fbc.invokeVirtualMethod(MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), superResult, fbc.load("-func"));
+            ResultHandle superResult = fbc.invokeSpecialMethod(
+                    MethodDescriptor.ofMethod(Superclass.class, "getMessage", String.class), method.getThis());
+            ResultHandle functionReturn = fbc.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(String.class, "concat", String.class, String.class), superResult,
+                    fbc.load("-func"));
             fbc.returnValue(functionReturn);
 
-            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class), functionCreator.getInstance());
+            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(Supplier.class, "get", Object.class),
+                    functionCreator.getInstance());
             method.returnValue(ret);
 
         }
@@ -131,11 +144,13 @@ public class FunctionTestCase {
 
             FunctionCreator functionCreator = method.createFunction(IntSupplier.class);
             BytecodeCreator fbc = functionCreator.getBytecode();
-            ResultHandle superResult = fbc.invokeSpecialInterfaceMethod(MethodDescriptor.ofMethod(InterfaceWithDefaultMethod.class, "whatever", int.class), method.getThis());
+            ResultHandle superResult = fbc.invokeSpecialInterfaceMethod(
+                    MethodDescriptor.ofMethod(InterfaceWithDefaultMethod.class, "whatever", int.class), method.getThis());
             ResultHandle functionReturn = fbc.add(superResult, fbc.load(1));
             fbc.returnValue(functionReturn);
 
-            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(IntSupplier.class, "getAsInt", int.class), functionCreator.getInstance());
+            ResultHandle ret = method.invokeInterfaceMethod(MethodDescriptor.ofMethod(IntSupplier.class, "getAsInt", int.class),
+                    functionCreator.getInstance());
             method.returnValue(ret);
         }
         Class<? extends IntSupplier> clazz = cl.loadClass("com.MyTest").asSubclass(IntSupplier.class);
@@ -150,12 +165,13 @@ public class FunctionTestCase {
         MethodDescriptor addExact = MethodDescriptor.ofMethod(Math.class, "addExact", int.class, int.class, int.class);
 
         final TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntSupplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(IntSupplier.class)
+                .build()) {
             MethodCreator bc = creator.getMethodCreator("getAsInt", int.class);
             ResultHandle seven = bc.invokeStaticMethod(addExact, bc.load(2), bc.load(5));
             FunctionCreator f1 = bc.createFunction(IntSupplier.class);
             BytecodeCreator f1bc = f1.getBytecode();
-            ResultHandle four = f1bc.invokeStaticMethod(addExact, seven, f1bc.load(- 3));
+            ResultHandle four = f1bc.invokeStaticMethod(addExact, seven, f1bc.load(-3));
             FunctionCreator f2 = f1bc.createFunction(IntSupplier.class);
             BytecodeCreator f2bc = f2.getBytecode();
             f2bc.returnValue(f2bc.invokeStaticMethod(addExact, seven, four));

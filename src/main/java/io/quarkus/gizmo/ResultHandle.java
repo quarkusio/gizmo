@@ -57,7 +57,7 @@ public class ResultHandle {
     }
 
     private void verifyType(String current) {
-        if(current.length() == 0) {
+        if (current.length() == 0) {
             throw new RuntimeException("Invalid type " + type);
         }
         if (current.length() == 1) {
@@ -75,10 +75,10 @@ public class ResultHandle {
                     throw new RuntimeException("Invalid type " + type);
             }
         } else {
-            if(current.charAt(0) == '[') {
+            if (current.charAt(0) == '[') {
                 verifyType(current.substring(1));
             } else {
-                if(!(current.startsWith("L") && current.endsWith(";"))) {
+                if (!(current.startsWith("L") && current.endsWith(";"))) {
                     throw new RuntimeException("Invalid type " + type);
                 }
             }

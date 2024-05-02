@@ -1,9 +1,9 @@
 package io.quarkus.gizmo;
 
+import java.util.function.IntSupplier;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.function.IntSupplier;
 
 public class DefaultSuperInterfaceMethodCallTest {
 

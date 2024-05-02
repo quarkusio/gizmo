@@ -13,10 +13,10 @@ import java.util.function.Supplier;
 
 import org.junit.Test;
 
-import io.quarkus.gizmo.Gizmo.CustomInvocationGenerator;
 import io.quarkus.gizmo.Gizmo.JdkList.JdkListInstance;
 import io.quarkus.gizmo.Gizmo.JdkOptional;
 import io.quarkus.gizmo.Gizmo.JdkSet.JdkSetInstance;
+import io.quarkus.gizmo.Gizmo.StringBuilderGenerator;
 
 public class GizmoUtilsTest {
 
@@ -27,41 +27,42 @@ public class GizmoUtilsTest {
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
-            ResultHandle sb = method.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
-            MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
-                    String.class);
-            Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
-                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
-                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
-            });
+            StringBuilderGenerator sb = Gizmo.newStringBuilder(method);
 
             // List<String> list = List.of("foo","bar");
             ResultHandle list = Gizmo.listOperations(method).of(method.load("foo"), method.load("bar"));
 
             JdkListInstance listInstance = Gizmo.listOperations(method).on(list);
             // sb.append(list.get(1));
-            append.invoke(listInstance.get(1));
+            sb.append(listInstance.get(1));
+            sb.append(':');
             // sb.append(list.size());
-            append.invoke(listInstance.size());
+            sb.append(listInstance.size());
+            sb.append(':');
             // sb.append(list.contains("foo"));
-            append.invoke(listInstance.contains(method.load("foo")));
+            sb.append(listInstance.contains(method.load("foo")));
+            sb.append(':');
 
             // ArrayList empty = new ArrayList();
             ResultHandle emptyArrayList = Gizmo.newArrayList(method);
             // sb.append(empty.size);
-            append.invoke(Gizmo.collectionOperations(method).on(emptyArrayList).size());
+            sb.append(Gizmo.collectionOperations(method).on(emptyArrayList).size());
+            sb.append(':');
 
-            // sb.append(List.of().isEmpty()) 
-            append.invoke(Gizmo.listOperations(method).on(Gizmo.listOperations(method).of()).isEmpty());
+            // sb.append(List.of().isEmpty())
+            sb.append(Gizmo.listOperations(method).on(Gizmo.listOperations(method).of()).isEmpty());
+            sb.append(':');
 
             // List<String> copy = List.copyOf(list);
             ResultHandle listCopy = Gizmo.listOperations(method).copyOf(list);
             // sb.append(copy.size());
-            append.invoke(Gizmo.collectionOperations(method).on(listCopy).size());
+            sb.append(Gizmo.collectionOperations(method).on(listCopy).size());
+            sb.append(':');
 
             ResultHandle varArgsList = Gizmo.listOperations(method).of(method.load(1), method.load(2), method.load(3),
                     method.load(4));
-            append.invoke(Gizmo.collectionOperations(method).on(varArgsList).size());
+            sb.append(Gizmo.collectionOperations(method).on(varArgsList).size());
+            sb.append(':');
 
             try {
                 Gizmo.listOperations(null);
@@ -74,10 +75,9 @@ public class GizmoUtilsTest {
             } catch (NullPointerException expected) {
             }
 
-            method.returnValue(Gizmo.toString(method, sb));
+            method.returnValue(sb.callToString());
         }
         Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
-        ;
         assertEquals("bar:2:true:0:true:2:4:", myInterface.get());
     }
 
@@ -87,34 +87,33 @@ public class GizmoUtilsTest {
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
-            ResultHandle sb = method.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
-            MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
-                    String.class);
-            Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
-                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
-                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
-            });
+            StringBuilderGenerator sb = Gizmo.newStringBuilder(method);
 
             // Set<String> set = Set.of("foo","bar");
             ResultHandle set = Gizmo.setOperations(method).of(method.load("foo"), method.load("bar"));
 
             JdkSetInstance setInstance = Gizmo.setOperations(method).on(set);
             // sb.append(set.size());
-            append.invoke(setInstance.size());
+            sb.append(setInstance.size());
+            sb.append(':');
             // sb.append(set.contains("foo"));
-            append.invoke(setInstance.contains(method.load("foo")));
+            sb.append(setInstance.contains(method.load("foo")));
+            sb.append(':');
 
-            // sb.append(Set.of().isEmpty()) 
-            append.invoke(Gizmo.setOperations(method).on(Gizmo.setOperations(method).of()).isEmpty());
+            // sb.append(Set.of().isEmpty())
+            sb.append(Gizmo.setOperations(method).on(Gizmo.setOperations(method).of()).isEmpty());
+            sb.append(':');
 
             // Set<String> copy = Set.copyOf(set);
             ResultHandle setCopy = Gizmo.setOperations(method).copyOf(set);
             // sb.append(copy.size());
-            append.invoke(Gizmo.collectionOperations(method).on(setCopy).size());
+            sb.append(Gizmo.collectionOperations(method).on(setCopy).size());
+            sb.append(':');
 
             ResultHandle varArgsSet = Gizmo.setOperations(method).of(method.load(1), method.load(2), method.load(3),
                     method.load(4));
-            append.invoke(Gizmo.collectionOperations(method).on(varArgsSet).size());
+            sb.append(Gizmo.collectionOperations(method).on(varArgsSet).size());
+            sb.append(':');
 
             try {
                 Gizmo.setOperations(null);
@@ -127,7 +126,7 @@ public class GizmoUtilsTest {
             } catch (NullPointerException expected) {
             }
 
-            method.returnValue(Gizmo.toString(method, sb));
+            method.returnValue(sb.callToString());
         }
         Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
         assertEquals("2:true:true:2:4:", myInterface.get());
@@ -143,7 +142,7 @@ public class GizmoUtilsTest {
             JdkOptional jdkOptional = Gizmo.optionalOperations(method);
             // Optional<String> optionalFoo = Optional.of("foo");
             ResultHandle optionalFoo = jdkOptional.of(method.load("foo"));
-            // if (optionalFoo.isEmpty) return false; 
+            // if (optionalFoo.isEmpty) return false;
             method.ifTrue(jdkOptional.on(optionalFoo).isEmpty()).trueBranch().returnValue(method.load(false));
             // return optionalFoo.isPresent();
             method.returnValue(Gizmo.optionalOperations(method).on(optionalFoo).isPresent());
@@ -181,14 +180,7 @@ public class GizmoUtilsTest {
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
-
-            ResultHandle sb = method.newInstance(MethodDescriptor.ofConstructor(StringBuilder.class));
-            MethodDescriptor sbAppend = MethodDescriptor.ofMethod(StringBuilder.class, "append", StringBuilder.class,
-                    String.class);
-            Gizmo.CustomInvocationGenerator append = new CustomInvocationGenerator(method, (bc, args) -> {
-                bc.invokeVirtualMethod(sbAppend, sb, Gizmo.toString(bc, args[0]));
-                return bc.invokeVirtualMethod(sbAppend, sb, bc.load(":"));
-            });
+            StringBuilderGenerator sb = Gizmo.newStringBuilder(method);
 
             // HashMap map = new HashMap();
             ResultHandle map = Gizmo.newHashMap(method);
@@ -198,19 +190,24 @@ public class GizmoUtilsTest {
             Gizmo.mapOperations(method).on(map).put(method.load("bravo"), method.load("B"));
 
             // sb.append(map.size());
-            append.invoke(Gizmo.mapOperations(method).on(map).size());
+            sb.append(Gizmo.mapOperations(method).on(map).size());
+            sb.append(':');
             // sb.append(map.isEmpty())
-            append.invoke(Gizmo.mapOperations(method).on(map).isEmpty());
+            sb.append(Gizmo.mapOperations(method).on(map).isEmpty());
+            sb.append(':');
             // sp.append(map.get("alpha").equals(map.get("alpha"))
-            append.invoke(Gizmo.equals(method, Gizmo.mapOperations(method).on(map).get(method.load("alpha")),
+            sb.append(Gizmo.equals(method, Gizmo.mapOperations(method).on(map).get(method.load("alpha")),
                     Gizmo.mapOperations(method).on(map).get(method.load("alpha"))));
-            // sb.append(Map.of().isEmpty()) 
-            append.invoke(Gizmo.mapOperations(method).on(Gizmo.mapOperations(method).of()).isEmpty());
+            sb.append(':');
+            // sb.append(Map.of().isEmpty())
+            sb.append(Gizmo.mapOperations(method).on(Gizmo.mapOperations(method).of()).isEmpty());
+            sb.append(':');
 
             // Map copy = Map.copyOf(map);
             ResultHandle mapCopy = Gizmo.mapOperations(method).copyOf(map);
             // sb.append(copy.containsKey("alpha"));
-            append.invoke(Gizmo.mapOperations(method).on(mapCopy).containsKey(method.load("alpha")));
+            sb.append(Gizmo.mapOperations(method).on(mapCopy).containsKey(method.load("alpha")));
+            sb.append(':');
 
             try {
                 Gizmo.mapOperations(null);
@@ -223,7 +220,7 @@ public class GizmoUtilsTest {
             } catch (NullPointerException expected) {
             }
 
-            method.returnValue(Gizmo.toString(method, sb));
+            method.returnValue(sb.callToString());
         }
 
         Supplier<?> myInterface = (Supplier<?>) cl.loadClass("com.MyTest").getDeclaredConstructor().newInstance();
@@ -270,13 +267,13 @@ public class GizmoUtilsTest {
                 .build()) {
 
             MethodCreator createCharSequence = creator.getMethodCreator("createCharSequence", CharSequence.class);
-            Gizmo.StringBuilderGenerator str = Gizmo.newStringBuilder(createCharSequence);
+            StringBuilderGenerator str = Gizmo.newStringBuilder(createCharSequence);
             str.append("ghi");
             createCharSequence.returnValue(str.getInstance());
 
             MethodCreator method = creator.getMethodCreator("get", Object.class);
 
-            Gizmo.StringBuilderGenerator strBuilder = Gizmo.newStringBuilder(method);
+            StringBuilderGenerator strBuilder = Gizmo.newStringBuilder(method);
 
             strBuilder.append(method.load(true));
             strBuilder.append(method.load((byte) 1));

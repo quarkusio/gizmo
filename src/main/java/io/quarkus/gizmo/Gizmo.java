@@ -30,7 +30,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls {@link Object#toString()}.
-     * 
+     *
      * @param target
      * @param obj
      * @return the result
@@ -41,11 +41,11 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls {@link Object#equals(Object)}.
-     * 
+     *
      * @param target
      * @param obj1
      * @param obj2
-     * 
+     *
      * @return the result
      */
     public static ResultHandle equals(BytecodeCreator target, ResultHandle obj1, ResultHandle obj2) {
@@ -54,7 +54,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls {@code System.out.println(obj)}.
-     * 
+     *
      * @param target
      * @param obj
      */
@@ -64,7 +64,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls {@code System.err.println(obj)}.
-     * 
+     *
      * @param target
      * @param obj
      */
@@ -76,7 +76,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle firstElement = Gizmo.listOperations(methodBytecode).instance(myList).get(1);
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -88,7 +88,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle size = Gizmo.collectionOperations(methodBytecode).instance(myList).size();
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -100,7 +100,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle set = Gizmo.setOperations(methodBytecode).of(element);
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -112,7 +112,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle optionalFoo = Gizmo.optionalOperations(methodBytecode).ofNullable(foo);
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -124,7 +124,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle iterator = Gizmo.iterableOperations(methodBytecode).instance(myCollection).iterator();
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -136,7 +136,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle hasNext = Gizmo.iteratorOperations(methodBytecode).instance(myIterator).hasNext();
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -148,7 +148,7 @@ public final class Gizmo {
      * <pre>
      * ResultHandle mapping = Gizmo.mapOperations(methodBytecode).instance(myMap).get(myKey);
      * </pre>
-     * 
+     *
      * @param target
      * @return the generator
      */
@@ -403,7 +403,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls the no-args {@link HashMap} constructor.
-     * 
+     *
      * @param target
      * @return the result handle
      */
@@ -413,7 +413,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls the no-args {@link HashSet} constructor.
-     * 
+     *
      * @param target
      * @return the result handle
      */
@@ -424,7 +424,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls the no-args {@link ArrayList} constructor.
-     * 
+     *
      * @param target
      * @return the result handle
      */
@@ -435,7 +435,7 @@ public final class Gizmo {
 
     /**
      * Generates the bytecode that calls the {@link ArrayList} constructor with the specified initial capacity.
-     * 
+     *
      * @param target
      * @return the result handle
      */
@@ -479,13 +479,13 @@ public final class Gizmo {
 
     /**
      * Helper class to build a bytecode generator for repetitive tasks.
-     * 
+     *
      * <pre>
      * CustomInvocationGenerator alwaysReturnTrue = new CustomInvocationGenerator(methodBytecode, (bc, args) -> bc.load(true));
      * ResultHandle true1 = alwaysReturnTrue.invoke();
      * ResultHandle true2 = alwaysReturnTrue.invoke();
      * </pre>
-     * 
+     *
      */
     public static class CustomInvocationGenerator extends StaticInvocationGenerator {
 
@@ -505,7 +505,7 @@ public final class Gizmo {
 
     /**
      * Bytecode generator for static methods.
-     * 
+     *
      * @see Optional
      * @see #on(ResultHandle)
      */
@@ -524,7 +524,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return bytecode generator for instance methods
          */
         public JdkOptionalInstance on(ResultHandle optional) {
@@ -532,7 +532,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param value
          * @return the result handle
          * @see Optional#of(Object)
@@ -542,7 +542,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param value
          * @return the result handle
          * @see Optional#ofNullable(Object)
@@ -558,7 +558,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Optional#isPresent()
              */
@@ -568,7 +568,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Optional#isEmpty()
              */
@@ -578,7 +578,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Optional#get()
              */
@@ -593,7 +593,7 @@ public final class Gizmo {
 
     /**
      * Bytecode generator for static methods.
-     * 
+     *
      * @see Iterable
      * @see #on(ResultHandle)
      */
@@ -606,7 +606,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return bytecode generator for instance methods
          */
         public JdkIterableInstance on(ResultHandle iterable) {
@@ -620,7 +620,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Iterable#iterator()
              */
@@ -633,7 +633,7 @@ public final class Gizmo {
 
     /**
      * Bytecode generator for static methods.
-     * 
+     *
      * @see Iterator
      * @see #on(ResultHandle)
      */
@@ -647,7 +647,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return bytecode generator for instance methods
          */
         public JdkIteratorInstance on(ResultHandle iterator) {
@@ -661,7 +661,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Iterator#next()
              */
@@ -670,7 +670,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Iterator#hasNext()
              */
@@ -684,7 +684,7 @@ public final class Gizmo {
 
     /**
      * Bytecode generator for static methods.
-     * 
+     *
      * @see Collection
      * @see #on(ResultHandle)
      */
@@ -705,7 +705,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return bytecode generator for instance methods
          */
         public JdkCollectionInstance on(ResultHandle list) {
@@ -719,7 +719,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Collection#size()
              */
@@ -728,7 +728,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Collection#isEmpty()
              */
@@ -738,7 +738,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Collection#contains(Object)
              */
@@ -748,7 +748,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Collection#add(Object)
              */
@@ -758,7 +758,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @return the result handle
              * @see Collection#addAll(Collection)
              */
@@ -768,7 +768,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @see Collection#clear()
              */
             public void clear() {
@@ -781,7 +781,7 @@ public final class Gizmo {
 
     /**
      * Bytecode generator for static methods.
-     * 
+     *
      * @see List
      * @see #on(ResultHandle)
      */
@@ -803,7 +803,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return bytecode generator for instance methods
          */
         public JdkListInstance on(ResultHandle list) {
@@ -811,7 +811,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the list
          * @see List#of()
          */
@@ -820,7 +820,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param e1
          * @return the list
          * @see List#of(Object)
@@ -830,7 +830,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param e1
          * @param e2
          * @return the list
@@ -841,7 +841,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param e1
          * @param e2
          * @param e3
@@ -853,7 +853,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the list
          * @see List#of(Object...)
          */
@@ -866,7 +866,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the list
          * @see List#copyOf(Collection)
          */
@@ -881,7 +881,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @param index
              * @return the result handle
              * @see List#get(int)
@@ -891,7 +891,7 @@ public final class Gizmo {
             }
 
             /**
-             * 
+             *
              * @param index
              * @return the result handle
              * @see List#get(int)
@@ -906,7 +906,7 @@ public final class Gizmo {
     }
 
     /**
-     * 
+     *
      * @see Set
      */
     public static class JdkSet extends JdkCollection {
@@ -930,7 +930,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#of()
          */
@@ -939,7 +939,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#of(Object)
          */
@@ -948,7 +948,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#of(Object, Object)
          */
@@ -957,7 +957,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#of(Object, Object, Object)
          */
@@ -966,7 +966,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#of(Object...)
          */
@@ -979,7 +979,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the set
          * @see Set#copyOf(Collection)
          */
@@ -998,7 +998,7 @@ public final class Gizmo {
     }
 
     /**
-     * 
+     *
      * @see Map
      */
     public static class JdkMap extends StaticInvocationGenerator {
@@ -1032,7 +1032,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the map
          * @see Map#of()
          */
@@ -1041,7 +1041,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @param k1
          * @param v1
          * @return the map
@@ -1052,7 +1052,7 @@ public final class Gizmo {
         }
 
         /**
-         * 
+         *
          * @return the map
          * @see Map#of(Object, Object)
          */

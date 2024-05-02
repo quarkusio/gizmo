@@ -20,24 +20,24 @@ public interface Switch<T> {
      * labeled statement group; i.e. it's necessary to add the break statement to prevent the fall through.
      * <p>
      * For example, if fall through is disabled then:
-     * 
+     *
      * <pre>
      * <code>
      * StringSwitch s = method.stringSwitch(val);
        s.caseOf(List.of("boom", "foo"), bc -> {...});
      * </code>
      * </pre>
-     * 
+     *
      * is an equivalent of:
-     * 
+     *
      * <pre>
      * switch (val) {
      *     case "boom", "foo" -> // statements provided by the consumer
      * }
      * </pre>
-     * 
+     *
      * However, if fall though is enabled then:
-     * 
+     *
      * <pre>
      * <code>
      * StringSwitch s = method.stringSwitch(val);
@@ -45,9 +45,9 @@ public interface Switch<T> {
      * s.caseOf(List.of("boom", "foo"), bc -> {...});
      * </code>
      * </pre>
-     * 
+     *
      * is an equivalent of:
-     * 
+     *
      * <pre>
      * switch (val) {
      *     case "val1":
@@ -60,7 +60,7 @@ public interface Switch<T> {
 
     /**
      * Adds a case block.
-     * 
+     *
      * @param value The value for the case label
      * @param caseBlockConsumer The consumer used to define the case block
      * @throws IllegalArgumentException If a case block for the specified value was already added
@@ -69,7 +69,7 @@ public interface Switch<T> {
 
     /**
      * Adds multiple case labels for a single block.
-     * 
+     *
      * @param values
      * @param caseBlockConsumer
      * @throws IllegalArgumentException If a case block for the specified value was already added
@@ -78,7 +78,7 @@ public interface Switch<T> {
 
     /**
      * Adds the default block.
-     * 
+     *
      * @param defatultBlockConsumer
      */
     void defaultCase(Consumer<BytecodeCreator> defatultBlockConsumer);

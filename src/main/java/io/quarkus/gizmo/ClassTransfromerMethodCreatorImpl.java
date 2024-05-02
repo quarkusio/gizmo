@@ -1,11 +1,11 @@
 package io.quarkus.gizmo;
 
-import io.quarkus.gizmo.Switch.EnumSwitch;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
 import java.util.Objects;
 
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
-import static org.objectweb.asm.Opcodes.ACC_STATIC;
+import io.quarkus.gizmo.Switch.EnumSwitch;
 
 class ClassTransfromerMethodCreatorImpl extends MethodCreatorImpl {
     private final ClassTransformer transformer;

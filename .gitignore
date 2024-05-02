@@ -6,4 +6,4 @@ target
 .classpath
 *~
 dependency-reduced-pom.xml
-
+.cache

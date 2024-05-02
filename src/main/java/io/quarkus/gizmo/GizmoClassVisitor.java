@@ -3,11 +3,11 @@ package io.quarkus.gizmo;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.MethodVisitor;
 
 /**
  *
@@ -23,7 +23,8 @@ public final class GizmoClassVisitor extends ClassVisitor {
         this.writer = new LineNumberWriter(zigWriter);
     }
 
-    public void visit(final int version, final int access, final String name, final String signature, final String superName, final String[] interfaces) {
+    public void visit(final int version, final int access, final String name, final String signature, final String superName,
+            final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         this.name = name;
         append("// Class: ").append(name).newLine();
@@ -75,7 +76,8 @@ public final class GizmoClassVisitor extends ClassVisitor {
             mods ^= mod;
         }
         newLine();
-        if (superName != null) append("//     Extends: ").append(superName).newLine();
+        if (superName != null)
+            append("//     Extends: ").append(superName).newLine();
         if (interfaces != null && interfaces.length > 0) {
             append("//     Implements:").newLine();
             for (String iName : interfaces) {
@@ -100,7 +102,8 @@ public final class GizmoClassVisitor extends ClassVisitor {
         super.visitSource(fileName, null);
     }
 
-    public GizmoMethodVisitor visitMethod(final int access, final String name, final String descriptor, final String signature, final String[] exceptions) {
+    public GizmoMethodVisitor visitMethod(final int access, final String name, final String descriptor, final String signature,
+            final String[] exceptions) {
         if (currentMethod != null) {
             throw new IllegalStateException("Multiple active method visitors");
         }
@@ -178,7 +181,7 @@ public final class GizmoClassVisitor extends ClassVisitor {
         if (argumentTypes.length > 0) {
             int base = ((access & Opcodes.ACC_STATIC) != 0) ? 0 : 1;
             append("arg ").append(base).append(" = ").append(argumentTypes[0]);
-            for (int i = 1; i < argumentTypes.length; i ++) {
+            for (int i = 1; i < argumentTypes.length; i++) {
                 append(',').newLine();
                 append("arg ").append(base + i).append(" = ").append(argumentTypes[i]);
             }
@@ -189,7 +192,8 @@ public final class GizmoClassVisitor extends ClassVisitor {
         return zigMethodVisitor;
     }
 
-    public FieldVisitor visitField(final int access, final String name, final String descriptor, final String signature, final Object value) {
+    public FieldVisitor visitField(final int access, final String name, final String descriptor, final String signature,
+            final Object value) {
         //     int ACC_PUBLIC = 0x0001; // class, field, method
         //    int ACC_PRIVATE = 0x0002; // class, field, method
         //    int ACC_PROTECTED = 0x0004; // class, field, method
@@ -311,7 +315,7 @@ public final class GizmoClassVisitor extends ClassVisitor {
     GizmoClassVisitor newLine() {
         try {
             writer.write(System.lineSeparator());
-            for (int i = 0; i < indent; i ++) {
+            for (int i = 0; i < indent; i++) {
                 writer.write("    ");
             }
         } catch (IOException e) {

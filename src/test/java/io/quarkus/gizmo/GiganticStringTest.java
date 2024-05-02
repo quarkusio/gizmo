@@ -1,9 +1,11 @@
 package io.quarkus.gizmo;
 
 import static io.quarkus.gizmo.BytecodeCreatorImpl.MAX_STRING_LENGTH;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.function.Supplier;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,7 +40,8 @@ public class GiganticStringTest {
             throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException,
             NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             char[] chars = new char[size];
             Arrays.fill(chars, 'a');

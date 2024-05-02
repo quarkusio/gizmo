@@ -25,7 +25,8 @@ public class PrimitiveReturnTypeTestCase {
     public void testPrimitiveReturnType() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
-            MethodCreator method = creator.getMethodCreator("transform", Object.class).setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
+            MethodCreator method = creator.getMethodCreator("transform", Object.class)
+                    .setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC);
             ResultHandle ret = method.readStaticField(FieldDescriptor.of(Integer.class, "MAX_VALUE", int.class));
             method.returnValue(ret);
         }
