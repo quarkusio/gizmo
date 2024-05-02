@@ -325,6 +325,24 @@ s.caseOf("baz", bc -> {
 s.defaultCase(bc -> bc.assign(ret, bc.loadNull()));
 ----
 
+=== Type conversions (casting)
+
+There are 3 methods for type conversions:
+
+* `checkCast()`
+* `convertPrimitive()`
+* `smartCast()`
+
+The `checkCast()` method emits the `checkcast` instruction, which performs a dynamic type check and a reference conversion.
+If the value that is supposed to be converted is statically known to be of a primitive type, the `checkCast()` method emits a boxing conversion first, before the type conversion.
+
+The `convertPrimitive()` method emits primitive conversion instructions (`i2l`, `d2i` etc.).
+If the value that is supposed to be converted is statically known to be of a primitive wrapper class, the `convertPrimitive()` method emits an unboxing conversion first, before the type conversion.
+
+The `smartCast()` method emits a sequence of instructions to cast the value to the given target type, using boxing, unboxing, primitive and reference conversions.
+For example, it allows casting `java.lang.Integer` to `java.lang.Long` by an unboxing conversion, followed by a primitive conversion, followed by a boxing conversion.
+This method is _not_ equivalent to the casting conversion described by Java Language Specification; it is a superset.
+
 == High-level Utilities
 
 The `Gizmo` class contains many utilities for generating common code sequences.
@@ -350,7 +368,7 @@ There's also a variant that takes a statically known initial capacity: `Gizmo.ne
 
 `Gizmo.newHashSet(BytecodeCreator target)` generates an invocation of `new HashSet()` into `target`.
 
-`Gizmo.newHashMap(BytecodeCreator target)` generates an invocation of `new HashMap()` into target.
+`Gizmo.newHashMap(BytecodeCreator target)` generates an invocation of `new HashMap()` into `target`.
 
 === StringBuilders
 

@@ -16,6 +16,7 @@
 
 package io.quarkus.gizmo;
 
+import io.quarkus.gizmo.PrimitiveUtils.Boxing;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -35,6 +36,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+
+import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.isPrimitiveOrWrapperDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.isWrapperDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.primitiveTypeFromDescriptor;
+import static io.quarkus.gizmo.PrimitiveUtils.primitiveTypeFromWrapperDescriptor;
 
 class BytecodeCreatorImpl implements BytecodeCreator {
 
@@ -79,34 +86,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     private final Label bottom = new Label();
     private final StackTraceElement[] stack;
 
-    private static final Map<String, String> boxingMap;
-    private static final Map<String, String> boxingMethodMap;
-
     private ResultHandle cachedTccl;
-
-    static {
-        Map<String, String> b = new HashMap<>();
-        b.put("Z", Type.getInternalName(Boolean.class));
-        b.put("B", Type.getInternalName(Byte.class));
-        b.put("C", Type.getInternalName(Character.class));
-        b.put("S", Type.getInternalName(Short.class));
-        b.put("I", Type.getInternalName(Integer.class));
-        b.put("J", Type.getInternalName(Long.class));
-        b.put("F", Type.getInternalName(Float.class));
-        b.put("D", Type.getInternalName(Double.class));
-        boxingMap = Collections.unmodifiableMap(b);
-
-        b = new HashMap<>();
-        b.put("Z", "booleanValue");
-        b.put("B", "byteValue");
-        b.put("C", "charValue");
-        b.put("S", "shortValue");
-        b.put("I", "intValue");
-        b.put("J", "longValue");
-        b.put("F", "floatValue");
-        b.put("D", "doubleValue");
-        boxingMethodMap = Collections.unmodifiableMap(b);
-    }
 
     Label getTop() {
         return top;
@@ -390,7 +370,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private ResultHandle loadClass(final String className, final boolean useTccl) {
         Objects.requireNonNull(className);
-        final Class<?> primitiveType = matchPossiblyPrimitive(className);
+        final Class<?> primitiveType = PrimitiveUtils.WRAPPER_CLASS_BY_PRIMITIVE_KEYWORD.get(className);
         if (primitiveType == null) {
             if (useTccl) {
                 if (!isNonPrimitiveSafeJavaClass(className)) {
@@ -408,12 +388,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 return loadClassConstant(className);
             }
         } else {
-            Class<?> pt = primitiveType;
             ResultHandle ret = new ResultHandle("Ljava/lang/Class;", this);
             operations.add(new Operation() {
                 @Override
                 void writeBytecode(MethodVisitor methodVisitor) {
-                    methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(pt), "TYPE", "Ljava/lang/Class;");
+                    methodVisitor.visitFieldInsn(Opcodes.GETSTATIC, Type.getInternalName(primitiveType), "TYPE", "Ljava/lang/Class;");
                     storeResultHandle(methodVisitor, ret);
                 }
 
@@ -438,21 +417,6 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     private ResultHandle loadClassConstant(String className) {
         return new ResultHandle("Ljava/lang/Class;", this, Type.getObjectType(className.replace('.', '/')));
-    }
-
-    private Class<?> matchPossiblyPrimitive(final String className) {
-        switch (className) {
-            case "boolean" : return Boolean.class;
-            case "byte" : return Byte.class;
-            case "char" : return Character.class;
-            case "short" : return Short.class;
-            case "int" : return Integer.class;
-            case "long" : return Long.class;
-            case "float" : return Float.class;
-            case "double" : return Double.class;
-            case "void" : return Void.class;
-            default: return null;
-        }
     }
 
     /**
@@ -759,13 +723,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle checkCast(final ResultHandle resultHandle, final String castTarget) {
         Objects.requireNonNull(resultHandle);
         Objects.requireNonNull(castTarget);
-        final ResultHandle result;
-        String intName = castTarget.replace('.', '/');
-        if (intName.startsWith("[") || intName.endsWith(";")) {
-            result = allocateResult(intName);
-        } else {
-            result = allocateResult("L" + intName + ";");
+        String intName = DescriptorUtils.objectToDescriptor(castTarget);
+        if (isPrimitiveDescriptor(intName)) {
+            throw new IllegalArgumentException("Cannot checkcast to a primitive type: " + castTarget);
         }
+        final ResultHandle result = allocateResult(intName);
         // seems like a waste of local vars but it's the safest approach since result type can't be mutated
         final ResultHandle resolvedResultHandle = resolve(checkScope(resultHandle));
         assert result != null;
@@ -798,7 +760,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     public ResultHandle convertPrimitive(ResultHandle value, Class<?> conversionTarget) {
         Objects.requireNonNull(value);
         Objects.requireNonNull(conversionTarget);
-        if (!boxingMap.containsKey(value.getType())) {
+        if (!isPrimitiveOrWrapperDescriptor(value.getType())) {
             throw new IllegalArgumentException("Value is not of a primitive type: " + value);
         }
         if (!conversionTarget.isPrimitive()) {
@@ -818,19 +780,21 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         //      long |          N     N    N    N   I     W     W
         //     float |          N     N    N    N   N     I     W
         //    double |          N     N    N    N   N     N     I
-        //
-        // note that `byte`, `short` and `char` are represented as `int` on the JVM stack,
-        // so the conversions between these types are implicit
 
         Type sourceType = Type.getType(value.getType());
         Type targetType = Type.getType(conversionTarget);
         if (sourceType.equals(targetType)) {
             return value;
         }
-        if (sourceType == Type.BOOLEAN_TYPE) {
+        Type primitiveSourceType = isPrimitiveDescriptor(value.getType())
+                ? sourceType
+                : Type.getType(DescriptorUtils.objectToDescriptor(primitiveTypeFromWrapperDescriptor(value.getType())));
+        if (primitiveSourceType == Type.BOOLEAN_TYPE && targetType == Type.BOOLEAN_TYPE) {
+            // this branch is taken when `value.getType()` is `java.lang.Boolean`
+            // and the only thing the caller wants is an unboxing conversion
+        } else if (primitiveSourceType == Type.BOOLEAN_TYPE) {
             throw new IllegalArgumentException("Cannot convert boolean value to " + conversionTarget + ": " + value);
-        }
-        if (targetType == Type.BOOLEAN_TYPE) {
+        } else if (targetType == Type.BOOLEAN_TYPE) {
             throw new IllegalArgumentException("Cannot convert value to boolean: " + value);
         }
 
@@ -838,47 +802,74 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         operations.add(new Operation() {
             @Override
             void writeBytecode(MethodVisitor methodVisitor) {
-                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, result.getType());
+                loadResultHandle(methodVisitor, value, BytecodeCreatorImpl.this, primitiveSourceType.getDescriptor());
 
-                if (sourceType == Type.BYTE_TYPE
-                       || sourceType == Type.SHORT_TYPE
-                       || sourceType == Type.CHAR_TYPE
-                       || sourceType == Type.INT_TYPE) {
-                    if (targetType == Type.LONG_TYPE) {
+                if (primitiveSourceType == Type.BYTE_TYPE
+                       || primitiveSourceType == Type.SHORT_TYPE
+                       || primitiveSourceType == Type.CHAR_TYPE
+                       || primitiveSourceType == Type.INT_TYPE) {
+                    if (targetType == Type.BYTE_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2B); // narrowing
+                    } else if (targetType == Type.SHORT_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2S); // narrowing or widening
+                    } else if (targetType == Type.CHAR_TYPE) {
+                        methodVisitor.visitInsn(Opcodes.I2C); // narrowing or widening+narrowing
+                    } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2L); // widening
                     } else if (targetType == Type.FLOAT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2F); // widening
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.I2D); // widening
                     }
-                } else if (sourceType == Type.LONG_TYPE) {
+                } else if (primitiveSourceType == Type.LONG_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.FLOAT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2F); // widening
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.L2D); // widening
                     }
-                } else if (sourceType == Type.FLOAT_TYPE) {
+                } else if (primitiveSourceType == Type.FLOAT_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2L); // narrowing
                     } else if (targetType == Type.DOUBLE_TYPE) {
                         methodVisitor.visitInsn(Opcodes.F2D); // widening
                     }
-                } else if (sourceType == Type.DOUBLE_TYPE) {
+                } else if (primitiveSourceType == Type.DOUBLE_TYPE) {
                     if (targetType == Type.BYTE_TYPE
                         || targetType == Type.SHORT_TYPE
                         || targetType == Type.CHAR_TYPE
                         || targetType == Type.INT_TYPE) {
                         methodVisitor.visitInsn(Opcodes.D2I); // narrowing
+                        if (targetType == Type.BYTE_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2B); // 2nd narrowing
+                        } else if (targetType == Type.SHORT_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2S); // 2nd narrowing
+                        } else if (targetType == Type.CHAR_TYPE) {
+                            methodVisitor.visitInsn(Opcodes.I2C); // 2nd narrowing
+                        }
                     } else if (targetType == Type.LONG_TYPE) {
                         methodVisitor.visitInsn(Opcodes.D2L); // narrowing
                     } else if (targetType == Type.FLOAT_TYPE) {
@@ -905,6 +896,44 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
         });
         return result;
+    }
+
+    @Override
+    public ResultHandle smartCast(ResultHandle value, String castTarget) {
+        Objects.requireNonNull(value);
+        Objects.requireNonNull(castTarget);
+
+        String sourceType = value.getType();
+        String targetType = DescriptorUtils.objectToDescriptor(castTarget);
+
+        boolean primitiveSource = isPrimitiveDescriptor(sourceType);
+        boolean primitiveTarget = isPrimitiveDescriptor(targetType);
+
+        if (sourceType.equals(targetType)) {
+            return value;
+        } else if (primitiveSource && primitiveTarget) {
+            return convertPrimitive(value, primitiveTypeFromDescriptor(targetType));
+        } else if (!primitiveSource && !primitiveTarget) {
+            if (isWrapperDescriptor(sourceType) && isWrapperDescriptor(targetType)) {
+                // unboxes under the hood
+                value = convertPrimitive(value, primitiveTypeFromWrapperDescriptor(targetType));
+            }
+            // boxes under the hood if required
+            return checkCast(value, targetType);
+        } else if (primitiveSource /* && !primitiveTarget*/) {
+            if (!isWrapperDescriptor(targetType)) {
+                throw new IllegalArgumentException("Cannot convert primitive value to " + targetType + ": " + value);
+            }
+            ResultHandle tmp = convertPrimitive(value, primitiveTypeFromWrapperDescriptor(targetType));
+            // boxes under the hood
+            return checkCast(tmp, targetType);
+        } else /* if (!primitiveSource && primitiveTarget) */ {
+            if (!isWrapperDescriptor(sourceType)) {
+                throw new IllegalArgumentException("Cannot convert value to " + targetType + ": " + value);
+            }
+            // unboxes under the hood
+            return convertPrimitive(value, primitiveTypeFromDescriptor(targetType));
+        }
     }
 
     @Override
@@ -987,16 +1016,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                         // both primitives, ignore
                     } else if (expectedType.length() == 1) {
                         // expected primitive, must auto-unbox
-                        String type = boxingMap.get(expectedType);
-                        if (type == null) {
+                        Boxing boxing = PrimitiveUtils.boxingConversion(expectedType);
+                        if (boxing == null) {
                             throw new RuntimeException("Unknown primitive type " + expectedType);
                         }
-                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
-                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
+                        methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, boxing.wrapperInternalName());
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, boxing.wrapperInternalName(), boxing.unboxingMethod(), "()" + expectedType, false);
                     } else {
                         // expected primitive wrapper, must auto-box
-                        String type = boxingMap.get(handle.getType());
-                        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
+                        Boxing boxing = PrimitiveUtils.boxingConversion(handle.getType());
+                        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, boxing.wrapperInternalName(), boxing.boxingMethod(), "(" + handle.getType() + ")" + boxing.wrapperDescriptor(), false);
                     }
                 }
             }
@@ -1028,16 +1057,16 @@ class BytecodeCreatorImpl implements BytecodeCreator {
                 // both primitives, ignore
             } else if (expectedType.length() == 1) {
                 // expected primitive, must auto-unbox
-                String type = boxingMap.get(expectedType);
-                if (type == null) {
+                Boxing boxing = PrimitiveUtils.boxingConversion(expectedType);
+                if (boxing == null) {
                     throw new RuntimeException("Unknown primitive type " + expectedType);
                 }
-                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, type);
-                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, type, boxingMethodMap.get(expectedType), "()" + expectedType, false);
+                methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, boxing.wrapperInternalName());
+                methodVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, boxing.wrapperInternalName(), boxing.unboxingMethod(), "()" + expectedType, false);
             } else {
                 // expected primitive wrapper, must auto-box
-                String type = boxingMap.get(handle.getType());
-                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, type, "valueOf", "(" + handle.getType() + ")L" + type + ";", false);
+                Boxing boxing = PrimitiveUtils.boxingConversion(handle.getType());
+                methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, boxing.wrapperInternalName(), boxing.boxingMethod(), "(" + handle.getType() + ")" + boxing.wrapperDescriptor(), false);
             }
         }
     }

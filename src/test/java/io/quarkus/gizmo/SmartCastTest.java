@@ -26,8 +26,8 @@ import java.util.function.Supplier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class PrimitiveConversionTest {
-    public interface Primitives {
+public class SmartCastTest {
+    public interface PrimitivesAndWrappers {
         byte getbyte();
         short getshort();
         int getint();
@@ -35,6 +35,14 @@ public class PrimitiveConversionTest {
         float getfloat();
         double getdouble();
         char getchar();
+
+        Byte getbyteWrapper();
+        Short getshortWrapper();
+        Integer getintWrapper();
+        Long getlongWrapper();
+        Float getfloatWrapper();
+        Double getdoubleWrapper();
+        Character getcharWrapper();
     }
 
     // skipping `boolean` because there are no primitive conversions to/from boolean (except identity)
@@ -116,25 +124,43 @@ public class PrimitiveConversionTest {
         try (ClassCreator creator = ClassCreator.builder()
                 .classOutput(cl)
                 .className("com.MyTest")
-                .interfaces(Primitives.class)
+                .interfaces(PrimitivesAndWrappers.class)
                 .build()) {
             for (Class<?> primitive : PRIMITIVES) {
-                MethodCreator m = creator.getMethodCreator("get" + primitive.getName(), primitive);
-                ResultHandle val = load42.apply(m);
-                ResultHandle converted = m.convertPrimitive(val, primitive);
-                m.returnValue(converted);
+                {
+                    MethodCreator getPrimitive = creator.getMethodCreator("get" + primitive.getName(), primitive);
+                    ResultHandle val = load42.apply(getPrimitive);
+                    ResultHandle converted = getPrimitive.smartCast(val, primitive);
+                    getPrimitive.returnValue(converted);
+                }
+
+                {
+                    MethodCreator getPrimitiveWrapper = creator.getMethodCreator("get" + primitive.getName()
+                            + "Wrapper", PrimitiveUtils.WRAPPER_CLASS_BY_PRIMITIVE_KEYWORD.get(primitive.getName()));
+                    ResultHandle val = load42.apply(getPrimitiveWrapper);
+                    ResultHandle converted = getPrimitiveWrapper.smartCast(val, primitive);
+                    getPrimitiveWrapper.returnValue(converted);
+                }
             }
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
-        Primitives primitives = (Primitives) clazz.getDeclaredConstructor().newInstance();
+        PrimitivesAndWrappers primitivesAndWrappers = (PrimitivesAndWrappers) clazz.getDeclaredConstructor().newInstance();
 
-        assertEquals((byte) 42, primitives.getbyte());
-        assertEquals((short) 42, primitives.getshort());
-        assertEquals((char) 42, primitives.getchar());
-        assertEquals(42, primitives.getint());
-        assertEquals(42L, primitives.getlong());
-        assertEquals(42.0F, primitives.getfloat(), 0.0001F);
-        assertEquals(42.0, primitives.getdouble(), 0.0001);
+        assertEquals((byte) 42, primitivesAndWrappers.getbyte());
+        assertEquals((short) 42, primitivesAndWrappers.getshort());
+        assertEquals((char) 42, primitivesAndWrappers.getchar());
+        assertEquals(42, primitivesAndWrappers.getint());
+        assertEquals(42L, primitivesAndWrappers.getlong());
+        assertEquals(42.0F, primitivesAndWrappers.getfloat(), 0.0001F);
+        assertEquals(42.0, primitivesAndWrappers.getdouble(), 0.0001);
+
+        assertEquals(Byte.valueOf((byte) 42), primitivesAndWrappers.getbyteWrapper());
+        assertEquals(Short.valueOf((short) 42), primitivesAndWrappers.getshortWrapper());
+        assertEquals(Character.valueOf((char) 42), primitivesAndWrappers.getcharWrapper());
+        assertEquals(Integer.valueOf(42), primitivesAndWrappers.getintWrapper());
+        assertEquals(Long.valueOf(42L), primitivesAndWrappers.getlongWrapper());
+        assertEquals(Float.valueOf(42.0F), primitivesAndWrappers.getfloatWrapper(), 0.0001F);
+        assertEquals(Double.valueOf(42.0), primitivesAndWrappers.getdoubleWrapper(), 0.0001);
     }
 
     @Test
@@ -147,7 +173,7 @@ public class PrimitiveConversionTest {
                 .build()) {
             MethodCreator m = creator.getMethodCreator("getAsBoolean", boolean.class);
             ResultHandle val = m.load(true);
-            ResultHandle converted = m.convertPrimitive(val, boolean.class);
+            ResultHandle converted = m.smartCast(val, boolean.class);
             m.returnValue(converted);
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
@@ -165,7 +191,7 @@ public class PrimitiveConversionTest {
                 .build()) {
             MethodCreator m = creator.getMethodCreator("get", Object.class);
             ResultHandle val = m.load(true);
-            ResultHandle converted = m.checkCast(val, Boolean.class);
+            ResultHandle converted = m.smartCast(val, Boolean.class);
             m.returnValue(converted);
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
@@ -183,11 +209,29 @@ public class PrimitiveConversionTest {
                 .build()) {
             MethodCreator m = creator.getMethodCreator("getAsBoolean", boolean.class);
             ResultHandle val = m.checkCast(m.load(true), Boolean.class);
-            ResultHandle converted = m.convertPrimitive(val, boolean.class);
+            ResultHandle converted = m.smartCast(val, boolean.class);
             m.returnValue(converted);
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
         BooleanSupplier supplier = (BooleanSupplier) clazz.getDeclaredConstructor().newInstance();
         assertTrue(supplier.getAsBoolean());
+    }
+
+    @Test
+    public void booleanWrapperToBooleanWrapper() throws ReflectiveOperationException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder()
+                .classOutput(cl)
+                .className("com.MyTest")
+                .interfaces(Supplier.class)
+                .build()) {
+            MethodCreator m = creator.getMethodCreator("get", Object.class);
+            ResultHandle val = m.checkCast(m.load(true), Boolean.class);
+            ResultHandle converted = m.smartCast(val, Boolean.class);
+            m.returnValue(converted);
+        }
+        Class<?> clazz = cl.loadClass("com.MyTest");
+        Supplier<?> supplier = (Supplier<?>) clazz.getDeclaredConstructor().newInstance();
+        assertTrue((Boolean) supplier.get());
     }
 }
