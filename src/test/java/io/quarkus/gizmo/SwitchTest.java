@@ -120,7 +120,7 @@ public class SwitchTest {
     @Test
     public void testStringSwitchWithHashCollision()
             throws InstantiationException, IllegalAccessException, ClassNotFoundException {
-        // Test that a couple of string literals that share the same hash code 
+        // Test that a couple of string literals that share the same hash code
         assertEquals("Aa".hashCode(), "BB".hashCode());
 
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());

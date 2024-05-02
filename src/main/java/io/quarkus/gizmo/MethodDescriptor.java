@@ -22,7 +22,6 @@ import java.util.Objects;
 
 import org.jboss.jandex.MethodInfo;
 
-
 public class MethodDescriptor {
     /**
      * The constant string {@code <init>}. Used to denote an instance initialization method,
@@ -50,13 +49,15 @@ public class MethodDescriptor {
         for (String p : parameterTypes) {
             if (p.length() != 1) {
                 if (!(p.startsWith("L") && p.endsWith(";") || p.startsWith("["))) {
-                    throw new IllegalArgumentException("Invalid parameter type " + p + " it must be in the JVM descriptor format");
+                    throw new IllegalArgumentException(
+                            "Invalid parameter type " + p + " it must be in the JVM descriptor format");
                 }
             }
         }
         if (returnType.length() != 1) {
             if (!(returnType.startsWith("L") && returnType.endsWith(";") || returnType.startsWith("["))) {
-                throw new IllegalArgumentException("Invalid return type " + returnType + " it must be in the JVM descriptor format");
+                throw new IllegalArgumentException(
+                        "Invalid return type " + returnType + " it must be in the JVM descriptor format");
             }
         }
     }
@@ -74,15 +75,18 @@ public class MethodDescriptor {
     }
 
     public static MethodDescriptor ofMethod(String declaringClass, String name, String returnType, String... parameterTypes) {
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
     }
 
-    public static MethodDescriptor ofMethod(Class<?> declaringClass, String name, Class<?> returnType, Class<?>... parameterTypes) {
+    public static MethodDescriptor ofMethod(Class<?> declaringClass, String name, Class<?> returnType,
+            Class<?>... parameterTypes) {
         String[] args = new String[parameterTypes.length];
         for (int i = 0; i < args.length; ++i) {
             args[i] = DescriptorUtils.classToStringRepresentation(parameterTypes[i]);
         }
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.classToStringRepresentation(returnType), args);
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.classToStringRepresentation(returnType), args);
     }
 
     public static MethodDescriptor ofMethod(Method method) {
@@ -90,7 +94,8 @@ public class MethodDescriptor {
     }
 
     public static MethodDescriptor ofMethod(Object declaringClass, String name, Object returnType, Object... parameterTypes) {
-        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name, DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
+        return new MethodDescriptor(DescriptorUtils.objectToInternalClassName(declaringClass), name,
+                DescriptorUtils.objectToDescriptor(returnType), DescriptorUtils.objectsToDescriptor(parameterTypes));
     }
 
     public static MethodDescriptor ofConstructor(String declaringClass, String... parameterTypes) {
@@ -132,9 +137,9 @@ public class MethodDescriptor {
 
     public boolean equals(MethodDescriptor o) {
         return o == this || o != null
-            && declaringClass.equals(o.declaringClass)
-            && name.equals(o.name)
-            && descriptor.equals(o.descriptor);
+                && declaringClass.equals(o.declaringClass)
+                && name.equals(o.name)
+                && descriptor.equals(o.descriptor);
     }
 
     @Override

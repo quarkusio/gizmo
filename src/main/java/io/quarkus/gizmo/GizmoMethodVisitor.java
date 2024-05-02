@@ -2,10 +2,10 @@ package io.quarkus.gizmo;
 
 import java.util.IdentityHashMap;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.util.Printer;
 
 public final class GizmoMethodVisitor extends MethodVisitor {
     private final GizmoClassVisitor cv;
@@ -24,7 +24,7 @@ public final class GizmoMethodVisitor extends MethodVisitor {
     String getNameOf(Label label) {
         String str = labelNames.get(label);
         if (str == null) {
-            str = "label" + (labelCnt ++);
+            str = "label" + (labelCnt++);
             labelNames.put(label, str);
         }
         return str;
@@ -33,7 +33,8 @@ public final class GizmoMethodVisitor extends MethodVisitor {
     public void visitGizmoNode(StackTraceElement element, String opName) {
         checkMethod();
         cv.append("// ").append(opName).newLine();
-        if (element != null) cv.append("// at ").append(element.toString()).newLine();
+        if (element != null)
+            cv.append("// at ").append(element.toString()).newLine();
     }
 
     public void visitInsn(final int opcode) {
@@ -98,7 +99,8 @@ public final class GizmoMethodVisitor extends MethodVisitor {
         super.visitMethodInsn(opcode, owner, name, descriptor);
     }
 
-    public void visitMethodInsn(final int opcode, final String owner, final String name, final String descriptor, final boolean isInterface) {
+    public void visitMethodInsn(final int opcode, final String owner, final String name, final String descriptor,
+            final boolean isInterface) {
         checkMethod();
         cv.append("// Method descriptor: ").append(descriptor).newLine();
         final int lineNumber = cv.getLineNumber();
@@ -143,7 +145,8 @@ public final class GizmoMethodVisitor extends MethodVisitor {
     public void visitIincInsn(final int var, final int increment) {
         checkMethod();
         final int lineNumber = cv.getLineNumber();
-        cv.append(getOpString(Opcodes.IINC)).append(' ').append(var).append(' ').append(increment > 0 ? '+' : '-').append(increment).newLine();
+        cv.append(getOpString(Opcodes.IINC)).append(' ').append(var).append(' ').append(increment > 0 ? '+' : '-')
+                .append(increment).newLine();
         final Label label = new Label();
         super.visitLabel(label);
         super.visitLineNumber(lineNumber, label);

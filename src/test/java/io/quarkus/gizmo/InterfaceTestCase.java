@@ -16,11 +16,11 @@
 
 package io.quarkus.gizmo;
 
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
-
-import static org.junit.Assert.assertThrows;
 
 public class InterfaceTestCase {
 
@@ -29,14 +29,15 @@ public class InterfaceTestCase {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.interfaceBuilder().classOutput(cl).className("com.MyInterface").build()) {
         }
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces("com.MyInterface").build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces("com.MyInterface")
+                .build()) {
         }
         Class<?> intf = cl.loadClass("com.MyInterface");
         Assert.assertTrue(intf.isInterface());
         Assert.assertTrue(intf.isSynthetic());
         Class<?> clazz = cl.loadClass("com.MyTest");
         Assert.assertTrue(clazz.isSynthetic());
-        Assert.assertArrayEquals(new Class[] {intf}, clazz.getInterfaces());
+        Assert.assertArrayEquals(new Class[] { intf }, clazz.getInterfaces());
     }
 
     @Test
@@ -46,7 +47,8 @@ public class InterfaceTestCase {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class)
                     .setModifiers(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT);
         }
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces("com.MyInterface").build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces("com.MyInterface")
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
 
             Gizmo.StringBuilderGenerator strBuilder = Gizmo.newStringBuilder(method);
@@ -60,7 +62,7 @@ public class InterfaceTestCase {
         Assert.assertTrue(intf.isSynthetic());
         Class<?> clazz = cl.loadClass("com.MyTest");
         Assert.assertTrue(clazz.isSynthetic());
-        Assert.assertArrayEquals(new Class[] {intf}, clazz.getInterfaces());
+        Assert.assertArrayEquals(new Class[] { intf }, clazz.getInterfaces());
 
         Object inst = clazz.getDeclaredConstructor().newInstance();
         intf.cast(inst);

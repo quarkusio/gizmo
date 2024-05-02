@@ -90,7 +90,7 @@ public class ClassTransformerTest {
         transform.returnValue(ret);
 
         // public String toString() {
-        //    return toStr; 
+        //    return toStr;
         // }
         MethodCreator toString = classTransformer.addMethod("toString", String.class);
         toString.returnValue(toString.readInstanceField(toStr.getFieldDescriptor(), toString.getThis()));

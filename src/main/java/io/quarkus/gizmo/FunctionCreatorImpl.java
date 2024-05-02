@@ -34,7 +34,8 @@ class FunctionCreatorImpl implements FunctionCreator {
 
     private int fieldCount;
 
-    FunctionCreatorImpl(ResultHandle instance, ClassCreator classCreator, MethodCreatorImpl methodCreator, BytecodeCreatorImpl owner) {
+    FunctionCreatorImpl(ResultHandle instance, ClassCreator classCreator, MethodCreatorImpl methodCreator,
+            BytecodeCreatorImpl owner) {
         this.instance = instance;
         this.classCreator = classCreator;
         this.owner = owner;
@@ -69,7 +70,8 @@ class FunctionCreatorImpl implements FunctionCreator {
         }
 
         MethodCreator ctorCreator = classCreator.getMethodCreator(MethodDescriptor.INIT, "V", types);
-        ctorCreator.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class), ctorCreator.getThis());
+        ctorCreator.invokeSpecialMethod(MethodDescriptor.ofMethod(Object.class, MethodDescriptor.INIT, void.class),
+                ctorCreator.getThis());
         //now we init the fields
         for (int i = 0; i < crh.length; ++i) {
             ctorCreator.writeInstanceField(crh[i].descriptor, ctorCreator.getThis(), ctorCreator.getMethodParam(i));
@@ -105,7 +107,8 @@ class FunctionCreatorImpl implements FunctionCreator {
         @Override
         ResultHandle resolve(ResultHandle handle, BytecodeCreator invoker) {
             // resolve any captures of captures.
-            if (handle == null || handle.getResultType() == ResultHandle.ResultType.CONSTANT) return handle;
+            if (handle == null || handle.getResultType() == ResultHandle.ResultType.CONSTANT)
+                return handle;
             final BytecodeCreatorImpl ourOwner = method.getOwner();
             handle = ourOwner.resolve(handle);
             final BytecodeCreatorImpl newOwner = handle.getOwner();
@@ -159,7 +162,8 @@ class FunctionCreatorImpl implements FunctionCreator {
         }
 
         @Override
-        public ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object, ResultHandle... args) {
+        public ResultHandle invokeSpecialInterfaceMethod(MethodDescriptor descriptor, ResultHandle object,
+                ResultHandle... args) {
             final ClassCreator ownersCreator = getMethod().getOwner().getMethod().getClassCreator();
             for (String superInterface : ownersCreator.getInterfaces()) {
                 if (descriptor.getDeclaringClass().equals(superInterface)) {

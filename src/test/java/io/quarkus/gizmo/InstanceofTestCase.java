@@ -8,7 +8,8 @@ public class InstanceofTestCase {
     @Test
     public void testInstanceof() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(BooleanInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest")
+                .interfaces(BooleanInterface.class).build()) {
             MethodCreator method = creator.getMethodCreator("test", boolean.class, Object.class);
             method.returnValue(method.instanceOf(method.getMethodParam(0), String.class));
 

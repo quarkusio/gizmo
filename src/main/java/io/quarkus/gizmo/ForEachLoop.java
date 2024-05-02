@@ -21,7 +21,7 @@ package io.quarkus.gizmo;
 public interface ForEachLoop extends Loop {
 
     /**
-     * 
+     *
      * @return the current element
      */
     ResultHandle element();

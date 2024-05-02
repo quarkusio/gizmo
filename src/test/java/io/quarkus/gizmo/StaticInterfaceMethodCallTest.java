@@ -1,9 +1,9 @@
 package io.quarkus.gizmo;
 
+import java.util.function.IntSupplier;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.function.IntSupplier;
 
 public class StaticInterfaceMethodCallTest {
 
@@ -14,7 +14,8 @@ public class StaticInterfaceMethodCallTest {
                 .interfaces(IntSupplier.class).build()) {
             MethodCreator bc = creator.getMethodCreator("getAsInt", int.class);
             bc.returnValue(
-                    bc.invokeStaticInterfaceMethod(MethodDescriptor.ofMethod(InterfaceWithMethod.class, "whatever", int.class)));
+                    bc.invokeStaticInterfaceMethod(
+                            MethodDescriptor.ofMethod(InterfaceWithMethod.class, "whatever", int.class)));
         }
         Class<? extends IntSupplier> clazz = cl.loadClass("com.MyTest").asSubclass(IntSupplier.class);
         IntSupplier supplier = clazz.getDeclaredConstructor().newInstance();

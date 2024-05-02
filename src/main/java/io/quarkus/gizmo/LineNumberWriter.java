@@ -30,8 +30,9 @@ public final class LineNumberWriter extends Writer {
     }
 
     public void write(final String str, final int off, final int len) throws IOException {
-        for (int i = 0; i < len; i ++) {
-            if (str.charAt(off + i) == '\n') lineNumber++;
+        for (int i = 0; i < len; i++) {
+            if (str.charAt(off + i) == '\n')
+                lineNumber++;
         }
         delegate.write(str, off, len);
     }
@@ -42,8 +43,9 @@ public final class LineNumberWriter extends Writer {
     }
 
     public Writer append(final CharSequence csq, final int start, final int end) throws IOException {
-        for (int i = 0; i < end - start; i ++) {
-            if (csq.charAt(start + i) == '\n') lineNumber++;
+        for (int i = 0; i < end - start; i++) {
+            if (csq.charAt(start + i) == '\n')
+                lineNumber++;
         }
         delegate.append(csq, start, end);
         return this;
@@ -55,8 +57,9 @@ public final class LineNumberWriter extends Writer {
     }
 
     public void write(final char[] cbuf, final int off, final int len) throws IOException {
-        for (int i = 0; i < len; i ++) {
-            if (cbuf[off + i] == '\n') lineNumber++;
+        for (int i = 0; i < len; i++) {
+            if (cbuf[off + i] == '\n')
+                lineNumber++;
         }
         delegate.write(cbuf, off, len);
     }

@@ -12,7 +12,7 @@ import org.jboss.jandex.PrimitiveType.Primitive;
  * Used to express types when {@linkplain SignatureBuilder building} a generic signature of some declaration.
  * <p>
  * Implementations are created via factory methods such as {@link #voidType()} and {@link #classType(Class)}.
- * 
+ *
  * @see SignatureBuilder
  */
 public abstract class Type {
@@ -344,7 +344,7 @@ public abstract class Type {
     }
 
     public static final class ParameterizedType extends Type {
-        
+
         final ClassType genericClass;
         final List<Type> typeArguments;
         final Type owner;

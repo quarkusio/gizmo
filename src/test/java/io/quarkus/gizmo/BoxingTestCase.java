@@ -7,11 +7,11 @@ import org.junit.Test;
 
 public class BoxingTestCase {
 
-
     @Test
     public void testAutoBoxConstantDouble() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             method.returnValue(method.load(10.0d));
         }
@@ -27,7 +27,8 @@ public class BoxingTestCase {
     @Test
     public void testAutoBoxConstantFloat() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             method.returnValue(method.load(10.0f));
         }

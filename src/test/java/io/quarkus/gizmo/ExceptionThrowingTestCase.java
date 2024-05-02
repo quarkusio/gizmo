@@ -21,11 +21,11 @@ import org.junit.Test;
 
 public class ExceptionThrowingTestCase {
 
-
     @Test
     public void testThrowException() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, "java.lang.String");
             method.throwException(IllegalStateException.class, "ERROR");
         }

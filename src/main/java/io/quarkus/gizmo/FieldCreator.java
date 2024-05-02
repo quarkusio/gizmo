@@ -16,7 +16,6 @@
 
 package io.quarkus.gizmo;
 
-
 public interface FieldCreator extends MemberCreator<FieldCreator>, AnnotatedElement, SignatureElement<FieldCreator> {
 
     FieldDescriptor getFieldDescriptor();

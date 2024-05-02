@@ -27,7 +27,7 @@ public interface IfThenElse {
     /**
      * This block is executed if the result handle that was passed to {@link BytecodeCreator#ifThenElse(ResultHandle)} is
      * evaluated as {@code true}.
-     * 
+     *
      * @return the {@code then} block
      */
     BytecodeCreator then();
@@ -36,7 +36,7 @@ public interface IfThenElse {
      * Creates a new else-if statement. The block is executed if the condition result handle is evaluated as {@code true}.
      * <p>
      * Note that the condition result handle must already exist.
-     * 
+     *
      * <pre>
      * boolean test = foo.testIsOk();
      * if (someOtherCondition) {
@@ -45,10 +45,10 @@ public interface IfThenElse {
      *     // do action "B"
      * }
      * </pre>
-     * 
+     *
      * If you need to create the condition result handle inside the if-else statement then use the {@link #elseIf(Function)}
      * method instead.
-     * 
+     *
      * @param condition
      * @return the {@code else-if} block
      */
@@ -61,7 +61,7 @@ public interface IfThenElse {
      * The argument of the function represents the block that is executed when the else-if statement is evaluated.
      * <p>
      * In order to generate the bytecode for the "action B" branch in the following example:
-     * 
+     *
      * <pre>
      * if (someOtherCondition) {
      *     // do action "A"
@@ -69,15 +69,15 @@ public interface IfThenElse {
      *     // do action "B"
      * }
      * </pre>
-     * 
+     *
      * The code needs to look like:
-     * 
+     *
      * <pre>
      * IfThenElse ifAction = method.ifThenElse(someOtherCondition);
      * BytecodeCreator ifTestOk = ifValue.elseIf(b -> b.invokeVirtualMethod(testIsOkMethodDescriptor, fooInstance)));
      * // do action "B"
      * </pre>
-     * 
+     *
      * @param test
      * @return the {@code else-if} block
      */
@@ -85,7 +85,7 @@ public interface IfThenElse {
 
     /**
      * This block is executed if no condition result handle was evaluated as {@code true}.
-     * 
+     *
      * @return the {@code else} block
      */
     BytecodeCreator elseThen();

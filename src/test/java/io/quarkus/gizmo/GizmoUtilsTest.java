@@ -11,13 +11,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-import io.quarkus.gizmo.Gizmo.StringBuilderGenerator;
 import org.junit.Test;
 
-import io.quarkus.gizmo.Gizmo.CustomInvocationGenerator;
 import io.quarkus.gizmo.Gizmo.JdkList.JdkListInstance;
 import io.quarkus.gizmo.Gizmo.JdkOptional;
 import io.quarkus.gizmo.Gizmo.JdkSet.JdkSetInstance;
+import io.quarkus.gizmo.Gizmo.StringBuilderGenerator;
 
 public class GizmoUtilsTest {
 
@@ -50,7 +49,7 @@ public class GizmoUtilsTest {
             sb.append(Gizmo.collectionOperations(method).on(emptyArrayList).size());
             sb.append(':');
 
-            // sb.append(List.of().isEmpty()) 
+            // sb.append(List.of().isEmpty())
             sb.append(Gizmo.listOperations(method).on(Gizmo.listOperations(method).of()).isEmpty());
             sb.append(':');
 
@@ -101,7 +100,7 @@ public class GizmoUtilsTest {
             sb.append(setInstance.contains(method.load("foo")));
             sb.append(':');
 
-            // sb.append(Set.of().isEmpty()) 
+            // sb.append(Set.of().isEmpty())
             sb.append(Gizmo.setOperations(method).on(Gizmo.setOperations(method).of()).isEmpty());
             sb.append(':');
 
@@ -143,7 +142,7 @@ public class GizmoUtilsTest {
             JdkOptional jdkOptional = Gizmo.optionalOperations(method);
             // Optional<String> optionalFoo = Optional.of("foo");
             ResultHandle optionalFoo = jdkOptional.of(method.load("foo"));
-            // if (optionalFoo.isEmpty) return false; 
+            // if (optionalFoo.isEmpty) return false;
             method.ifTrue(jdkOptional.on(optionalFoo).isEmpty()).trueBranch().returnValue(method.load(false));
             // return optionalFoo.isPresent();
             method.returnValue(Gizmo.optionalOperations(method).on(optionalFoo).isPresent());

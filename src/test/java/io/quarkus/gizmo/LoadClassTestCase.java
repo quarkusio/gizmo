@@ -26,7 +26,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle stringHandle = method.loadClass(String.class);
             method.returnValue(stringHandle);
@@ -39,7 +40,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadClassFromTCCL() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle stringHandle = method.loadClassFromTCCL(String.class);
             method.returnValue(stringHandle);
@@ -52,7 +54,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadNonPublicJdkClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle stringHandle = method.loadClass("java.util.Collections$EmptyList");
             method.returnValue(stringHandle);
@@ -65,7 +68,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadNonPublicJdkClassFromTCCL() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle stringHandle = method.loadClassFromTCCL("java.util.Collections$EmptyList");
             method.returnValue(stringHandle);
@@ -78,7 +82,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadNonPublicJdkClassFromTCCL2() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle stringHandle = method.loadClassFromTCCL("java.lang.Thread$Caches");
             method.returnValue(stringHandle);
@@ -91,7 +96,8 @@ public class LoadClassTestCase {
     @Test
     public void testLoadVoidClass() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("get", Object.class);
             ResultHandle voidHandle = method.loadClass(void.class);
             method.returnValue(voidHandle);

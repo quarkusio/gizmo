@@ -43,7 +43,7 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
             // Call a static method that returns the switch table
             switchTable = callSwitchTableMethod(methodName.toString(), enumClass, enumOrdinal);
         } else {
-            // This is suboptimal - the switch table is generated for each switch construct 
+            // This is suboptimal - the switch table is generated for each switch construct
             switchTable = generateSwitchTable(enumClass, enclosing, enumOrdinal);
         }
         ResultHandle effectiveOrdinal = readArrayValue(switchTable, ordinal);
@@ -77,7 +77,7 @@ class EnumSwitchImpl<E extends Enum<E>> extends AbstractSwitch<E> implements Swi
                 int max = ordinalToLabel.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
 
                 // Add empty blocks for missing ordinals
-                // This would be suboptimal for cases if there is a large number of missing ordinals 
+                // This would be suboptimal for cases if there is a large number of missing ordinals
                 for (int i = 0; i < constants.length; i++) {
                     if (i >= min && i <= max) {
                         if (ordinalToLabel.get(i) == null) {

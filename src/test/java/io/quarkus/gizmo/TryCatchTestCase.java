@@ -24,7 +24,8 @@ public class TryCatchTestCase {
     @Test
     public void testTryCatch() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
             TryBlock tb = method.tryBlock();
             BytecodeCreator illegalState = tb.addCatch(IllegalStateException.class);
@@ -41,7 +42,8 @@ public class TryCatchTestCase {
     @Test
     public void testTryCatchEmptyCatchBlock() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
             ResultHandle existingVal = method.load("complete");
             TryBlock tb = method.tryBlock();

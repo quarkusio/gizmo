@@ -33,7 +33,8 @@ public class FieldModifiersTest {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             creator.getFieldCreator("foo", DescriptorUtils.classToStringRepresentation(String.class));
-            creator.getFieldCreator("list", DescriptorUtils.classToStringRepresentation(List.class)).setModifiers(ACC_FINAL | ACC_PROTECTED);
+            creator.getFieldCreator("list", DescriptorUtils.classToStringRepresentation(List.class))
+                    .setModifiers(ACC_FINAL | ACC_PROTECTED);
         }
         Class<?> clazz = cl.loadClass("com.MyTest");
         Field foo = clazz.getDeclaredField("foo");

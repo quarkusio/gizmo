@@ -1,13 +1,13 @@
 package io.quarkus.gizmo;
 
-import org.junit.Test;
-import org.objectweb.asm.Opcodes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.objectweb.asm.Opcodes;
 
 public class ParameterNamesTest {
     @Test
@@ -19,7 +19,7 @@ public class ParameterNamesTest {
                 AnnotationCreator annotation = method.getParameterAnnotations(0).addAnnotation(MyAnnotation.class);
                 annotation.addValue("value", "static method");
                 annotation.addValue("enumVal", MyEnum.NO);
-                method.setParameterNames(new String[] {"staticMethodParameter"});
+                method.setParameterNames(new String[] { "staticMethodParameter" });
                 method.returnValue(null);
             }
 
@@ -27,7 +27,7 @@ public class ParameterNamesTest {
                 AnnotationCreator annotation = method.getParameterAnnotations(0).addAnnotation(MyAnnotation.class);
                 annotation.addValue("value", "instance method");
                 annotation.addValue("enumVal", MyEnum.YES);
-                method.setParameterNames(new String[] {"instanceMethodParameter"});
+                method.setParameterNames(new String[] { "instanceMethodParameter" });
                 method.returnValue(null);
             }
         }

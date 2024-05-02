@@ -16,15 +16,15 @@ class PrimitiveUtils {
     };
 
     static final Map<String, Class<?>> WRAPPER_CLASS_BY_PRIMITIVE_KEYWORD = Map.of(
-        "boolean", Boolean.class,
-        "byte", Byte.class,
-        "char", Character.class,
-        "short", Short.class,
-        "int", Integer.class,
-        "long", Long.class,
-        "float", Float.class,
-        "double", Double.class,
-        "void", Void.class);
+            "boolean", Boolean.class,
+            "byte", Byte.class,
+            "char", Character.class,
+            "short", Short.class,
+            "int", Integer.class,
+            "long", Long.class,
+            "float", Float.class,
+            "double", Double.class,
+            "void", Void.class);
 
     // ---
     // the following code doesn't consider `void` a primitive type
@@ -95,7 +95,7 @@ class PrimitiveUtils {
 
     static boolean isPrimitiveOrWrapperDescriptor(String descriptor) {
         return PRIMITIVE_TYPE_BY_DESCRIPTOR.containsKey(descriptor)
-               || PRIMITIVE_TYPE_BY_WRAPPER_DESCRIPTOR.containsKey(descriptor);
+                || PRIMITIVE_TYPE_BY_WRAPPER_DESCRIPTOR.containsKey(descriptor);
     }
 
     static Class<?> primitiveTypeFromDescriptor(String descriptor) {

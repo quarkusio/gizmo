@@ -8,10 +8,13 @@ public class VariableAssignmentTestCase {
     @Test
     public void testVariableAssignment() throws Exception {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
-        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class).build()) {
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(MyInterface.class)
+                .build()) {
             MethodCreator method = creator.getMethodCreator("transform", String.class, String.class);
             AssignableResultHandle val = method.createVariable(String.class);
-            ResultHandle equalsResult = method.invokeVirtualMethod(MethodDescriptor.ofMethod(Object.class, "equals", boolean.class, Object.class), method.getMethodParam(0), method.load("TEST"));
+            ResultHandle equalsResult = method.invokeVirtualMethod(
+                    MethodDescriptor.ofMethod(Object.class, "equals", boolean.class, Object.class), method.getMethodParam(0),
+                    method.load("TEST"));
             BranchResult branch = method.ifNonZero(equalsResult);
             branch.trueBranch().assign(val, method.load("TRUE BRANCH"));
             branch.falseBranch().assign(val, method.getMethodParam(0));

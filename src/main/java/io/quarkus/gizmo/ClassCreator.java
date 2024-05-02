@@ -333,7 +333,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
         /**
          * The raw types of the superclass and superinterfaces are extracted and passed to {@link #superClass(String)} and
          * {@link #interfaces(String...)} respectively.
-         * 
+         *
          * @param signatureBuilder
          * @return self
          */
@@ -400,7 +400,7 @@ public class ClassCreator implements AutoCloseable, AnnotatedElement, SignatureE
             return new ClassCreator(enclosing, classOutput, className, signature, superClass, access,
                     interfaces.toArray(new String[0]));
         }
-        
+
         private String getRawType(Type type) {
             if (type.isClass()) {
                 return type.asClass().name;

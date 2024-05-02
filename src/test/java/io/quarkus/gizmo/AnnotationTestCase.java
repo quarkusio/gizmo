@@ -1,5 +1,8 @@
 package io.quarkus.gizmo;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ArrayType;
@@ -8,9 +11,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
 import org.junit.Test;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class AnnotationTestCase {
 
@@ -97,9 +97,11 @@ public class AnnotationTestCase {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
             try (MethodCreator methodCreator = creator.getMethodCreator("test", void.class)) {
-                methodCreator.addAnnotation(AnnotationInstance.create(DotName.createSimple(MyAnnotation.class.getName()), null, new AnnotationValue[] {
-                        AnnotationValue.createEnumValue("enumVal", DotName.createSimple("io.quarkus.gizmo.MyEnum"), "NO")
-                } ));
+                methodCreator.addAnnotation(AnnotationInstance.create(DotName.createSimple(MyAnnotation.class.getName()), null,
+                        new AnnotationValue[] {
+                                AnnotationValue.createEnumValue("enumVal", DotName.createSimple("io.quarkus.gizmo.MyEnum"),
+                                        "NO")
+                        }));
                 methodCreator.returnValue(null);
             }
         }
@@ -109,6 +111,7 @@ public class AnnotationTestCase {
                 .getAnnotation(MyAnnotation.class);
         assertEquals(MyEnum.NO, annotation.enumVal());
     }
+
     @Test
     public void testMethodAnnotationWithStringArray() throws ClassNotFoundException, NoSuchMethodException {
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
@@ -342,7 +345,7 @@ public class AnnotationTestCase {
 
     private void addAnnotationWithStringArrayUsingJandex(AnnotatedElement element) {
         AnnotationInstance annotation = AnnotationInstance.builder(MyArrayAnnotation.class)
-                .value(new String[] {"test"})
+                .value(new String[] { "test" })
                 .build();
         element.addAnnotation(annotation);
     }
@@ -366,11 +369,11 @@ public class AnnotationTestCase {
                                 .add("value", "nested")
                                 .add("enumVal", MyEnum.YES)
                                 .build())
-                        .add("clsArray", new Type[]{
+                        .add("clsArray", new Type[] {
                                 ClassType.create(MyInterface.class),
                                 ArrayType.create(PrimitiveType.BOOLEAN, 1)
                         })
-                        .add("innerNestedArray", new AnnotationInstance[]{
+                        .add("innerNestedArray", new AnnotationInstance[] {
                                 AnnotationInstance.builder(MyAnnotation.class)
                                         .add("value", "nested1")
                                         .add("enumVal", MyEnum.YES)
@@ -381,32 +384,32 @@ public class AnnotationTestCase {
                                         .build()
                         })
                         .build())
-                .add("boolArray", new boolean[]{true, false})
-                .add("chArray", new char[]{'c', 'd'})
-                .add("bArray", new byte[]{(byte) 42, (byte) 43})
-                .add("sArray", new short[]{(short) 42, (short) 43})
-                .add("iArray", new int[]{42, 43})
-                .add("lArray", new long[]{42L, 43L})
-                .add("fArray", new float[]{42.0F, 43.0F})
-                .add("dArray", new double[]{42.0, 43.0})
-                .add("strArray", new String[]{"foo", "bar"})
-                .add("enumeratedArray", new Enum[]{MyEnum.YES, MyEnum.NO})
-                .add("clsArray", new Type[]{
+                .add("boolArray", new boolean[] { true, false })
+                .add("chArray", new char[] { 'c', 'd' })
+                .add("bArray", new byte[] { (byte) 42, (byte) 43 })
+                .add("sArray", new short[] { (short) 42, (short) 43 })
+                .add("iArray", new int[] { 42, 43 })
+                .add("lArray", new long[] { 42L, 43L })
+                .add("fArray", new float[] { 42.0F, 43.0F })
+                .add("dArray", new double[] { 42.0, 43.0 })
+                .add("strArray", new String[] { "foo", "bar" })
+                .add("enumeratedArray", new Enum[] { MyEnum.YES, MyEnum.NO })
+                .add("clsArray", new Type[] {
                         ClassType.create(MyInterface.class),
                         ArrayType.create(PrimitiveType.CHAR, 2)
                 })
-                .add("nestedArray", new AnnotationInstance[]{
+                .add("nestedArray", new AnnotationInstance[] {
                         AnnotationInstance.builder(MyNestedAnnotation.class)
                                 .add("cls", MyInterface.class)
                                 .add("innerNested", AnnotationInstance.builder(MyAnnotation.class)
                                         .add("value", "nested1")
                                         .add("enumVal", MyEnum.YES)
                                         .build())
-                                .add("clsArray", new Type[]{
+                                .add("clsArray", new Type[] {
                                         ClassType.create(MyInterface.class),
                                         ArrayType.create(PrimitiveType.BOOLEAN, 1)
                                 })
-                                .add("innerNestedArray", new AnnotationInstance[]{
+                                .add("innerNestedArray", new AnnotationInstance[] {
                                         AnnotationInstance.builder(MyAnnotation.class)
                                                 .add("value", "nested11")
                                                 .add("enumVal", MyEnum.YES)
@@ -423,11 +426,11 @@ public class AnnotationTestCase {
                                         .add("value", "nested2")
                                         .add("enumVal", MyEnum.YES)
                                         .build())
-                                .add("clsArray", new Type[]{
+                                .add("clsArray", new Type[] {
                                         ClassType.create(MyInterface.class),
                                         ArrayType.create(PrimitiveType.BOOLEAN, 1)
                                 })
-                                .add("innerNestedArray", new AnnotationInstance[]{
+                                .add("innerNestedArray", new AnnotationInstance[] {
                                         AnnotationInstance.builder(MyAnnotation.class)
                                                 .add("value", "nested21")
                                                 .add("enumVal", MyEnum.YES)
@@ -461,7 +464,7 @@ public class AnnotationTestCase {
                 .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
                         .add("value", "nested")
                         .add("enumVal", MyEnum.YES))
-                .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                .add("clsArray", new Class[] { MyInterface.class, boolean[].class })
                 .add("innerNestedArray", new AnnotationCreator[] {
                         AnnotationCreator.of(MyAnnotation.class)
                                 .add("value", "nested1")
@@ -469,49 +472,48 @@ public class AnnotationTestCase {
                         AnnotationCreator.of(MyAnnotation.class)
                                 .add("value", "nested2")
                                 .add("enumVal", MyEnum.NO)
-                })
-        );
+                }));
 
-        creator.addValue("boolArray", new boolean[] {true, false});
-        creator.addValue("chArray", new char[] {'c', 'd'});
-        creator.addValue("bArray", new byte[] {(byte) 42, (byte) 43});
-        creator.addValue("sArray", new short[] {(short) 42, (short) 43});
-        creator.addValue("iArray", new int[] {42, 43});
-        creator.addValue("lArray", new long[] {42L, 43L});
-        creator.addValue("fArray", new float[] {42.0F, 43.0F});
-        creator.addValue("dArray", new double[] {42.0, 43.0});
-        creator.addValue("strArray", new String[] {"foo", "bar"});
-        creator.addValue("enumeratedArray", new MyEnum[] {MyEnum.YES, MyEnum.NO});
-        creator.addValue("clsArray", new Class[] {MyInterface.class, char[][].class});
+        creator.addValue("boolArray", new boolean[] { true, false });
+        creator.addValue("chArray", new char[] { 'c', 'd' });
+        creator.addValue("bArray", new byte[] { (byte) 42, (byte) 43 });
+        creator.addValue("sArray", new short[] { (short) 42, (short) 43 });
+        creator.addValue("iArray", new int[] { 42, 43 });
+        creator.addValue("lArray", new long[] { 42L, 43L });
+        creator.addValue("fArray", new float[] { 42.0F, 43.0F });
+        creator.addValue("dArray", new double[] { 42.0, 43.0 });
+        creator.addValue("strArray", new String[] { "foo", "bar" });
+        creator.addValue("enumeratedArray", new MyEnum[] { MyEnum.YES, MyEnum.NO });
+        creator.addValue("clsArray", new Class[] { MyInterface.class, char[][].class });
         creator.addValue("nestedArray", new AnnotationCreator[] {
                 AnnotationCreator.of(MyNestedAnnotation.class)
                         .add("cls", MyInterface.class)
                         .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
                                 .add("value", "nested1")
                                 .add("enumVal", MyEnum.YES))
-                        .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                        .add("clsArray", new Class[] { MyInterface.class, boolean[].class })
                         .add("innerNestedArray", new AnnotationCreator[] {
-                        AnnotationCreator.of(MyAnnotation.class)
-                                .add("value", "nested11")
-                                .add("enumVal", MyEnum.YES),
-                        AnnotationCreator.of(MyAnnotation.class)
-                                .add("value", "nested12")
-                                .add("enumVal", MyEnum.NO)
-                }),
+                                AnnotationCreator.of(MyAnnotation.class)
+                                        .add("value", "nested11")
+                                        .add("enumVal", MyEnum.YES),
+                                AnnotationCreator.of(MyAnnotation.class)
+                                        .add("value", "nested12")
+                                        .add("enumVal", MyEnum.NO)
+                        }),
                 AnnotationCreator.of(MyNestedAnnotation.class)
                         .add("cls", MyInterface.class)
                         .add("innerNested", AnnotationCreator.of(MyAnnotation.class)
                                 .add("value", "nested2")
                                 .add("enumVal", MyEnum.YES))
-                        .add("clsArray", new Class[] {MyInterface.class, boolean[].class})
+                        .add("clsArray", new Class[] { MyInterface.class, boolean[].class })
                         .add("innerNestedArray", new AnnotationCreator[] {
-                        AnnotationCreator.of(MyAnnotation.class)
-                                .add("value", "nested21")
-                                .add("enumVal", MyEnum.YES),
-                        AnnotationCreator.of(MyAnnotation.class)
-                                .add("value", "nested22")
-                                .add("enumVal", MyEnum.NO)
-                }),
+                                AnnotationCreator.of(MyAnnotation.class)
+                                        .add("value", "nested21")
+                                        .add("enumVal", MyEnum.YES),
+                                AnnotationCreator.of(MyAnnotation.class)
+                                        .add("value", "nested22")
+                                        .add("enumVal", MyEnum.NO)
+                        }),
         });
     }
 
@@ -530,27 +532,27 @@ public class AnnotationTestCase {
         assertEquals(MyInterface.class, annotation.nested().cls());
         assertEquals("nested", annotation.nested().innerNested().value());
         assertEquals(MyEnum.YES, annotation.nested().innerNested().enumVal());
-        assertArrayEquals(new Class[]{MyInterface.class, boolean[].class}, annotation.nested().clsArray());
+        assertArrayEquals(new Class[] { MyInterface.class, boolean[].class }, annotation.nested().clsArray());
         assertEquals("nested1", annotation.nested().innerNestedArray()[0].value());
         assertEquals(MyEnum.YES, annotation.nested().innerNestedArray()[0].enumVal());
         assertEquals("nested2", annotation.nested().innerNestedArray()[1].value());
         assertEquals(MyEnum.NO, annotation.nested().innerNestedArray()[1].enumVal());
 
-        assertArrayEquals(new boolean[]{true, false}, annotation.boolArray());
-        assertArrayEquals(new char[]{'c', 'd'}, annotation.chArray());
-        assertArrayEquals(new byte[]{(byte) 42, (byte) 43}, annotation.bArray());
-        assertArrayEquals(new short[]{(short) 42, (short) 43}, annotation.sArray());
-        assertArrayEquals(new int[]{42, 43}, annotation.iArray());
-        assertArrayEquals(new long[]{42L, 43L}, annotation.lArray());
-        assertArrayEquals(new float[]{42.0F, 43.0F}, annotation.fArray(), 0.1f);
-        assertArrayEquals(new double[]{42.0, 43.0}, annotation.dArray(), 0.1);
-        assertArrayEquals(new String[]{"foo", "bar"}, annotation.strArray());
-        assertArrayEquals(new MyEnum[]{MyEnum.YES, MyEnum.NO}, annotation.enumeratedArray());
-        assertArrayEquals(new Class[]{MyInterface.class, char[][].class}, annotation.clsArray());
+        assertArrayEquals(new boolean[] { true, false }, annotation.boolArray());
+        assertArrayEquals(new char[] { 'c', 'd' }, annotation.chArray());
+        assertArrayEquals(new byte[] { (byte) 42, (byte) 43 }, annotation.bArray());
+        assertArrayEquals(new short[] { (short) 42, (short) 43 }, annotation.sArray());
+        assertArrayEquals(new int[] { 42, 43 }, annotation.iArray());
+        assertArrayEquals(new long[] { 42L, 43L }, annotation.lArray());
+        assertArrayEquals(new float[] { 42.0F, 43.0F }, annotation.fArray(), 0.1f);
+        assertArrayEquals(new double[] { 42.0, 43.0 }, annotation.dArray(), 0.1);
+        assertArrayEquals(new String[] { "foo", "bar" }, annotation.strArray());
+        assertArrayEquals(new MyEnum[] { MyEnum.YES, MyEnum.NO }, annotation.enumeratedArray());
+        assertArrayEquals(new Class[] { MyInterface.class, char[][].class }, annotation.clsArray());
         assertEquals(MyInterface.class, annotation.nestedArray()[0].cls());
         assertEquals("nested1", annotation.nestedArray()[0].innerNested().value());
         assertEquals(MyEnum.YES, annotation.nestedArray()[0].innerNested().enumVal());
-        assertArrayEquals(new Class[]{MyInterface.class, boolean[].class}, annotation.nestedArray()[0].clsArray());
+        assertArrayEquals(new Class[] { MyInterface.class, boolean[].class }, annotation.nestedArray()[0].clsArray());
         assertEquals("nested11", annotation.nestedArray()[0].innerNestedArray()[0].value());
         assertEquals(MyEnum.YES, annotation.nestedArray()[0].innerNestedArray()[0].enumVal());
         assertEquals("nested12", annotation.nestedArray()[0].innerNestedArray()[1].value());
@@ -558,7 +560,7 @@ public class AnnotationTestCase {
         assertEquals(MyInterface.class, annotation.nestedArray()[1].cls());
         assertEquals("nested2", annotation.nestedArray()[1].innerNested().value());
         assertEquals(MyEnum.YES, annotation.nestedArray()[1].innerNested().enumVal());
-        assertArrayEquals(new Class[]{MyInterface.class, boolean[].class}, annotation.nestedArray()[1].clsArray());
+        assertArrayEquals(new Class[] { MyInterface.class, boolean[].class }, annotation.nestedArray()[1].clsArray());
         assertEquals("nested21", annotation.nestedArray()[1].innerNestedArray()[0].value());
         assertEquals(MyEnum.YES, annotation.nestedArray()[1].innerNestedArray()[0].enumVal());
         assertEquals("nested22", annotation.nestedArray()[1].innerNestedArray()[1].value());
