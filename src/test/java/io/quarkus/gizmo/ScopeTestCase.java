@@ -136,7 +136,7 @@ public class ScopeTestCase {
             block.assign(val, block.invokeStaticMethod(
                     MethodDescriptor.ofMethod(Math.class, "addExact", int.class, int.class, int.class), val, block.load(-1)));
             // break if number 5
-            loop.doBreak(block.ifIntegerEqual(val, block.load(5)).trueBranch());
+            loop.doBreak(block.ifIntegerNotEqual(val, block.load(5)).falseBranch());
             block.invokeVirtualMethod(sbAppend, sb, block
                     .invokeStaticMethod(MethodDescriptor.ofMethod(Integer.class, "toString", String.class, int.class), val));
             block.invokeVirtualMethod(sbAppend, sb, block.load("-"));
