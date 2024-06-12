@@ -1248,6 +1248,11 @@ class BytecodeCreatorImpl implements BytecodeCreator {
     }
 
     @Override
+    public BranchResult ifIntegerNotEqual(ResultHandle value1, ResultHandle value2) {
+        return ifValues(value1, value2, Opcodes.IF_ICMPNE, "I");
+    }
+
+    @Override
     public BranchResult ifIntegerGreaterThan(ResultHandle value1, ResultHandle value2) {
         return ifValues(value1, value2, Opcodes.IF_ICMPGT, "I");
     }

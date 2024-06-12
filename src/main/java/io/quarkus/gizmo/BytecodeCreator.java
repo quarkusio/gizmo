@@ -673,6 +673,18 @@ public interface BytecodeCreator extends AutoCloseable {
     /**
      * An if statement.
      * <p>
+     * Values must be integer types. If value1 is <em>not</em> equal to value2 the {@link BranchResult#trueBranch} code
+     * will be executed, otherwise the {@link BranchResult#falseBranch} will be run.
+     *
+     * @param value1
+     * @param value2
+     * @return The branch result that is used to build the if statement
+     */
+    BranchResult ifIntegerNotEqual(ResultHandle value1, ResultHandle value2);
+
+    /**
+     * An if statement.
+     * <p>
      * Values must be integer types. If value1 is greater than value2 the {@link BranchResult#trueBranch} code will be executed,
      * otherwise the {@link BranchResult#falseBranch} will be run.
      *
