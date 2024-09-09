@@ -2,6 +2,10 @@ package io.quarkus.gizmo;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.reflect.Field;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -331,6 +335,22 @@ public class AnnotationTestCase {
                 .getDeclaredField("test")
                 .getAnnotation(MyFullAnnotation.class);
         verifyFullAnnotation(annotation);
+    }
+
+    @Test
+    public void testAddAnnotationInstance() throws NoSuchFieldException, SecurityException, ClassNotFoundException {
+        TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
+        try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").build()) {
+            FieldCreator field = creator.getFieldCreator("test", String.class);
+            field.addAnnotation(MyAnnotation.class.getName());
+            field.addAnnotation(AnnotationNoRuntimePolicy.class);
+            field.addAnnotation(AnnotationInstance.builder(AnnotationClassRuntimePolicy.class).add("value", "foo").build());
+        }
+
+        Field testField = cl.loadClass("com.MyTest").getDeclaredField("test");
+        assertTrue(testField.isAnnotationPresent(MyAnnotation.class));
+        assertFalse(testField.isAnnotationPresent(AnnotationNoRuntimePolicy.class));
+        assertFalse(testField.isAnnotationPresent(AnnotationClassRuntimePolicy.class));
     }
 
     private void addAnnotationWithString(AnnotatedElement element) {

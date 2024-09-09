@@ -32,11 +32,12 @@ public interface AnnotatedElement {
 
     default AnnotationCreator addAnnotation(Class<?> annotationType) {
         Retention retention = annotationType.getAnnotation(Retention.class);
-        return addAnnotation(annotationType.getName(), retention == null ? RetentionPolicy.SOURCE : retention.value());
+        return addAnnotation(annotationType.getName(), retention == null ? RetentionPolicy.CLASS : retention.value());
     }
 
     default void addAnnotation(AnnotationInstance annotation) {
-        AnnotationCreator ac = addAnnotation(annotation.name().toString());
+        RetentionPolicy retention = annotation.runtimeVisible() ? RetentionPolicy.RUNTIME : RetentionPolicy.CLASS;
+        AnnotationCreator ac = addAnnotation(annotation.name().toString(), retention);
         for (AnnotationValue member : annotation.values()) {
             ac.addValue(member.name(), member);
         }
