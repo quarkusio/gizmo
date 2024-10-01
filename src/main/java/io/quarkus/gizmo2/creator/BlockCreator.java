@@ -41,30 +41,72 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     boolean done();
 
+    /**
+     * {@return true if this block is contained by the given block, or false if it is not}
+     * @param other the containing block (must not be {@code null})
+     */
     boolean isContainedBy(BlockCreator other);
 
+    /**
+     * {@return true if this block contains the given block, or false if it does not}
+     * @param other the contained block (must not be {@code null})
+     */
     default boolean contains(BlockCreator other) {
         return other.isContainedBy(this);
     }
 
+    /**
+     * {@return true if this block contains the block of the given variable, or false if it does not}
+     * @param var the variable (must not be {@code null})
+     */
     default boolean contains(LocalVar var) {
         return contains(var.block());
     }
 
     // lexical variables
 
+    /**
+     * Declare a local variable.
+     * Local variables may not be read before they are written.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param type the variable type (must not be {@code null})
+     * @return the local variable (not {@code null})
+     */
     LocalVar declare(String name, ClassDesc type);
 
+    /**
+     * Declare a local variable.
+     * Local variables may not be read before they are written.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param type the variable type (must not be {@code null})
+     * @return the local variable (not {@code null})
+     */
     default LocalVar declare(String name, Class<?> type) {
         return declare(name, Util.classDesc(type));
     }
 
+    /**
+     * Declare a local variable and define its initial value.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value (must not be {@code null})
+     * @return the local variable (not {@code null})
+     */
     default LocalVar define(String name, Expr value) {
         LocalVar var = declare(name, value.type());
         set(var, value);
         return var;
     }
 
+    /**
+     * Declare a local variable which is initialized to the given variable's current value.
+     * The given variable may be a parameter, local variable, or field variable.
+     *
+     * @param original the original variable (must not be {@code null})
+     * @return the new local variable (must not be {@code null})
+     */
     default LocalVar define(Var original) {
         return define(original.name(), original);
     }
@@ -72,41 +114,110 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     // reading memory
 
+    /**
+     * Read a value from memory with the given atomicity mode.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param mode the atomicity mode for the access (must not be {@code null})
+     * @return the memory value (not {@code null})
+     */
     Expr get(LValueExpr var, AccessMode mode);
 
+    /**
+     * Read a value from memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @return the memory value (not {@code null})
+     */
     default Expr get(LValueExpr var) {
         return get(var, AccessMode.AsDeclared);
     }
 
-
     // writing memory
 
+    /**
+     * Write a value to memory with the given atomicity mode.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @param mode the atomicity mode for the access (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     LValueExpr set(LValueExpr var, Expr value, AccessMode mode);
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, Expr value) {
         return set(var, value, AccessMode.AsDeclared);
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, Constant value) {
         return set(var, (Expr) value);
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, ConstantDesc value) {
         return set(var, Constant.of(value));
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, Constable value) {
         return set(var, Constant.of(value));
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, String value) {
         return set(var, Constant.of(value));
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, int value) {
         return set(var, Constant.of(value));
     }
 
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write
+     * @return the lvalue (not {@code null})
+     */
     default LValueExpr set(LValueExpr var, long value) {
         return set(var, Constant.of(value));
     }
