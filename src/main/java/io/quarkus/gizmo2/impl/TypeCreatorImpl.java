@@ -19,17 +19,17 @@ import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator permits ClassCreatorImpl, InterfaceCreatorImpl {
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
-    private Signature.ClassTypeSig superSig;
+    private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
     private ClassSignature sig;
     private List<Signature.TypeParam> typeParams = List.of();
     final ClassBuilder zb;
@@ -92,8 +92,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     ClassSignature computeSignature() {
-        Signature.ClassTypeSig superSig = this.superSig;
-        return ClassSignature.of(typeParams, superSig == null ? Signature.ClassTypeSig.of(CD_Object) : superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
+        return ClassSignature.of(typeParams, superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
     }
 
     public void implements_(final Signature.ClassTypeSig genericType) {
@@ -131,8 +130,13 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return Expr.staticField(fc.desc());
     }
 
-    void postAccept() {
+    void preAccept() {
         zb.withVersion(version.major(), 0);
+    }
+
+    void postAccept() {
+        zb.withSuperclass(superSig.classDesc());
+        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.classDesc())).toList());
         zb.with(SignatureAttribute.of(signature()));
         addVisible(zb);
         addInvisible(zb);

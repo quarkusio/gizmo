@@ -1,66 +1,39 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.Annotation;
+import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 
-/**
- *
- */
 public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
     InstanceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name, 0);
     }
 
     public void body(final BiConsumer<BlockCreator, Expr> builder) {
+        super.body(bc -> builder.accept(bc, new ExprImpl() {
+            public boolean bound() {
+                return false;
+            }
 
-    }
+            public ClassDesc type() {
+                return owner.type();
+            }
 
-    public MethodDesc desc() {
-        return null;
-    }
-
-    public void returning(final ClassDesc type) {
-
-    }
-
-    public void returning(final Class<?> type) {
-
-    }
-
-    public MethodTypeDesc type() {
-        return null;
-    }
-
-    public ParamVar parameter(final String name, final ClassDesc type) {
-        return null;
+            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+                cb.aload(0);
+            }
+        }));
     }
 
     public void withFlag(final AccessFlag flag) {
         switch (flag) {
-            case PUBLIC, PRIVATE, PROTECTED, SYNCHRONIZED, SYNTHETIC, BRIDGE -> flags |= flag.mask();
+            case PUBLIC, PRIVATE, PROTECTED, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL -> flags |= flag.mask();
             default -> throw new IllegalArgumentException(flag.toString());
         }
-    }
-
-    public ClassDesc owner() {
-        return null;
-    }
-
-    public String name() {
-        return "";
-    }
-
-    public void withAnnotation(final RetentionPolicy retention, final Annotation annotation) {
-
     }
 }

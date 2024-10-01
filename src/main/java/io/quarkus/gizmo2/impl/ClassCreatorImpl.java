@@ -76,6 +76,7 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
     }
 
     void accept(final Consumer<ClassCreator> builder) {
+        preAccept();
         builder.accept(this);
         postAccept();
     }

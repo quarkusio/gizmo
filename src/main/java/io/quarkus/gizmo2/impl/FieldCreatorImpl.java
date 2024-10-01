@@ -11,9 +11,6 @@ import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.creator.FieldCreator;
 
-/**
- *
- */
 public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {
     protected final ClassDesc owner;
     protected final String name;
