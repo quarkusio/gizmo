@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public sealed abstract class MethodDescImpl implements MethodDesc permits ClassMethodDescImpl, InterfaceMethodDescImpl {
     private final ClassDesc owner;

@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public final class ConstructorDescImpl implements ConstructorDesc {
     private final ClassDesc owner;

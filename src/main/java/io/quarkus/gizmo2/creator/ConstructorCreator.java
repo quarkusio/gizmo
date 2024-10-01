@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.creator;
 
 import io.github.dmlloyd.classfile.extras.constant.ExtraConstantDescs;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public interface ConstructorCreator extends InstanceExecutableCreator {
     ConstructorDesc desc();

@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;

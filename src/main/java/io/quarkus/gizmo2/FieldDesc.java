@@ -3,6 +3,7 @@ package io.quarkus.gizmo2;
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
 
+import io.quarkus.gizmo2.desc.MemberDesc;
 import io.quarkus.gizmo2.impl.FieldDescImpl;
 import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Util;

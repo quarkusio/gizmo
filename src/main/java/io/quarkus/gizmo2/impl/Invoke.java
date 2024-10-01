@@ -8,10 +8,10 @@ import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.InterfaceMethodDesc;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 final class Invoke extends ExprImpl {
     private final ClassDesc owner;

@@ -9,11 +9,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import io.quarkus.gizmo2.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.Gizmo;
-import io.quarkus.gizmo2.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;

@@ -2,7 +2,7 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public non-sealed interface MethodCreator extends ExecutableCreator {
 

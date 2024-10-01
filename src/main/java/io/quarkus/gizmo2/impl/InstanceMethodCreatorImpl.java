@@ -8,7 +8,7 @@ import java.util.function.BiConsumer;
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
@@ -17,8 +17,8 @@ import io.quarkus.gizmo2.creator.InstanceMethodCreator;
  *
  */
 public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
-    InstanceMethodCreatorImpl(final TypeCreatorImpl owner, final String name, final int flags) {
-        super(owner, name, flags);
+    InstanceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
+        super(owner, name, 0);
     }
 
     public void body(final BiConsumer<BlockCreator, Expr> builder) {

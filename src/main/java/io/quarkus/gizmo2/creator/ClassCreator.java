@@ -4,9 +4,9 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.FieldDesc;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.ClassCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 

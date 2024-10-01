@@ -13,11 +13,11 @@ import java.util.function.Function;
 
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -149,6 +149,10 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     }
 
     Expr newArray(ClassDesc elementType, List<Expr> values);
+
+    default Expr newArray(ClassDesc elementType, Expr... values) {
+        return newArray(elementType, List.of(values));
+    }
 
     default Expr newArray(Class<?> elementType, List<Expr> values) {
         Expr array = newArray(elementType, Constant.of(values.size()));
@@ -537,27 +541,57 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     Expr new_(ConstructorDesc ctor, List<Expr> args);
 
+    default Expr new_(ConstructorDesc ctor, Expr... args) {
+        return new_(ctor, List.of(args));
+    }
+
     default Expr new_(ClassDesc type, List<Expr> args) {
         return new_(ConstructorDesc.of(type, args.stream().map(Expr::type).toList()), args);
+    }
+
+    default Expr new_(ClassDesc type, Expr... args) {
+        return new_(type, List.of(args));
     }
 
     default Expr new_(Class<?> type, List<Expr> args) {
         return new_(Util.classDesc(type), args);
     }
 
+    default Expr new_(Class<?> type, Expr... args) {
+        return new_(type, List.of(args));
+    }
 
     // invocation
 
     Expr invokeStatic(MethodDesc method, List<Expr> args);
 
+    default Expr invokeStatic(MethodDesc method, Expr... args) {
+        return invokeStatic(method, List.of(args));
+    }
+
     Expr invokeVirtual(Expr instance, MethodDesc method, List<Expr> args);
+
+    default Expr invokeVirtual(Expr instance, MethodDesc method, Expr... args) {
+        return invokeVirtual(instance, method, List.of(args));
+    }
 
     Expr invokeSpecial(Expr instance, MethodDesc method, List<Expr> args);
 
+    default Expr invokeSpecial(Expr instance, MethodDesc method, Expr... args) {
+        return invokeSpecial(instance, method, List.of(args));
+    }
+
     Expr invokeSpecial(Expr instance, ConstructorDesc method, List<Expr> args);
+
+    default Expr invokeSpecial(Expr instance, ConstructorDesc method, Expr... args) {
+        return invokeSpecial(instance, method, List.of(args));
+    }
 
     Expr invokeInterface(Expr instance, MethodDesc method, List<Expr> args);
 
+    default Expr invokeInterface(Expr instance, MethodDesc method, Expr... args) {
+        return invokeInterface(instance, method, List.of(args));
+    }
 
     // control flow
 

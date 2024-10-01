@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static java.lang.constant.ConstantDescs.CD_Object;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
@@ -17,7 +19,7 @@ import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
@@ -90,7 +92,8 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     ClassSignature computeSignature() {
-        return ClassSignature.of(typeParams, superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
+        Signature.ClassTypeSig superSig = this.superSig;
+        return ClassSignature.of(typeParams, superSig == null ? Signature.ClassTypeSig.of(CD_Object) : superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
     }
 
     public void implements_(final Signature.ClassTypeSig genericType) {

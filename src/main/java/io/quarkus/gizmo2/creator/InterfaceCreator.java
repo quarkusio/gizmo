@@ -2,7 +2,7 @@ package io.quarkus.gizmo2.creator;
 
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.InterfaceCreatorImpl;
 
 /**

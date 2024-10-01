@@ -8,9 +8,9 @@ import java.util.function.Consumer;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.FieldDesc;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -55,7 +55,7 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
     public MethodDesc method(final String name, final Consumer<InstanceMethodCreator> builder) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(builder, "builder");
-        var mc = new InstanceMethodCreatorImpl(this, type(), name);
+        var mc = new InstanceMethodCreatorImpl(this, name);
         return mc.desc();
     }
 

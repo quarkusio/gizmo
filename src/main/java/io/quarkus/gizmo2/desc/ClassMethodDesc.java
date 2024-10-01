@@ -1,4 +1,4 @@
-package io.quarkus.gizmo2;
+package io.quarkus.gizmo2.desc;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;

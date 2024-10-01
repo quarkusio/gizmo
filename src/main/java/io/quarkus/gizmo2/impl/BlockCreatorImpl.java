@@ -49,14 +49,14 @@ import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.Opcode;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
-import io.quarkus.gizmo2.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.ConstructorDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.MethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
@@ -340,7 +340,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr currentThread() {
-        return invokeStatic(MethodDesc.of(Thread.class, "currentThread", void.class), List.of());
+        return invokeStatic(MethodDesc.of(Thread.class, "currentThread", void.class));
     }
 
     public Expr iterHasNext(final Expr iterator) {

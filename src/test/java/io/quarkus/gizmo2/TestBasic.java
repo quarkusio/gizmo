@@ -47,7 +47,7 @@ public final class TestBasic {
         Gizmo g = Gizmo.create(tcm);
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("echoArg", mc -> {
-                ParamVar argument = mc.parameter("argument", String.class);
+                Var argument = mc.parameter("argument", String.class);
                 mc.returning(String.class);
                 mc.body(b0 -> {
                     b0.return_(argument);
