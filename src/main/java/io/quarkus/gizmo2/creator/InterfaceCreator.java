@@ -21,6 +21,16 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
     MethodDesc defaultMethod(String name, Consumer<InstanceMethodCreator> builder);
 
     /**
+     * Add a private instance method to the interface.
+     * The builder accepts the method builder plus the {@code this} expression for the method.
+     *
+     * @param name    the method name (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    MethodDesc privateMethod(String name, Consumer<InstanceMethodCreator> builder);
+
+    /**
      * Add an interface method to the interface.
      *
      * @param name    the method name (must not be {@code null})

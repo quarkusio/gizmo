@@ -3,8 +3,9 @@ package io.quarkus.gizmo2.creator;
 import java.lang.constant.ClassDesc;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.MethodCreatorImpl;
 
-public non-sealed interface MethodCreator extends ExecutableCreator {
+public sealed interface MethodCreator extends ExecutableCreator permits AbstractMethodCreator, InstanceMethodCreator, StaticMethodCreator, MethodCreatorImpl {
 
     MethodDesc desc();
 

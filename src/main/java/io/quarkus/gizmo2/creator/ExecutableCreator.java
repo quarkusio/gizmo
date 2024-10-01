@@ -5,9 +5,10 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.impl.ExecutableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
-public sealed interface ExecutableCreator extends MemberCreator permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator {
+public sealed interface ExecutableCreator extends MemberCreator permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     MethodTypeDesc type();
 
     /**

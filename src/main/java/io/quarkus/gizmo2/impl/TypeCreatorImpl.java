@@ -35,10 +35,12 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     final ClassBuilder zb;
     private List<Consumer<BlockCreator>> inits = List.of();
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
+    private int flags;
 
-    TypeCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
+    TypeCreatorImpl(final ClassDesc type, final ClassBuilder zb, final int flags) {
         this.type = type;
         this.zb = zb;
+        this.flags = flags;
     }
 
     public void withVersion(final ClassFileFormatVersion version) {
@@ -54,11 +56,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public void withFlag(final AccessFlag flag) {
-        zb.withFlags(flag);
-    }
-
-    public void withFlags(final Set<AccessFlag> flags) {
-        zb.withFlags(flags.toArray(AccessFlag[]::new));
+        flags |= flag.mask();
     }
 
     public void sourceFile(final String name) {

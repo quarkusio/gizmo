@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 
 public final class StaticMethodCreatorImpl extends MethodCreatorImpl implements StaticMethodCreator {
@@ -16,6 +17,10 @@ public final class StaticMethodCreatorImpl extends MethodCreatorImpl implements 
             case PUBLIC, PRIVATE, PROTECTED, STATIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL, VARARGS -> flags |= flag.mask();
             default -> throw new IllegalArgumentException(flag.toString());
         }
+    }
+
+    public void body(final Consumer<BlockCreator> builder) {
+        super.body(builder);
     }
 
     int firstSlot() {

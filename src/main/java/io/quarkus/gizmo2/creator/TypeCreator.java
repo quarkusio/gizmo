@@ -23,7 +23,9 @@ public sealed interface TypeCreator extends Annotatable permits ClassCreator, In
 
     void withFlag(AccessFlag flag);
 
-    void withFlags(Set<AccessFlag> flags);
+    default void withFlags(Set<AccessFlag> flags) {
+        flags.forEach(this::withFlag);
+    }
 
     void sourceFile(String name);
 

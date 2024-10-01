@@ -10,9 +10,9 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 
-public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
-    InstanceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
-        super(owner, name, 0);
+public final class PrivateInterfaceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
+    PrivateInterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
+        super(owner, name, AccessFlag.PRIVATE.mask());
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb, final List<ParamVarImpl> params) {
@@ -26,12 +26,12 @@ public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implement
 
     public void withFlag(final AccessFlag flag) {
         switch (flag) {
-            case PUBLIC, PRIVATE, PROTECTED, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL, VARARGS -> flags |= flag.mask();
+            case PRIVATE, SYNCHRONIZED, SYNTHETIC, BRIDGE, VARARGS -> flags |= flag.mask();
             default -> throw new IllegalArgumentException(flag.toString());
         }
     }
 
-    void accept(final Consumer<? super InstanceMethodCreatorImpl> builder) {
+    void accept(final Consumer<? super PrivateInterfaceMethodCreatorImpl> builder) {
         builder.accept(this);
     }
 }

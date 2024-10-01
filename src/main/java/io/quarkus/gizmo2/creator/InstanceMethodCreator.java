@@ -1,4 +1,8 @@
 package io.quarkus.gizmo2.creator;
 
-public interface InstanceMethodCreator extends InstanceExecutableCreator, MethodCreator {
+import io.quarkus.gizmo2.impl.DefaultMethodCreatorImpl;
+import io.quarkus.gizmo2.impl.InstanceMethodCreatorImpl;
+import io.quarkus.gizmo2.impl.PrivateInterfaceMethodCreatorImpl;
+
+public sealed interface InstanceMethodCreator extends InstanceExecutableCreator, MethodCreator permits DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl {
 }

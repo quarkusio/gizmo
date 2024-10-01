@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.Var;
 
 public interface LambdaCreator extends StaticExecutableCreator {
@@ -16,8 +15,6 @@ public interface LambdaCreator extends StaticExecutableCreator {
     default Var capture(LocalVar outer) {
         return capture(outer.name(), outer);
     }
-
-    ParamVar parameter(String name, ClassDesc type);
 
     void body(Consumer<BlockCreator> builder);
 }

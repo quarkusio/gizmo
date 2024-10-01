@@ -2,24 +2,23 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.FieldDesc;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator {
     public ClassCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
-        super(type, zb);
+        super(type, zb, 0);
     }
 
     public void withFlag(final AccessFlag flag) {
@@ -27,13 +26,6 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
             throw new IllegalArgumentException("Flag " + flag + " not allowed here");
         }
         super.withFlag(flag);
-    }
-
-    public void withFlags(final Set<AccessFlag> flags) {
-        if (flags.contains(AccessFlag.INTERFACE)) {
-            throw new IllegalArgumentException("Flag " + AccessFlag.INTERFACE + " not allowed here");
-        }
-        super.withFlags(flags);
     }
 
     public void extends_(final Signature.ClassTypeSig genericType) {
@@ -61,19 +53,34 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
     }
 
     public MethodDesc abstractMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        return null;
+        Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(builder, "builder");
+        var mc = new AbstractMethodCreatorImpl(this, name);
+        mc.accept(builder);
+        return mc.desc();
     }
 
     public MethodDesc nativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        return null;
+        Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(builder, "builder");
+        var mc = new NativeMethodCreatorImpl(this, name);
+        mc.accept(builder);
+        return mc.desc();
     }
 
     public MethodDesc staticNativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        return null;
+        Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(builder, "builder");
+        var mc = new StaticNativeMethodCreatorImpl(this, name);
+        mc.accept(builder);
+        return mc.desc();
     }
 
     public ConstructorDesc constructor(final Consumer<ConstructorCreator> builder) {
-        return null;
+        Objects.requireNonNull(builder, "builder");
+        var mc = new ConstructorCreatorImpl(this);
+        mc.accept(builder);
+        return mc.desc();
     }
 
     void accept(final Consumer<ClassCreator> builder) {
