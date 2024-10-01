@@ -56,6 +56,7 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(builder, "builder");
         var mc = new InstanceMethodCreatorImpl(this, name);
+        mc.accept(builder);
         return mc.desc();
     }
 

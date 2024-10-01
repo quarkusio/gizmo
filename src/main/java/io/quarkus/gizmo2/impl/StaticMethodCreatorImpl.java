@@ -13,9 +13,13 @@ public final class StaticMethodCreatorImpl extends MethodCreatorImpl implements 
 
     public void withFlag(final AccessFlag flag) {
         switch (flag) {
-            case PUBLIC, PRIVATE, PROTECTED, STATIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL -> flags |= flag.mask();
+            case PUBLIC, PRIVATE, PROTECTED, STATIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL, VARARGS -> flags |= flag.mask();
             default -> throw new IllegalArgumentException(flag.toString());
         }
+    }
+
+    int firstSlot() {
+        return 0;
     }
 
     void accept(final Consumer<? super StaticMethodCreatorImpl> builder) {
