@@ -4,9 +4,6 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-
 public final class DynamicConstant extends ConstantImpl {
 
     private final DynamicConstantDesc<?> desc;
@@ -36,11 +33,7 @@ public final class DynamicConstant extends ConstantImpl {
         return desc;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.ldc(desc());
-    }
-
-    public Optional<? extends ConstantDesc> describeConstable() {
+    public Optional<DynamicConstantDesc<?>> describeConstable() {
         return Optional.of(desc);
     }
 }

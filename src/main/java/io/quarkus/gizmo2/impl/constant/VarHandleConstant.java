@@ -4,8 +4,6 @@ import java.lang.constant.ConstantDesc;
 import java.lang.invoke.VarHandle;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 public abstract class VarHandleConstant extends ConstantImpl {
@@ -24,10 +22,6 @@ public abstract class VarHandleConstant extends ConstantImpl {
 
     public ConstantDesc desc() {
         return desc;
-    }
-
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.ldc(desc);
     }
 
     public Optional<VarHandle.VarHandleDesc> describeConstable() {

@@ -5,9 +5,6 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-
 public final class ClassConstant extends ConstantImpl {
 
     private final ClassDesc value;
@@ -19,10 +16,6 @@ public final class ClassConstant extends ConstantImpl {
 
     public ClassConstant(final ConstantDesc constantDesc) {
         this((ClassDesc) constantDesc);
-    }
-
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.ldc(value);
     }
 
     public ClassDesc desc() {

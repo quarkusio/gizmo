@@ -42,22 +42,7 @@ public final class IntConstant extends ConstantImpl {
                 cb.iconst_2();
                 cb.ineg();
             }
-            case -1 -> cb.iconst_m1();
-            case 0 -> cb.iconst_0();
-            case 1 -> cb.iconst_1();
-            case 2 -> cb.iconst_2();
-            case 3 -> cb.iconst_3();
-            case 4 -> cb.iconst_4();
-            case 5 -> cb.iconst_5();
-            default -> {
-                if (Byte.MIN_VALUE <= unboxed && unboxed <= Byte.MAX_VALUE) {
-                    cb.bipush(unboxed);
-                } else if (Short.MIN_VALUE <= unboxed && unboxed <= Short.MAX_VALUE) {
-                    cb.sipush(unboxed);
-                } else {
-                    cb.ldc(value);
-                }
-            }
+            default -> cb.loadConstant(value);
         }
     }
 

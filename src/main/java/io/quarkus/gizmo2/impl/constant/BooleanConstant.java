@@ -16,10 +16,10 @@ public final class BooleanConstant extends ConstantImpl {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        if (! value) {
-            cb.iconst_0();
-        } else {
+        if (value) {
             cb.iconst_1();
+        } else {
+            cb.iconst_0();
         }
     }
 

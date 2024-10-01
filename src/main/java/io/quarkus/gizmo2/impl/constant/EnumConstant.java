@@ -40,8 +40,7 @@ public final class EnumConstant extends ConstantImpl {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        // todo: this, or getstatic?
-        cb.ldc(desc);
+        cb.getstatic(desc.constantType(), desc.constantName(), desc.constantType());
     }
 
     public Optional<Enum.EnumDesc<?>> describeConstable() {

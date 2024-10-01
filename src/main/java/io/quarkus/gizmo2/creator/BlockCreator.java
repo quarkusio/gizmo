@@ -13,12 +13,12 @@ import java.util.function.Function;
 
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
@@ -569,28 +569,28 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
         return invokeStatic(method, List.of(args));
     }
 
-    Expr invokeVirtual(Expr instance, MethodDesc method, List<Expr> args);
+    Expr invokeVirtual(MethodDesc method, Expr instance, List<Expr> args);
 
-    default Expr invokeVirtual(Expr instance, MethodDesc method, Expr... args) {
-        return invokeVirtual(instance, method, List.of(args));
+    default Expr invokeVirtual(MethodDesc method, Expr instance, Expr... args) {
+        return invokeVirtual(method, instance, List.of(args));
     }
 
-    Expr invokeSpecial(Expr instance, MethodDesc method, List<Expr> args);
+    Expr invokeSpecial(MethodDesc method, Expr instance, List<Expr> args);
 
-    default Expr invokeSpecial(Expr instance, MethodDesc method, Expr... args) {
-        return invokeSpecial(instance, method, List.of(args));
+    default Expr invokeSpecial(MethodDesc method, Expr instance, Expr... args) {
+        return invokeSpecial(method, instance, List.of(args));
     }
 
-    Expr invokeSpecial(Expr instance, ConstructorDesc method, List<Expr> args);
+    Expr invokeSpecial(ConstructorDesc method, Expr instance, List<Expr> args);
 
-    default Expr invokeSpecial(Expr instance, ConstructorDesc method, Expr... args) {
-        return invokeSpecial(instance, method, List.of(args));
+    default Expr invokeSpecial(ConstructorDesc method, Expr instance, Expr... args) {
+        return invokeSpecial(method, instance, List.of(args));
     }
 
-    Expr invokeInterface(Expr instance, MethodDesc method, List<Expr> args);
+    Expr invokeInterface(MethodDesc method, Expr instance, List<Expr> args);
 
-    default Expr invokeInterface(Expr instance, MethodDesc method, Expr... args) {
-        return invokeInterface(instance, method, List.of(args));
+    default Expr invokeInterface(MethodDesc method, Expr instance, Expr... args) {
+        return invokeInterface(method, instance, List.of(args));
     }
 
     // control flow
@@ -813,13 +813,23 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     Expr objEquals(Expr a, Expr b);
 
+    Expr objToString(Expr obj);
+
     Expr arrayEquals(Expr a, Expr b);
 
     Expr loadClass(Expr className);
 
     Expr listOf(List<Expr> items);
 
+    default Expr listOf(Expr... items) {
+        return listOf(List.of(items));
+    }
+
     Expr setOf(List<Expr> items);
+
+    default Expr setOf(Expr... items) {
+        return setOf(List.of(items));
+    }
 
     Expr iterate(Expr items);
 
@@ -844,6 +854,10 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     void line(int lineNumber);
 
     void printf(String format, List<Expr> values);
+
+    default void printf(String format, Expr... values) {
+        printf(format, List.of(values));
+    }
 
     void assert_(Function<BlockCreator, Expr> assertion, String message);
 }

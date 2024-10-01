@@ -11,9 +11,14 @@ import java.lang.invoke.VarHandle;
 import java.util.List;
 import java.util.Objects;
 
+import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.InvokeKind;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.ExprImpl;
 import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -52,9 +57,9 @@ public abstract non-sealed class ConstantImpl extends ExprImpl implements Consta
         } else if (constantDesc instanceof ClassDesc val) {
             return of(val);
         } else if (constantDesc instanceof MethodTypeDesc val) {
-            throw new UnsupportedOperationException("todo: method type objects");
+            return of(val);
         } else if (constantDesc instanceof MethodHandleDesc val) {
-            throw new UnsupportedOperationException("todo: method handle objects");
+            return of(val);
         } else if (constantDesc instanceof DynamicConstantDesc<?> dcd) {
             return of(dcd);
         } else {
@@ -93,6 +98,9 @@ public abstract non-sealed class ConstantImpl extends ExprImpl implements Consta
             // "wrong spelling" of var handle constant
             List<ConstantDesc> args = dcd.bootstrapArgsList();
             return ofFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), dcd.constantName(), (ClassDesc) args.get(1)));
+        } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_INVOKE)) {
+            // "wrong spelling" of invoke constant
+            return ofInvoke(of(dcd.bootstrapMethod()), dcd.bootstrapArgsList().stream().map(Constant::of).toList());
         } else {
             return GizmoImpl.current().dynamicConstant(dcd);
         }
@@ -229,6 +237,44 @@ public abstract non-sealed class ConstantImpl extends ExprImpl implements Consta
         };
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static InvokeConstant ofInvoke(Constant handle, List<Constant> args) {
+        // we could theoretically use a stream to cast the list properly, but instead let's cheat and save some CPU
+        return new InvokeConstant((MethodHandleConstant) handle, (List<ConstantImpl>) (List) args);
+    }
+
+    public static MethodHandleConstant of(MethodHandleDesc desc) {
+        return new MethodHandleConstant(desc);
+    }
+
+    public static MethodHandleConstant ofMethodHandle(InvokeKind kind, MethodDesc desc) {
+        return new MethodHandleConstant(kind, desc);
+    }
+
+    public static MethodHandleConstant ofConstructorMethodHandle(ConstructorDesc desc) {
+        return new MethodHandleConstant(desc);
+    }
+
+    public static MethodHandleConstant ofFieldSetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConstant(desc, false, false);
+    }
+
+    public static MethodHandleConstant ofFieldGetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConstant(desc, false, true);
+    }
+
+    public static MethodHandleConstant ofStaticFieldSetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConstant(desc, true, false);
+    }
+
+    public static MethodHandleConstant ofStaticFieldGetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConstant(desc, true, true);
+    }
+
+    public static MethodTypeConstant of(MethodTypeDesc desc) {
+        return new MethodTypeConstant(desc);
+    }
+
     public ClassDesc type() {
         return type;
     }
@@ -244,4 +290,9 @@ public abstract non-sealed class ConstantImpl extends ExprImpl implements Consta
     public abstract boolean equals(ConstantImpl other);
 
     public abstract int hashCode();
+
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+        // most implementations are constant table entries no matter what
+        cb.ldc(desc());
+    }
 }

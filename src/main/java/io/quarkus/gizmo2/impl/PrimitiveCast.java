@@ -7,11 +7,11 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
-final class Cast extends ExprImpl {
+final class PrimitiveCast extends ExprImpl {
     private final ExprImpl a;
     private final ClassDesc toType;
 
-    Cast(final Expr a, final ClassDesc toType) {
+    PrimitiveCast(final Expr a, final ClassDesc toType) {
         this.a = (ExprImpl) a;
         this.toType = toType;
     }
@@ -29,19 +29,6 @@ final class Cast extends ExprImpl {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        switch (a.typeKind()) {
-            case INT -> {
-                switch (TypeKind.from(toType)) {
-                    case BYTE -> cb.i2b();
-                    case SHORT -> cb.i2s();
-                    case CHAR -> cb.i2c();
-                    case INT -> {}
-                    case LONG -> cb.i2l();
-                    case FLOAT -> cb.i2f();
-                    case DOUBLE -> cb.i2d();
-                    default -> throw new IllegalStateException();
-                }
-            }
-        }
+        cb.conversion(a.typeKind(), TypeKind.from(toType));
     }
 }

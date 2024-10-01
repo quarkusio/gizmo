@@ -15,6 +15,10 @@ public sealed interface Expr permits Constant, LValueExpr, ExprImpl {
         return TypeKind.from(type());
     }
 
+    default boolean isVoid() {
+        return typeKind() == TypeKind.VOID;
+    }
+
     default int slotSize() {
         return typeKind().slotSize();
     }

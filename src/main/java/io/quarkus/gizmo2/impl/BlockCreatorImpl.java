@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.BSM_INVOKE;
 import static java.lang.constant.ConstantDescs.CD_Boolean;
 import static java.lang.constant.ConstantDescs.CD_Byte;
 import static java.lang.constant.ConstantDescs.CD_Character;
@@ -26,9 +25,6 @@ import static java.util.Collections.nCopies;
 
 import java.io.PrintStream;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.DirectMethodHandleDesc;
-import java.lang.constant.DynamicConstantDesc;
-import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,19 +45,20 @@ import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.Opcode;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.SwitchExprCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
@@ -261,18 +258,24 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     );
 
     public Expr box(final Expr a) {
+        if (unboxTypes.containsKey(a.type())) {
+            return a;
+        }
         TypeKind typeKind = a.typeKind();
         ClassDesc boxType = boxType(typeKind);
-        return invokeStatic(ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, typeKind.upperBound())), List.of(a));
+        return invokeStatic(ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, typeKind.upperBound())), a);
     }
 
     public Expr unbox(final Expr a) {
+        if (a.typeKind().getDeclaringClass().isPrimitive()) {
+            return a;
+        }
         ClassDesc boxType = a.type();
         ClassDesc unboxType = unboxTypes.get(boxType);
         if (unboxType == null) {
             throw new IllegalArgumentException("No unbox type for " + boxType);
         }
-        return invokeVirtual(a, ClassMethodDesc.of(boxType, switch (TypeKind.from(boxType)) {
+        return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(boxType)) {
             case BOOLEAN -> "booleanValue";
             case BYTE -> "byteValue";
             case CHAR -> "charValue";
@@ -282,7 +285,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             case FLOAT -> "floatValue";
             case DOUBLE -> "doubleValue";
             default -> throw new IllegalStateException();
-        }, MethodTypeDesc.of(unboxType)), List.of());
+        }, MethodTypeDesc.of(unboxType)), a);
     }
 
     public void switch_(final Expr val, final Consumer<SwitchCreator> builder) {
@@ -336,7 +339,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr iterate(final Expr items) {
-        return invokeInterface(items, MethodDesc.of(Iterable.class, "iterator", Iterator.class), List.of());
+        return invokeInterface(MethodDesc.of(Iterable.class, "iterator", Iterator.class), items);
     }
 
     public Expr currentThread() {
@@ -344,19 +347,19 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr iterHasNext(final Expr iterator) {
-        return invokeInterface(iterator, MethodDesc.of(Iterator.class, "hasNext", boolean.class), List.of());
+        return invokeInterface(MethodDesc.of(Iterator.class, "hasNext", boolean.class), iterator);
     }
 
     public Expr iterNext(final Expr iterator) {
-        return invokeInterface(iterator, MethodDesc.of(Iterator.class, "next", Object.class), List.of());
+        return invokeInterface(MethodDesc.of(Iterator.class, "next", Object.class), iterator);
     }
 
     public void close(final Expr closeable) {
-        invokeInterface(closeable, MethodDesc.of(AutoCloseable.class, "close", void.class), List.of());
+        invokeInterface(MethodDesc.of(AutoCloseable.class, "close", void.class), closeable);
     }
 
     public void addSuppressed(final Expr throwable, final Expr suppressed) {
-        invokeVirtual(throwable, MethodDesc.of(Throwable.class, "addSuppressed", void.class, Throwable.class), List.of(suppressed));
+        invokeVirtual(MethodDesc.of(Throwable.class, "addSuppressed", void.class, Throwable.class), throwable, suppressed);
     }
 
     public Expr postInc(final LValueExpr var) {
@@ -545,15 +548,31 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr switchExpr(final Expr val, final Consumer<SwitchExprCreator> builder) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public Expr lambda(final ClassDesc type, final Consumer<LambdaCreator> builder) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public Expr cast(final Expr a, final ClassDesc toType) {
-        return a.type().equals(toType) ? a : add_(new Cast(a, toType));
+        if (a.type().isPrimitive()) {
+            if (toType.isPrimitive()) {
+                return add_(new PrimitiveCast(a, toType));
+            } else if (toType.equals(boxType(a.typeKind()))) {
+                return box(a);
+            } else {
+                throw new IllegalArgumentException("Cannot cast primitive value to object type");
+            }
+        } else {
+            if (toType.isPrimitive()) {
+                throw new IllegalArgumentException("Cannot cast object value to primitive type");
+            } else if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
+                return unbox(a);
+            } else {
+                return add_(new CheckCast(a, toType));
+            }
+        }
     }
 
     public Expr instanceOf(final Expr obj, final ClassDesc type) {
@@ -568,19 +587,19 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return add_(new Invoke(Opcode.INVOKESTATIC, method, null, args));
     }
 
-    public Expr invokeVirtual(final Expr instance, final MethodDesc method, final List<Expr> args) {
+    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<Expr> args) {
         return add_(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final Expr instance, final MethodDesc method, final List<Expr> args) {
+    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<Expr> args) {
         return add_(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final Expr instance, final ConstructorDesc ctor, final List<Expr> args) {
+    public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
         return add_(new Invoke(ctor, instance, false, args));
     }
 
-    public Expr invokeInterface(final Expr instance, final MethodDesc method, final List<Expr> args) {
+    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
         return add_(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
     }
 
@@ -882,10 +901,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     public void locked(final Expr jucLock, final Consumer<BlockCreator> body) {
         block(jucLock, (b0, lock) -> {
             LocalVar lv = define("$$lock" + depth, lock);
-            invokeInterface(lv, MethodDesc.of(Lock.class, "lock", void.class), List.of());
+            invokeInterface(MethodDesc.of(Lock.class, "lock", void.class), lv);
             try_(t1 -> {
                 t1.body(body);
-                t1.finally_(b2 -> b2.invokeInterface(lv, MethodDesc.of(Lock.class, "unlock", void.class), List.of()));
+                t1.finally_(b2 -> b2.invokeInterface(MethodDesc.of(Lock.class, "unlock", void.class), lv));
             });
         });
     }
@@ -904,30 +923,49 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public Expr objHashCode(final Expr obj) {
         return switch (obj.typeKind()) {
-            case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), List.of(obj));
-            case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), List.of(obj));
-            case SHORT -> invokeStatic(MethodDesc.of(Short.class, "hashCode", int.class, short.class), List.of(obj));
-            case CHAR -> invokeStatic(MethodDesc.of(Character.class, "hashCode", int.class, char.class), List.of(obj));
-            case INT -> invokeStatic(MethodDesc.of(Integer.class, "hashCode", int.class, int.class), List.of(obj));
-            case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), List.of(obj));
-            case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), List.of(obj));
-            case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), List.of(obj));
-            case REFERENCE -> invokeVirtual(obj, MethodDesc.of(Object.class, "hashCode", int.class), List.of());
+            case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), obj);
+            case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), obj);
+            case SHORT -> invokeStatic(MethodDesc.of(Short.class, "hashCode", int.class, short.class), obj);
+            case CHAR -> invokeStatic(MethodDesc.of(Character.class, "hashCode", int.class, char.class), obj);
+            case INT -> invokeStatic(MethodDesc.of(Integer.class, "hashCode", int.class, int.class), obj);
+            case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), obj);
+            case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), obj);
+            case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), obj);
+            case REFERENCE -> invokeVirtual(MethodDesc.of(Object.class, "hashCode", int.class), obj);
             case VOID -> Constant.of(0); // null constant
         };
     }
 
     public Expr objEquals(final Expr a, final Expr b) {
-        return invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), List.of(a, b));
+        return invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
+    }
+
+    public Expr objToString(final Expr obj) {
+        return invokeStatic(MethodDesc.of(String.class, "valueOf", String.class, switch (obj.typeKind()) {
+            case BOOLEAN -> boolean.class;
+            case BYTE, SHORT, INT -> int.class;
+            case CHAR -> char.class;
+            case LONG -> long.class;
+            case FLOAT -> float.class;
+            case DOUBLE -> double.class;
+            case REFERENCE -> obj.type().isArray() ? switch (TypeKind.from(obj.type().componentType())) {
+                case CHAR -> char[].class;
+                default -> Object.class;
+            } : Object.class;
+            default -> throw new IllegalArgumentException("Invalid type for `toString`: " + obj);
+        }), obj);
     }
 
     public Expr arrayEquals(final Expr a, final Expr b) {
-        ClassDesc type = TypeKind.from(a.type().componentType()).upperBound().arrayType();
-        return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), List.of(a, b));
+        ClassDesc type = switch (TypeKind.from(a.type().componentType())) {
+            case REFERENCE -> CD_Object.arrayType();
+            default -> a.type();
+        };
+        return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), a, b);
     }
 
     public Expr loadClass(final Expr className) {
-        return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), List.of(className));
+        return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 
     public Expr listOf(final List<Expr> items) {
@@ -935,7 +973,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), items);
         } else {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), List.of(newArray(Object.class, items)));
+            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, items));
         }
     }
 
@@ -944,7 +982,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
         } else {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), List.of(newArray(Object.class, items)));
+            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, items));
         }
     }
 
@@ -958,21 +996,18 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void printf(final String format, final List<Expr> values) {
         invokeVirtual(
-            Expr.staticField(FieldDesc.of(System.class, "out")),
-            MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class),
-            List.of(
-                Constant.of(format),
-                newArray(CD_Object, values)
-            )
+            MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class), Expr.staticField(FieldDesc.of(System.class, "out")),
+            Constant.of(format),
+            newArray(CD_Object, values)
         );
     }
 
     public void assert_(final Function<BlockCreator, Expr> assertion, final String message) {
-        if_(logicalAnd(Constant.of(DynamicConstantDesc.of(
-            BSM_INVOKE,
-            MethodHandleDesc.ofMethod(DirectMethodHandleDesc.Kind.VIRTUAL, Util.classDesc(Class.class), "desiredAssertionStatus", MethodTypeDesc.of(CD_boolean)),
-            owner.type()
-        )), assertion), __ -> {
+        if_(logicalAnd(
+            Constant.ofInvoke(
+                Constant.ofMethodHandle(InvokeKind.VIRTUAL, MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class)
+            )
+        ), assertion), __ -> {
             throw_(AssertionError.class, message);
         });
     }
