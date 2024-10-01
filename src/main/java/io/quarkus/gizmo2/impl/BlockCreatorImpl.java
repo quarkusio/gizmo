@@ -51,6 +51,7 @@ import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
@@ -605,7 +606,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, Expr> builder) {
         block(fn, (b0, fn0) -> {
-            LocalVar items = b0.define("$$items" + depth, fn0);
+            Var items = b0.define("$$items" + depth, fn0);
             if (items.type().isArray()) {
                 // iterate array
                 Expr lv = items.length();
@@ -1114,6 +1115,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             if (previous.type().equals(CD_void)) {
                 // skip it
                 previous.processDependencies(this, iter, true);
+            } else if (! previous.bound()) {
+                // destroy it
+                iter.remove();
             } else {
                 iter.next();
                 // pop it
