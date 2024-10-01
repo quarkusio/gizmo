@@ -17,8 +17,8 @@
     <dependencies>
         <dependency>
             <groupId>io.github.dmlloyd</groupId>
-            <artifactId>jdk-classfile-preview</artifactId>
-            <version>24.beta2</version>
+            <artifactId>jdk-classfile-backport</artifactId>
+            <version>24.beta4</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
