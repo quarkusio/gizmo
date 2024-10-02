@@ -283,6 +283,15 @@ public abstract non-sealed class ConstantImpl extends ExprImpl implements Consta
         return false;
     }
 
+    public boolean isZero() {
+        return false;
+    }
+
+    public boolean isNonZero() {
+        return false;
+    }
+
+
     public final boolean equals(final Object obj) {
         return obj instanceof ConstantImpl other && equals(other);
     }

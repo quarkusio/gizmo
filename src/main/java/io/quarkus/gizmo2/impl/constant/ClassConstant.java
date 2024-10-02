@@ -14,6 +14,10 @@ public final class ClassConstant extends ConstantImpl {
         this.value = value;
     }
 
+    public boolean isNonZero() {
+        return true;
+    }
+
     public ClassConstant(final ConstantDesc constantDesc) {
         this((ClassDesc) constantDesc);
     }

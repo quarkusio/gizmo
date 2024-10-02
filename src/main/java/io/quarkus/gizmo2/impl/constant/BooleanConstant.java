@@ -34,6 +34,14 @@ public final class BooleanConstant extends ConstantImpl {
         return Optional.of(desc());
     }
 
+    public boolean isZero() {
+        return ! value;
+    }
+
+    public boolean isNonZero() {
+        return value;
+    }
+
     public boolean equals(final ConstantImpl other) {
         return this == other;
     }

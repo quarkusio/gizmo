@@ -78,6 +78,14 @@ public final class DoubleConstant extends ConstantImpl {
         }
     }
 
+    public boolean isZero() {
+        return value == 0d;
+    }
+
+    public boolean isNonZero() {
+        return value != 0d;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof DoubleConstant other && equals(other);
     }

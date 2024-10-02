@@ -25,6 +25,10 @@ public final class StringConstant extends ConstantImpl {
         return Optional.of(desc());
     }
 
+    public boolean isNonZero() {
+        return true;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof StringConstant other && equals(other);
     }

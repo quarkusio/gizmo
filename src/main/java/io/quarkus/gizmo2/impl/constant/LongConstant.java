@@ -19,6 +19,10 @@ public final class LongConstant extends ConstantImpl {
         this((Long) constantDesc);
     }
 
+    public long longValue() {
+        return value.longValue();
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         long unboxed = value.longValue();
         if (Short.MIN_VALUE <= unboxed && unboxed <= Short.MAX_VALUE) {
@@ -78,6 +82,14 @@ public final class LongConstant extends ConstantImpl {
         } else {
             cb.ldc(Long.valueOf(unboxed));
         }
+    }
+
+    public boolean isZero() {
+        return value.longValue() == 0;
+    }
+
+    public boolean isNonZero() {
+        return value.longValue() != 0;
     }
 
     public boolean equals(final ConstantImpl obj) {

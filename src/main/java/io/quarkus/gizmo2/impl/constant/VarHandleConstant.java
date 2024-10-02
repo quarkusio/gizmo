@@ -14,6 +14,10 @@ public abstract class VarHandleConstant extends ConstantImpl {
         this.desc = desc;
     }
 
+    public boolean isNonZero() {
+        return true;
+    }
+
     public final boolean equals(final ConstantImpl obj) {
         return obj instanceof VarHandleConstant other && equals(other);
     }

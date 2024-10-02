@@ -74,6 +74,14 @@ public final class FloatConstant extends ConstantImpl {
         }
     }
 
+    public boolean isZero() {
+        return value == 0f;
+    }
+
+    public boolean isNonZero() {
+        return value != 0f;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof FloatConstant other && equals(other);
     }

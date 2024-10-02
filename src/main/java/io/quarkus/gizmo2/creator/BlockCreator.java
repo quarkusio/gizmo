@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
@@ -138,22 +139,20 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     /**
      * Write a value to memory with the given atomicity mode.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var   the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @param mode the atomicity mode for the access (must not be {@code null})
-     * @return the lvalue (not {@code null})
+     * @param mode  the atomicity mode for the access (must not be {@code null})
      */
-    LValueExpr set(LValueExpr var, Expr value, AccessMode mode);
+    void set(LValueExpr var, Expr value, AccessMode mode);
 
     /**
      * Write a value to memory using the declared atomicity mode for the lvalue.
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, Expr value) {
-        return set(var, value, AccessMode.AsDeclared);
+    default void set(LValueExpr var, Expr value) {
+        set(var, value, AccessMode.AsDeclared);
     }
 
     /**
@@ -161,10 +160,9 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, Constant value) {
-        return set(var, (Expr) value);
+    default void set(LValueExpr var, Constant value) {
+        set(var, (Expr) value);
     }
 
     /**
@@ -172,10 +170,9 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, ConstantDesc value) {
-        return set(var, Constant.of(value));
+    default void set(LValueExpr var, ConstantDesc value) {
+        set(var, Constant.of(value));
     }
 
     /**
@@ -183,10 +180,9 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, Constable value) {
-        return set(var, Constant.of(value));
+    default void set(LValueExpr var, Constable value) {
+        set(var, Constant.of(value));
     }
 
     /**
@@ -194,21 +190,9 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, String value) {
-        return set(var, Constant.of(value));
-    }
-
-    /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
-     *
-     * @param var the lvalue (must not be {@code null})
-     * @param value the value to write
-     * @return the lvalue (not {@code null})
-     */
-    default LValueExpr set(LValueExpr var, int value) {
-        return set(var, Constant.of(value));
+    default void set(LValueExpr var, String value) {
+        set(var, Constant.of(value));
     }
 
     /**
@@ -216,380 +200,1320 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      *
      * @param var the lvalue (must not be {@code null})
      * @param value the value to write
-     * @return the lvalue (not {@code null})
      */
-    default LValueExpr set(LValueExpr var, long value) {
-        return set(var, Constant.of(value));
+    default void set(LValueExpr var, int value) {
+        set(var, Constant.of(value));
+    }
+
+    /**
+     * Write a value to memory using the declared atomicity mode for the lvalue.
+     *
+     * @param var the lvalue (must not be {@code null})
+     * @param value the value to write
+     */
+    default void set(LValueExpr var, long value) {
+        set(var, Constant.of(value));
     }
 
 
     // increment/decrement
 
     /**
-     * Post-increment the given value non-atomically by one.
+     * Increment some variable by a constant amount.
+     * This is not an atomic operation.
      *
      * @param var the variable to modify (must not be {@code null})
-     * @return the value before incrementing (not {@code null})
+     * @param amount the constant amount to increase by (must not be {@code null})
      */
-    Expr postInc(LValueExpr var);
-
-    Expr preInc(LValueExpr var);
-
-    default void inc(LValueExpr var) {
-        inc(var, Constant.of(1, var.typeKind()));
-    }
-
     void inc(LValueExpr var, Constant amount);
 
-    Expr postDec(LValueExpr var);
-
-    Expr preDec(LValueExpr var);
-
-    default void dec(LValueExpr var) {
-        dec(var, Constant.of(1, var.typeKind()));
+    /**
+     * Increment some variable by a constant amount.
+     * This is not an atomic operation.
+     *
+     * @param var the variable to modify (must not be {@code null})
+     * @param amount the constant amount to increase by
+     */
+    default void inc(LValueExpr var, int amount) {
+        inc(var, Constant.of(amount, var.typeKind()));
     }
 
+    /**
+     * Increment some variable by one.
+     * This is not an atomic operation.
+     *
+     * @param var the variable to modify (must not be {@code null})
+     */
+    default void inc(LValueExpr var) {
+        inc(var, 1);
+    }
+
+    /**
+     * Decrement some variable by a constant amount.
+     * This is not an atomic operation.
+     *
+     * @param var the variable to modify (must not be {@code null})
+     * @param amount the constant amount to decrease by (must not be {@code null})
+     */
     void dec(LValueExpr var, Constant amount);
+
+    /**
+     * Decrement some variable by a constant amount.
+     * This is not an atomic operation.
+     *
+     * @param var the variable to modify (must not be {@code null})
+     * @param amount the constant amount to decrease by
+     */
+    default void dec(LValueExpr var, int amount) {
+        dec(var, Constant.of(amount, var.typeKind()));
+    }
+
+    /**
+     * Decrement some variable by one.
+     * This is not an atomic operation.
+     *
+     * @param var the variable to modify (must not be {@code null})
+     */
+    default void dec(LValueExpr var) {
+        dec(var, 1);
+    }
 
     // arrays
 
-    Expr newArray(ClassDesc elemType, Expr size);
+    /**
+     * Create a new, empty array of the given type.
+     *
+     * @param elemType the element type (must not be {@code null})
+     * @param size the size of the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
+    Expr newEmptyArray(ClassDesc elemType, Expr size);
 
-    default Expr newArray(Class<?> elemType, Expr size) {
-        return newArray(Util.classDesc(elemType), size);
+    /**
+     * Create a new, empty array of the given type.
+     *
+     * @param elemType the element type (must not be {@code null})
+     * @param size the size of the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newEmptyArray(Class<?> elemType, Expr size) {
+        return newEmptyArray(Util.classDesc(elemType), size);
     }
 
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param elementType the element type (must not be {@code null})
+     * @param values the values to assign into the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
     Expr newArray(ClassDesc elementType, List<Expr> values);
 
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param elementType the element type (must not be {@code null})
+     * @param values the values to assign into the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
     default Expr newArray(ClassDesc elementType, Expr... values) {
         return newArray(elementType, List.of(values));
     }
 
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param elementType the element type (must not be {@code null})
+     * @param values the values to assign into the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
     default Expr newArray(Class<?> elementType, List<Expr> values) {
-        Expr array = newArray(elementType, Constant.of(values.size()));
-        for (int i = 0; i < values.size(); i++) {
-            set(array.elem(i), values.get(i));
-        }
-        return array;
+        return newArray(Util.classDesc(elementType), values);
     }
 
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param elementType the element type (must not be {@code null})
+     * @param values the values to assign into the array (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newArray(Class<?> elementType, Expr... values) {
+        return newArray(elementType, List.of(values));
+    }
 
     // relational ops
 
     /**
-     * The {@code ==} operator.
+     * The equality operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code ==} operator in Java
+     * for primitive and reference values.
+     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
      *
      * @param a the left-hand argument (must not be {@code null})
      * @param b the right-hand argument (must not be {@code null})
      * @return the boolean result expression
+     * @see #objEquals(Expr, Expr)
      */
     Expr eq(Expr a, Expr b);
 
+    /**
+     * The equality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code ==} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr eq(Expr a, int b) {
         return eq(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The equality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code ==} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr eq(Expr a, long b) {
         return eq(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The equality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code ==} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr eq(Expr a, float b) {
         return eq(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The equality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code ==} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr eq(Expr a, double b) {
         return eq(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The inequality operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code !=} operator in Java
+     * for primitive and reference values.
+     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument (must not be {@code null})
+     * @return the boolean result expression
+     * @see #objEquals(Expr, Expr)
+     */
     Expr ne(Expr a, Expr b);
 
+    /**
+     * The inequality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code !=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ne(Expr a, int b) {
         return ne(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The inequality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code !=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ne(Expr a, long b) {
         return ne(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The inequality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code !=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ne(Expr a, float b) {
         return ne(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The inequality operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code !=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ne(Expr a, double b) {
         return ne(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code <} operator in Java
+     * for primitive values.
+     * This operation does not support reference values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     Expr lt(Expr a, Expr b);
 
+    /**
+     * The less-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr lt(Expr a, int b) {
         return lt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr lt(Expr a, long b) {
         return lt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr lt(Expr a, float b) {
         return lt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr lt(Expr a, double b) {
         return lt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code >} operator in Java
+     * for primitive values.
+     * This operation does not support reference values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     Expr gt(Expr a, Expr b);
 
+    /**
+     * The greater-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr gt(Expr a, int b) {
         return gt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr gt(Expr a, long b) {
         return gt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr gt(Expr a, float b) {
         return gt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr gt(Expr a, double b) {
         return gt(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than-or-equals operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code <=} operator in Java
+     * for primitive values.
+     * This operation does not support reference values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     Expr le(Expr a, Expr b);
 
+    /**
+     * The less-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr le(Expr a, int b) {
         return le(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr le(Expr a, long b) {
         return le(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr le(Expr a, float b) {
         return le(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The less-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code <=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr le(Expr a, double b) {
         return le(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than-or-equals operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This works equivalently to the {@code >=} operator in Java
+     * for primitive values.
+     * This operation does not support reference values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     Expr ge(Expr a, Expr b);
 
+    /**
+     * The greater-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ge(Expr a, int b) {
         return ge(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ge(Expr a, long b) {
         return ge(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ge(Expr a, float b) {
         return ge(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The greater-than-or-equals operator.
+     * The second argument will be cast to the same {@linkplain TypeKind type kind} as the first argument.
+     * This works equivalently to the {@code >=} operator in Java
+     * for primitive values.
+     *
+     * @param a the left-hand argument (must not be {@code null})
+     * @param b the right-hand argument
+     * @return the boolean result expression
+     */
     default Expr ge(Expr a, double b) {
         return ge(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The general comparison operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * <p>
+     * For primitives, this returns {@code -1}, {@code 0}, or {@code 1} if
+     * the second argument is less than, equal to, or greater than the first argument, respectively.
+     * <p>
+     * For reference values, this returns the result of natural-order comparisons
+     * using {@link Comparable#compareTo(Object)}.
+     * If the {@linkplain #cast(Expr, ClassDesc) static type} of either value does not implement this interface,
+     * the class will not verify.
+     * <p>
+     * Comparisons between floating point values will have behavior equivalent to that of the
+     * {@link Float#compare(float, float)} or {@link Double#compare(double, double)} methods,
+     * particularly as this relates to {@code NaN} and negative-zero values.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the comparison result expression (not {@code null})
+     */
     Expr cmp(Expr a, Expr b);
 
+    /**
+     * The general comparison operator.
+     * This method behaves equivalently to {@link #cmp} in all respects,
+     * except that floating point value comparison will result in a {@code -1}
+     * if either value is {@code NaN}, and that negative zero is considered equal to
+     * positive zero.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the comparison result expression (not {@code null})
+     */
     Expr cmpl(Expr a, Expr b);
 
+    /**
+     * The general comparison operator.
+     * This method behaves equivalently to {@link #cmp} in all respects,
+     * except that floating point value comparison will result in a {@code 1}
+     * if either value is {@code NaN}, and that negative zero is considered equal to
+     * positive zero.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the comparison result expression (not {@code null})
+     */
     Expr cmpg(Expr a, Expr b);
 
 
     // bitwise
 
+    /**
+     * The bitwise {@code and} operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code &} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr and(Expr a, Expr b);
 
+    /**
+     * The bitwise {@code and} operator.
+     * This method works equivalently to the {@code &} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr and(Expr a, int b) {
+        return and(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise {@code and} operator.
+     * This method works equivalently to the {@code &} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr and(Expr a, long b) {
+        return and(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise {@code or} operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code |} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr or(Expr a, Expr b);
 
+    /**
+     * The bitwise {@code or} operator.
+     * This method works equivalently to the {@code |} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr or(Expr a, int b) {
+        return or(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise {@code or} operator.
+     * This method works equivalently to the {@code |} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr or(Expr a, long b) {
+        return or(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise {@code xor} operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code ^} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr xor(Expr a, Expr b);
 
+    /**
+     * The bitwise {@code xor} operator.
+     * This method works equivalently to the {@code ^} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr xor(Expr a, int b) {
+        return xor(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise {@code xor} operator.
+     * This method works equivalently to the {@code ^} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr xor(Expr a, long b) {
+        return xor(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise complement operator.
+     * This method works equivalently to the {@code ~} operator in Java.
+     *
+     * @param a the argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr complement(Expr a);
 
+    /**
+     * The bitwise left-shift operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code <<} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr shl(Expr a, Expr b);
 
+    /**
+     * The bitwise left-shift operator.
+     * This method works equivalently to the {@code <<} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr shl(Expr a, int b) {
+        return shl(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise left-shift operator.
+     * This method works equivalently to the {@code <<} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr shl(Expr a, long b) {
+        return shl(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise signed-right-shift operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code >>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr shr(Expr a, Expr b);
 
+    /**
+     * The bitwise signed-right-shift operator.
+     * This method works equivalently to the {@code >>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr shr(Expr a, int b) {
+        return shr(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise signed-right-shift operator.
+     * This method works equivalently to the {@code >>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr shr(Expr a, long b) {
+        return shr(a, Constant.of(b, a.typeKind()));
+    }
+
+    /**
+     * The bitwise unsigned-right-shift operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code >>>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr ushr(Expr a, Expr b);
 
+    /**
+     * The bitwise unsigned-right-shift operator.
+     * This method works equivalently to the {@code >>>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr ushr(Expr a, int b) {
+        return ushr(a, Constant.of(b, a.typeKind()));
+    }
 
-    // bitwise-assign
-
-    LValueExpr andAssign(LValueExpr var, Expr arg);
-
-    LValueExpr orAssign(LValueExpr var, Expr arg);
-
-    LValueExpr xorAssign(LValueExpr var, Expr arg);
-
-    LValueExpr shlAssign(LValueExpr var, Expr arg);
-
-    LValueExpr shrAssign(LValueExpr var, Expr arg);
-
-    LValueExpr ushrAssign(LValueExpr var, Expr arg);
+    /**
+     * The bitwise unsigned-right-shift operator.
+     * This method works equivalently to the {@code >>>} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
+    default Expr ushr(Expr a, long b) {
+        return ushr(a, Constant.of(b, a.typeKind()));
+    }
 
 
     // arithmetic
 
+    /**
+     * The arithmetic addition operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code +} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr add(Expr a, Expr b);
 
+    /**
+     * The arithmetic addition operator.
+     * This method works equivalently to the {@code +} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr add(Expr a, int b) {
         return add(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic addition operator.
+     * This method works equivalently to the {@code +} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr add(Expr a, long b) {
         return add(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic addition operator.
+     * This method works equivalently to the {@code +} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr add(Expr a, float b) {
         return add(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic addition operator.
+     * This method works equivalently to the {@code +} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr add(Expr a, double b) {
         return add(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr sub(Expr a, Expr b);
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(Expr a, int b) {
         return sub(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(Expr a, long b) {
         return sub(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(Expr a, float b) {
         return sub(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(Expr a, double b) {
         return sub(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(int a, Expr b) {
         return sub(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(long a, Expr b) {
         return sub(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(float a, Expr b) {
         return sub(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic subtraction operator.
+     * This method works equivalently to the {@code -} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr sub(double a, Expr b) {
         return sub(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic multiplication operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code *} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr mul(Expr a, Expr b);
 
+    /**
+     * The arithmetic multiplication operator.
+     * This method works equivalently to the {@code *} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr mul(Expr a, int b) {
         return mul(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic multiplication operator.
+     * This method works equivalently to the {@code *} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr mul(Expr a, long b) {
         return mul(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic multiplication operator.
+     * This method works equivalently to the {@code *} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr mul(Expr a, float b) {
         return mul(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic multiplication operator.
+     * This method works equivalently to the {@code *} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr mul(Expr a, double b) {
         return mul(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic division operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr div(Expr a, Expr b);
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr div(Expr a, int b) {
         return div(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr div(Expr a, long b) {
         return div(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr div(Expr a, float b) {
         return div(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr div(Expr a, double b) {
         return div(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr div(int a, Expr b) {
         return div(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr div(long a, Expr b) {
         return div(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr div(float a, Expr b) {
         return div(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic division operator.
+     * This method works equivalently to the {@code /} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr div(double a, Expr b) {
         return div(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * The arguments must be of the same {@linkplain TypeKind type kind}.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     Expr rem(Expr a, Expr b);
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(Expr a, int b) {
         return rem(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(Expr a, long b) {
         return rem(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(Expr a, float b) {
         return rem(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument (must not be {@code null})
+     * @param b the second argument
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(Expr a, double b) {
         return rem(a, Constant.of(b, a.typeKind()));
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(int a, Expr b) {
         return rem(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(long a, Expr b) {
         return rem(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(float a, Expr b) {
         return rem(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic remainder operator.
+     * This method works equivalently to the {@code %} operator in Java.
+     *
+     * @param a the first argument
+     * @param b the second argument (must not be {@code null})
+     * @return the operation result (not {@code null})
+     */
     default Expr rem(double a, Expr b) {
         return rem(Constant.of(a, b.typeKind()), b);
     }
 
+    /**
+     * The arithmetic negation operator.
+     * This method works equivalently to the {@code -} unary operator in Java.
+     *
+     * @param a the argument
+     * @return the operation result (must not be {@code null})
+     */
     Expr neg(Expr a);
 
 
     // arithmetic-assign
 
-    LValueExpr addAssign(LValueExpr var, Expr arg);
+    void addAssign(LValueExpr var, Expr arg);
 
-    LValueExpr subAssign(LValueExpr var, Expr arg);
+    void subAssign(LValueExpr var, Expr arg);
 
-    LValueExpr mulAssign(LValueExpr var, Expr arg);
+    void mulAssign(LValueExpr var, Expr arg);
 
-    LValueExpr divAssign(LValueExpr var, Expr arg);
+    void divAssign(LValueExpr var, Expr arg);
 
-    LValueExpr remAssign(LValueExpr var, Expr arg);
+    void remAssign(LValueExpr var, Expr arg);
+
+
+    // bitwise-assign
+
+    void andAssign(LValueExpr var, Expr arg);
+
+    void orAssign(LValueExpr var, Expr arg);
+
+    void xorAssign(LValueExpr var, Expr arg);
+
+    void shlAssign(LValueExpr var, Expr arg);
+
+    void shrAssign(LValueExpr var, Expr arg);
+
+    void ushrAssign(LValueExpr var, Expr arg);
 
 
     // logical
 
     default Expr logicalNot(Expr a) {
-        return eq(a, Constant.of(0, a.typeKind()));
+        return a.typeKind() == TypeKind.BOOLEAN ? xor(a, Constant.of(1)) : eq(a, Constant.of(0, a.typeKind()));
     }
 
     default Expr logicalOr(Expr cond, Function<BlockCreator, Expr> other) {
@@ -923,6 +1847,10 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     Expr objHashCode(Expr obj);
 
     Expr objEquals(Expr a, Expr b);
+
+    default Expr objEquals(Expr a, ConstantDesc b) {
+        return objEquals(a, Constant.of(b));
+    }
 
     Expr objToString(Expr obj);
 

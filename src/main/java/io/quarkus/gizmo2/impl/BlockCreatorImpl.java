@@ -118,7 +118,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         startLabel = newLabel();
         endLabel = newLabel();
         this.input = input;
-        add_(header = new BlockHeaderExpr(this, headerType));
+        addItem(header = new BlockHeaderExpr(this, headerType));
         this.outputType = outputType;
     }
 
@@ -164,71 +164,68 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public LocalVar declare(final String name, final ClassDesc type) {
         LocalVarImpl lv = new LocalVarImpl(this, name, type);
-        add_(lv.allocator());
+        addItem(lv.allocator());
         return lv;
     }
 
     public Expr get(final LValueExpr var, final AccessMode mode) {
-        return add_(((LValueExprImpl) var).emitGet(this, mode));
+        return addItem(((LValueExprImpl) var).emitGet(this, mode));
     }
 
-    public LValueExpr set(final LValueExpr var, final Expr value, final AccessMode mode) {
-        add_(((LValueExprImpl) var).emitSet(this, (ExprImpl) value, mode));
-        return var;
+    public void set(final LValueExpr var, final Expr value, final AccessMode mode) {
+        addItem(((LValueExprImpl) var).emitSet(this, (ExprImpl) value, mode));
     }
 
-    public LValueExpr andAssign(final LValueExpr var, final Expr arg) {
-        return set(var, and(var, arg));
+    public void andAssign(final LValueExpr var, final Expr arg) {
+        set(var, and(var, arg));
     }
 
-    public LValueExpr orAssign(final LValueExpr var, final Expr arg) {
-        return set(var, or(var, arg));
+    public void orAssign(final LValueExpr var, final Expr arg) {
+        set(var, or(var, arg));
     }
 
-    public LValueExpr xorAssign(final LValueExpr var, final Expr arg) {
-        return set(var, xor(var, arg));
+    public void xorAssign(final LValueExpr var, final Expr arg) {
+        set(var, xor(var, arg));
     }
 
-    public LValueExpr shlAssign(final LValueExpr var, final Expr arg) {
-        return set(var, shl(var, arg));
+    public void shlAssign(final LValueExpr var, final Expr arg) {
+        set(var, shl(var, arg));
     }
 
-    public LValueExpr shrAssign(final LValueExpr var, final Expr arg) {
-        return set(var, shr(var, arg));
+    public void shrAssign(final LValueExpr var, final Expr arg) {
+        set(var, shr(var, arg));
     }
 
-    public LValueExpr ushrAssign(final LValueExpr var, final Expr arg) {
-        return set(var, ushr(var, arg));
+    public void ushrAssign(final LValueExpr var, final Expr arg) {
+        set(var, ushr(var, arg));
     }
 
-    public LValueExpr addAssign(final LValueExpr var, final Expr arg) {
+    public void addAssign(final LValueExpr var, final Expr arg) {
         if (arg instanceof Constant c) {
             inc(var, c);
-            return var;
         } else {
-            return set(var, add(var, arg));
+            set(var, add(var, arg));
         }
     }
 
-    public LValueExpr subAssign(final LValueExpr var, final Expr arg) {
+    public void subAssign(final LValueExpr var, final Expr arg) {
         if (arg instanceof Constant c) {
             dec(var, c);
-            return var;
         } else {
-            return set(var, sub(var, arg));
+            set(var, sub(var, arg));
         }
     }
 
-    public LValueExpr mulAssign(final LValueExpr var, final Expr arg) {
-        return set(var, mul(var, arg));
+    public void mulAssign(final LValueExpr var, final Expr arg) {
+        set(var, mul(var, arg));
     }
 
-    public LValueExpr divAssign(final LValueExpr var, final Expr arg) {
-        return set(var, div(var, arg));
+    public void divAssign(final LValueExpr var, final Expr arg) {
+        set(var, div(var, arg));
     }
 
-    public LValueExpr remAssign(final LValueExpr var, final Expr arg) {
-        return set(var, rem(var, arg));
+    public void remAssign(final LValueExpr var, final Expr arg) {
+        set(var, rem(var, arg));
     }
 
     private ClassDesc boxType(TypeKind typeKind) {
@@ -290,7 +287,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void switch_(final Expr val, final Consumer<SwitchCreator> builder) {
-        add_(switch (val.typeKind().asLoadable()) {
+        addItem(switch (val.typeKind().asLoadable()) {
             case INT -> new IntSwitch(this, val);
             case REFERENCE -> {
                 if (val.type().equals(CD_String)) {
@@ -305,7 +302,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
-        add_(new Item() {
+        addItem(new Item() {
             protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
                 super.insert(block, iter);
                 block.cleanStack(iter);
@@ -324,7 +321,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void redoDefault(final SwitchCreator switch_) {
-        add_(new Item() {
+        addItem(new Item() {
             protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
                 super.insert(block, iter);
                 block.cleanStack(iter);
@@ -363,53 +360,26 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         invokeVirtual(MethodDesc.of(Throwable.class, "addSuppressed", void.class, Throwable.class), throwable, suppressed);
     }
 
-    public Expr postInc(final LValueExpr var) {
-        ExprImpl res = (ExprImpl) get(var);
-        inc(var);
-        return res;
-    }
-
-    public Expr preInc(final LValueExpr var) {
-        inc(var);
-        return get(var);
-    }
-
     public void inc(final LValueExpr var, Constant amount) {
         ((LValueExprImpl) var).emitInc(this, amount);
-    }
-
-    public Expr postDec(final LValueExpr var) {
-        ExprImpl res = (ExprImpl) get(var);
-        dec(var);
-        return res;
-    }
-
-    public Expr preDec(final LValueExpr var) {
-        dec(var);
-        return get(var);
     }
 
     public void dec(final LValueExpr var, Constant amount) {
         ((LValueExprImpl) var).emitDec(this, amount);
     }
 
-    public Expr newArray(final ClassDesc elemType, final Expr size) {
-        return add_(new NewEmptyArray(elemType, (ExprImpl) size));
+    public Expr newEmptyArray(final ClassDesc elemType, final Expr size) {
+        return addItem(new NewEmptyArray(elemType, (ExprImpl) size));
     }
 
     public Expr newArray(final ClassDesc elementType, final List<Expr> values) {
         if (values.isEmpty()) {
-            return newArray(elementType, ConstantImpl.of(0));
+            return newEmptyArray(elementType, ConstantImpl.of(0));
         }
-        return add_(new NewArray(elementType, values));
+        return addItem(new NewArray(elementType, values));
     }
 
     private Expr relZero(final Expr a, final If.Kind kind) {
-        if (a instanceof IntConstant ac) {
-            return Constant.of(ac.intValue() == 0);
-        } else if (a instanceof NullConstant) {
-            return Constant.of(true);
-        }
         switch (a.typeKind().asLoadable()) {
             case INT, REFERENCE -> {
                 // normal relZero
@@ -485,27 +455,27 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr cmp(final Expr a, final Expr b) {
-        return add_(new Cmp(a, b, Cmp.Kind.CMP));
+        return addItem(new Cmp(a, b, Cmp.Kind.CMP));
     }
 
     public Expr cmpl(final Expr a, final Expr b) {
-        return add_(new Cmp(a, b, Cmp.Kind.CMPL));
+        return addItem(new Cmp(a, b, Cmp.Kind.CMPL));
     }
 
     public Expr cmpg(final Expr a, final Expr b) {
-        return add_(new Cmp(a, b, Cmp.Kind.CMPG));
+        return addItem(new Cmp(a, b, Cmp.Kind.CMPG));
     }
 
     public Expr and(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.AND));
+        return addItem(new BinOp(a, b, BinOp.Kind.AND));
     }
 
     public Expr or(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.OR));
+        return addItem(new BinOp(a, b, BinOp.Kind.OR));
     }
 
     public Expr xor(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.XOR));
+        return addItem(new BinOp(a, b, BinOp.Kind.XOR));
     }
 
     public Expr complement(final Expr a) {
@@ -513,39 +483,42 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr shl(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.SHL));
+        return addItem(new BinOp(a, b, BinOp.Kind.SHL));
     }
 
     public Expr shr(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.SHR));
+        return addItem(new BinOp(a, b, BinOp.Kind.SHR));
     }
 
     public Expr ushr(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.USHR));
+        return addItem(new BinOp(a, b, BinOp.Kind.USHR));
     }
 
     public Expr add(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.ADD));
+        return addItem(new BinOp(a, b, BinOp.Kind.ADD));
     }
 
     public Expr sub(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.SUB));
+        if (a instanceof ConstantImpl c && c.isZero()) {
+            return neg(b);
+        }
+        return addItem(new BinOp(a, b, BinOp.Kind.SUB));
     }
 
     public Expr mul(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.MUL));
+        return addItem(new BinOp(a, b, BinOp.Kind.MUL));
     }
 
     public Expr div(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.DIV));
+        return addItem(new BinOp(a, b, BinOp.Kind.DIV));
     }
 
     public Expr rem(final Expr a, final Expr b) {
-        return add_(new BinOp(a, b, BinOp.Kind.REM));
+        return addItem(new BinOp(a, b, BinOp.Kind.REM));
     }
 
     public Expr neg(final Expr a) {
-        return add_(new Neg(a));
+        return addItem(new Neg(a));
     }
 
     public Expr switchExpr(final Expr val, final Consumer<SwitchExprCreator> builder) {
@@ -559,7 +532,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     public Expr cast(final Expr a, final ClassDesc toType) {
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
-                return add_(new PrimitiveCast(a, toType));
+                return addItem(new PrimitiveCast(a, toType));
             } else if (toType.equals(boxType(a.typeKind()))) {
                 return box(a);
             } else {
@@ -571,37 +544,37 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             } else if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
                 return unbox(a);
             } else {
-                return add_(new CheckCast(a, toType));
+                return addItem(new CheckCast(a, toType));
             }
         }
     }
 
     public Expr instanceOf(final Expr obj, final ClassDesc type) {
-        return add_(new InstanceOf(obj, type));
+        return addItem(new InstanceOf(obj, type));
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
-        return add_(new Invoke(ctor, new New(ctor.owner()), true, args));
+        return addItem(new Invoke(ctor, new New(ctor.owner()), true, args));
     }
 
     public Expr invokeStatic(final MethodDesc method, final List<Expr> args) {
-        return add_(new Invoke(Opcode.INVOKESTATIC, method, null, args));
+        return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args));
     }
 
     public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<Expr> args) {
-        return add_(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
+        return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
     }
 
     public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<Expr> args) {
-        return add_(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
+        return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
     }
 
     public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
-        return add_(new Invoke(ctor, instance, false, args));
+        return addItem(new Invoke(ctor, instance, false, args));
     }
 
     public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
-        return add_(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
+        return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
     }
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, Expr> builder) {
@@ -636,27 +609,27 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void block(final Expr arg, BiConsumer<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (ExprImpl) arg, CD_void);
-        add_(block);
+        addItem(block);
         block.accept(nested);
         return;
     }
 
     public void block(final Consumer<BlockCreator> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this);
-        add_(block);
+        addItem(block);
         block.accept(nested);
         return;
     }
 
     public Expr blockExpr(final ClassDesc type, final Function<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
-        add_(block);
+        addItem(block);
         return block.accept(nested);
     }
 
     public Expr blockExpr(final Expr arg, final ClassDesc type, final BiFunction<BlockCreator, Expr, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (ExprImpl) arg, type);
-        add_(block);
+        addItem(block);
         return block.accept(nested);
     }
 
@@ -746,13 +719,13 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             // failed
         } else {
             if (cond instanceof Rel rel) {
-                return add_(new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right()));
+                return addItem(new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right()));
             } else if (cond instanceof RelZero rz) {
-                return add_(new IfZero(type, rz.kind(), wt, wf, rz.input()));
+                return addItem(new IfZero(type, rz.kind(), wt, wf, rz.input()));
             }
             // failed
         }
-        return add_(new IfZero(type, If.Kind.NE, wt, null, (ExprImpl) cond));
+        return addItem(new IfZero(type, If.Kind.NE, wt, null, (ExprImpl) cond));
     }
 
     private void doIf(final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
@@ -790,7 +763,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     public void break_(final BlockCreator outer) {
         ((BlockCreatorImpl) outer).fallsOut = true;
         if (outer != this) {
-            add_(new Item() {
+            addItem(new Item() {
                 protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
                     super.insert(block, iter);
                     block.cleanStack(iter);
@@ -813,7 +786,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (! outer.contains(this)) {
             throw new IllegalStateException("Invalid block nesting");
         }
-        add_(new Redo(outer));
+        addItem(new Redo(outer));
         markExited();
     }
 
@@ -839,7 +812,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void try_(final Consumer<TryCreator> body) {
-        add_(new TryImpl()).accept(body);
+        addItem(new TryImpl()).accept(body);
     }
 
     public void autoClose(final Expr resource, final BiConsumer<BlockCreator, Expr> body) {
@@ -865,7 +838,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     void monitorEnter(final ExprImpl monitor) {
-        add_(new Item() {
+        addItem(new Item() {
             protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
                 monitor.process(block, iter, verifyOnly);
             }
@@ -877,7 +850,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     void monitorExit(final ExprImpl monitor) {
-        add_(new Item() {
+        addItem(new Item() {
             protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
                 monitor.process(block, iter, verifyOnly);
             }
@@ -911,15 +884,15 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void return_() {
-        add_(new Return());
+        addItem(new Return());
     }
 
     public void return_(final Expr val) {
-        add_(new Return(val));
+        addItem(new Return(val));
     }
 
     public void throw_(final Expr val) {
-        add_(new Throw(val));
+        addItem(new Throw(val));
     }
 
     public Expr objHashCode(final Expr obj) {
@@ -988,7 +961,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void line(final int lineNumber) {
-        add_(new Item() {
+        addItem(new Item() {
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 cb.lineNumber(lineNumber);
             }
@@ -1052,7 +1025,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return replacement;
     }
 
-    <I extends Item> I add_(I item) {
+    <I extends Item> I addItem(I item) {
         if (! active()) {
             throw new IllegalStateException("This block is not active");
         }
@@ -1115,7 +1088,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             if (previous.type().equals(CD_void)) {
                 // skip it
                 previous.processDependencies(this, iter, true);
-            } else if (! previous.bound()) {
+            } else if (! previous.bound() || previous instanceof Dup) {
                 // destroy it
                 iter.remove();
             } else {

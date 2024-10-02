@@ -27,6 +27,10 @@ public final class EnumConstant extends ConstantImpl {
         return desc;
     }
 
+    public boolean isNonZero() {
+        return true;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof EnumConstant other && equals(other);
     }

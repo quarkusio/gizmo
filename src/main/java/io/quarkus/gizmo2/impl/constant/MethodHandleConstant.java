@@ -43,6 +43,10 @@ public final class MethodHandleConstant extends ConstantImpl {
         this.desc = desc;
     }
 
+    public boolean isNonZero() {
+        return true;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof MethodHandleConstant other && equals(other);
     }

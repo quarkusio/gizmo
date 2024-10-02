@@ -46,6 +46,14 @@ public final class IntConstant extends ConstantImpl {
         }
     }
 
+    public boolean isZero() {
+        return value.intValue() == 0;
+    }
+
+    public boolean isNonZero() {
+        return value.intValue() != 0;
+    }
+
     public boolean equals(final ConstantImpl obj) {
         return obj instanceof IntConstant other && equals(other);
     }

@@ -96,7 +96,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
 
     void emitInc(final BlockCreatorImpl block, final Constant amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.add_(new Item() {
+            block.addItem(new Item() {
                 public String itemName() {
                     return "LocalVar$Inc";
                 }
@@ -112,7 +112,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
 
     void emitDec(final BlockCreatorImpl block, final Constant amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.add_(new Item() {
+            block.addItem(new Item() {
                 public String itemName() {
                     return "LocalVar$Dec";
                 }

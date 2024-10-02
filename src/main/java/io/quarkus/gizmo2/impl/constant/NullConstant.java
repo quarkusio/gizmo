@@ -17,6 +17,10 @@ public final class NullConstant extends ConstantImpl {
         super(type);
     }
 
+    public boolean isZero() {
+        return true;
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.aconst_null();
     }
