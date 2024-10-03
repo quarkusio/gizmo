@@ -29,9 +29,9 @@ final class Rel extends ExprImpl {
         }
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        b.process(block, iter, verifyOnly);
-        a.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        b.process(iter, op);
+        a.process(iter, op);
     }
 
     ExprImpl left() {

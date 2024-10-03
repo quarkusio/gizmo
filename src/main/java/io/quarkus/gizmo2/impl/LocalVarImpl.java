@@ -83,8 +83,8 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
                 return "LocalVar$Set";
             }
 
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                value.process(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                value.process(iter, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

@@ -11,8 +11,8 @@ final class IfZero extends If {
         this.a = a;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        a.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        a.process(iter, op);
     }
 
     IfOp op(final Kind kind) {

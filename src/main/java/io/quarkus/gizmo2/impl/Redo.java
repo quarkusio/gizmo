@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.BlockCreatorImpl.cleanStack;
+
 import java.util.ListIterator;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -16,9 +18,9 @@ final class Redo extends Item {
         return "Redo:" + outer;
     }
 
-    protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
-        super.insert(block, iter);
-        block.cleanStack(iter);
+    protected void insert(final ListIterator<Item> iter) {
+        super.insert(iter);
+        cleanStack(iter);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

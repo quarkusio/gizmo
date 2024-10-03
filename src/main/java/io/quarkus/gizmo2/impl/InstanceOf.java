@@ -23,8 +23,8 @@ final class InstanceOf extends ExprImpl {
         return input.bound();
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        input.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        input.process(iter, op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

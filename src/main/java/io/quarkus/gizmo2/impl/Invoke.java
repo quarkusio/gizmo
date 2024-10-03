@@ -44,10 +44,10 @@ final class Invoke extends ExprImpl {
         return construct ? owner : type.returnType();
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
         int size = args.size();
         for (int i = size - 1; i >= 0; i --) {
-            args.get(i).process(block, iter, verifyOnly);
+            args.get(i).process(iter, op);
         }
     }
 

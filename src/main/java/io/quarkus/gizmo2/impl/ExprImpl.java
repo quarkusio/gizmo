@@ -53,8 +53,8 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
                 return true;
             }
 
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                ExprImpl.this.processDependencies(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                ExprImpl.this.processDependencies(iter, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -70,8 +70,8 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
             this.desc = desc;
         }
 
-        protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-            ExprImpl.this.process(block, iter, verifyOnly);
+        protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+            ExprImpl.this.process(iter, op);
         }
 
         public FieldDesc desc() {
@@ -90,9 +90,9 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
                         return true;
                     }
 
-                    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                        ExprImpl.this.process(block, iter, verifyOnly);
-                        ConstantImpl.ofFieldVarHandle(desc).process(block, iter, verifyOnly);
+                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                        ExprImpl.this.process(iter, op);
+                        ConstantImpl.ofFieldVarHandle(desc).process(iter, op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -113,9 +113,9 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
         Item emitSet(final BlockCreatorImpl block, final ExprImpl value, final AccessMode mode) {
             return switch (mode) {
                 case AsDeclared -> new Item() {
-                    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                        value.process(block, iter, verifyOnly);
-                        ExprImpl.this.process(block, iter, verifyOnly);
+                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                        value.process(iter, op);
+                        ExprImpl.this.process(iter, op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -123,10 +123,10 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
                     }
                 };
                 default -> new Item() {
-                    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                        value.process(block, iter, verifyOnly);
-                        ExprImpl.this.process(block, iter, verifyOnly);
-                        ConstantImpl.ofFieldVarHandle(desc).process(block, iter, verifyOnly);
+                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                        value.process(iter, op);
+                        ExprImpl.this.process(iter, op);
+                        ConstantImpl.ofFieldVarHandle(desc).process(iter, op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -158,9 +158,9 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
             this.index = (ExprImpl) index;
         }
 
-        protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-            index.process(block, iter, verifyOnly);
-            ExprImpl.this.process(block, iter, verifyOnly);
+        protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+            index.process(iter, op);
+            ExprImpl.this.process(iter, op);
         }
 
         ExprImpl emitGet(final BlockCreatorImpl block, final AccessMode mode) {
@@ -174,10 +174,10 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
                         return "ArrayDeref$Get" + super.itemName();
                     }
 
-                    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                        index.processDependencies(block, iter, verifyOnly);
-                        ExprImpl.this.processDependencies(block, iter, verifyOnly);
-                        ConstantImpl.ofArrayVarHandle(ExprImpl.this.type()).processDependencies(block, iter, verifyOnly);
+                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                        index.processDependencies(iter, op);
+                        ExprImpl.this.processDependencies(iter, op);
+                        ConstantImpl.ofArrayVarHandle(ExprImpl.this.type()).processDependencies(iter, op);
                     }
 
                     public ClassDesc type() {
@@ -212,11 +212,11 @@ non-sealed public abstract class ExprImpl extends Item implements Expr {
                         return "ArrayDeref$SetVolatile" + super.itemName();
                     }
 
-                    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                        value.process(block, iter, verifyOnly);
-                        index.process(block, iter, verifyOnly);
-                        ExprImpl.this.process(block, iter, verifyOnly);
-                        ConstantImpl.ofArrayVarHandle(ExprImpl.this.type()).process(block, iter, verifyOnly);
+                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                        value.process(iter, op);
+                        index.process(iter, op);
+                        ExprImpl.this.process(iter, op);
+                        ConstantImpl.ofArrayVarHandle(ExprImpl.this.type()).process(iter, op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

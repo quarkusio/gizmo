@@ -46,8 +46,8 @@ public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
 
     Item emitSet(final BlockCreatorImpl block, final ExprImpl value, final AccessMode mode) {
         return new Item() {
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                value.process(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                value.process(iter, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

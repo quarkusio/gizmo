@@ -41,8 +41,8 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                 return StaticFieldVarImpl.this.type();
             }
 
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                ConstantImpl.ofFieldVarHandle(desc).processDependencies(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                ConstantImpl.ofFieldVarHandle(desc).processDependencies(iter, op);
             }
 
             public boolean bound() {
@@ -65,10 +65,10 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
 
     Item emitSet(final BlockCreatorImpl block, final ExprImpl value, final AccessMode mode) {
         return new Item() {
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                value.process(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                value.process(iter, op);
                 if (mode != AccessMode.AsDeclared) {
-                    ConstantImpl.ofStaticFieldVarHandle(desc).process(block, iter, verifyOnly);
+                    ConstantImpl.ofStaticFieldVarHandle(desc).process(iter, op);
                 }
             }
 

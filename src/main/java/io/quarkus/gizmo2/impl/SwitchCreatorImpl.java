@@ -17,8 +17,8 @@ public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item 
         this.switchVal = (ExprImpl) switchVal;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        switchVal.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        switchVal.process(iter, op);
     }
 
     public BlockCreatorImpl enclosing() {

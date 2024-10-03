@@ -16,10 +16,10 @@ final class Dup extends ExprImpl {
         return input.type();
     }
 
-    protected void process(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
+    protected void process(final ListIterator<Item> iter, final Op op) {
         // don't actually process! just verify the previous item
         iter.previous();
-        expect(block, iter, input);
+        input.verify(iter);
         // roll back up to it
         iter.next();
     }

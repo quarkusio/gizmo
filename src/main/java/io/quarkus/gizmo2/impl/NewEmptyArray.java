@@ -17,8 +17,8 @@ final class NewEmptyArray extends ExprImpl {
         this.size = size;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        size.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        size.process(iter, op);
     }
 
     public ClassDesc type() {

@@ -303,9 +303,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
         addItem(new Item() {
-            protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
-                super.insert(block, iter);
-                block.cleanStack(iter);
+            protected void insert(final ListIterator<Item> iter) {
+                super.insert(iter);
+                cleanStack(iter);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -322,9 +322,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void redoDefault(final SwitchCreator switch_) {
         addItem(new Item() {
-            protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
-                super.insert(block, iter);
-                block.cleanStack(iter);
+            protected void insert(final ListIterator<Item> iter) {
+                super.insert(iter);
+                cleanStack(iter);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -672,7 +672,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (state == ST_ACTIVE) {
             // expect the apply result
             ListIterator<Item> iter = items.listIterator(items.size());
-            res.process(this, iter, true);
+            res.process(iter, Op.VERIFY);
             // and clean the rest
             cleanStack(iter);
             fallsOut = true;
@@ -691,7 +691,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (state == ST_ACTIVE) {
             // expect the apply result
             ListIterator<Item> iter = items.listIterator(items.size());
-            res.process(this, iter, true);
+            res.process(iter, Op.VERIFY);
             // and clean the rest
             cleanStack(iter);
             fallsOut = true;
@@ -764,9 +764,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         ((BlockCreatorImpl) outer).fallsOut = true;
         if (outer != this) {
             addItem(new Item() {
-                protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
-                    super.insert(block, iter);
-                    block.cleanStack(iter);
+                protected void insert(final ListIterator<Item> iter) {
+                    super.insert(iter);
+                    cleanStack(iter);
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -839,8 +839,8 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     void monitorEnter(final ExprImpl monitor) {
         addItem(new Item() {
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                monitor.process(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                monitor.process(iter, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -851,8 +851,8 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     void monitorExit(final ExprImpl monitor) {
         addItem(new Item() {
-            protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-                monitor.process(block, iter, verifyOnly);
+            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+                monitor.process(iter, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -986,8 +986,8 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         });
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        input.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        input.process(iter, op);
     }
 
     public void writeCode(CodeBuilder cb, final BlockCreatorImpl block) {
@@ -1029,7 +1029,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (! active()) {
             throw new IllegalStateException("This block is not active");
         }
-        item.insert(this, items.listIterator(items.size()));
+        ListIterator<Item> iter = items.listIterator(items.size());
+        item.insert(iter);
+        item.processDependencies(iter, Op.INSERT);
         if (item.exitsAll()) {
             markExitedAll();
         } else if (item.exitsBlock()) {
@@ -1081,13 +1083,13 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         }
     }
 
-    void cleanStack(final ListIterator<Item> iter) {
+    static void cleanStack(final ListIterator<Item> iter) {
         // clean the block stack
         while (iter.hasPrevious()) {
             Item previous = iter.previous();
             if (previous.type().equals(CD_void)) {
                 // skip it
-                previous.processDependencies(this, iter, true);
+                previous.processDependencies(iter, Op.VERIFY);
             } else if (! previous.bound() || previous instanceof Dup) {
                 // destroy it
                 iter.remove();
@@ -1095,7 +1097,8 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
                 iter.next();
                 // pop it
                 Pop pop = new Pop((ExprImpl) previous);
-                pop.insert(this, iter);
+                pop.insert(iter);
+                iter.previous();
             }
         }
     }

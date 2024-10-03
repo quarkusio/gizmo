@@ -15,8 +15,8 @@ final class CheckCast extends ExprImpl {
         this.toType = toType;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        a.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        a.process(iter, op);
     }
 
     public ClassDesc type() {

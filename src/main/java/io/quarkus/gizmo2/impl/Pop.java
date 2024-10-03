@@ -11,8 +11,8 @@ public final class Pop extends Item {
         this.expr = expr;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        expr.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        expr.process(iter, op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

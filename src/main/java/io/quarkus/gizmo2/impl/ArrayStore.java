@@ -15,10 +15,10 @@ final class ArrayStore extends Item {
         this.value = value;
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
-        value.process(block, iter, verifyOnly);
-        index.process(block, iter, verifyOnly);
-        arrayExpr.process(block, iter, verifyOnly);
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+        value.process(iter, op);
+        index.process(iter, op);
+        arrayExpr.process(iter, op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

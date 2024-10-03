@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.BlockCreatorImpl.cleanStack;
+
 import java.util.ListIterator;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -17,14 +19,14 @@ final class Return extends Item {
         this.val = (ExprImpl) val;
     }
 
-    protected void insert(final BlockCreatorImpl block, final ListIterator<Item> iter) {
-        super.insert(block, iter);
-        block.cleanStack(iter);
+    protected void insert(final ListIterator<Item> iter) {
+        super.insert(iter);
+        cleanStack(iter);
     }
 
-    protected void processDependencies(final BlockCreatorImpl block, final ListIterator<Item> iter, final boolean verifyOnly) {
+    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
         if (val != null && val.typeKind() != TypeKind.VOID) {
-            val.process(block, iter, verifyOnly);
+            val.process(iter, op);
         }
     }
 
