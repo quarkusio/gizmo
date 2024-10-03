@@ -16,6 +16,17 @@ final class Dup extends ExprImpl {
         return input.type();
     }
 
+    public void pop(final ListIterator<Item> iter) {
+        // a dup can always be removed
+        iter.remove();
+    }
+
+    void verify(final ListIterator<Item> iter) {
+        if (peek(iter) != input) {
+
+        }
+    }
+
     protected void process(final ListIterator<Item> iter, final Op op) {
         // don't actually process! just verify the previous item
         iter.previous();
@@ -25,10 +36,11 @@ final class Dup extends ExprImpl {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        if (typeKind().slotSize() == 2) {
-            cb.dup2();
-        } else {
-            cb.dup();
+        switch (typeKind().slotSize()) {
+            case 2 -> cb.dup2();
+            case 1 -> cb.dup();
+            case 0 -> {}
+            default -> throw new IllegalStateException();
         }
     }
 }

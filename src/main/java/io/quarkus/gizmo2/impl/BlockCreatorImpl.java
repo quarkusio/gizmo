@@ -642,7 +642,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         }
         handler.accept(this, header);
         if (state == ST_ACTIVE) {
-            cleanStack(items.listIterator(items.size()));
+            cleanStack(iterate());
             fallsOut = true;
         }
     }
@@ -656,7 +656,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         }
         handler.accept(this);
         if (state == ST_ACTIVE) {
-            cleanStack(items.listIterator(items.size()));
+            cleanStack(iterate());
             fallsOut = true;
         }
     }
@@ -671,7 +671,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         ExprImpl res = (ExprImpl) handler.apply(this);
         if (state == ST_ACTIVE) {
             // expect the apply result
-            ListIterator<Item> iter = items.listIterator(items.size());
+            ListIterator<Item> iter = iterate();
             res.process(iter, Op.VERIFY);
             // and clean the rest
             cleanStack(iter);
@@ -690,7 +690,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         ExprImpl res = (ExprImpl) handler.apply(this, header);
         if (state == ST_ACTIVE) {
             // expect the apply result
-            ListIterator<Item> iter = items.listIterator(items.size());
+            ListIterator<Item> iter = iterate();
             res.process(iter, Op.VERIFY);
             // and clean the rest
             cleanStack(iter);
@@ -710,11 +710,17 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {
         // try to combine the condition into the `if`
         if (cond.bound()) {
-            if (cond instanceof Rel rel && lastWas(rel)) {
-                return replace_(rel, new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right()));
-            }
-            if (cond instanceof RelZero rz && lastWas(rz)) {
-                return replace_(rz, new IfZero(type, rz.kind(), wt, wf, rz.input()));
+            ListIterator<Item> iter = iterate();
+            if (peek(iter) == cond) {
+                if (cond instanceof Rel rel) {
+                    IfRel ifRel = new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right());
+                    rel.replace(iter, ifRel);
+                    return ifRel;
+                } else if (cond instanceof RelZero rz) {
+                    IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input());
+                    rz.replace(iter, ifZero);
+                    return ifZero;
+                }
             }
             // failed
         } else {
@@ -1017,11 +1023,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (! active()) {
             throw new IllegalStateException("This block is not active");
         }
-        if (! lastWas(item)) {
-            throw new IllegalStateException("Item mismatch");
-        }
-        int last = items.size() - 1;
-        items.set(last, replacement);
+        item.replace(iterate(), replacement);
         return replacement;
     }
 
@@ -1029,7 +1031,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (! active()) {
             throw new IllegalStateException("This block is not active");
         }
-        ListIterator<Item> iter = items.listIterator(items.size());
+        ListIterator<Item> iter = iterate();
         item.insert(iter);
         item.processDependencies(iter, Op.INSERT);
         if (item.exitsAll()) {
@@ -1081,6 +1083,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (blockCleanup != null) {
             blockCleanup.writeCleanup(cb, this);
         }
+    }
+
+    ListIterator<Item> iterate() {
+        return items.listIterator(items.size());
     }
 
     static void cleanStack(final ListIterator<Item> iter) {

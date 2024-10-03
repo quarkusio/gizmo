@@ -6,6 +6,7 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.TypeKind;
 
 public abstract class Item {
 
@@ -19,6 +20,14 @@ public abstract class Item {
      */
     public ClassDesc type() {
         return ConstantDescs.CD_void;
+    }
+
+    public TypeKind typeKind() {
+        return TypeKind.from(type());
+    }
+
+    public int slotSize() {
+        return typeKind().slotSize();
     }
 
     public boolean bound() {
@@ -89,7 +98,7 @@ public abstract class Item {
      * @return the previous item (not {@code null})
      * @throws NoSuchElementException if there is no previous item
      */
-    protected Item peek(ListIterator<Item> iter) throws NoSuchElementException {
+    protected static Item peek(ListIterator<Item> iter) throws NoSuchElementException {
         Item item = iter.previous();
         iter.next();
         return item;
