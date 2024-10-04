@@ -10,11 +10,11 @@ import io.quarkus.gizmo2.creator.SwitchCreator;
 public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item implements SwitchCreator permits IntSwitch {
     public static final double TABLESWITCH_DENSITY = 0.9;
     final BlockCreatorImpl enclosing;
-    final ExprImpl switchVal;
+    final Item switchVal;
 
     SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal) {
         this.enclosing = enclosing;
-        this.switchVal = (ExprImpl) switchVal;
+        this.switchVal = (Item) switchVal;
     }
 
     protected void processDependencies(final ListIterator<Item> iter, final Op op) {

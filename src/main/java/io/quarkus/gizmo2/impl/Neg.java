@@ -6,11 +6,11 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class Neg extends ExprImpl {
-    private final ExprImpl a;
+final class Neg extends Item {
+    private final Item a;
 
     Neg(final Expr a) {
-        this.a = (ExprImpl) a;
+        this.a = (Item) a;
     }
 
     protected void processDependencies(final ListIterator<Item> iter, final Op op) {

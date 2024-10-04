@@ -8,11 +8,11 @@ import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 
-final class NewEmptyArray extends ExprImpl {
+final class NewEmptyArray extends Item {
     private final ClassDesc arrayType;
-    private final ExprImpl size;
+    private final Item size;
 
-    NewEmptyArray(final ClassDesc elemType, final ExprImpl size) {
+    NewEmptyArray(final ClassDesc elemType, final Item size) {
         arrayType = elemType.arrayType();
         this.size = size;
     }

@@ -19,11 +19,11 @@ import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-import io.quarkus.gizmo2.impl.ExprImpl;
+import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Util;
 
-public abstract non-sealed class ConstantImpl extends ExprImpl implements Constant {
+public abstract non-sealed class ConstantImpl extends Item implements Constant {
     private final ClassDesc type;
 
     ConstantImpl(final ClassDesc type) {

@@ -11,16 +11,16 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
-final class BinOp extends ExprImpl {
-    private final ExprImpl a;
-    private final ExprImpl b;
+final class BinOp extends Item {
+    private final Item a;
+    private final Item b;
     private final Kind kind;
 
     BinOp(final Expr a, final Expr b, final Kind kind) {
         // todo: automatic conversions, unboxing
         requireSameType(a, b);
-        this.a = (ExprImpl) a;
-        this.b = (ExprImpl) b;
+        this.a = (Item) a;
+        this.b = (Item) b;
         this.kind = kind;
         if (! kind.isValidFor(typeKind())) {
             throw new IllegalArgumentException("Operation is not valid for type kind of " + typeKind());

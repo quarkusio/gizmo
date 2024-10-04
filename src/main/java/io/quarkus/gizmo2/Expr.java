@@ -5,10 +5,10 @@ import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 
 import io.github.dmlloyd.classfile.TypeKind;
-import io.quarkus.gizmo2.impl.ExprImpl;
+import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.GizmoImpl;
 
-public sealed interface Expr permits Constant, LValueExpr, ExprImpl {
+public sealed interface Expr permits Constant, LValueExpr, Item {
     ClassDesc type();
 
     default TypeKind typeKind() {

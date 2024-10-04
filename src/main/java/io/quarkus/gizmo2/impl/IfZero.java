@@ -4,9 +4,9 @@ import java.lang.constant.ClassDesc;
 import java.util.ListIterator;
 
 final class IfZero extends If {
-    final ExprImpl a;
+    final Item a;
 
-    IfZero(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final ExprImpl a) {
+    IfZero(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final Item a) {
         super(type, kind, whenTrue, whenFalse);
         this.a = a;
     }

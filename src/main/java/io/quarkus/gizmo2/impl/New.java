@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
-final class New extends ExprImpl {
+final class New extends Item {
     private final ClassDesc type;
 
     New(final ClassDesc type) {

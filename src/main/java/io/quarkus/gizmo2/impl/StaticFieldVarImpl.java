@@ -32,11 +32,11 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
         return false;
     }
 
-    ExprImpl emitGet(final BlockCreatorImpl block, final AccessMode mode) {
+    Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
         if (mode == AccessMode.AsDeclared) {
             return asBound();
         }
-        return new ExprImpl() {
+        return new Item() {
             public ClassDesc type() {
                 return StaticFieldVarImpl.this.type();
             }
@@ -63,7 +63,7 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
         };
     }
 
-    Item emitSet(final BlockCreatorImpl block, final ExprImpl value, final AccessMode mode) {
+    Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
         return new Item() {
             protected void processDependencies(final ListIterator<Item> iter, final Op op) {
                 value.process(iter, op);

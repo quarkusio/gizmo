@@ -6,12 +6,12 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class CheckCast extends ExprImpl {
-    private final ExprImpl a;
+final class CheckCast extends Item {
+    private final Item a;
     private final ClassDesc toType;
 
     CheckCast(final Expr a, final ClassDesc toType) {
-        this.a = (ExprImpl) a;
+        this.a = (Item) a;
         this.toType = toType;
     }
 

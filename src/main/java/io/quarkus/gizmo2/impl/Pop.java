@@ -5,9 +5,9 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 
 public final class Pop extends Item {
-    private final ExprImpl expr;
+    private final Item expr;
 
-    public Pop(final ExprImpl expr) {
+    public Pop(final Item expr) {
         this.expr = expr;
     }
 

@@ -8,10 +8,10 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
 final class Throw extends Item {
-    final ExprImpl thrown;
+    final Item thrown;
 
     Throw(final Expr val) {
-        thrown = (ExprImpl) val;
+        thrown = (Item) val;
     }
 
     protected void insert(final ListIterator<Item> iter) {

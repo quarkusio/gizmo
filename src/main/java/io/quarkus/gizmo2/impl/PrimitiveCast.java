@@ -7,12 +7,12 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
-final class PrimitiveCast extends ExprImpl {
-    private final ExprImpl a;
+final class PrimitiveCast extends Item {
+    private final Item a;
     private final ClassDesc toType;
 
     PrimitiveCast(final Expr a, final ClassDesc toType) {
-        this.a = (ExprImpl) a;
+        this.a = (Item) a;
         this.toType = toType;
     }
 

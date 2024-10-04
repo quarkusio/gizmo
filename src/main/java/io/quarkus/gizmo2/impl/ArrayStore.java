@@ -5,11 +5,11 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 
 final class ArrayStore extends Item {
-    private final ExprImpl arrayExpr;
-    private final ExprImpl index;
-    private final ExprImpl value;
+    private final Item arrayExpr;
+    private final Item index;
+    private final Item value;
 
-    ArrayStore(final ExprImpl arrayExpr, final ExprImpl index, final ExprImpl value) {
+    ArrayStore(final Item arrayExpr, final Item index, final Item value) {
         this.arrayExpr = arrayExpr;
         this.index = index;
         this.value = value;

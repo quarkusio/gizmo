@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
-final class BlockHeaderExpr extends ExprImpl {
+final class BlockHeaderExpr extends Item {
     private final BlockCreatorImpl block;
     private final ClassDesc type;
 

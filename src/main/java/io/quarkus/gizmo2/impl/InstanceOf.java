@@ -6,12 +6,12 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class InstanceOf extends ExprImpl {
-    private final ExprImpl input;
+final class InstanceOf extends Item {
+    private final Item input;
     private final ClassDesc type;
 
     InstanceOf(final Expr input, final ClassDesc type) {
-        this.input = (ExprImpl) input;
+        this.input = (Item) input;
         this.type = type;
     }
 

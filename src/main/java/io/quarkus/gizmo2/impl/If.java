@@ -6,7 +6,7 @@ import java.util.List;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 
-abstract class If extends ExprImpl {
+abstract class If extends Item {
     private final ClassDesc type;
     final Kind kind;
     final BlockCreatorImpl whenTrue;

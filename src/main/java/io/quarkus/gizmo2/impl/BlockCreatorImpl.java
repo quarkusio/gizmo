@@ -90,7 +90,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     private boolean fallsOut;
     private final Label startLabel;
     private final Label endLabel;
-    private final ExprImpl input;
+    private final Item input;
     private final ClassDesc outputType;
     private final BlockHeaderExpr header;
 
@@ -106,11 +106,11 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         this(parent.owner, parent.outerCodeBuilder, parent, headerType, ConstantImpl.ofVoid(), CD_void);
     }
 
-    BlockCreatorImpl(final BlockCreatorImpl parent, final ExprImpl input, final ClassDesc outputType) {
+    BlockCreatorImpl(final BlockCreatorImpl parent, final Item input, final ClassDesc outputType) {
         this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType);
     }
 
-    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc headerType, final ExprImpl input, final ClassDesc outputType) {
+    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc headerType, final Item input, final ClassDesc outputType) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
@@ -173,7 +173,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void set(final LValueExpr var, final Expr value, final AccessMode mode) {
-        addItem(((LValueExprImpl) var).emitSet(this, (ExprImpl) value, mode));
+        addItem(((LValueExprImpl) var).emitSet(this, (Item) value, mode));
     }
 
     public void andAssign(final LValueExpr var, final Expr arg) {
@@ -369,7 +369,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr newEmptyArray(final ClassDesc elemType, final Expr size) {
-        return addItem(new NewEmptyArray(elemType, (ExprImpl) size));
+        return addItem(new NewEmptyArray(elemType, (Item) size));
     }
 
     public Expr newArray(final ClassDesc elementType, final List<Expr> values) {
@@ -608,7 +608,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void block(final Expr arg, BiConsumer<BlockCreator, Expr> nested) {
-        BlockCreatorImpl block = new BlockCreatorImpl(this, (ExprImpl) arg, CD_void);
+        BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, CD_void);
         addItem(block);
         block.accept(nested);
         return;
@@ -628,12 +628,12 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr blockExpr(final Expr arg, final ClassDesc type, final BiFunction<BlockCreator, Expr, Expr> nested) {
-        BlockCreatorImpl block = new BlockCreatorImpl(this, (ExprImpl) arg, type);
+        BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, type);
         addItem(block);
         return block.accept(nested);
     }
 
-    public void accept(final BiConsumer<? super BlockCreatorImpl, ? super ExprImpl> handler) {
+    public void accept(final BiConsumer<? super BlockCreatorImpl, ? super Item> handler) {
         if (state != ST_ACTIVE) {
             throw new IllegalStateException("Block already processed");
         }
@@ -668,7 +668,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (type().equals(CD_void)) {
             throw new IllegalStateException("Function accept on void-typed block");
         }
-        ExprImpl res = (ExprImpl) handler.apply(this);
+        Item res = (Item) handler.apply(this);
         if (state == ST_ACTIVE) {
             // expect the apply result
             ListIterator<Item> iter = iterate();
@@ -687,7 +687,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (type().equals(CD_void)) {
             throw new IllegalStateException("Function accept on void-typed block");
         }
-        ExprImpl res = (ExprImpl) handler.apply(this, header);
+        Item res = (Item) handler.apply(this, header);
         if (state == ST_ACTIVE) {
             // expect the apply result
             ListIterator<Item> iter = iterate();
@@ -731,7 +731,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             }
             // failed
         }
-        return addItem(new IfZero(type, If.Kind.NE, wt, null, (ExprImpl) cond));
+        return addItem(new IfZero(type, If.Kind.NE, wt, null, (Item) cond));
     }
 
     private void doIf(final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
@@ -843,7 +843,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         });
     }
 
-    void monitorEnter(final ExprImpl monitor) {
+    void monitorEnter(final Item monitor) {
         addItem(new Item() {
             protected void processDependencies(final ListIterator<Item> iter, final Op op) {
                 monitor.process(iter, op);
@@ -855,7 +855,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         });
     }
 
-    void monitorExit(final ExprImpl monitor) {
+    void monitorExit(final Item monitor) {
         addItem(new Item() {
             protected void processDependencies(final ListIterator<Item> iter, final Op op) {
                 monitor.process(iter, op);
@@ -870,10 +870,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     public void synchronized_(final Expr monitor, final Consumer<BlockCreator> body) {
         block(monitor, (b0, mon) -> {
             LocalVar mv = define("$$monitor" + depth, mon);
-            monitorEnter((ExprImpl) mv);
+            monitorEnter((Item) mv);
             try_(t1 -> {
                 t1.body(body);
-                t1.finally_(b2 -> ((BlockCreatorImpl)b2).monitorExit((ExprImpl) mv));
+                t1.finally_(b2 -> ((BlockCreatorImpl)b2).monitorExit((Item) mv));
             });
         });
     }
@@ -1102,7 +1102,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             } else {
                 iter.next();
                 // pop it
-                Pop pop = new Pop((ExprImpl) previous);
+                Pop pop = new Pop((Item) previous);
                 pop.insert(iter);
                 iter.previous();
             }

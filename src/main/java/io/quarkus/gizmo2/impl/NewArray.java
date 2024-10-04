@@ -10,9 +10,9 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 
-final class NewArray extends ExprImpl {
+final class NewArray extends Item {
     private final ClassDesc arrayType;
-    private final List<ExprImpl> values;
+    private final List<Item> values;
     private final List<ArrayStore> stores;
     private final List<Dup> dups;
     private final NewEmptyArray nea;
@@ -20,13 +20,13 @@ final class NewArray extends ExprImpl {
     NewArray(final ClassDesc elemType, final List<Expr> storeVals) {
         arrayType = elemType.arrayType();
         int size = storeVals.size();
-        List<ExprImpl> values = new ArrayList<>(size);
+        List<Item> values = new ArrayList<>(size);
         List<ArrayStore> stores = new ArrayList<>(size);
         List<Dup> dups = new ArrayList<>(size);
         NewEmptyArray nea = new NewEmptyArray(elemType, ConstantImpl.of(size));
-        ExprImpl dupIn = nea;
+        Item dupIn = nea;
         for (int i = 0; i < size; i++) {
-            final ExprImpl value = (ExprImpl) storeVals.get(i);
+            final Item value = (Item) storeVals.get(i);
             values.add(value);
             Dup dup = new Dup(dupIn);
             dups.add(dup);

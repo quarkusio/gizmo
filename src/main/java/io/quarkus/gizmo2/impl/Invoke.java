@@ -13,24 +13,24 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-final class Invoke extends ExprImpl {
+final class Invoke extends Item {
     private final ClassDesc owner;
     private final String name;
     private final MethodTypeDesc type;
-    private final List<ExprImpl> args;
+    private final List<Item> args;
     private final Opcode opcode;
     private final boolean isInterface;
     private final boolean construct;
 
     Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<Expr> args) {
-        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, false, Stream.concat(Stream.ofNullable(instance), args.stream()).map(ExprImpl.class::cast).toList());
+        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, false, Stream.concat(Stream.ofNullable(instance), args.stream()).map(Item.class::cast).toList());
     }
 
     Invoke(final ConstructorDesc desc, Expr instance, boolean construct, List<Expr> args) {
-        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, construct, Stream.concat(Stream.of(instance), args.stream()).map(ExprImpl.class::cast).toList());
+        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, construct, Stream.concat(Stream.of(instance), args.stream()).map(Item.class::cast).toList());
     }
 
-    private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode, final boolean isInterface, final boolean construct, final List<ExprImpl> args) {
+    private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode, final boolean isInterface, final boolean construct, final List<Item> args) {
         this.owner = owner;
         this.name = name;
         this.type = type;

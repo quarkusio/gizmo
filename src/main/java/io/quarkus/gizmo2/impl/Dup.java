@@ -5,10 +5,10 @@ import java.util.ListIterator;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
-final class Dup extends ExprImpl {
-    private final ExprImpl input;
+final class Dup extends Item {
+    private final Item input;
 
-    Dup(final ExprImpl input) {
+    Dup(final Item input) {
         this.input = input;
     }
 

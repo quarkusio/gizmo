@@ -10,16 +10,16 @@ import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
-final class Rel extends ExprImpl {
-    private final ExprImpl a;
-    private final ExprImpl b;
+final class Rel extends Item {
+    private final Item a;
+    private final Item b;
     private final If.Kind kind;
 
     Rel(final Expr a, final Expr b, final If.Kind kind) {
         this.kind = kind;
         requireSameType(a, b);
-        this.a = (ExprImpl) a;
-        this.b = (ExprImpl) b;
+        this.a = (Item) a;
+        this.b = (Item) b;
         if (a.typeKind() == TypeKind.REFERENCE) {
             if (kind.if_acmp == null) {
                 throw new IllegalStateException("Invalid comparison for reference types");
@@ -34,11 +34,11 @@ final class Rel extends ExprImpl {
         a.process(iter, op);
     }
 
-    ExprImpl left() {
+    Item left() {
         return a;
     }
 
-    ExprImpl right() {
+    Item right() {
         return b;
     }
 

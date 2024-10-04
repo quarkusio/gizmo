@@ -10,13 +10,13 @@ import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
-final class RelZero extends ExprImpl {
-    private final ExprImpl a;
+final class RelZero extends Item {
+    private final Item a;
     private final If.Kind kind;
 
     RelZero(final Expr a, final If.Kind kind) {
         this.kind = kind;
-        this.a = (ExprImpl) a;
+        this.a = (Item) a;
         if (a.typeKind() == TypeKind.REFERENCE) {
             if (kind.if_acmp == null) {
                 throw new IllegalStateException("Invalid comparison for reference types");
@@ -24,7 +24,7 @@ final class RelZero extends ExprImpl {
         }
     }
 
-    ExprImpl input() {
+    Item input() {
         return a;
     }
 

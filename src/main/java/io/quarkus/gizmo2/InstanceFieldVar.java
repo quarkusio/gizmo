@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2;
 
-import io.quarkus.gizmo2.impl.ExprImpl;
+import io.quarkus.gizmo2.impl.Item;
 
-public sealed interface InstanceFieldVar extends FieldVar permits ExprImpl.FieldDeref {
+public sealed interface InstanceFieldVar extends FieldVar permits Item.FieldDeref {
 }

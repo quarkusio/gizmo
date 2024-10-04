@@ -3,9 +3,9 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 
 final class IfRel extends If {
-    final ExprImpl a, b;
+    final Item a, b;
 
-    IfRel(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final ExprImpl a, final ExprImpl b) {
+    IfRel(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final Item a, final Item b) {
         super(type, kind, whenTrue, whenFalse);
         this.a = a;
         this.b = b;

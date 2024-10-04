@@ -15,15 +15,15 @@ import java.util.ListIterator;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class Cmp extends ExprImpl {
+final class Cmp extends Item {
     private static final ClassDesc CD_Comparable = ClassDesc.of("java.lang.Comparable");
-    private final ExprImpl a;
-    private final ExprImpl b;
+    private final Item a;
+    private final Item b;
     private final Kind kind;
 
     Cmp(final Expr a, final Expr b, final Kind kind) {
-        this.a = (ExprImpl) a;
-        this.b = (ExprImpl) b;
+        this.a = (Item) a;
+        this.b = (Item) b;
         this.kind = kind;
     }
 

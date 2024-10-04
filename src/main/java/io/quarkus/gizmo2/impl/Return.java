@@ -9,14 +9,14 @@ import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
 final class Return extends Item {
-    private final ExprImpl val;
+    private final Item val;
 
     Return() {
         this(null);
     }
 
     Return(final Expr val) {
-        this.val = (ExprImpl) val;
+        this.val = (Item) val;
     }
 
     protected void insert(final ListIterator<Item> iter) {
