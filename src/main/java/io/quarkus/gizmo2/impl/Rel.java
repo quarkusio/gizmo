@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
@@ -29,9 +29,8 @@ final class Rel extends Item {
         }
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        b.process(iter, op);
-        a.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return a.process(b.process(node.prev(), op), op);
     }
 
     Item left() {

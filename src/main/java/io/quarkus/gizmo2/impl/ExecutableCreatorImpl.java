@@ -57,7 +57,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         }
         bc.accept(builder);
         bc.writeCode(cb, bc);
-        if (bc.fallsOut()) {
+        if (bc.mayFallThrough()) {
             throw new IllegalStateException("Outermost block of an executable member must not fall out (return or throw instead)");
         }
     }

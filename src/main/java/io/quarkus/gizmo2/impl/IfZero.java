@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 final class IfZero extends If {
     final Item a;
@@ -11,8 +11,8 @@ final class IfZero extends If {
         this.a = a;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        a.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return a.process(node.prev(), op);
     }
 
     IfOp op(final Kind kind) {

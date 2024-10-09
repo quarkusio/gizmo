@@ -62,7 +62,7 @@ abstract class If extends Item {
                 // if-else
                 op(kind).accept(cb, whenTrue.startLabel());
                 whenFalse.writeCode(cb, block);
-                if (whenFalse.fallsOut()) {
+                if (whenFalse.mayFallThrough()) {
                     cb.goto_(whenTrue.endLabel());
                 }
                 whenTrue.writeCode(cb, block);
@@ -82,8 +82,16 @@ abstract class If extends Item {
         }
     }
 
-    public boolean exitsAll() {
-        return whenTrue != null && whenTrue.exitsAll() && whenFalse != null && whenFalse.exitsAll();
+    public boolean mayThrow() {
+        return whenTrue != null && whenTrue.mayThrow() || whenFalse != null && whenFalse.mayThrow();
+    }
+
+    public boolean mayFallThrough() {
+        return whenTrue != null && whenTrue.mayFallThrough() || whenFalse != null && whenFalse.mayFallThrough();
+    }
+
+    public boolean mayReturn() {
+        return whenTrue != null && whenTrue.mayReturn() || whenFalse != null && whenFalse.mayReturn();
     }
 
     abstract IfOp op(Kind kind);

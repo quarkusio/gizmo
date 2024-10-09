@@ -2,7 +2,7 @@ package io.quarkus.gizmo2.impl;
 
 import static io.quarkus.gizmo2.impl.BlockCreatorImpl.cleanStack;
 
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -19,23 +19,29 @@ final class Return extends Item {
         this.val = (Item) val;
     }
 
-    protected void insert(final ListIterator<Item> iter) {
-        super.insert(iter);
-        cleanStack(iter);
+    protected Node insert(final Node node) {
+        Node res = super.insert(node);
+        cleanStack(node);
+        return res;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        if (val != null && val.typeKind() != TypeKind.VOID) {
-            val.process(iter, op);
-        }
+    public boolean mayFallThrough() {
+        return false;
     }
 
-    public boolean exitsAll() {
+    public boolean mayReturn() {
         return true;
     }
 
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        if (val != null && val.typeKind() != TypeKind.VOID) {
+            return val.process(node.prev(), op);
+        } else {
+            return node.prev();
+        }
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        block.exitAll(cb);
         if (val != null) {
             cb.return_(TypeKind.from(val.type()));
         } else {

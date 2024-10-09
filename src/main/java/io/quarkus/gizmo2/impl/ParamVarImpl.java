@@ -2,7 +2,7 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -46,8 +46,8 @@ public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
         return new Item() {
-            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                value.process(iter, op);
+            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                return value.process(node.prev(), op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

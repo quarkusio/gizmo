@@ -6,9 +6,8 @@ import static java.lang.constant.ConstantDescs.CD_int;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -45,89 +44,91 @@ public abstract non-sealed class Item implements Expr {
     }
 
     /**
-     * Move the cursor before the given {@code item}, popping any unused values in between.
+     * Return the node before this item iterating backwards from the given item, popping any unused values in between.
      * If the item is not found, an exception is thrown.
      *
-     * @param iter the item list iterator (must not be {@code null})
+     * @param node a node which is either equal to, or after, the node containing this item (not {@code null})
+     * @return the node previous to this item (not {@code null})
      */
-    void verify(ListIterator<Item> iter) {
-        while (iter.hasPrevious()) {
-            Item actual = iter.previous();
+    Node verify(Node node) {
+        while (node.item() != BlockHeader.INSTANCE) {
+            Item actual = node.item();
             if (equals(actual)) {
                 // found it
-                return;
+                return forEachDependency(node, Item::verify);
             }
             // we don't care about this one
-            actual.pop(iter);
-        }
-        throw missing();
+            node = actual.pop(node);
+        };
+        throw new IllegalStateException("Iteration past top");
     }
 
     /**
-     * Pop the item's result from the stack during a stack cleanup.
-     * This item will have just been returned by {@code iter.previous()}.
+     * Pop or skip this item's result from the stack during a stack cleanup.
      *
-     * @param iter the item list iterator (not {@code null})
+     * @param node the current item's node (not {@code null})
+     * @return the node before the popped node (not {@code null})
      */
-    public void pop(ListIterator<Item> iter) {
-        if (type().equals(ConstantDescs.CD_void)) {
-            // no operation
+    public Node pop(Node node) {
+        assert this == node.item();
+        if (isVoid()) {
+            // no operation; skip over dependencies
+            Node result = forEachDependency(node, Item::verify);
+            if (result == null) {
+                throw new IllegalStateException();
+            }
+            return result;
         } else if (! bound()) {
-            // we can safely remove ourselves
-            iter.remove();
-            // and our dependencies
-            processDependencies(iter, Op.POP);
+            // remove our dependencies
+            Node result = forEachDependency(node, Item::pop);
+            if (result == null) {
+                throw new IllegalStateException();
+            }
+            // remove ourselves
+            node.remove();
+            return result;
         } else {
-            iter.next();
             // add an explicit pop
             Pop pop = new Pop(this);
-            pop.insert(iter);
-            // move back before `this` again
-            iter.previous();
+            pop.insert(node.next());
+            return node.prev();
         }
     }
 
     /**
-     * Insert this item into the instruction list at the current point
-     * and position the cursor immediately before it.
+     * Insert this item into the instruction list before the given node.
      *
-     * @param iter the item list iterator (not {@code null})
+     * @param node the node which this item should be inserted before (must not be {@code null})
+     * @return the node for the newly inserted item (not {@code null})
      */
-    protected void insert(ListIterator<Item> iter) {
-        iter.add(this);
-        iter.previous();
+    protected Node insert(Node node) {
+        return node.insertPrev(this);
     }
 
     /**
-     * Peek at the previous item in the list iterator.
-     * If there is no previous item, an exception is thrown.
-     * The item will be considered to be the "last returned" for the purposes of {@linkplain ListIterator#remove() removal}
-     * or {@linkplain ListIterator#add addition}.
+     * If unbound, insert this node into the list after the given node; otherwise, verify this node.
      *
-     * @param iter the list iterator (must not be {@code null})
-     * @return the previous item (not {@code null})
-     * @throws NoSuchElementException if there is no previous item
+     * @param node the node where this item is expected to be (must not be {@code null})
+     * @return the node before the first dependency of this node (not {@code null})
      */
-    protected static Item peek(ListIterator<Item> iter) throws NoSuchElementException {
-        Item item = iter.previous();
-        iter.next();
-        return item;
+    protected Node insertIfUnbound(Node node) {
+        if (! bound()) {
+            return forEachDependency(node.insertNext(this), Item::insertIfUnbound);
+        } else {
+            return verify(node);
+        }
     }
 
     /**
      * Replace this item with the given replacement.
      * This item must be the previous item in the iterator.
      *
-     * @param iter        the list iterator (must not be {@code null})
+     * @param node        the list iterator (must not be {@code null})
      * @param replacement the replacement item (must not be {@code null})
      */
-    protected void replace(ListIterator<Item> iter, Item replacement) {
-        Item item = iter.previous();
-        if (item != this) {
-            throw new IllegalStateException("Item mismatch");
-        }
-        iter.remove();
-        iter.add(replacement);
+    protected void replace(Node node, Item replacement) {
+        assert this == node.item();
+        node.set(replacement);
     }
 
     /**
@@ -135,42 +136,33 @@ public abstract non-sealed class Item implements Expr {
      * Any intervening {@code void}-typed expressions are automatically skipped.
      * Any intervening non-{@code void}-typed expressions are popped from the stack.
      *
-     * @param iter the item iterator (not {@code null})
+     * @param node this item's node (not {@code null})
      * @param op   the operation (not {@code null})
+     * @return the node previous to this one (not {@code null})
      */
-    protected void process(ListIterator<Item> iter, Op op) {
-        switch (op) {
-            case VERIFY -> {
-                // expect each dependency to exist in order
-                verify(iter);
-                processDependencies(iter, op);
-            }
-            case INSERT -> {
-                // insert all unbound dependencies
-                if (! bound()) {
-                    insert(iter);
-                    processDependencies(iter, op);
-                }
-            }
-            case POP -> {
-                // remove this value and its dependencies
-                pop(iter);
-                processDependencies(iter, op);
-            }
-        }
+    protected Node process(Node node, BiFunction<Item, Node, Node> op) {
+        return op.apply(this, node);
     }
 
     /**
-     * Process this item's dependencies in the item list by calling {@link #process(ListIterator, Op)}
+     * Process this item's dependencies in the item list by calling {@link #process(Node, BiFunction)}
      * on each one.
      * Dependencies must be processed from "right to left", which is to say that items that should be on the top
      * of the stack should be processed first.
+     * The node passed in to the last dependency should be the node previous to this one.
+     * The node passed into each previous dependency should be the node previous to the next dependency.
+     * This can normally be done by nesting the method calls.
      *
-     * @param iter the item iterator (not {@code null})
+     * @param node the node for this current item (not {@code null})
      * @param op   the operation (not {@code null})
+     * @return the node previous to the first dependency (must not be {@code null})
      */
-    protected void processDependencies(ListIterator<Item> iter, Op op) {
+    protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
+        if (node == null) {
+            throw new IllegalStateException("Iteration past top of list");
+        }
         // no dependencies
+        return node.prev();
     }
 
     static IllegalStateException missing() {
@@ -179,12 +171,33 @@ public abstract non-sealed class Item implements Expr {
 
     public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);
 
-    public boolean exitsAll() {
+    /**
+     * {@return true if this node may fall through to the next node}
+     */
+    public boolean mayFallThrough() {
+        return true;
+    }
+
+    /**
+     * {@return true if this node may throw an exception}
+     */
+    public boolean mayThrow() {
         return false;
     }
 
-    public boolean exitsBlock() {
-        return exitsAll();
+    /**
+     * {@return true if this node may break out of the current block without falling through}
+     * This includes restarting the current block or any sibling or enclosing block.
+     */
+    public boolean mayBreak() {
+        return false;
+    }
+
+    /**
+     * {@return true if this node may return from the current method}
+     */
+    public boolean mayReturn() {
+        return false;
     }
 
     public final String toString() {
@@ -231,25 +244,14 @@ public abstract non-sealed class Item implements Expr {
                 return Item.this.type();
             }
 
-            public boolean bound() {
-                return true;
-            }
-
-            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                Item.this.processDependencies(iter, op);
+            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                return Item.this.forEachDependency(node.prev(), op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 Item.this.writeCode(cb, block);
             }
         };
-    }
-
-    protected enum Op {
-        INSERT,
-        VERIFY,
-        POP,
-        ;
     }
 
     public final class FieldDeref extends LValueExprImpl implements InstanceFieldVar {
@@ -259,8 +261,8 @@ public abstract non-sealed class Item implements Expr {
             this.desc = desc;
         }
 
-        protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-            Item.this.process(iter, op);
+        protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+            return Item.this.process(node.prev(), op);
         }
 
         public FieldDesc desc() {
@@ -275,13 +277,8 @@ public abstract non-sealed class Item implements Expr {
                         return FieldDeref.this.type();
                     }
 
-                    public boolean bound() {
-                        return true;
-                    }
-
-                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                        Item.this.process(iter, op);
-                        ConstantImpl.ofFieldVarHandle(desc).process(iter, op);
+                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                        return ConstantImpl.ofFieldVarHandle(desc).process(Item.this.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -302,9 +299,8 @@ public abstract non-sealed class Item implements Expr {
         Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
             return switch (mode) {
                 case AsDeclared -> new Item() {
-                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                        value.process(iter, op);
-                        Item.this.process(iter, op);
+                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                        return Item.this.process(value.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -312,10 +308,8 @@ public abstract non-sealed class Item implements Expr {
                     }
                 };
                 default -> new Item() {
-                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                        value.process(iter, op);
-                        Item.this.process(iter, op);
-                        ConstantImpl.ofFieldVarHandle(desc).process(iter, op);
+                    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
+                        return ConstantImpl.ofFieldVarHandle(desc).process(Item.this.process(value.process(node.prev(), op), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -347,9 +341,8 @@ public abstract non-sealed class Item implements Expr {
             this.index = (Item) index;
         }
 
-        protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-            index.process(iter, op);
-            Item.this.process(iter, op);
+        protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+            return Item.this.process(index.process(node.prev(), op), op);
         }
 
         Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
@@ -363,18 +356,12 @@ public abstract non-sealed class Item implements Expr {
                         return "ArrayDeref$Get" + super.itemName();
                     }
 
-                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                        index.processDependencies(iter, op);
-                        Item.this.processDependencies(iter, op);
-                        ConstantImpl.ofArrayVarHandle(Item.this.type()).processDependencies(iter, op);
+                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                        return ConstantImpl.ofArrayVarHandle(Item.this.type()).process(Item.this.process(index.process(node.prev(), op), op), op);
                     }
 
                     public ClassDesc type() {
                         return type;
-                    }
-
-                    public boolean bound() {
-                        return true;
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -401,11 +388,8 @@ public abstract non-sealed class Item implements Expr {
                         return "ArrayDeref$SetVolatile" + super.itemName();
                     }
 
-                    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                        value.process(iter, op);
-                        index.process(iter, op);
-                        Item.this.process(iter, op);
-                        ConstantImpl.ofArrayVarHandle(Item.this.type()).process(iter, op);
+                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                        return ConstantImpl.ofArrayVarHandle(Item.this.type()).process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

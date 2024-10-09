@@ -130,14 +130,14 @@ public final class TryImpl extends Item implements TryCreator, Scoped<TryImpl> {
             }
         }
         body.writeCode(cb, block);
-        if (body.fallsOut()) {
+        if (body.mayFallThrough()) {
             cb.goto_(after);
         }
         Iterator<Catch> iterator = catches.iterator();
         while (iterator.hasNext()) {
             final Catch catch_ = iterator.next();
             catch_.body().writeCode(cb, block);
-            if (catch_.body().fallsOut() && iterator.hasNext()) {
+            if (catch_.body().mayFallThrough() && iterator.hasNext()) {
                 cb.goto_(after);
             }
         }

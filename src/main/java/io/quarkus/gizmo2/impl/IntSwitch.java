@@ -79,7 +79,7 @@ final class IntSwitch extends SwitchCreatorImpl<IntConstant> {
             for (Case<IntConstant> body : cases) {
                 // write body
                 body.writeCode(cb, block);
-                if (! body.exitsBlock()) {
+                if (body.mayFallThrough()) {
                     cb.goto_(default_.endLabel());
                 }
             }

@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Constant;
@@ -17,8 +17,8 @@ public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item 
         this.switchVal = (Item) switchVal;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        switchVal.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return switchVal.process(node.prev(), op);
     }
 
     public BlockCreatorImpl enclosing() {

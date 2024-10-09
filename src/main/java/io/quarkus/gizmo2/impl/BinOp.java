@@ -1,15 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_Object;
-import static java.lang.constant.ConstantDescs.CD_String;
-
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 final class BinOp extends Item {
     private final Item a;
@@ -27,9 +24,15 @@ final class BinOp extends Item {
         }
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Item.Op op) {
-        b.process(iter, op);
-        a.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return a.process(b.process(node.prev(), op), op);
+    }
+
+    public boolean mayThrow() {
+        TypeKind loadableKind = typeKind().asLoadable();
+        return (kind == Kind.DIV || kind == Kind.REM)
+            && (loadableKind == TypeKind.INT || loadableKind == TypeKind.LONG)
+            && ! (b instanceof ConstantImpl bc && bc.isNonZero());
     }
 
     public ClassDesc type() {
@@ -41,19 +44,6 @@ final class BinOp extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        switch (typeKind()) {
-            case REFERENCE -> {
-                // objects (strings)
-                if (! b.type().equals(CD_String)) {
-                    cb.invokestatic(CD_String, "valueOf", MethodTypeDesc.of(CD_String, CD_Object));
-                }
-                if (! a.type().equals(CD_String)) {
-                    cb.invokestatic(CD_String, "valueOf", MethodTypeDesc.of(CD_String, CD_Object));
-                }
-            }
-            default -> {
-            }
-        }
         Op op = kind.opFor(typeKind());
         // we validated op above
         assert op != null;
@@ -61,7 +51,7 @@ final class BinOp extends Item {
     }
 
     enum Kind {
-        ADD(CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd, BinOp::aadd),
+        ADD(CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd),
         SUB(CodeBuilder::isub, CodeBuilder::lsub, CodeBuilder::fsub, CodeBuilder::dsub),
         MUL(CodeBuilder::imul, CodeBuilder::lmul, CodeBuilder::fmul, CodeBuilder::dmul),
         DIV(CodeBuilder::idiv, CodeBuilder::ldiv, CodeBuilder::fdiv, CodeBuilder::ddiv),
@@ -80,18 +70,12 @@ final class BinOp extends Item {
         final Op longOp;
         final Op floatOp;
         final Op doubleOp;
-        final Op refOp;
 
-        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp, final Op refOp) {
+        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp) {
             this.intOp = intOp;
             this.longOp = longOp;
             this.floatOp = floatOp;
             this.doubleOp = doubleOp;
-            this.refOp = refOp;
-        }
-
-        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp) {
-            this(intOp, longOp, floatOp, doubleOp, null);
         }
 
         Kind(final Op intOp, final Op longOp) {
@@ -104,7 +88,6 @@ final class BinOp extends Item {
                 case LONG -> longOp;
                 case FLOAT -> floatOp;
                 case DOUBLE -> doubleOp;
-                case REFERENCE -> refOp;
                 default -> null;
             };
         }
@@ -112,10 +95,6 @@ final class BinOp extends Item {
         boolean isValidFor(TypeKind tk) {
             return null != opFor(tk);
         }
-    }
-
-    private static void aadd(CodeBuilder cb) {
-        cb.invokevirtual(CD_String, "concat", MethodTypeDesc.of(CD_String, CD_String));
     }
 
     interface Op {

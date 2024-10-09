@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -39,10 +39,10 @@ final class NewArray extends Item {
         this.nea = nea;
     }
 
-    protected void insert(final ListIterator<Item> iter) {
+    protected Node insert(Node node) {
         // we have our own way of doing this
         // first insert our node and move backwards
-        super.insert(iter);
+        node = super.insert(node).prev();
         // now insert all of the stuff we need in order to function correctly
         int size = values.size();
         for (int i = size - 1; i >= 0; i --) {
@@ -53,33 +53,33 @@ final class NewArray extends Item {
             //   AASTORE
             // ...except in the reverse order (because we're walking up the list, not down it).
             // So, first the store, which expects `<array> <index> <value>`:
-            stores.get(i).insert(iter);
+            node = stores.get(i).insert(node);
             // Then the value (already in the list, just skip over them):
-            values.get(i).process(iter, Op.VERIFY);
+            node = values.get(i).process(node, Item::verify);
             // Then the index:
-            ConstantImpl.of(i).insert(iter);
+            node = ConstantImpl.of(i).insert(node);
             // And last, the dup of the original array:
-            dups.get(i).insert(iter);
+            node = dups.get(i).insert(node);
         }
         // Finally, the array allocation itself:
-        nea.insert(iter);
+        return nea.insert(node);
         // we're now positioned before this instruction
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
+    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
         int size = values.size();
+        node = node.prev();
         for (int i = size - 1; i >= 0; i --) {
-            stores.get(i).process(iter, op);
+            node = stores.get(i).process(node, op);
+            node = values.get(i).process(node, op);
+            node = ConstantImpl.of(i).process(node, op);
+            node = dups.get(i).process(node, op);
         }
-        nea.process(iter, op);
+        return nea.process(node, op);
     }
 
     public ClassDesc type() {
         return arrayType;
-    }
-
-    public boolean bound() {
-        return true;
     }
 
     public IntConstant length() {

@@ -10,7 +10,7 @@ import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -27,9 +27,8 @@ final class Cmp extends Item {
         this.kind = kind;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        b.process(iter, op);
-        a.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return a.process(b.process(node.prev(), op), op);
     }
 
     public ClassDesc type() {

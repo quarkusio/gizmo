@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -23,8 +23,8 @@ final class InstanceOf extends Item {
         return input.bound();
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        input.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return input.process(node.prev(), op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

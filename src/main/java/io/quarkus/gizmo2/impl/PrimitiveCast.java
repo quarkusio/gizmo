@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -16,8 +16,8 @@ final class PrimitiveCast extends Item {
         this.toType = toType;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        a.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return a.process(node.prev(), op);
     }
 
     public ClassDesc type() {

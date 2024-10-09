@@ -5,7 +5,7 @@ import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.AccessMode;
@@ -41,12 +41,8 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                 return StaticFieldVarImpl.this.type();
             }
 
-            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                ConstantImpl.ofFieldVarHandle(desc).processDependencies(iter, op);
-            }
-
-            public boolean bound() {
-                return true;
+            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                return ConstantImpl.ofFieldVarHandle(desc).forEachDependency(node.prev(), op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -65,11 +61,12 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
         return new Item() {
-            protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-                value.process(iter, op);
+            protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
+                node = value.process(node, op);
                 if (mode != AccessMode.AsDeclared) {
-                    ConstantImpl.ofStaticFieldVarHandle(desc).process(iter, op);
+                    node = ConstantImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
                 }
+                return node;
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
@@ -15,10 +15,8 @@ final class ArrayStore extends Item {
         this.value = value;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        value.process(iter, op);
-        index.process(iter, op);
-        arrayExpr.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return arrayExpr.process(index.process(value.process(node.prev(), op), op), op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

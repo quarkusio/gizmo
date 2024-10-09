@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.ListIterator;
+import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -17,16 +17,12 @@ final class NewEmptyArray extends Item {
         this.size = size;
     }
 
-    protected void processDependencies(final ListIterator<Item> iter, final Op op) {
-        size.process(iter, op);
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return size.process(node.prev(), op);
     }
 
     public ClassDesc type() {
         return arrayType;
-    }
-
-    public boolean bound() {
-        return true;
     }
 
     public Expr length() {
