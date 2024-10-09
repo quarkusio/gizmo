@@ -55,14 +55,16 @@ final class NewArray extends Item {
             // So, first the store, which expects `<array> <index> <value>`:
             node = stores.get(i).insert(node);
             // Then the value (already in the list, just skip over them):
-            node = values.get(i).process(node, Item::verify);
+            node = values.get(i).insertIfUnbound(node);
             // Then the index:
             node = ConstantImpl.of(i).insert(node);
             // And last, the dup of the original array:
             node = dups.get(i).insert(node);
         }
         // Finally, the array allocation itself:
-        return nea.insert(node);
+        node = nea.insert(node);
+        // and our length
+        return ConstantImpl.of(size).insert(node);
         // we're now positioned before this instruction
     }
 
