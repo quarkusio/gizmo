@@ -713,7 +713,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (! type().equals(CD_void)) {
             throw new IllegalStateException("Void accept on block which returns " + type());
         }
-        handler.accept(this, head.item());
+        if (! (head.next().item() instanceof BlockExpr be)) {
+            throw new IllegalStateException("Expected block expression");
+        }
+        handler.accept(this, be);
         if (mayFallThrough()) {
             cleanStack(tail.apply(Item::verify));
         }
@@ -758,7 +761,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (type().equals(CD_void)) {
             throw new IllegalStateException("Function accept on void-typed block");
         }
-        Item res = (Item) handler.apply(this, head.item());
+        if (! (head.next().item() instanceof BlockExpr be)) {
+            throw new IllegalStateException("Expected block expression");
+        }
+        Item res = (Item) handler.apply(this, be);
         if (mayFallThrough()) {
             Node tail = this.tail;
             tail.set(new Yield(res));
