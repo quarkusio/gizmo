@@ -3,6 +3,8 @@ package io.quarkus.gizmo2;
 import java.lang.constant.ClassDesc;
 import java.util.List;
 
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -55,6 +57,27 @@ public final class TestBasic {
             });
         });
         Assertions.assertEquals("hello world!", tcm.staticMethod("echoArg", OneParam.class).apply("hello world!"));
+    }
+
+    @Test
+    public void twoParams2() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+            cc.staticMethod("echoConcat", mc -> {
+                ParamVar first = mc.parameter("first", String.class);
+                ParamVar second = mc.parameter("second", String.class);
+                mc.returning(String.class);
+                mc.body(b0 -> {
+                    Expr concat1 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), first, List.of(ConstantImpl.of(" ")));
+                    LocalVar spaced = b0.define("spaced", concat1);
+                    Expr concat2 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), spaced, List.of(second));
+
+                    b0.return_(concat2);
+                });
+            });
+        });
+        Assertions.assertEquals("hello world!", tcm.staticMethod("echoConcat", TwoParams.class).apply("hello", "world!"));
     }
 
     @Test

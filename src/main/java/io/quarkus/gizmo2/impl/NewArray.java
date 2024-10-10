@@ -42,7 +42,7 @@ final class NewArray extends Item {
     protected Node insert(Node node) {
         // we have our own way of doing this
         // first insert our node and move backwards
-        node = super.insert(node).prev();
+        Node newArrayNode = node = super.insert(node);
         // now insert all of the stuff we need in order to function correctly
         int size = values.size();
         for (int i = size - 1; i >= 0; i --) {
@@ -55,7 +55,7 @@ final class NewArray extends Item {
             // So, first the store, which expects `<array> <index> <value>`:
             node = stores.get(i).insert(node);
             // Then the value (already in the list, just skip over them):
-            node = values.get(i).insertIfUnbound(node);
+            node = values.get(i).insert(node);
             // Then the index:
             node = ConstantImpl.of(i).insert(node);
             // And last, the dup of the original array:
@@ -64,18 +64,17 @@ final class NewArray extends Item {
         // Finally, the array allocation itself:
         node = nea.insert(node);
         // and our length
-        return ConstantImpl.of(size).insert(node);
-        // we're now positioned before this instruction
+        ConstantImpl.of(size).insert(node);
+
+        return newArrayNode;
     }
 
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
         int size = values.size();
         node = node.prev();
         for (int i = size - 1; i >= 0; i --) {
+            // ArrayStore processes value, index and dup
             node = stores.get(i).process(node, op);
-            node = values.get(i).process(node, op);
-            node = ConstantImpl.of(i).process(node, op);
-            node = dups.get(i).process(node, op);
         }
         return nea.process(node, op);
     }

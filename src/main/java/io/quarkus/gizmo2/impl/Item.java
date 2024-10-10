@@ -91,7 +91,14 @@ public abstract non-sealed class Item implements Expr {
             // add an explicit pop
             Pop pop = new Pop(this);
             pop.insert(node.next());
-            return node.prev();
+
+            // skip over dependencies
+            Node result = forEachDependency(node, Item::verify);
+            if (result == null) {
+                throw new IllegalStateException();
+            }
+
+            return result;
         }
     }
 
