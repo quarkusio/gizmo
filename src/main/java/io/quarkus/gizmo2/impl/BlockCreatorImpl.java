@@ -141,7 +141,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public boolean mayFallThrough() {
         if (active()) {
-            throw new IllegalStateException();
+            //throw new IllegalStateException();
         }
         return breakTarget || tail.item().mayFallThrough();
     }

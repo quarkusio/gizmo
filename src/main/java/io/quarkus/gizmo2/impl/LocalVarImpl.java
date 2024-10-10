@@ -62,7 +62,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                int slot = cb.allocateLocal(typeKind());
+                int slot = cb.allocateLocal(LocalVarImpl.this.typeKind());
                 // we reserve the slot for the full remainder of the block to avoid control-flow analysis
                 cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
                 if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
@@ -89,7 +89,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 checkSlot();
-                cb.storeLocal(typeKind(), slot);
+                cb.storeLocal(LocalVarImpl.this.typeKind(), slot);
             }
         };
     }
