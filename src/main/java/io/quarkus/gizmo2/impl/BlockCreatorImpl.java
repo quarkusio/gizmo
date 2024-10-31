@@ -891,7 +891,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public void try_(final Consumer<TryCreator> body) {
-        addItem(new TryImpl()).accept(body);
+        addItem(new TryImpl(this)).accept(body);
     }
 
     public void autoClose(final Expr resource, final BiConsumer<BlockCreator, Expr> body) {

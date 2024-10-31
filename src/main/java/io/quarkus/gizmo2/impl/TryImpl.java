@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.CD_Throwable;
 
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -29,6 +28,10 @@ public final class TryImpl extends Item implements TryCreator, Scoped<TryImpl> {
 
     private int state = ST_INITIAL;
 
+    public TryImpl(final BlockCreatorImpl parent) {
+        body = new BlockCreatorImpl(parent);
+    }
+
     private void advanceToState(int newState) {
         if (state > newState) {
             throw new IllegalStateException();
@@ -38,6 +41,8 @@ public final class TryImpl extends Item implements TryCreator, Scoped<TryImpl> {
 
     public void body(final Consumer<BlockCreator> builder) {
         advanceToState(ST_BODY);
+        builder.accept(body);
+        advanceToState(ST_CATCH);
     }
 
     public void catch_(final Class<? extends Throwable> type, final BiConsumer<BlockCreator, Expr> builder) {
