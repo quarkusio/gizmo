@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Set;
+import java.util.function.IntPredicate;
 
 import io.github.dmlloyd.classfile.Signature;
 import sun.reflect.ReflectionFactory;
@@ -92,5 +93,21 @@ public final class Util {
             return null;
         });
         return b.toString();
+    }
+
+    // TODO: move to using smallrye-common-search
+    public static int binarySearch(int from, int to, IntPredicate test) {
+        int low = from;
+        int high = to - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            if (test.test(mid)) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return low;
     }
 }

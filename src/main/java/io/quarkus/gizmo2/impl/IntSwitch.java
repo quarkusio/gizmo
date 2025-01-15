@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,7 +68,7 @@ final class IntSwitch extends SwitchCreatorImpl<IntConstant> {
                     max = case_.value.intValue();
                 }
             }
-            List<SwitchCase> switchCases = cases.stream().map(c -> SwitchCase.of(c.value.intValue(), c.startLabel())).toList();
+            List<SwitchCase> switchCases = cases.stream().sorted(Comparator.comparingInt(c -> c.value().intValue())).map(c -> SwitchCase.of(c.value.intValue(), c.startLabel())).toList();
             double range = max - min;
             double count = cases.size();
             if (count / range >= TABLESWITCH_DENSITY) {

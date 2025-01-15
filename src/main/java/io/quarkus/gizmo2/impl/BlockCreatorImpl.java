@@ -3,7 +3,9 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.CD_Boolean;
 import static java.lang.constant.ConstantDescs.CD_Byte;
 import static java.lang.constant.ConstantDescs.CD_Character;
+import static java.lang.constant.ConstantDescs.CD_Class;
 import static java.lang.constant.ConstantDescs.CD_Double;
+import static java.lang.constant.ConstantDescs.CD_Enum;
 import static java.lang.constant.ConstantDescs.CD_Float;
 import static java.lang.constant.ConstantDescs.CD_Integer;
 import static java.lang.constant.ConstantDescs.CD_Long;
@@ -58,9 +60,12 @@ import io.quarkus.gizmo2.creator.TryCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.constant.ClassConstant;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.EnumConstant;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
+import io.quarkus.gizmo2.impl.constant.StringConstant;
 
 /**
  * The block builder implementation. Internal only.
@@ -344,19 +349,38 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         }, MethodTypeDesc.of(unboxType)), a);
     }
 
-    public void switch_(final Expr val, final Consumer<SwitchCreator> builder) {
-        addItem(switch (val.typeKind().asLoadable()) {
-            case INT -> new IntSwitch(this, val);
+    public void switchEnum(final Expr enumExpr, final Consumer<SwitchCreator> builder) {
+        SwitchCreatorImpl<? extends ConstantImpl> sci = new HashingSwitch<>(this, enumExpr, EnumConstant.class,
+            cb -> {
+                cb.invokevirtual(CD_Enum, "name", MethodTypeDesc.of(CD_String));
+                cb.invokevirtual(CD_String, "hashCode", MethodTypeDesc.of(CD_int));
+            },
+            cc -> cc.name().hashCode()
+        );
+        addItem(sci);
+    }
+
+    public void switch_(final Expr expr, final Consumer<SwitchCreator> builder) {
+        SwitchCreatorImpl<? extends ConstantImpl> sci = switch (expr.typeKind().asLoadable()) {
+            case INT -> new IntSwitch(this, expr);
             case REFERENCE -> {
-                if (val.type().equals(CD_String)) {
-                    // yield new HashingSwitch(this, val);
-                    throw new UnsupportedOperationException();
+                if (expr.type().equals(CD_String)) {
+                    yield new HashingSwitch<>(this, expr, StringConstant.class);
+                } else if (expr.type().equals(CD_Class)) {
+                    yield new HashingSwitch<>(this, expr, ClassConstant.class,
+                        cb -> {
+                            cb.invokevirtual(CD_Class, "descriptorString", MethodTypeDesc.of(CD_String));
+                            cb.invokevirtual(CD_String, "hashCode", MethodTypeDesc.of(CD_int));
+                        },
+                        cc -> cc.desc().descriptorString().hashCode()
+                    );
                 } else {
-                    throw new UnsupportedOperationException("Switch type " + val.type() + " not supported");
+                    throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
                 }
             }
-            default -> throw new UnsupportedOperationException("Switch type " + val.type() + " not supported");
-        }).accept(builder);
+            default -> throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
+        };
+        addItem(sci);
     }
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
@@ -974,39 +998,48 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         replaceLastItem(new Throw(val));
     }
 
-    public Expr objHashCode(final Expr obj) {
-        return switch (obj.typeKind()) {
-            case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), obj);
-            case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), obj);
-            case SHORT -> invokeStatic(MethodDesc.of(Short.class, "hashCode", int.class, short.class), obj);
-            case CHAR -> invokeStatic(MethodDesc.of(Character.class, "hashCode", int.class, char.class), obj);
-            case INT -> invokeStatic(MethodDesc.of(Integer.class, "hashCode", int.class, int.class), obj);
-            case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), obj);
-            case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), obj);
-            case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), obj);
-            case REFERENCE -> invokeVirtual(MethodDesc.of(Object.class, "hashCode", int.class), obj);
+    public Expr exprHashCode(final Expr expr) {
+        return switch (expr.typeKind()) {
+            case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), expr);
+            case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), expr);
+            case SHORT -> invokeStatic(MethodDesc.of(Short.class, "hashCode", int.class, short.class), expr);
+            case CHAR -> invokeStatic(MethodDesc.of(Character.class, "hashCode", int.class, char.class), expr);
+            case INT -> invokeStatic(MethodDesc.of(Integer.class, "hashCode", int.class, int.class), expr);
+            case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), expr);
+            case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), expr);
+            case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), expr);
+            case REFERENCE -> invokeVirtual(MethodDesc.of(Object.class, "hashCode", int.class), expr);
             case VOID -> Constant.of(0); // null constant
         };
     }
 
-    public Expr objEquals(final Expr a, final Expr b) {
-        return invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
+    public Expr exprEquals(final Expr a, final Expr b) {
+        return switch (a.typeKind()) {
+            case REFERENCE -> switch (b.typeKind()) {
+                case REFERENCE -> invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
+                default -> exprEquals(a, box(b));
+            };
+            default -> switch (b.typeKind()) {
+                case REFERENCE -> exprEquals(box(a), b);
+                default -> eq(a, b);
+            };
+        };
     }
 
-    public Expr objToString(final Expr obj) {
-        return invokeStatic(MethodDesc.of(String.class, "valueOf", String.class, switch (obj.typeKind()) {
+    public Expr exprToString(final Expr expr) {
+        return invokeStatic(MethodDesc.of(String.class, "valueOf", String.class, switch (expr.typeKind()) {
             case BOOLEAN -> boolean.class;
             case BYTE, SHORT, INT -> int.class;
             case CHAR -> char.class;
             case LONG -> long.class;
             case FLOAT -> float.class;
             case DOUBLE -> double.class;
-            case REFERENCE -> obj.type().isArray() ? switch (TypeKind.from(obj.type().componentType())) {
+            case REFERENCE -> expr.type().isArray() ? switch (TypeKind.from(expr.type().componentType())) {
                 case CHAR -> char[].class;
                 default -> Object.class;
             } : Object.class;
-            default -> throw new IllegalArgumentException("Invalid type for `toString`: " + obj);
-        }), obj);
+            default -> throw new IllegalArgumentException("Invalid type for `toString`: " + expr);
+        }), expr);
     }
 
     public Expr arrayEquals(final Expr a, final Expr b) {

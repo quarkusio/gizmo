@@ -349,12 +349,12 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * The arguments must be of the same {@linkplain TypeKind type kind}.
      * This works equivalently to the {@code ==} operator in Java
      * for primitive and reference values.
-     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
+     * For object equality using {@link Object#equals}, see {@link #exprEquals(Expr, Expr)}.
      *
      * @param a the left-hand argument (must not be {@code null})
      * @param b the right-hand argument (must not be {@code null})
      * @return the boolean result expression
-     * @see #objEquals(Expr, Expr)
+     * @see #exprEquals(Expr, Expr)
      */
     Expr eq(Expr a, Expr b);
 
@@ -419,12 +419,12 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * The arguments must be of the same {@linkplain TypeKind type kind}.
      * This works equivalently to the {@code !=} operator in Java
      * for primitive and reference values.
-     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
+     * For object equality using {@link Object#equals}, see {@link #exprEquals(Expr, Expr)}.
      *
      * @param a the left-hand argument (must not be {@code null})
      * @param b the right-hand argument (must not be {@code null})
      * @return the boolean result expression
-     * @see #objEquals(Expr, Expr)
+     * @see #exprEquals(Expr, Expr)
      */
     Expr ne(Expr a, Expr b);
 
@@ -1683,8 +1683,23 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     void ifElse(Expr cond, Consumer<BlockCreator> whenTrue, Consumer<BlockCreator> whenFalse);
 
     /**
+     * Construct a {@code switch} statement for {@code enum} constants.
+     *
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder for the {@code switch} statement (must not be {@code null})
+     */
+    void switchEnum(Expr val, Consumer<SwitchCreator> builder);
+
+    /**
      * Construct a {@code switch} statement.
-     * The switch value must be of a supported type.
+     * The switch value must be one of these supported types:
+     * <ul>
+     *     <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     *     <li>{@code java.lang.String}</li>
+     *     <li>{@code java.lang.Class}</li>
+     * </ul>
+     * The type of the {@code switch} creator depends on the type of the value.
+     * For {@code enum} switches, use {@link #switchEnum(Expr, Consumer)}.
      *
      * @param val the value to switch on (must not be {@code null})
      * @param builder the builder for the {@code switch} statement (must not be {@code null})
@@ -1844,15 +1859,33 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     // useful helpers/utilities
 
-    Expr objHashCode(Expr obj);
+    /**
+     * {@return the hash code of the given expression}
+     * @param expr the expression, which can be of any type (must not be {@code null})
+     */
+    Expr exprHashCode(Expr expr);
 
-    Expr objEquals(Expr a, Expr b);
+    /**
+     * Determine the equality of the given objects using <em>value equality</em>
+     * rather than <em>reference equality</em>.
+     * This is analogous to using {@link Object#equals(Object)} to compare references.
+     * For non-reference types, this would be equivalent to {@link #eq(Expr, Expr)}.
+     *
+     * @param a the first expression (must not be {@code null})
+     * @param b the second expression (must not be {@code null})
+     * @return a {@code boolean} expression representing the equality (or lack thereof) between the two values
+     */
+    Expr exprEquals(Expr a, Expr b);
 
-    default Expr objEquals(Expr a, ConstantDesc b) {
-        return objEquals(a, Constant.of(b));
+    default Expr exprEquals(Expr a, ConstantDesc b) {
+        return exprEquals(a, Constant.of(b));
     }
 
-    Expr objToString(Expr obj);
+    /**
+     * {@return a string expression for the given expression}
+     * @param expr the expression, which can be of any type
+     */
+    Expr exprToString(Expr expr);
 
     Expr arrayEquals(Expr a, Expr b);
 

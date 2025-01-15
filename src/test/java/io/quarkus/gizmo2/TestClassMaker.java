@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.components.ClassPrinter;
 
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
 
@@ -18,7 +17,7 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
 
     public void accept(final ClassDesc classDesc, final byte[] bytes) {
         // print class
-        ClassPrinter.toTree(ClassFile.of().parse(bytes), ClassPrinter.Verbosity.TRACE_ALL).toYaml(System.out::print);
+        System.out.println(ClassFile.of().parse(bytes).toDebugString());
         try {
             lookup = MethodHandles.lookup().defineHiddenClass(bytes, true);
         } catch (IllegalAccessException e) {

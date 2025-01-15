@@ -7,7 +7,7 @@ import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 
-public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item implements SwitchCreator permits IntSwitch {
+public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item implements SwitchCreator permits HashingSwitch, IntSwitch {
     public static final double TABLESWITCH_DENSITY = 0.9;
     final BlockCreatorImpl enclosing;
     final Item switchVal;
@@ -39,6 +39,10 @@ public sealed abstract class SwitchCreatorImpl<C extends Constant> extends Item 
         Case(final BlockCreatorImpl parent, final C value) {
             super(parent);
             this.value = value;
+        }
+
+        C value() {
+            return value;
         }
     }
 

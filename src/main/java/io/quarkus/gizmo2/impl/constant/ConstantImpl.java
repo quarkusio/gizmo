@@ -291,7 +291,6 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         return false;
     }
 
-
     public final boolean equals(final Object obj) {
         return obj instanceof ConstantImpl other && equals(other);
     }
