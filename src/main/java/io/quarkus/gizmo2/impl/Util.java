@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Set;
@@ -64,7 +65,8 @@ public final class Util {
         private final ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
 
         protected MethodHandle computeValue(final Class<?> type) {
-            return rf.writeReplaceForSerialization(type);
+            MethodHandle base = rf.writeReplaceForSerialization(type);
+            return base == null ? null : base.asType(MethodType.methodType(SerializedLambda.class, Serializable.class));
         }
     };
 
@@ -74,7 +76,7 @@ public final class Util {
             throw new IllegalArgumentException("Cannot interpret method handle");
         }
         try {
-            return (SerializedLambda) (Object) handle.invoke(lambda);
+            return (SerializedLambda) handle.invokeExact(lambda);
         } catch (Error | RuntimeException e) {
             throw e;
         } catch (Throwable e) {

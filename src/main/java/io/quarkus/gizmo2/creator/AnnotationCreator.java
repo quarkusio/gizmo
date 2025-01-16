@@ -29,6 +29,7 @@ public interface AnnotationCreator<A extends Annotation> {
                 elements.add(Objects.requireNonNull(element, "element"));
             }
         };
+        maker.accept(c);
         return io.github.dmlloyd.classfile.Annotation.of(Util.classDesc(type), c.elements);
     }
 
@@ -42,8 +43,8 @@ public interface AnnotationCreator<A extends Annotation> {
 
     private void with(SerializedLambda sl, AnnotationValue value) {
         if (
-            sl.getImplClass().equals(type().getName()) &&
-            sl.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual
+            sl.getImplClass().equals(type().getName().replace('.', '/')) &&
+            sl.getImplMethodKind() == MethodHandleInfo.REF_invokeInterface
         ) {
             with(sl.getImplMethodName(), value);
         } else {
