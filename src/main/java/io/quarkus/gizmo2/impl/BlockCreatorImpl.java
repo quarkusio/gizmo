@@ -1050,7 +1050,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), a, b);
     }
 
-    public Expr loadClass(final Expr className) {
+    public Expr classForName(final Expr className) {
         return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 

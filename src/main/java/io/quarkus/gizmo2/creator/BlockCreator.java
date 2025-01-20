@@ -5,6 +5,7 @@ import static java.lang.constant.ConstantDescs.CD_boolean;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -18,6 +19,11 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.creator.ops.ClassOps;
+import io.quarkus.gizmo2.creator.ops.CollectionOps;
+import io.quarkus.gizmo2.creator.ops.ListOps;
+import io.quarkus.gizmo2.creator.ops.ObjectOps;
+import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
@@ -1887,12 +1893,80 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     Expr exprToString(Expr expr);
 
+    /**
+     * Generate a call to one of the {@code Arrays#equals(a, b)} overloads, based on the type of the first argument.
+     * The argument types must be the same.
+     *
+     * @param a the first array instance (must not be {@code null})
+     * @param b the second array instance (must not be {@code null})
+     * @return the expression representing the result of the equality check (not {@code null})
+     */
     Expr arrayEquals(Expr a, Expr b);
 
-    Expr loadClass(Expr className);
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Object}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default ObjectOps withObject(Expr receiver) {
+        return new ObjectOps(this, receiver);
+    }
 
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Class}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default ClassOps withClass(Expr receiver) {
+        return new ClassOps(this, receiver);
+    }
+
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link String}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default StringOps withString(Expr receiver) {
+        return new StringOps(this, receiver);
+    }
+
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Collection}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default CollectionOps withCollection(Expr receiver) {
+        return new CollectionOps(this, receiver);
+    }
+
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link List}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default ListOps withList(Expr receiver) {
+        return new ListOps(this, receiver);
+    }
+
+    /**
+     * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
+     *
+     * @param className the class name (must not be {@code null})
+     * @return the loaded class expression (not {@code null})
+     */
+    Expr classForName(Expr className);
+
+    /**
+     * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param items the items to add to the list (must not be {@code null})
+     * @return the list expression (not {@code null})
+     * @see #withList(Expr)
+     */
     Expr listOf(List<Expr> items);
 
+    /**
+     * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param items the items to add to the list (must not be {@code null})
+     * @return the list expression (not {@code null})
+     * @see #withList(Expr)
+     */
     default Expr listOf(Expr... items) {
         return listOf(List.of(items));
     }
