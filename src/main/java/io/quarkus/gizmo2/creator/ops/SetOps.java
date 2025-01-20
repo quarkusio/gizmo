@@ -15,7 +15,6 @@ public class SetOps extends CollectionOps {
      * @param bc the block creator (must not be {@code null})
      * @param obj the set instance (must not be {@code null})
      */
-    @SuppressWarnings("unchecked")
     public SetOps(final BlockCreator bc, final Expr obj) {
         super(Set.class, bc, obj);
     }
