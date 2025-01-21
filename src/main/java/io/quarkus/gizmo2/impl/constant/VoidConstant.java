@@ -33,4 +33,12 @@ public final class VoidConstant extends ConstantImpl{
     public Optional<? extends ConstantDesc> describeConstable() {
         return Optional.empty();
     }
+
+    public String toString() {
+        return "void";
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append("void");
+    }
 }

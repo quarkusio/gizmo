@@ -28,6 +28,7 @@ import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.LongConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
 import io.quarkus.gizmo2.impl.constant.StaticFieldVarHandleConstant;
+import io.quarkus.gizmo2.impl.constant.StaticFinalFieldConstant;
 import io.quarkus.gizmo2.impl.constant.StringConstant;
 import io.quarkus.gizmo2.impl.constant.FieldVarHandleConstant;
 
@@ -77,6 +78,7 @@ public final class GizmoImpl implements Gizmo {
     private final ConcurrentHashMap<ConstantDesc, ConstantImpl> constants = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<ConstantImpl, ConstantImpl> funnyHashCodeConstants = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<FieldDesc, StaticFieldVarImpl> staticFields = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<FieldDesc, StaticFinalFieldConstant> staticFinalFieldConstants = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<FieldDesc, StaticFieldVarHandleConstant> staticFieldVarHandleConstants = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<FieldDescImpl, FieldDescImpl> fieldDescs = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<FieldDesc, FieldVarHandleConstant> fieldVarHandleConstants = new ConcurrentHashMap<>();
@@ -114,6 +116,10 @@ public final class GizmoImpl implements Gizmo {
 
     public StaticFieldVar staticField(final FieldDesc desc) {
         return staticFields.computeIfAbsent(desc, StaticFieldVarImpl::new);
+    }
+
+    public StaticFinalFieldConstant staticFinalFieldConstant(final FieldDesc desc) {
+        return staticFinalFieldConstants.computeIfAbsent(desc, StaticFinalFieldConstant::new);
     }
 
     public FieldDesc fieldDesc(final ClassDesc owner, final String name, final ClassDesc type) {

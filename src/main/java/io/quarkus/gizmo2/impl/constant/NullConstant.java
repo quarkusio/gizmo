@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 public final class NullConstant extends ConstantImpl {
 
@@ -43,5 +44,13 @@ public final class NullConstant extends ConstantImpl {
 
     public int hashCode() {
         return type().hashCode() + 19;
+    }
+
+    public String toString() {
+        return "null";
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return Util.descName(b.append('('), type()).append(")null");
     }
 }

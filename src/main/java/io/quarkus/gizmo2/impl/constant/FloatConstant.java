@@ -101,4 +101,8 @@ public final class FloatConstant extends ConstantImpl {
     public Optional<Float> describeConstable() {
         return Optional.of(Float.valueOf(value));
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(value).append(" (").append(Float.toHexString(value)).append(')');
+    }
 }

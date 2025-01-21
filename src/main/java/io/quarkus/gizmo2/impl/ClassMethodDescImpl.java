@@ -13,4 +13,12 @@ public final class ClassMethodDescImpl extends MethodDescImpl implements ClassMe
     public boolean equals(final MethodDescImpl obj) {
         return obj instanceof ClassMethodDescImpl other && super.equals(other);
     }
+
+    public StringBuilder toString(final StringBuilder b) {
+        b.append("ClassMethod[");
+        Util.descName(b, owner());
+        b.append('#').append(name());
+        b.append(type().descriptorString());
+        return b.append(']');
+    }
 }

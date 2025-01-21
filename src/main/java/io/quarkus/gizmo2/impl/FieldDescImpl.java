@@ -41,4 +41,12 @@ public final class FieldDescImpl implements FieldDesc {
     public int hashCode() {
         return hashCode;
     }
+
+    public StringBuilder toString(final StringBuilder b) {
+        return Util.descName(Util.descName(b, owner).append('#').append(name).append(':'), type);
+    }
+
+    public String toString() {
+        return toString(new StringBuilder()).toString();
+    }
 }

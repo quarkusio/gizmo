@@ -111,4 +111,8 @@ public final class LongConstant extends ConstantImpl {
     public Optional<Long> describeConstable() {
         return Optional.of(value);
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(value).append("L (0x").append(Long.toHexString(value.longValue())).append("L)");
+    }
 }

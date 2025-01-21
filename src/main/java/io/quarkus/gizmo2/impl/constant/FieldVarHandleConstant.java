@@ -23,4 +23,10 @@ public final class FieldVarHandleConstant extends VarHandleConstant {
     public int hashCode() {
         return field.hashCode();
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        b.append("VarHandle[");
+        field.toString(b);
+        return b.append(']');
+    }
 }

@@ -23,4 +23,10 @@ public final class StaticFieldVarHandleConstant extends VarHandleConstant {
     public int hashCode() {
         return field.hashCode();
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        b.append("VarHandle[static ");
+        field.toString(b);
+        return b.append(']');
+    }
 }

@@ -13,4 +13,12 @@ public final class InterfaceMethodDescImpl extends MethodDescImpl implements Int
     public boolean equals(final MethodDescImpl obj) {
         return obj instanceof InterfaceMethodDescImpl other && super.equals(other);
     }
+
+    public StringBuilder toString(final StringBuilder b) {
+        b.append("InterfaceMethod[");
+        Util.descName(b, owner());
+        b.append('#').append(name());
+        b.append(type().descriptorString());
+        return b.append(']');
+    }
 }

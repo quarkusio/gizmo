@@ -3,6 +3,8 @@ package io.quarkus.gizmo2.impl.constant;
 import java.lang.constant.ClassDesc;
 import java.lang.invoke.VarHandle;
 
+import io.quarkus.gizmo2.impl.Util;
+
 public final class ArrayVarHandleConstant extends VarHandleConstant {
     private final ClassDesc arrayType;
 
@@ -21,5 +23,9 @@ public final class ArrayVarHandleConstant extends VarHandleConstant {
 
     public int hashCode() {
         return arrayType.hashCode();
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return Util.descName(b.append("VarHandle["), arrayType).append(']');
     }
 }

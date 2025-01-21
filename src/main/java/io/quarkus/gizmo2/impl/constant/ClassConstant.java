@@ -5,6 +5,8 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.Util;
+
 public final class ClassConstant extends ConstantImpl {
 
     private final ClassDesc value;
@@ -40,5 +42,9 @@ public final class ClassConstant extends ConstantImpl {
 
     public int hashCode() {
         return value.hashCode();
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return Util.descName(b.append("Class["), value).append(']');
     }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 public final class EnumConstant extends ConstantImpl {
     private final Enum.EnumDesc<?> desc;
@@ -49,5 +50,9 @@ public final class EnumConstant extends ConstantImpl {
 
     public Optional<Enum.EnumDesc<?>> describeConstable() {
         return Optional.of(desc());
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return Util.descName(b, desc.constantType()).append('#').append(desc.constantName());
     }
 }

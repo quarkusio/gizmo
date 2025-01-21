@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl.constant;
 import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +38,19 @@ public final class InvokeConstant extends ConstantImpl {
 
     public Optional<? extends ConstantDesc> describeConstable() {
         return Optional.of(desc());
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        b.append("Invoke[");
+        handleConstant.toShortString(b).append("](");
+        Iterator<ConstantImpl> iterator = args.iterator();
+        if (iterator.hasNext()) {
+            handleConstant.toShortString(b);
+            while (iterator.hasNext()) {
+                b.append(',');
+                handleConstant.toShortString(b);
+            }
+        }
+        return b.append(')');
     }
 }

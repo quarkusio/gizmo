@@ -46,6 +46,14 @@ public final class BooleanConstant extends ConstantImpl {
         return this == other;
     }
 
+    public String toString() {
+        return Boolean.toString(value);
+    }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(value);
+    }
+
     public int hashCode() {
         return Boolean.hashCode(value);
     }

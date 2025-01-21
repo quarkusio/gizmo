@@ -8,4 +8,6 @@ public sealed interface MemberDesc permits ConstructorDesc, FieldDesc, MethodDes
     ClassDesc owner();
 
     String name();
+
+    StringBuilder toString(StringBuilder b);
 }

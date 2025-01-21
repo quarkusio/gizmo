@@ -31,4 +31,8 @@ public abstract class VarHandleConstant extends ConstantImpl {
     public Optional<VarHandle.VarHandleDesc> describeConstable() {
         return Optional.of(desc);
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(desc);
+    }
 }

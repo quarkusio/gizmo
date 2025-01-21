@@ -32,6 +32,14 @@ public final class Util {
         }
     };
 
+    public static StringBuilder descName(StringBuilder b, ClassDesc desc) {
+        if (desc.packageName().isEmpty()) {
+            return b.append(desc.displayName());
+        } else {
+            return b.append(desc.packageName()).append('.').append(desc.displayName());
+        }
+    }
+
     public static ClassDesc classDesc(Class<?> clazz) {
         return constantCache.get(clazz);
     }

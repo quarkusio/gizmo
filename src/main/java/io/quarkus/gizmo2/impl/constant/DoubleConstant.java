@@ -105,4 +105,8 @@ public final class DoubleConstant extends ConstantImpl {
     public Optional<Double> describeConstable() {
         return Optional.of(Double.valueOf(value));
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(value).append(" (").append(Double.toHexString(value)).append(')');
+    }
 }

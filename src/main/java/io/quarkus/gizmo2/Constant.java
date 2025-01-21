@@ -124,6 +124,10 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
         return ConstantImpl.ofStaticFieldVarHandle(desc);
     }
 
+    static Constant ofStaticFinalField(FieldDesc desc) {
+        return ConstantImpl.ofStaticFinalField(desc);
+    }
+
     static Constant ofArrayVarHandle(ClassDesc arrayType) {
         return ConstantImpl.ofArrayVarHandle(arrayType);
     }

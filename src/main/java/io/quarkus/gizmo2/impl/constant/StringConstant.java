@@ -40,4 +40,34 @@ public final class StringConstant extends ConstantImpl {
     public int hashCode() {
         return value.hashCode();
     }
+
+    private static final char[] hexDigits = "0123456789abcdef".toCharArray();
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        b.append('"');
+        int cp;
+        for (int i = 0; i < value.length(); i += Character.charCount(cp)) {
+            cp = value.codePointAt(i);
+            switch (cp) {
+                case '\b' -> b.append("\\b");
+                case '\f' -> b.append("\\f");
+                case '\n' -> b.append("\\n");
+                case '\r' -> b.append("\\r");
+                case '\t' -> b.append("\\t");
+                case '"', '\\' -> b.append('\\').appendCodePoint(cp);
+                default -> {
+                    if (Character.isISOControl(cp)) {
+                        assert cp < 256;
+                        b.append('\\').append('u').append("00")
+                            .append(hexDigits[cp >>> 4])
+                            .append(hexDigits[cp & 0x0f]);
+                    } else {
+                        b.appendCodePoint(cp);
+                    }
+                }
+            }
+        }
+        b.append('"');
+        return b;
+    }
 }

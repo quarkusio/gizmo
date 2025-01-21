@@ -40,4 +40,12 @@ public final class ConstructorDescImpl implements ConstructorDesc {
     public int hashCode() {
         return hashCode;
     }
+
+    public StringBuilder toString(final StringBuilder b) {
+        b.append("Constructor[");
+        Util.descName(b, owner);
+        b.append("#<init>");
+        b.append(type.descriptorString());
+        return b.append(']');
+    }
 }

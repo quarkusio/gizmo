@@ -207,7 +207,7 @@ public abstract non-sealed class Item implements Expr {
         return false;
     }
 
-    public final String toString() {
+    public String toString() {
         return toString(new StringBuilder()).toString();
     }
 

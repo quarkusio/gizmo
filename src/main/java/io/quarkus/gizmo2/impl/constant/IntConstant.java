@@ -73,4 +73,8 @@ public final class IntConstant extends ConstantImpl {
     public Optional<Integer> describeConstable() {
         return Optional.of(value);
     }
+
+    public StringBuilder toShortString(final StringBuilder b) {
+        return b.append(value).append(" (0x").append(Integer.toHexString(value.intValue())).append(')');
+    }
 }
