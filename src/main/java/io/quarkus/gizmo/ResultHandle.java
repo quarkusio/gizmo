@@ -57,11 +57,13 @@ public class ResultHandle {
     }
 
     private void verifyType(String current) {
-        if (current.length() == 0) {
+        if (current.isEmpty()) {
             throw new RuntimeException("Invalid type " + type);
         }
-        if (current.length() == 1) {
-            switch (current.charAt(0)) {
+        int length = current.length();
+        char firstChar = current.charAt(0);
+        if (length == 1) {
+            switch (firstChar) {
                 case 'Z':
                 case 'B':
                 case 'S':
@@ -75,10 +77,10 @@ public class ResultHandle {
                     throw new RuntimeException("Invalid type " + type);
             }
         } else {
-            if (current.charAt(0) == '[') {
+            if (firstChar == '[') {
                 verifyType(current.substring(1));
             } else {
-                if (!(current.startsWith("L") && current.endsWith(";"))) {
+                if (!(firstChar == 'L' && current.charAt(length - 1) == ';')) {
                     throw new RuntimeException("Invalid type " + type);
                 }
             }
