@@ -1047,9 +1047,9 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             }
             return;
         }
-        if (!isScopedWithin(handle.getOwner())) {
-            // throw new IllegalStateException("Wrong owner for ResultHandle " + handle);
-        }
+        //if (!isScopedWithin(handle.getOwner())) {
+        // throw new IllegalStateException("Wrong owner for ResultHandle " + handle);
+        //}
         if (handle.getResultType() != ResultHandle.ResultType.SINGLE_USE) {
             if (handle.getType().equals("S") || handle.getType().equals("Z") || handle.getType().equals("I")
                     || handle.getType().equals("B") || handle.getType().equals("C")) {
@@ -1692,16 +1692,22 @@ class BytecodeCreatorImpl implements BytecodeCreator {
         Operation prev = null;
         for (int i = 0; i < operations.size(); ++i) {
             Operation op = operations.get(i);
-            Set<ResultHandle> toAdd = new LinkedHashSet<>(op.getInputResultHandles());
+
+            ResultHandle resultHandleToIgnore = null;
             if (prev != null &&
                     prev.getOutgoingResultHandle() != null &&
                     prev.getOutgoingResultHandle() == op.getTopResultHandle()) {
-                toAdd.remove(op.getTopResultHandle());
+                resultHandleToIgnore = op.getTopResultHandle();
                 if (op.getTopResultHandle().getResultType() == ResultHandle.ResultType.UNUSED) {
                     op.getTopResultHandle().markSingleUse();
                 }
             }
-            handlesToAllocate.addAll(toAdd);
+
+            for (ResultHandle inputResultHandle : op.getInputResultHandles()) {
+                if (inputResultHandle != resultHandleToIgnore) {
+                    handlesToAllocate.add(inputResultHandle);
+                }
+            }
             op.findResultHandles(handlesToAllocate);
             prev = op;
         }
@@ -1813,10 +1819,12 @@ class BytecodeCreatorImpl implements BytecodeCreator {
 
     static abstract class Operation {
 
+        private static final boolean ARC_DEBUG = Boolean.getBoolean("arc.debug");
+
         private final Throwable errorPoint;
 
         Operation() {
-            if (Boolean.getBoolean("arc.debug")) {
+            if (ARC_DEBUG) {
                 errorPoint = new RuntimeException("Error location");
             } else {
                 errorPoint = null;
@@ -1959,7 +1967,7 @@ class BytecodeCreatorImpl implements BytecodeCreator {
             if (object != null) {
                 ret.add(object);
             }
-            ret.addAll(Arrays.asList(args));
+            Collections.addAll(ret, args);
             return ret;
         }
 
