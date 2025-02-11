@@ -221,6 +221,52 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
         set(var, Constant.of(value));
     }
 
+    /**
+     * Swap the values of two variables
+     * without requiring an intermediate temporary variable.
+     *
+     * @param var1 the first variable (must not be {@code null})
+     * @param var2 the second variable (must not be {@code null})
+     */
+    default void swap(LValueExpr var1, LValueExpr var2) {
+        Expr get1 = get(var1);
+        set(var1, get(var2));
+        set(var2, get1);
+    }
+
+    /**
+     * Rotate the values of three variables one position to the right
+     * without requiring an intermediate temporary variable.
+     * The rightmost value is moved to the leftmost variable.
+     *
+     * @param var1 the first variable (must not be {@code null})
+     * @param var2 the second variable (must not be {@code null})
+     * @param var3 the third variable (must not be {@code null})
+     */
+    default void rotate(LValueExpr var1, LValueExpr var2,  LValueExpr var3) {
+        Expr get1 = get(var1);
+        set(var1, get(var3));
+        set(var3, get(var2));
+        set(var2, get1);
+    }
+
+    /**
+     * Rotate the values of four variables one position to the right
+     * without requiring an intermediate temporary variable.
+     * The rightmost value is moved to the leftmost variable.
+     *
+     * @param var1 the first variable (must not be {@code null})
+     * @param var2 the second variable (must not be {@code null})
+     * @param var3 the third variable (must not be {@code null})
+     * @param var4 the fourth variable (must not be {@code null})
+     */
+    default void rotate(LValueExpr var1, LValueExpr var2,  LValueExpr var3, LValueExpr var4) {
+        Expr get1 = get(var1);
+        set(var1, get(var4));
+        set(var4, get(var3));
+        set(var3, get(var2));
+        set(var2, get1);
+    }
 
     // increment/decrement
 
