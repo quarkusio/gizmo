@@ -6,6 +6,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -21,6 +22,7 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.ops.ClassOps;
 import io.quarkus.gizmo2.creator.ops.CollectionOps;
+import io.quarkus.gizmo2.creator.ops.IteratorOps;
 import io.quarkus.gizmo2.creator.ops.ListOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
@@ -1990,6 +1992,14 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     }
 
     /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default IteratorOps withIterator(Expr receiver) {
+        return new IteratorOps(this, receiver);
+    }
+
+    /**
      * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
      *
      * @param className the class name (must not be {@code null})
@@ -2026,16 +2036,6 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     Expr iterate(Expr items);
 
     Expr currentThread();
-
-    /**
-     * A convenience method to call the {@code hasNext} method on an {@code Iterator}.
-     *
-     * @param iterator the iterator (must not be {@code null})
-     * @return the boolean result (not {@code null})
-     */
-    Expr iterHasNext(Expr iterator);
-
-    Expr iterNext(Expr iterator);
 
     void close(Expr closeable);
 

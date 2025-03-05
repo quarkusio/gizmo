@@ -434,14 +434,6 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return invokeStatic(MethodDesc.of(Thread.class, "currentThread", void.class));
     }
 
-    public Expr iterHasNext(final Expr iterator) {
-        return invokeInterface(MethodDesc.of(Iterator.class, "hasNext", boolean.class), iterator);
-    }
-
-    public Expr iterNext(final Expr iterator) {
-        return invokeInterface(MethodDesc.of(Iterator.class, "next", Object.class), iterator);
-    }
-
     public void close(final Expr closeable) {
         invokeInterface(MethodDesc.of(AutoCloseable.class, "close", void.class), closeable);
     }
@@ -687,8 +679,8 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
                 // use iterable
                 LocalVar itr = b0.define("$$itr" + depth, b0.iterate(items));
                 b0.block(b1 -> {
-                    b1.if_(b1.iterHasNext(itr), b2 -> {
-                        LocalVar val = b2.define("$$val" + depth, b2.iterNext(itr));
+                    b1.if_(b1.withIterator(itr).hasNext(), b2 -> {
+                        LocalVar val = b2.define("$$val" + depth, b2.withIterator(itr).next());
                         builder.accept(b2, val);
                         b2.redo(b1);
                     });
