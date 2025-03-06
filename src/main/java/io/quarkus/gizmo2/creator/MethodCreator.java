@@ -5,9 +5,23 @@ import java.lang.constant.ClassDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.MethodCreatorImpl;
 
+/**
+ * A creator for any kind of method on a class.
+ */
 public sealed interface MethodCreator extends ExecutableCreator permits AbstractMethodCreator, InstanceMethodCreator, StaticMethodCreator, MethodCreatorImpl {
 
+    /**
+     * {@return the descriptor of the method}
+     */
     MethodDesc desc();
+
+    /**
+     * Change the return type of this method.
+     * The method type is changed with the new return type.
+     *
+     * @param type the descriptor of the return type (must not be {@code null})
+     */
+    void returning(ClassDesc type);
 
     /**
      * Change the return type of this method.
@@ -15,7 +29,5 @@ public sealed interface MethodCreator extends ExecutableCreator permits Abstract
      *
      * @param type the return type (must not be {@code null})
      */
-    void returning(ClassDesc type);
-
     void returning(Class<?> type);
 }

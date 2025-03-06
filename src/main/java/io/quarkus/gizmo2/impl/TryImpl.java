@@ -79,8 +79,8 @@ public final class TryImpl extends Item implements TryCreator, Scoped<TryImpl> {
         }
     }
 
-    public void catch_(final ClassDesc type, final BiConsumer<BlockCreator, Expr> body) {
-        catch_(type, Set.of(type), body);
+    public void catch_(final ClassDesc type, final BiConsumer<BlockCreator, Expr> builder) {
+        catch_(type, Set.of(type), builder);
     }
 
     public void catch_(final ClassDesc superType, final Set<ClassDesc> types, final BiConsumer<BlockCreator, Expr> builder) {

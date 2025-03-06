@@ -1,5 +1,8 @@
 package io.quarkus.gizmo2;
 
+/**
+ * The possible variable/memory access modes.
+ */
 public enum AccessMode {
     /**
      * Use the declared mode of the variable.
@@ -12,9 +15,21 @@ public enum AccessMode {
      * All lvalues support this type of access.
      */
     Plain(true, true),
+    /**
+     * Access using "opaque" semantics.
+     */
     Opaque(true, true),
+    /**
+     * Access using "acquire" semantics.
+     */
     Acquire(true, false),
+    /**
+     * Access using "release" semantics.
+     */
     Release(false, true),
+    /**
+     * Access using "volatile" semantics.
+     */
     Volatile(true, true),
     ;
 

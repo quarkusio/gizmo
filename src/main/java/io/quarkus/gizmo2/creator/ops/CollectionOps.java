@@ -52,6 +52,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#add(Object)}.
      *
+     * @param item the object to add (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr add(Expr item) {
@@ -61,6 +62,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#addAll(Collection)}.
      *
+     * @param other the collection to add (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr addAll(Expr other) {
@@ -77,6 +79,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#contains(Object)}.
      *
+     * @param item the item to test for (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr contains(Expr item) {
@@ -86,6 +89,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#containsAll(Collection)}.
      *
+     * @param other the other collection (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr containsAll(Expr other) {
@@ -104,6 +108,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#remove(Object)}.
      *
+     * @param item the object to remove (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr remove(Expr item) {
@@ -113,6 +118,7 @@ public class CollectionOps extends ObjectOps {
     /**
      * Generate a call to {@link Collection#removeAll(Collection)}.
      *
+     * @param other the other collection (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr removeAll(Expr other) {

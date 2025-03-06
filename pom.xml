@@ -156,6 +156,10 @@
                                 <goals>
                                     <goal>jar</goal>
                                 </goals>
+                                <configuration>
+                                    <release>17</release>
+                                    <doclint>all</doclint>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

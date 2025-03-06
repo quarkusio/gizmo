@@ -1,4 +1,7 @@
-module io.quarkus.gizmo {
+/**
+ * A simplified bytecode generator.
+ */
+module io.quarkus.gizmo2 {
     requires transitive io.github.dmlloyd.classfile;
 
     // for accessing serializable lambdas via ReflectionFactory

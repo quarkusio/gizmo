@@ -2,6 +2,9 @@ package io.quarkus.gizmo2;
 
 import io.quarkus.gizmo2.impl.ParamVarImpl;
 
+/**
+ * A variable representing a method call parameter.
+ */
 public sealed interface ParamVar extends Var permits ParamVarImpl {
     /**
      * {@return the parameter index, counting from zero}

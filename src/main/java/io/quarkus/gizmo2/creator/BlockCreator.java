@@ -8,6 +8,8 @@ import java.lang.constant.ConstantDesc;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -25,6 +27,7 @@ import io.quarkus.gizmo2.creator.ops.CollectionOps;
 import io.quarkus.gizmo2.creator.ops.IteratorOps;
 import io.quarkus.gizmo2.creator.ops.ListOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
+import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -1538,42 +1541,126 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     // arithmetic-assign
 
+    /**
+     * Add the argument to the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void addAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Subtract the argument from the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void subAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Multiply the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void mulAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Divide the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void divAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Divide the argument with the variable value and assign the remainder back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void remAssign(LValueExpr var, Expr arg);
 
 
     // bitwise-assign
 
+    /**
+     * Bitwise-AND the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void andAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Bitwise-OR the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void orAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Bitwise-XOR (exclusive OR) the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void xorAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Bitwise-left-shift the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void shlAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Arithmetically bitwise-right-shift the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void shrAssign(LValueExpr var, Expr arg);
 
+    /**
+     * Logically bitwise-right-shift the argument with the variable value and assign it back.
+     *
+     * @param var the variable (must not be {@code null})
+     * @param arg the argument value (must not be {@code null})
+     */
     void ushrAssign(LValueExpr var, Expr arg);
 
 
     // logical
 
+    /**
+     * {@return an expression which is the logical (boolean) opposite of the input expression}
+     * @param a the input expression (must not be {@code null})
+     */
     default Expr logicalNot(Expr a) {
         return a.typeKind() == TypeKind.BOOLEAN ? xor(a, Constant.of(1)) : eq(a, Constant.of(0, a.typeKind()));
     }
 
+    /**
+     * Perform a short-circuiting logical-OR operation.
+     *
+     * @param cond the condition to evaluate (must not be {@code null})
+     * @param other the expression to evaluate if {@code cond} is {@code false}
+     * @return the boolean result of the operation (not {@code null})
+     */
     default Expr logicalOr(Expr cond, Function<BlockCreator, Expr> other) {
         return selectExpr(CD_boolean, cond, __ -> Constant.of(true), other);
     }
 
+    /**
+     * Perform a short-circuiting logical-AND operation.
+     *
+     * @param cond the condition to evaluate (must not be {@code null})
+     * @param other the expression to evaluate if {@code cond} is {@code true}
+     * @return the boolean result of the operation (not {@code null})
+     */
     default Expr logicalAnd(Expr cond, Function<BlockCreator, Expr> other) {
         return selectExpr(CD_boolean, cond, other, __ -> Constant.of(false));
     }
@@ -1581,21 +1668,60 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     // conditional
 
+    /**
+     * Evaluate a conditional (select) expression.
+     *
+     * @param type the result type (must not be {@code null})
+     * @param cond the boolean condition to evaluate (must not be {@code null})
+     * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
+     * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
+     * @return the resultant value (must not be {@code null})
+     */
     default Expr selectExpr(Class<?> type, Expr cond, Function<BlockCreator, Expr> ifTrue, Function<BlockCreator, Expr> ifFalse) {
         return selectExpr(Util.classDesc(type), cond, ifTrue, ifFalse);
     }
 
+    /**
+     * Evaluate a conditional (select) expression.
+     *
+     * @param type the result type (must not be {@code null})
+     * @param cond the boolean condition to evaluate (must not be {@code null})
+     * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
+     * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
+     * @return the resultant value (must not be {@code null})
+     */
     Expr selectExpr(ClassDesc type, Expr cond, Function<BlockCreator, Expr> ifTrue, Function<BlockCreator, Expr> ifFalse);
 
+    /**
+     * Evaluate a switch expression.
+     *
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder which constructs the switch expression (must not be {@code null})
+     * @return the result of the switch expression (must not be {@code null})
+     */
     Expr switchExpr(Expr val, Consumer<SwitchExprCreator> builder);
 
 
     // lambda
 
+    /**
+     * Construct a lambda instance with the given type.
+     *
+     * @param type the type of the lambda (must not be {@code null})
+     * @param builder the builder for the lambda body (must not be {@code null})
+     * @return the lambda object (not {@code null})
+     */
     default Expr lambda(Class<?> type, Consumer<LambdaCreator> builder) {
         return lambda(Util.classDesc(type), builder);
     }
 
+    /**
+     * Construct a lambda instance with the given type.
+     *
+     * @param type the type of the lambda (must not be {@code null})
+     * @param builder the builder for the lambda body (must not be {@code null})
+     * @return the lambda object (not {@code null})
+     */
     Expr lambda(ClassDesc type, Consumer<LambdaCreator> builder);
 
 
@@ -1615,69 +1741,231 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     Expr cast(Expr a, ClassDesc toType);
 
+    /**
+     * Cast a value to the given type.
+     * For primitives, the appropriate conversion is applied.
+     * For objects, a class cast is performed.
+     *
+     * @param a the value to cast (must not be {@code null})
+     * @param toType the type to cast to (must not be {@code null})
+     * @return the cast value (not {@code null})
+     * @see #instanceOf(Expr, ClassDesc)
+     * @see #ifInstanceOf(Expr, ClassDesc, BiConsumer)
+     * @see #ifInstanceOfElse(Expr, ClassDesc, BiConsumer, Consumer)
+     */
     default Expr cast(Expr a, Class<?> toType) {
         return cast(a, Util.classDesc(toType));
     }
 
+    /**
+     * Box the given primitive value into its corresponding box type.
+     *
+     * @param a the primitive value (must not be {@code null})
+     * @return the boxed value (not {@code null})
+     */
     Expr box(Expr a);
 
+    /**
+     * Unbox the given boxed value into its corresponding primitive type.
+     *
+     * @param a the boxed value (must not be {@code null})
+     * @return the primitive value (not {@code null})
+     */
     Expr unbox(Expr a);
 
 
     // object
 
+    /**
+     * Test whether the given object implements the given type.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to test against (must not be {@code null})
+     * @return the boolean result of the check (not {@code null})
+     */
+    default Expr instanceOf(Expr obj, Class<?> type) {
+        return instanceOf(obj, Util.classDesc(type));
+    }
+
+    /**
+     * Test whether the given object implements the given type.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to test against (must not be {@code null})
+     * @return the boolean result of the check (not {@code null})
+     */
     Expr instanceOf(Expr obj, ClassDesc type);
 
+    /**
+     * Construct a new instance.
+     *
+     * @param ctor the constructor to call (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     Expr new_(ConstructorDesc ctor, List<Expr> args);
 
+    /**
+     * Construct a new instance.
+     *
+     * @param ctor the constructor to call (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(ConstructorDesc ctor, Expr... args) {
         return new_(ctor, List.of(args));
     }
 
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(ClassDesc type, List<Expr> args) {
         return new_(ConstructorDesc.of(type, args.stream().map(Expr::type).toList()), args);
     }
 
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(ClassDesc type, Expr... args) {
         return new_(type, List.of(args));
     }
 
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(Class<?> type, List<Expr> args) {
         return new_(Util.classDesc(type), args);
     }
 
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(Class<?> type, Expr... args) {
         return new_(type, List.of(args));
     }
 
     // invocation
 
+    /**
+     * Invoke a static method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     Expr invokeStatic(MethodDesc method, List<Expr> args);
 
+    /**
+     * Invoke a static method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     default Expr invokeStatic(MethodDesc method, Expr... args) {
         return invokeStatic(method, List.of(args));
     }
 
+    /**
+     * Invoke a virtual method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     Expr invokeVirtual(MethodDesc method, Expr instance, List<Expr> args);
 
+    /**
+     * Invoke a virtual method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     default Expr invokeVirtual(MethodDesc method, Expr instance, Expr... args) {
         return invokeVirtual(method, instance, List.of(args));
     }
 
+    /**
+     * Invoke a method using "special" semantics.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     Expr invokeSpecial(MethodDesc method, Expr instance, List<Expr> args);
 
+    /**
+     * Invoke a method using "special" semantics.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     default Expr invokeSpecial(MethodDesc method, Expr instance, Expr... args) {
         return invokeSpecial(method, instance, List.of(args));
     }
 
-    Expr invokeSpecial(ConstructorDesc method, Expr instance, List<Expr> args);
+    /**
+     * Invoke a constructor using "special" semantics.
+     *
+     * @param ctor the constructor to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the constructor call result (not {@code null}, usually {@link Constant#ofVoid()})
+     */
+    Expr invokeSpecial(ConstructorDesc ctor, Expr instance, List<Expr> args);
 
-    default Expr invokeSpecial(ConstructorDesc method, Expr instance, Expr... args) {
-        return invokeSpecial(method, instance, List.of(args));
+    /**
+     * Invoke a constructor using "special" semantics.
+     *
+     * @param ctor the constructor to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the constructor call result (not {@code null}, usually {@link Constant#ofVoid()})
+     */
+    default Expr invokeSpecial(ConstructorDesc ctor, Expr instance, Expr... args) {
+        return invokeSpecial(ctor, instance, List.of(args));
     }
 
+    /**
+     * Invoke an interface method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     Expr invokeInterface(MethodDesc method, Expr instance, List<Expr> args);
 
+    /**
+     * Invoke an interface method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
     default Expr invokeInterface(MethodDesc method, Expr instance, Expr... args) {
         return invokeInterface(method, instance, List.of(args));
     }
@@ -1726,14 +2014,49 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     Expr blockExpr(Expr arg, ClassDesc type, BiFunction<BlockCreator, Expr, Expr> nested);
 
+    /**
+     * If the given object is an instance of the given type, then execute the block with the narrowed object.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
+     */
     void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue);
 
+    /**
+     * If the given object is an instance of the given type, then execute the first block with the narrowed object,
+     * otherwise execute the other block.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
+     * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
+     */
     void ifInstanceOfElse(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue, Consumer<BlockCreator> ifFalse);
 
+    /**
+     * A general {@code if} conditional.
+     *
+     * @param cond the boolean condition expression (must not be {@code null})
+     * @param whenTrue the builder for a block to execute if the condition is true (must not be {@code null})
+     */
     void if_(Expr cond, Consumer<BlockCreator> whenTrue);
 
+    /**
+     * An inverted {@code if} conditional.
+     *
+     * @param cond the boolean condition expression (must not be {@code null})
+     * @param whenFalse the builder for a block to execute if the condition is false (must not be {@code null})
+     */
     void unless(Expr cond, Consumer<BlockCreator> whenFalse);
 
+    /**
+     * A general {@code if}-{@code else} conditional.
+     *
+     * @param cond the boolean condition expression (must not be {@code null})
+     * @param whenTrue the builder for a block to execute if the condition is true (must not be {@code null})
+     * @param whenFalse the builder for a block to execute if the condition is false (must not be {@code null})
+     */
     void ifElse(Expr cond, Consumer<BlockCreator> whenTrue, Consumer<BlockCreator> whenFalse);
 
     /**
@@ -1788,18 +2111,50 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     void redo(SwitchCreator switch_, Constant case_);
 
+    /**
+     * Jump to a specific case in an enclosing {@code switch}.
+     * If the case is not represented in the {@code switch}, then
+     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     *
+     * @param switch_ the enclosing {@code switch} (must not be {@code null})
+     * @param case_ the constant representing the case to go to (must not be {@code null})
+     */
     default void redo(SwitchCreator switch_, int case_) {
         redo(switch_, Constant.of(case_));
     }
 
+    /**
+     * Jump to a specific case in an enclosing {@code switch}.
+     * If the case is not represented in the {@code switch}, then
+     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     *
+     * @param switch_ the enclosing {@code switch} (must not be {@code null})
+     * @param case_ the constant representing the case to go to (must not be {@code null})
+     */
     default void redo(SwitchCreator switch_, String case_) {
         redo(switch_, Constant.of(case_));
     }
 
+    /**
+     * Jump to a specific case in an enclosing {@code switch}.
+     * If the case is not represented in the {@code switch}, then
+     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     *
+     * @param switch_ the enclosing {@code switch} (must not be {@code null})
+     * @param case_ the constant representing the case to go to (must not be {@code null})
+     */
     default void redo(SwitchCreator switch_, Enum<?> case_) {
         redo(switch_, Constant.of(case_));
     }
 
+    /**
+     * Jump to a specific case in an enclosing {@code switch}.
+     * If the case is not represented in the {@code switch}, then
+     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     *
+     * @param switch_ the enclosing {@code switch} (must not be {@code null})
+     * @param case_ the constant representing the case to go to (must not be {@code null})
+     */
     default void redo(SwitchCreator switch_, Class<?> case_) {
         redo(switch_, Constant.of(case_));
     }
@@ -1826,83 +2181,188 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     void loop(Consumer<BlockCreator> body);
 
+    /**
+     * Enter a {@code while} loop.
+     * The loop may be exited early by calling {@link #break_(BlockCreator)} on the loop's block.
+     *
+     * @param cond the condition which is evaluated at the top of the block (must not be {@code null})
+     * @param body the loop body (must not be {@code null})
+     */
     void while_(Function<BlockCreator, Expr> cond, Consumer<BlockCreator> body);
 
+    /**
+     * Enter a {@code do}-{@code while} loop.
+     * The loop may be exited early by calling {@link #break_(BlockCreator)} on the loop's block.
+     *
+     * @param body the loop body (must not be {@code null})
+     * @param cond the condition which is evaluated at the bottom of the block (must not be {@code null})
+     */
     void doWhile(Consumer<BlockCreator> body, Function<BlockCreator, Expr> cond);
 
+    /**
+     * Enter a {@code try} block.
+     *
+     * @param body the handler to produce the {@code try}, {@code catch}, and/or {@code finally} sections
+     */
     void try_(Consumer<TryCreator> body);
 
     /**
      * Open a resource and run the given body with the resource, automatically closing it at the end.
      *
      * @param resource the resource to automatically close (must not be {@code null})
-     * @param body the body of the resource operation (must not be {@code null})
+     * @param body the creator for the body of the resource operation (must not be {@code null})
      */
     void autoClose(Expr resource, BiConsumer<BlockCreator, Expr> body);
 
+    /**
+     * Enter a {@code synchronized} block.
+     *
+     * @param monitor the expression of the object whose monitor is to be locked (must not be {@code null})
+     * @param body the creator for the body of the block (must not be {@code null})
+     */
     void synchronized_(Expr monitor, Consumer<BlockCreator> body);
 
+    /**
+     * Enter a block which locks a {@link Lock}.
+     *
+     * @param jucLock the expression of the lock object to be locked (must not be {@code null})
+     * @param body the creator for the body of the block (must not be {@code null})
+     */
     void locked(Expr jucLock, Consumer<BlockCreator> body);
 
 
     // exiting
 
+    /**
+     * Return from the current method.
+     */
     void return_();
 
+    /**
+     * Return from the current method.
+     *
+     * @param val the return value (must not be {@code null})
+     */
     void return_(Expr val);
 
+    /**
+     * Return from the current method.
+     *
+     * @param val the return value (must not be {@code null})
+     */
     default void return_(String val) {
         return_(Constant.of(val));
     }
 
+    /**
+     * Return from the current method.
+     *
+     * @param val the return value (must not be {@code null})
+     */
     default void return_(Class<?> val) {
         return_(Constant.of(val));
     }
 
+    /**
+     * Return from the current method.
+     *
+     * @param val the return value
+     */
     default void return_(boolean val) {
         return_(Constant.of(val));
     }
 
+    /**
+     * Return from the current method.
+     *
+     * @param val the return value
+     */
     default void return_(int val) {
         return_(Constant.of(val));
     }
 
+    /**
+     * Return {@code true} from the current method.
+     */
     default void returnTrue() {
         return_(true);
     }
 
+    /**
+     * Return {@code false} from the current method.
+     */
     default void returnFalse() {
         return_(false);
     }
 
+    /**
+     * Return {@code 0} from the current method.
+     */
     default void returnIntZero() {
         return_(Constant.of(0));
     }
 
+    /**
+     * Return {@code null} from the current method.
+     *
+     * @param type the return type
+     */
     default void returnNull(ClassDesc type) {
         return_(Constant.ofNull(type));
     }
 
+    /**
+     * Return {@code null} from the current method.
+     *
+     * @param type the return type
+     */
     default void returnNull(Class<?> type) {
         return_(Constant.ofNull(type));
     }
 
     //xxx more returns
 
+    /**
+     * Throw the given exception object.
+     *
+     * @param val the exception object (must not be {@code null})
+     */
     void throw_(Expr val);
 
+    /**
+     * Throw a new exception of the given type.
+     *
+     * @param type the exception type (must not be {@code null})
+     */
     default void throw_(ClassDesc type) {
         throw_(new_(type, List.of()));
     }
 
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message (must not be {@code null})
+     */
     default void throw_(ClassDesc type, String message) {
         throw_(new_(type, List.of(Constant.of(message))));
     }
 
+    /**
+     * Throw a new exception of the given type.
+     *
+     * @param type the exception type (must not be {@code null})
+     */
     default void throw_(Class<? extends Throwable> type) {
         throw_(Util.classDesc(type));
     }
 
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message (must not be {@code null})
+     */
     default void throw_(Class<? extends Throwable> type, String message) {
         if (message == null) {
             throw_(type);
@@ -1931,6 +2391,16 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      */
     Expr exprEquals(Expr a, Expr b);
 
+    /**
+     * Determine the equality of the given objects using <em>value equality</em>
+     * rather than <em>reference equality</em>.
+     * This is analogous to using {@link Object#equals(Object)} to compare references.
+     * For non-reference types, this would be equivalent to {@link #eq(Expr, Expr)}.
+     *
+     * @param a the first expression (must not be {@code null})
+     * @param b the second expression (must not be {@code null})
+     * @return a {@code boolean} expression representing the equality (or lack thereof) between the two values
+     */
     default Expr exprEquals(Expr a, ConstantDesc b) {
         return exprEquals(a, Constant.of(b));
     }
@@ -1992,6 +2462,14 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     }
 
     /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Set}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default SetOps withSet(Expr receiver) {
+        return new SetOps(this, receiver);
+    }
+
+    /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -2027,30 +2505,88 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
         return listOf(List.of(items));
     }
 
+    /**
+     * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param items the items to add to the list (must not be {@code null})
+     * @return the list expression (not {@code null})
+     * @see #withSet(Expr)
+     */
     Expr setOf(List<Expr> items);
 
+    /**
+     * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param items the items to add to the list (must not be {@code null})
+     * @return the list expression (not {@code null})
+     * @see #withSet(Expr)
+     */
     default Expr setOf(Expr... items) {
         return setOf(List.of(items));
     }
 
+    /**
+     * Iterate the given target.
+     *
+     * @param items the iterable object expression (must not be {@code null})
+     * @return the iterator expression (not {@code null})
+     */
     Expr iterate(Expr items);
 
+    /**
+     * {@return an expression representing the current thread from the perspective of the running method body}
+     */
     Expr currentThread();
 
+    /**
+     * Close the given target.
+     *
+     * @param closeable the closeable object (must not be {@code null})
+     */
     void close(Expr closeable);
 
+    /**
+     * Add a suppressed exception to the given throwable.
+     *
+     * @param throwable the throwable (must not be {@code null})
+     * @param suppressed the suppressed throwable (must not be {@code null})
+     */
+    // TODO: withThrowable(throwable).addSuppressed(suppressed) ?
     void addSuppressed(Expr throwable, Expr suppressed);
 
     // debug stuff
 
+    /**
+     * Change the current line number from this point.
+     *
+     * @param lineNumber the line number
+     */
     void line(int lineNumber);
 
+    /**
+     * Insert a {@code printf} statement.
+     *
+     * @param format the format string (must not be {@code null})
+     * @param values the value expression(s) (must not be {@code null})
+     */
     void printf(String format, List<Expr> values);
 
+    /**
+     * Insert a {@code printf} statement.
+     *
+     * @param format the format string (must not be {@code null})
+     * @param values the value expression(s) (must not be {@code null})
+     */
     default void printf(String format, Expr... values) {
         printf(format, List.of(values));
     }
 
+    /**
+     * Produce an assertion.
+     *
+     * @param assertion the assertion expression maker (must not be {@code null})
+     * @param message the message to print if the assertion fails (must not be {@code null})
+     */
     void assert_(Function<BlockCreator, Expr> assertion, String message);
 }
 

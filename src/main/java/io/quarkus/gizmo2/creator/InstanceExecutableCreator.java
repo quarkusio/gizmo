@@ -4,7 +4,10 @@ import java.util.function.BiConsumer;
 
 import io.quarkus.gizmo2.Expr;
 
-public non-sealed interface InstanceExecutableCreator extends ExecutableCreator {
+/**
+ * A creator for instance executables.
+ */
+public sealed interface InstanceExecutableCreator extends ExecutableCreator permits ConstructorCreator, InstanceMethodCreator {
 
     /**
      * Build the body.

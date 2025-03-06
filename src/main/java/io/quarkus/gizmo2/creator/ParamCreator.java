@@ -5,12 +5,32 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Annotatable;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator interface for parameters.
  */
 public sealed interface ParamCreator extends Annotatable permits ParamCreatorImpl {
+    /**
+     * Add a flag to this parameter.
+     *
+     * @param flag the flag to add (must not be {@code null})
+     */
     void withFlag(AccessFlag flag);
 
+    /**
+     * Change the type of this parameter.
+     *
+     * @param type the descriptor of the new type (must not be {@code null})
+     */
     void withType(ClassDesc type);
+
+    /**
+     * Change the type of this parameter.
+     *
+     * @param type the new type (must not be {@code null})
+     */
+    default void withType(Class<?> type) {
+        withType(Util.classDesc(type));
+    }
 }

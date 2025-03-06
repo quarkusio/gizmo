@@ -9,6 +9,7 @@ public interface ComparableOps {
     /**
      * Generate a call to {@link Comparable#compareTo(Object)}.
      *
+     * @param other the other object to compare (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     Expr compareTo(Expr other);
