@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -12,7 +10,7 @@
 
     <groupId>io.quarkus.gizmo</groupId>
     <artifactId>gizmo2</artifactId>
-    <version>2.0-SNAPSHOT</version>
+    <version>2.0.0.Alpha1</version>
 
     <name>Gizmo</name>
     <description>A bytecode generation convenience library</description>
@@ -21,7 +19,7 @@
         <url>https://github.com/quarkusio/gizmo</url>
         <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
-        <tag>1.8.0</tag>
+        <tag>2.0.0.Alpha1</tag>
     </scm>
 
     <licenses>
@@ -167,10 +165,7 @@
                             <id>release</id>
                             <properties>
                                 <gpg.useagent>false</gpg.useagent>
-                                <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X
-                                <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory
-                                <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase
-                            </properties>
+                                <gpg.executable>/usr/local/Cellar/gnupg@1.4/1.4.23_1/bin/gpg1</gpg.executable> <- use gpg1 on Mac OS X <gpg.homedir>~/.gnupg</gpg.homedir>  <- Update to your own directory <gpg.passphrase>******</gpg.passphrase> <- Add your passphrase </properties>
                         </profile>
                          -->
                         <groupId>org.apache.maven.plugins</groupId>
