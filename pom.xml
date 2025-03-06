@@ -33,11 +33,6 @@
     </licenses>
 
     <properties>
-        <maven.compiler.parameters>true</maven.compiler.parameters>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <maven.compiler.release>17</maven.compiler.release>
-
         <version.classfile>24.0</version.classfile>
         <version.junit>5.10.3</version.junit>
 
