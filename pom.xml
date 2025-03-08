@@ -34,7 +34,7 @@
         <version.classfile>24.0</version.classfile>
         <version.junit>5.10.3</version.junit>
 
-        <version.nexus-staging-plugin>1.6.13</version.nexus-staging-plugin>
+        <version.nexus-staging-plugin>1.7.0</version.nexus-staging-plugin>
     </properties>
 
     <dependencies>
