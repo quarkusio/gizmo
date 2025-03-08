@@ -1,0 +1,28 @@
+---
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "21:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+  - package-ecosystem: maven
+    target-branch: "2.x"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "22:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    labels: ['dependencies', '2.x']
+  - package-ecosystem: maven
+    target-branch: "1.x"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "23:00"
+      timezone: Europe/Paris
+    open-pull-requests-limit: 5
+    labels: ['dependencies', '1.x']
