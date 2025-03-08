@@ -16,6 +16,7 @@ updates:
       time: "22:00"
       timezone: Europe/Paris
     open-pull-requests-limit: 5
+    labels: ['dependencies', '2.x']
   - package-ecosystem: maven
     target-branch: "1.x"
     directory: "/"
@@ -24,3 +25,4 @@ updates:
       time: "23:00"
       timezone: Europe/Paris
     open-pull-requests-limit: 5
+    labels: ['dependencies', '1.x']
