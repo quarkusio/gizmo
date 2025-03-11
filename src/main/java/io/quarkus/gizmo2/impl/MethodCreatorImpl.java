@@ -3,8 +3,11 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
+import java.util.function.Consumer;
 
+import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.MethodCreator;
+import io.quarkus.gizmo2.creator.ParamCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -39,6 +42,12 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
 
     public MethodTypeDesc type() {
         return desc().type();
+    }
+
+    public ParamVar parameter(final String name, final Consumer<ParamCreator> builder) {
+        ParamVar v = super.parameter(name, builder);
+        desc = null;
+        return v;
     }
 
     public String name() {

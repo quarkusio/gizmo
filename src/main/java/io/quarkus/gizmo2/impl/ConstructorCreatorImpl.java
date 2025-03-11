@@ -8,9 +8,11 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
+import io.quarkus.gizmo2.creator.ParamCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implements ConstructorCreator {
@@ -57,6 +59,12 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
 
     void accept(final Consumer<? super ConstructorCreatorImpl> builder) {
         builder.accept(this);
+    }
+
+    public ParamVar parameter(final String name, final Consumer<ParamCreator> builder) {
+        ParamVar v = super.parameter(name, builder);
+        desc = null;
+        return v;
     }
 
     public MethodTypeDesc type() {
