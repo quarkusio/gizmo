@@ -54,35 +54,4 @@ public final class LambdaCreatorImpl implements LambdaCreator {
     public void withAnnotation(final RetentionPolicy retention, final Annotation annotation) {
 
     }
-
-    @Override
-    public void public_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void packagePrivate() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void private_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void protected_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void final_() {
-        // TODO Auto-generated method stub
-        
-    }
-    
 }

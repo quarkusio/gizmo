@@ -25,7 +25,7 @@ public final class PrivateInterfaceMethodCreatorImpl extends MethodCreatorImpl i
 
     @Override
     public Var this_() {
-        return new ThisExpr(owner());
+        return super.this_();
     }
 
     public void withFlag(final AccessFlag flag) {

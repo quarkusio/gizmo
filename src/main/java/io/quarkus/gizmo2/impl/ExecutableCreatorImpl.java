@@ -14,15 +14,17 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotation
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
 public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {
-    protected final TypeCreatorImpl owner;
-    protected int flags;
-    protected List<ParamVarImpl> params = new ArrayList<>(4);
+    final TypeCreatorImpl owner;
+    int flags;
+    List<ParamVarImpl> params = new ArrayList<>(4);
+    ThisExpr this_;
 
     ExecutableCreatorImpl(final TypeCreatorImpl owner, final int flags) {
         this.owner = owner;
@@ -86,6 +88,14 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         return pv;
     }
 
+    Var this_() {
+        ThisExpr this_ = this.this_;
+        if (this_ == null) {
+            this_ = this.this_ = new ThisExpr(owner());
+        }
+        return this_;
+    }
+
     int firstSlot() {
         return 1;
     }
@@ -94,42 +104,38 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         return owner.type();
     }
 
-    @Override
     public void public_() {
         withFlag(AccessFlag.PUBLIC);
         withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
-    @Override
     public void packagePrivate() {
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
-    @Override
     public void private_() {
         withFlag(AccessFlag.PRIVATE);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
     }
 
-    @Override
     public void protected_() {
         withFlag(AccessFlag.PROTECTED);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
     }
 
-    @Override
     public void final_() {
         withFlag(AccessFlag.FINAL);
     }
 
-    protected void withoutFlag(AccessFlag flag) {
+    abstract void withFlag(AccessFlag flag);
+
+    void withoutFlag(AccessFlag flag) {
         flags &= ~flag.mask();
     }
 
-    protected void withoutFlags(AccessFlag... flags) {
+    void withoutFlags(AccessFlag... flags) {
         for (AccessFlag flag : flags) {
             withoutFlag(flag);
         }
     }
-
 }

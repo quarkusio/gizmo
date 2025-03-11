@@ -25,7 +25,7 @@ public final class DefaultMethodCreatorImpl extends MethodCreatorImpl implements
 
     @Override
     public Var this_() {
-        return new ThisExpr(owner());
+        return super.this_();
     }
 
     public void withFlag(final AccessFlag flag) {
