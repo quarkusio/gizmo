@@ -4,7 +4,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -24,7 +23,8 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     public ConstructorDesc desc() {
         ConstructorDesc desc = this.desc;
         if (desc == null) {
-            MethodTypeDesc mtd = MethodTypeDesc.of(ConstantDescs.CD_void, params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
+            MethodTypeDesc mtd = MethodTypeDesc.of(ConstantDescs.CD_void,
+                    params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
             this.desc = desc = ConstructorDesc.of(owner(), mtd);
         }
         return desc;
@@ -35,8 +35,13 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         super.doCode(builder, cb, params);
     }
 
-    public void body(final BiConsumer<BlockCreator, Expr> builder) {
-        super.body(bc -> builder.accept(bc, new ThisExpr(owner())));
+    public void body(final Consumer<BlockCreator> builder) {
+        super.body(bc -> builder.accept(bc));
+    }
+
+    @Override
+    public Expr this_() {
+        return new ThisExpr(owner());
     }
 
     public void withFlag(final AccessFlag flag) {

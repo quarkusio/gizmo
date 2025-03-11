@@ -61,6 +61,18 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
             throw new IllegalAccessError(e.getMessage());
         }
     }
+    
+    public <T> T noArgsConstructor(Class<T> asType) {
+        try {
+            return (T) lookup.findConstructor(lookup.lookupClass(), MethodType.methodType(void.class)).invoke();
+        } catch (NoSuchMethodException e) {
+            throw new NoSuchMethodError(e.getMessage());
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        } catch (Throwable e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
     private static Method findSAMSimple(Class<?> type) {
         if (! type.isInterface()) {

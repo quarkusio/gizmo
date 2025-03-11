@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator;
 
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Expr;
 
@@ -11,10 +11,15 @@ public sealed interface InstanceExecutableCreator extends ExecutableCreator perm
 
     /**
      * Build the body.
-     * The builder accepts the outermost block, and the {@code this} expression.
+     * The builder accepts the outermost block.
      *
      * @param builder the builder (must not be {@code null})
      */
-    void body(BiConsumer<BlockCreator, Expr> builder);
+    void body(Consumer<BlockCreator> builder);
+
+    /**
+     * @return the {@code this} expression
+     */
+    Expr this_();
 
 }
