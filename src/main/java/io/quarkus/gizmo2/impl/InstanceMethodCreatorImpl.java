@@ -1,7 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -20,8 +19,13 @@ public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implement
         super.doCode(builder, cb, params);
     }
 
-    public void body(final BiConsumer<BlockCreator, Expr> builder) {
-        super.body(bc -> builder.accept(bc, new ThisExpr(owner())));
+    public void body(final Consumer<BlockCreator> builder) {
+        super.body(bc -> builder.accept(bc));
+    }
+    
+    @Override
+    public Expr this_() {
+        return new ThisExpr(owner());
     }
 
     public void withFlag(final AccessFlag flag) {
