@@ -64,6 +64,8 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         }
     }
 
+    abstract String name();
+
     void body(final Consumer<BlockCreator> builder) {
         owner.zb.withMethod(name(), type(), flags, mb -> {
             doBody(builder, mb);

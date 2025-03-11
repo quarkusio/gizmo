@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.TryImpl;
 /**
  * A creator for a {@code try}-{@code catch}-{@code finally} construct.
  */
-public sealed interface TryCreator permits TryImpl {
+public sealed interface TryCreator extends BodyCreator permits TryImpl {
 
     /**
      * Build the body of the {@code try} statement.

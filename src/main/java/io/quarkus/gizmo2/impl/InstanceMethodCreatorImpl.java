@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 
@@ -20,11 +20,11 @@ public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implement
     }
 
     public void body(final Consumer<BlockCreator> builder) {
-        super.body(bc -> builder.accept(bc));
+        super.body(builder);
     }
     
     @Override
-    public Expr this_() {
+    public Var this_() {
         return new ThisExpr(owner());
     }
 

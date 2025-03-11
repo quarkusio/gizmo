@@ -8,7 +8,7 @@ import io.quarkus.gizmo2.impl.MethodCreatorImpl;
 /**
  * A creator for any kind of method on a class.
  */
-public sealed interface MethodCreator extends ExecutableCreator permits AbstractMethodCreator, InstanceMethodCreator, StaticMethodCreator, MethodCreatorImpl {
+public sealed interface MethodCreator extends ExecutableCreator, MemberCreator permits AbstractMethodCreator, InstanceMethodCreator, StaticMethodCreator, MethodCreatorImpl {
 
     /**
      * {@return the descriptor of the method}

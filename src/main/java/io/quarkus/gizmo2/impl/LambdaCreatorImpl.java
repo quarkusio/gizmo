@@ -2,7 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Annotation;
@@ -28,7 +27,11 @@ public final class LambdaCreatorImpl implements LambdaCreator {
 
     }
 
-    public MethodTypeDesc type() {
+    public ClassDesc type() {
+        return null;
+    }
+
+    public ParamVar param(final String name, final int position) {
         return null;
     }
 

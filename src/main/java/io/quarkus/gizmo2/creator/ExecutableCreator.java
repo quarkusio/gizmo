@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for an executable.
  */
-public sealed interface ExecutableCreator extends MemberCreator permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
+public sealed interface ExecutableCreator permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     /**
      * {@return the type descriptor of this executable (not {@code null})}
      */

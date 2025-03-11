@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -35,12 +35,16 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         super.doCode(builder, cb, params);
     }
 
+    public String name() {
+        return ConstructorCreator.super.name();
+    }
+
     public void body(final Consumer<BlockCreator> builder) {
-        super.body(bc -> builder.accept(bc));
+        super.body(builder);
     }
 
     @Override
-    public Expr this_() {
+    public Var this_() {
         return new ThisExpr(owner());
     }
 

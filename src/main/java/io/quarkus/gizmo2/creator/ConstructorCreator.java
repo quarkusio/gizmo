@@ -7,7 +7,7 @@ import io.quarkus.gizmo2.impl.ConstructorCreatorImpl;
 /**
  * A creator for an instance constructor.
  */
-public sealed interface ConstructorCreator extends InstanceExecutableCreator permits ConstructorCreatorImpl {
+public sealed interface ConstructorCreator extends InstanceExecutableCreator, MemberCreator permits ConstructorCreatorImpl {
     /**
      * {@return the descriptor of the constructor (not {@code null})}
      */

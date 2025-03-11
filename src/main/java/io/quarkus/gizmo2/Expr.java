@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.GizmoImpl;
 /**
  * An expression.
  */
-public sealed interface Expr permits Constant, LValueExpr, Item {
+public sealed interface Expr permits Constant, LValueExpr, Var, Item {
     /**
      * {@return the expression type (not {@code null})}
      */

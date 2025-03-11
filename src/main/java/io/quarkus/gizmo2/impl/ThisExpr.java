@@ -3,8 +3,9 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.Var;
 
-final class ThisExpr extends Item {
+public final class ThisExpr extends Item implements Var {
     private final ClassDesc type;
 
     ThisExpr(final ClassDesc type) {
@@ -21,5 +22,9 @@ final class ThisExpr extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.aload(0);
+    }
+
+    public String name() {
+        return "this";
     }
 }

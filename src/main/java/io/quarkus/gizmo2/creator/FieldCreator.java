@@ -11,6 +11,8 @@ import io.quarkus.gizmo2.impl.Util;
  * A creator for a field.
  */
 public sealed interface FieldCreator extends MemberCreator permits InstanceFieldCreator, StaticFieldCreator, FieldCreatorImpl {
+    ClassDesc type();
+
     /**
      * {@return the field type descriptor}
      */

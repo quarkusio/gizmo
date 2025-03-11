@@ -104,4 +104,8 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
     public String name() {
         return name;
     }
+
+    public ClassDesc type() {
+        return type;
+    }
 }

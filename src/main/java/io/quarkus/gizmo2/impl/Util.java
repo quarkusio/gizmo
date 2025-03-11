@@ -17,6 +17,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.IntPredicate;
 
@@ -119,5 +121,37 @@ public final class Util {
             }
         }
         return low;
+    }
+
+    /**
+     * Append a value to an immutable list without unneeded allocations.
+     * If the list length is greater than some threshold, return an {@code ArrayList}
+     * containing the original list, the addend, and some extra space for new values.
+     *
+     * @param original the original list (must not be {@code null})
+     * @param addend the value to add (must not be {@code null})
+     * @return the new list (not {@code null})
+     * @param <T> the value type
+     */
+    public static <T> List<T> listWith(List<T> original, T addend) {
+        assert ! (original instanceof ArrayList<?>);
+        // this is a no-op if nobody did anything wrong
+        original = List.copyOf(original);
+        return switch (original.size()) {
+            case 0 -> List.of(addend);
+            case 1 -> List.of(original.get(0), addend);
+            case 2 -> List.of(original.get(0), original.get(1), addend);
+            default -> {
+                var a = new ArrayList<T>();
+                a.addAll(original);
+                a.add(addend);
+                yield a;
+            }
+        };
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T, R> List<R> reinterpretCast(List<T> list) {
+        return (List) list;
     }
 }
