@@ -13,7 +13,7 @@ import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator permits AbstractMethodCreatorImpl, DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, NativeMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl, StaticMethodCreatorImpl, StaticNativeMethodCreatorImpl {
-    protected final String name;
+    final String name;
     private ClassDesc returnType = ConstantDescs.CD_void;
     private MethodDesc desc;
 

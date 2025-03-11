@@ -23,7 +23,7 @@ public sealed interface FieldCreator extends MemberCreator permits InstanceField
      *
      * @param type the class type signature (must not be {@code null})
      */
-    void withTypeSignature(Signature.ClassTypeSig type);
+    void withTypeSignature(Signature type);
 
     /**
      * Change the type of the field to the given type.

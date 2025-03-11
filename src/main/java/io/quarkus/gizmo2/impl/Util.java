@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static java.lang.constant.ConstantDescs.CD_Object;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 import static java.lang.constant.ConstantDescs.CD_byte;
 import static java.lang.constant.ConstantDescs.CD_char;
@@ -153,5 +154,30 @@ public final class Util {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T, R> List<R> reinterpretCast(List<T> list) {
         return (List) list;
+    }
+
+    public static ClassDesc erased(Signature sig) {
+        if (sig instanceof Signature.ClassTypeSig cts) {
+            return cts.classDesc();
+        } else if (sig instanceof Signature.ArrayTypeSig ats) {
+            return erased(ats.componentSignature()).arrayType();
+        } else if (sig instanceof Signature.BaseTypeSig bts) {
+            return switch (bts.baseType()) {
+                case 'B' -> CD_byte;
+                case 'C' -> CD_char;
+                case 'D' -> CD_double;
+                case 'F' -> CD_float;
+                case 'I' -> CD_int;
+                case 'J' -> CD_long;
+                case 'S' -> CD_short;
+                case 'V' -> CD_void;
+                case 'Z' -> CD_boolean;
+                default -> throw new IllegalArgumentException(bts.toString());
+            };
+        } else if (sig instanceof Signature.TypeVarSig) {
+            return CD_Object;
+        } else {
+            throw new IllegalArgumentException(sig.toString());
+        }
     }
 }

@@ -7,7 +7,7 @@ import java.util.Optional;
 import io.quarkus.gizmo2.impl.Util;
 
 public abstract class VarHandleConstant extends ConstantImpl {
-    protected final VarHandle.VarHandleDesc desc;
+    final VarHandle.VarHandleDesc desc;
 
     VarHandleConstant(final VarHandle.VarHandleDesc desc) {
         super(Util.classDesc(VarHandle.class));
