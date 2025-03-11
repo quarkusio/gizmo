@@ -12,8 +12,12 @@ import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
+
     InterfaceCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
-        super(type, zb, AccessFlag.INTERFACE.mask());
+        super(type, zb, AccessFlag.INTERFACE.mask()
+                | AccessFlag.ABSTRACT.mask()
+                | AccessFlag.SYNTHETIC.mask()
+                | AccessFlag.PUBLIC.mask());
     }
 
     public void withFlag(final AccessFlag flag) {
@@ -48,6 +52,8 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
     }
 
     void accept(final Consumer<InterfaceCreator> builder) {
+        preAccept();
         builder.accept(this);
+        postAccept();
     }
 }

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 import io.github.dmlloyd.classfile.Signature.ClassTypeSig;
 import io.github.dmlloyd.classfile.Signature.TypeArg;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
@@ -22,9 +21,8 @@ public class InstanceExecutableCreatorTest {
         Gizmo g = Gizmo.create(tcm);
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
             cc.implements_(ClassTypeSig.of(Function.class.getName(), TypeArg.of(ClassTypeSig.of(String.class.getName()))));
-            cc.withFlag(AccessFlag.PROTECTED);
             cc.constructor(con -> {
-                con.withFlag(AccessFlag.PUBLIC);
+                con.public_();
                 con.body(bc -> {
                     bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
                     bc.return_();
@@ -42,7 +40,7 @@ public class InstanceExecutableCreatorTest {
             cc.method("apply", mc -> {
                 ParamVar p = mc.parameter("t", Object.class);
                 mc.returning(Object.class);
-                mc.withFlag(AccessFlag.PUBLIC);
+                mc.public_();
                 mc.body(bc -> {
                     // return convert((String)t);
                     Expr strVal = bc.cast(p, String.class);

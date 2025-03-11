@@ -48,7 +48,6 @@ final class ClassOutputImpl implements ClassOutput {
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
-            zb.withFlags(AccessFlag.INTERFACE);
             InterfaceCreatorImpl tc = new InterfaceCreatorImpl(desc, zb);
             gizmo.do_(tc, ic -> {
                 ic.accept(builder);

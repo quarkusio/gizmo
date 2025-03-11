@@ -53,7 +53,7 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
      * Add an instance method to the class.
      * The builder accepts the method builder plus the {@code this} expression for the method.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -62,7 +62,7 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
     /**
      * Add an abstract instance method to the class.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -71,7 +71,7 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
     /**
      * Add a native instance method to the class.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -80,7 +80,7 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
     /**
      * Add a native static method to the class.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -93,4 +93,15 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
      * @return the built constructor's selector for invocation (must not be {@code null})
      */
     ConstructorDesc constructor(Consumer<ConstructorCreator> builder);
+
+    /**
+     * Add the {@code abstract} access flag to the class.
+     */
+    void abstract_();
+
+    /**
+     * Add the {@code final} access flag to the class.
+     */
+    void final_();
+
 }

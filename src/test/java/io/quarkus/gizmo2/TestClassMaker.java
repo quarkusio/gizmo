@@ -24,6 +24,10 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
             throw new IllegalAccessError(e.getMessage());
         }
     }
+    
+    public Class<?> definedClass() {
+        return lookup.lookupClass();
+    }
 
     public <T> T staticMethod(String name, Class<T> asType) {
         Method sam = findSAMSimple(asType);
