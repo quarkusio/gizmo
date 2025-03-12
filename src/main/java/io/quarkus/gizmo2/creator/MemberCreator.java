@@ -1,14 +1,29 @@
 package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDesc;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.Typed;
+import io.quarkus.gizmo2.desc.MemberDesc;
 
 /**
  * A generalized creator for any kind of class member.
  */
-public sealed interface MemberCreator extends Annotatable permits ExecutableCreator, FieldCreator {
+public sealed interface MemberCreator extends Annotatable, Typed permits ConstructorCreator,
+                                                                         FieldCreator,
+                                                                         MethodCreator {
+    /**
+     * {@return the descriptor of the member}
+     */
+    MemberDesc desc();
+
+    /**
+     * {@return the type of this member (not {@code null})}
+     */
+    ConstantDesc type();
+
     /**
      * Add the given flag to this member.
      *

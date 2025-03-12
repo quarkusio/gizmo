@@ -4,13 +4,16 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.FieldCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator for a field.
  */
-public sealed interface FieldCreator extends MemberCreator permits InstanceFieldCreator, StaticFieldCreator, FieldCreatorImpl {
+public sealed interface FieldCreator extends MemberCreator, SimpleTyped permits InstanceFieldCreator, StaticFieldCreator, FieldCreatorImpl {
+    ClassDesc type();
+
     /**
      * {@return the field type descriptor}
      */
@@ -21,7 +24,7 @@ public sealed interface FieldCreator extends MemberCreator permits InstanceField
      *
      * @param type the class type signature (must not be {@code null})
      */
-    void withTypeSignature(Signature.ClassTypeSig type);
+    void withTypeSignature(Signature type);
 
     /**
      * Change the type of the field to the given type.

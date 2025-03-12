@@ -4,39 +4,17 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 
-import io.github.dmlloyd.classfile.TypeKind;
-import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.GizmoImpl;
+import io.quarkus.gizmo2.impl.Item;
 
 /**
  * An expression.
  */
-public sealed interface Expr permits Constant, LValueExpr, Item {
+public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, Var, Item {
     /**
      * {@return the expression type (not {@code null})}
      */
     ClassDesc type();
-
-    /**
-     * {@return the expression type kind (not {@code null})}
-     */
-    default TypeKind typeKind() {
-        return TypeKind.from(type());
-    }
-
-    /**
-     * {@return {@code true} if this expression has {@code void} type, or {@code false} otherwise}
-     */
-    default boolean isVoid() {
-        return typeKind() == TypeKind.VOID;
-    }
-
-    /**
-     * {@return the Java stack slot size of this expression}
-     */
-    default int slotSize() {
-        return typeKind().slotSize();
-    }
 
     /**
      * {@return true if the expression is bound to one location, or false if it may be reused many times}

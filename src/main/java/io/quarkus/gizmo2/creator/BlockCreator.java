@@ -1712,17 +1712,18 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @return the lambda object (not {@code null})
      */
     default Expr lambda(Class<?> type, Consumer<LambdaCreator> builder) {
-        return lambda(Util.classDesc(type), builder);
+        // todo: extract SAM from type
+        throw new UnsupportedOperationException();
     }
 
     /**
      * Construct a lambda instance with the given type.
      *
-     * @param type the type of the lambda (must not be {@code null})
+     * @param sam the descriptor of the single abstract method of the lambda (must not be {@code null})
      * @param builder the builder for the lambda body (must not be {@code null})
      * @return the lambda object (not {@code null})
      */
-    Expr lambda(ClassDesc type, Consumer<LambdaCreator> builder);
+    Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder);
 
 
     // conversion

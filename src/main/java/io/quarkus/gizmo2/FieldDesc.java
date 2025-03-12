@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A descriptor for a field.
  */
-public sealed interface FieldDesc extends MemberDesc permits FieldDescImpl {
+public sealed interface FieldDesc extends MemberDesc, SimpleTyped permits FieldDescImpl {
     /**
      * Construct a new instance.
      *

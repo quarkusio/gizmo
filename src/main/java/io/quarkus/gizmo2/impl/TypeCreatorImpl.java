@@ -172,4 +172,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
             });
         }
     }
+
+    abstract MethodDesc methodDesc(final String name, final MethodTypeDesc type);
 }

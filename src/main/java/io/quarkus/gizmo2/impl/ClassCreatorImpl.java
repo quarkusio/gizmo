@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -13,6 +14,7 @@ import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
@@ -35,6 +37,10 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
 
     public void extends_(final ClassDesc desc) {
         super.extends_(desc);
+    }
+
+    MethodDesc methodDesc(final String name, final MethodTypeDesc type) {
+        return ClassMethodDesc.of(type(), name, type);
     }
 
     public FieldDesc field(final String name, final Consumer<InstanceFieldCreator> builder) {

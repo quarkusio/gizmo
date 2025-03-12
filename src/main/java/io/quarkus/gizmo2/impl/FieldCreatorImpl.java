@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_Integer;
+import static java.lang.constant.ConstantDescs.CD_int;
 import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
@@ -13,11 +13,11 @@ import io.quarkus.gizmo2.creator.FieldCreator;
 
 public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator
         permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {
-    protected final ClassDesc owner;
-    protected final String name;
-    protected final TypeCreatorImpl tc;
-    Signature.ClassTypeSig genericType = Signature.ClassTypeSig.of(CD_Integer);
-    ClassDesc type = CD_Integer;
+    final ClassDesc owner;
+    final String name;
+    final TypeCreatorImpl tc;
+    Signature genericType = Signature.of(CD_int);
+    ClassDesc type = CD_int;
     int flags = 0;
     private FieldDesc desc;
 
@@ -36,9 +36,9 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         return desc;
     }
 
-    public void withTypeSignature(final Signature.ClassTypeSig type) {
+    public void withTypeSignature(final Signature type) {
         Objects.requireNonNull(type, "type");
-        withType(type.classDesc());
+        withType(Util.erased(type));
         genericType = type;
     }
 
@@ -59,11 +59,11 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         }
     }
 
-    protected void withoutFlag(AccessFlag flag) {
+    void withoutFlag(AccessFlag flag) {
         flags &= ~flag.mask();
     }
 
-    protected void withoutFlags(AccessFlag... flags) {
+    void withoutFlags(AccessFlag... flags) {
         for (AccessFlag flag : flags) {
             withoutFlag(flag);
         }
@@ -103,5 +103,9 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
 
     public String name() {
         return name;
+    }
+
+    public ClassDesc type() {
+        return type;
     }
 }

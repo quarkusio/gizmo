@@ -2,7 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Annotation;
@@ -28,7 +27,11 @@ public final class LambdaCreatorImpl implements LambdaCreator {
 
     }
 
-    public MethodTypeDesc type() {
+    public ClassDesc type() {
+        return null;
+    }
+
+    public ParamVar param(final String name, final int position) {
         return null;
     }
 
@@ -51,35 +54,4 @@ public final class LambdaCreatorImpl implements LambdaCreator {
     public void withAnnotation(final RetentionPolicy retention, final Annotation annotation) {
 
     }
-
-    @Override
-    public void public_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void packagePrivate() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void private_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void protected_() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public void final_() {
-        // TODO Auto-generated method stub
-        
-    }
-    
 }

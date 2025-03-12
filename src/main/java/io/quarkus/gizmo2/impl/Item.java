@@ -31,14 +31,6 @@ public abstract non-sealed class Item implements Expr {
         return ConstantDescs.CD_void;
     }
 
-    public TypeKind typeKind() {
-        return TypeKind.from(type());
-    }
-
-    public int slotSize() {
-        return typeKind().slotSize();
-    }
-
     public boolean bound() {
         return true;
     }

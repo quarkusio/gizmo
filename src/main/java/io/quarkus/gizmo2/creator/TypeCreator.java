@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -8,6 +9,7 @@ import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeCreatorImpl;
@@ -16,7 +18,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a type.
  */
-public sealed interface TypeCreator extends Annotatable permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
+public sealed interface TypeCreator extends Annotatable, SimpleTyped permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
      *
@@ -132,6 +134,32 @@ public sealed interface TypeCreator extends Annotatable permits ClassCreator, In
      * @return the descriptor of the new method (not {@code null})
      */
     MethodDesc staticMethod(String name, Consumer<StaticMethodCreator> builder);
+
+    /**
+     * Add a static method to this type having the given predefined method type.
+     *
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
+     * @param builder the builder for the method (must not be {@code null})
+     * @return the descriptor of the new method (not {@code null})
+     */
+    default MethodDesc staticMethod(String name, MethodTypeDesc type, Consumer<StaticMethodCreator> builder) {
+        return staticMethod(name, smc -> {
+            smc.withType(type);
+            builder.accept(smc);
+        });
+    }
+
+    /**
+     * Add a static method to this type having the same name and type as the given method.
+     *
+     * @param desc the original method descriptor (must not be {@code null})
+     * @param builder the builder for the method (must not be {@code null})
+     * @return the descriptor of the new method (not {@code null})
+     */
+    default MethodDesc staticMethod(MethodDesc desc, Consumer<StaticMethodCreator> builder) {
+        return staticMethod(desc.name(), desc.type(), builder);
+    }
 
     /**
      * Add a static field to this type.

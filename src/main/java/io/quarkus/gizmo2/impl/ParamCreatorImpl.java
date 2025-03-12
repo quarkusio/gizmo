@@ -11,10 +11,23 @@ import io.quarkus.gizmo2.creator.ParamCreator;
 
 public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements ParamCreator {
     int flags = 0;
-    ClassDesc type = ConstantDescs.CD_int;
+    boolean typeEstablished;
+    ClassDesc type;
+
+    public ParamCreatorImpl() {
+    }
+
+    public ParamCreatorImpl(final ClassDesc type) {
+        this.type = type;
+        typeEstablished = true;
+    }
 
     ParamVarImpl apply(final Consumer<ParamCreator> builder, final String name, final int index, final int slot) {
         builder.accept(this);
+        if (type == null) {
+            throw new IllegalStateException("Parameter type was not set");
+        }
+        typeEstablished = true;
         return new ParamVarImpl(type, name, index, slot, flags, List.copyOf(invisible), List.copyOf(visible));
     }
 
@@ -31,6 +44,24 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         if (type.equals(ConstantDescs.CD_void)) {
             throw new IllegalArgumentException("Bad type for parameter: " + type);
         }
+        if (typeEstablished && ! type.equals(this.type)) {
+            throw new IllegalArgumentException("Given type " + type + " differs from established type " + this.type);
+        }
         this.type = type;
+    }
+
+    void establishType(ClassDesc type) {
+        if (typeEstablished) {
+            if (! type.equals(this.type)) {
+                throw new IllegalArgumentException("Established type " + type + " differs from existing type " + this.type);
+            }
+        } else {
+            this.type = type;
+            typeEstablished = true;
+        }
+    }
+
+    public ClassDesc type() {
+        return type;
     }
 }

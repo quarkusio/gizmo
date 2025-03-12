@@ -14,9 +14,9 @@ public interface ClassOutput {
     /**
      * Add a new class.
      *
-     * @param name the fully qualified (dot-separated) binary class name
-     * @param builder the
-     * @return the descriptor
+     * @param name the fully qualified (dot-separated) binary class name (must not be {@code null})
+     * @param builder the builder for the class (must not be {@code null})
+     * @return the descriptor of the created class (not {@code null})
      */
     default ClassDesc class_(String name, Consumer<ClassCreator> builder) {
         return class_(ClassDesc.of(name), builder);
@@ -26,7 +26,7 @@ public interface ClassOutput {
      * Add a new class.
      *
      * @param desc the class descriptor (must not be {@code null})
-     * @param builder the
+     * @param builder the builder for the class (must not be {@code null})
      * @return the descriptor given for {@code desc}
      */
     ClassDesc class_(ClassDesc desc, Consumer<ClassCreator> builder);
@@ -35,8 +35,8 @@ public interface ClassOutput {
      * Add a new interface.
      *
      * @param name the fully qualified (dot-separated) binary class name
-     * @param builder the
-     * @return the descriptor
+     * @param builder the builder for the interface (must not be {@code null})
+     * @return the descriptor of the created interface (not {@code null})
      */
     default ClassDesc interface_(String name, Consumer<InterfaceCreator> builder) {
         return interface_(ClassDesc.of(name), builder);
@@ -46,7 +46,7 @@ public interface ClassOutput {
      * Add a new interface.
      *
      * @param desc the class descriptor (must not be {@code null})
-     * @param builder the
+     * @param builder the builder for the class (must not be {@code null})
      * @return the descriptor given for {@code desc}
      */
     ClassDesc interface_(ClassDesc desc, Consumer<InterfaceCreator> builder);

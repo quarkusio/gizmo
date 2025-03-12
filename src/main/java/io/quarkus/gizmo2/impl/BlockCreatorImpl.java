@@ -1,28 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_Boolean;
-import static java.lang.constant.ConstantDescs.CD_Byte;
-import static java.lang.constant.ConstantDescs.CD_Character;
-import static java.lang.constant.ConstantDescs.CD_Class;
-import static java.lang.constant.ConstantDescs.CD_Double;
-import static java.lang.constant.ConstantDescs.CD_Enum;
-import static java.lang.constant.ConstantDescs.CD_Float;
-import static java.lang.constant.ConstantDescs.CD_Integer;
-import static java.lang.constant.ConstantDescs.CD_Long;
-import static java.lang.constant.ConstantDescs.CD_Object;
-import static java.lang.constant.ConstantDescs.CD_Short;
-import static java.lang.constant.ConstantDescs.CD_String;
-import static java.lang.constant.ConstantDescs.CD_Throwable;
-import static java.lang.constant.ConstantDescs.CD_Void;
-import static java.lang.constant.ConstantDescs.CD_boolean;
-import static java.lang.constant.ConstantDescs.CD_byte;
-import static java.lang.constant.ConstantDescs.CD_char;
-import static java.lang.constant.ConstantDescs.CD_double;
-import static java.lang.constant.ConstantDescs.CD_float;
-import static java.lang.constant.ConstantDescs.CD_int;
-import static java.lang.constant.ConstantDescs.CD_long;
-import static java.lang.constant.ConstantDescs.CD_short;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.nCopies;
 
 import java.io.PrintStream;
@@ -607,7 +585,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         throw new UnsupportedOperationException();
     }
 
-    public Expr lambda(final ClassDesc type, final Consumer<LambdaCreator> builder) {
+    public Expr lambda(final MethodDesc sam, final Consumer<LambdaCreator> builder) {
         throw new UnsupportedOperationException();
     }
 
