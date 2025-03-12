@@ -73,7 +73,7 @@ public final class Util {
     }
 
     private static final ClassValue<MethodHandle> writeReplaces = new ClassValue<MethodHandle>() {
-        private final ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
+        private static final ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
 
         protected MethodHandle computeValue(final Class<?> type) {
             MethodHandle base = rf.writeReplaceForSerialization(type);

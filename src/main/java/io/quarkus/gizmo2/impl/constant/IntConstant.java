@@ -63,7 +63,7 @@ public final class IntConstant extends ConstantImpl {
     }
 
     public int hashCode() {
-        return Integer.hashCode(value.intValue());
+        return value.hashCode();
     }
 
     public Integer desc() {

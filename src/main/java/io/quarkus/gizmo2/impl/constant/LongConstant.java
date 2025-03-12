@@ -101,7 +101,7 @@ public final class LongConstant extends ConstantImpl {
     }
 
     public int hashCode() {
-        return Long.hashCode(value.longValue());
+        return value.hashCode();
     }
 
     public ConstantDesc desc() {
