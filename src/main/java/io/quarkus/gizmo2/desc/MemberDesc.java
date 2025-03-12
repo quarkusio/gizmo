@@ -4,11 +4,12 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDesc;
 
 import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.Typed;
 
 /**
  * A descriptor for a class member.
  */
-public sealed interface MemberDesc permits ConstructorDesc, FieldDesc, MethodDesc {
+public sealed interface MemberDesc extends Typed permits ConstructorDesc, FieldDesc, MethodDesc {
     /**
      * {@return the descriptor of the class which contains the described member}
      */

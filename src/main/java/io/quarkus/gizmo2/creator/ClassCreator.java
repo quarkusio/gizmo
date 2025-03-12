@@ -1,9 +1,11 @@
 package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -13,7 +15,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a class type.
  */
-public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImpl {
+public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits ClassCreatorImpl {
     /**
      * Extend the given generic class.
      *
@@ -51,13 +53,38 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
 
     /**
      * Add an instance method to the class.
-     * The builder accepts the method builder plus the {@code this} expression for the method.
      *
      * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
     MethodDesc method(String name, Consumer<InstanceMethodCreator> builder);
+
+    /**
+     * Add an instance method to the class having the given predefined type.
+     *
+     * @param name the method name (must not be {@code null})
+     * @param type    the method type (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc method(String name, MethodTypeDesc type, Consumer<InstanceMethodCreator> builder) {
+        return method(name, imc -> {
+            imc.withType(type);
+            builder.accept(imc);
+        });
+    }
+
+    /**
+     * Add an instance method to the class having the same name and type as the given method.
+     *
+     * @param desc    the original method descriptor (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc method(MethodDesc desc, Consumer<InstanceMethodCreator> builder) {
+        return method(desc.name(), desc.type(), builder);
+    }
 
     /**
      * Add an abstract instance method to the class.
@@ -69,6 +96,32 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
     MethodDesc abstractMethod(String name, Consumer<AbstractMethodCreator> builder);
 
     /**
+     * Add an abstract instance method to the class having the given predefined type.
+     *
+     * @param name the method name (must not be {@code null})
+     * @param type    the method type (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc abstractMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
+        return abstractMethod(name, imc -> {
+            imc.withType(type);
+            builder.accept(imc);
+        });
+    }
+
+    /**
+     * Add an abstract instance method to the class having the same name and type as the given method.
+     *
+     * @param desc    the original method descriptor (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc abstractMethod(MethodDesc desc, Consumer<AbstractMethodCreator> builder) {
+        return abstractMethod(desc.name(), desc.type(), builder);
+    }
+
+    /**
      * Add a native instance method to the class.
      *
      * @param name the method name (must not be {@code null})
@@ -76,6 +129,32 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
      * @return the built method's selector for invocation (not {@code null})
      */
     MethodDesc nativeMethod(String name, Consumer<AbstractMethodCreator> builder);
+
+    /**
+     * Add a native instance method to the class having the given predefined type.
+     *
+     * @param name    the method name (must not be {@code null})
+     * @param type    the method type (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc nativeMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
+        return nativeMethod(name, imc -> {
+            imc.withType(type);
+            builder.accept(imc);
+        });
+    }
+
+    /**
+     * Add a native instance method to the class having the same name and type as the given method.
+     *
+     * @param desc    the original method descriptor (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc nativeMethod(MethodDesc desc, Consumer<AbstractMethodCreator> builder) {
+        return nativeMethod(desc.name(), desc.type(), builder);
+    }
 
     /**
      * Add a native static method to the class.
@@ -87,12 +166,64 @@ public sealed interface ClassCreator extends TypeCreator permits ClassCreatorImp
     MethodDesc staticNativeMethod(String name, Consumer<AbstractMethodCreator> builder);
 
     /**
+     * Add a native static method to the class having the given predefined type.
+     *
+     * @param name    the method name (must not be {@code null})
+     * @param type    the method type (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc staticNativeMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
+        return staticNativeMethod(name, imc -> {
+            imc.withType(type);
+            builder.accept(imc);
+        });
+    }
+
+    /**
+     * Add a native static method to the class having the same name and type as the given method.
+     *
+     * @param desc    the original method descriptor (must not be {@code null})
+     * @param builder the method builder (must not be {@code null})
+     * @return the built method's selector for invocation (not {@code null})
+     */
+    default MethodDesc staticNativeMethod(MethodDesc desc, Consumer<AbstractMethodCreator> builder) {
+        return staticNativeMethod(desc.name(), desc.type(), builder);
+    }
+
+    /**
      * Add a constructor to the class.
      *
      * @param builder the constructor builder (must not be {@code null})
      * @return the built constructor's selector for invocation (must not be {@code null})
      */
     ConstructorDesc constructor(Consumer<ConstructorCreator> builder);
+
+    /**
+     * Add a constructor to the class having the given predefined type.
+     * The type must have a {@code void} return type.
+     *
+     * @param type    the method type (must not be {@code null})
+     * @param builder the constructor builder (must not be {@code null})
+     * @return the built constructor's selector for invocation (must not be {@code null})
+     */
+    default ConstructorDesc constructor(MethodTypeDesc type, Consumer<ConstructorCreator> builder) {
+        return constructor(imc -> {
+            imc.withType(type);
+            builder.accept(imc);
+        });
+    }
+
+    /**
+     * Add a constructor to the class having the same type as the given constructor.
+     *
+     * @param desc    the original constructor descriptor (must not be {@code null})
+     * @param builder the constructor builder (must not be {@code null})
+     * @return the built constructor's selector for invocation (must not be {@code null})
+     */
+    default ConstructorDesc constructor(ConstructorDesc desc, Consumer<ConstructorCreator> builder) {
+        return constructor(desc.type(), builder);
+    }
 
     /**
      * Add the {@code abstract} access flag to the class.

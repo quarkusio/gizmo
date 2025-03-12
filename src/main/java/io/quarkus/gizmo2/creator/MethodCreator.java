@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.MethodCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator for any kind of method on a class.
@@ -29,5 +30,7 @@ public sealed interface MethodCreator extends ExecutableCreator, MemberCreator p
      *
      * @param type the return type (must not be {@code null})
      */
-    void returning(Class<?> type);
+    default void returning(Class<?> type) {
+        returning(Util.classDesc(type));
+    }
 }

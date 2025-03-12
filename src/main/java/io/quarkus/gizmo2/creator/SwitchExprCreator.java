@@ -4,12 +4,14 @@ import java.util.function.Function;
 
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.impl.SwitchExprCreatorImpl;
 
 /**
  * A creator for a switch expression.
  * The body of each switch expression case must yield a result.
  */
-public interface SwitchExprCreator {
+public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExprCreatorImpl {
     /**
      * Add a case.
      *

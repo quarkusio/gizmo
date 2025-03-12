@@ -4,13 +4,14 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodType;
 import java.util.List;
 
+import io.quarkus.gizmo2.MethodTyped;
 import io.quarkus.gizmo2.impl.MethodDescImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A descriptor for a method.
  */
-public sealed interface MethodDesc extends MemberDesc permits ClassMethodDesc, InterfaceMethodDesc, MethodDescImpl {
+public sealed interface MethodDesc extends MemberDesc, MethodTyped permits ClassMethodDesc, InterfaceMethodDesc, MethodDescImpl {
     /**
      * Construct a new instance.
      *
@@ -60,9 +61,4 @@ public sealed interface MethodDesc extends MemberDesc permits ClassMethodDesc, I
     static MethodDesc of(Class<?> owner, String name, Class<?> returning, List<Class<?>> argTypes) {
         return of(owner, name, MethodType.methodType(returning, argTypes));
     }
-
-    /**
-     * {@return the descriptor of the method's type}
-     */
-    MethodTypeDesc type();
 }
