@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_int;
+import static java.lang.constant.ConstantDescs.CD_Integer;
 import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
@@ -11,19 +11,21 @@ import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.creator.FieldCreator;
 
-public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {
+public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator
+        permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {
     protected final ClassDesc owner;
     protected final String name;
     protected final TypeCreatorImpl tc;
-    Signature.ClassTypeSig genericType = Signature.ClassTypeSig.of(CD_int);
-    ClassDesc type = CD_int;
+    Signature.ClassTypeSig genericType = Signature.ClassTypeSig.of(CD_Integer);
+    ClassDesc type = CD_Integer;
     int flags = 0;
     private FieldDesc desc;
 
-    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc) {
+    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc, final int flags) {
         this.owner = owner;
         this.name = name;
         this.tc = tc;
+        this.flags = flags;
     }
 
     public FieldDesc desc() {
@@ -55,6 +57,44 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         } else {
             throw new IllegalArgumentException("Invalid flag for instance field: " + flag);
         }
+    }
+
+    protected void withoutFlag(AccessFlag flag) {
+        flags &= ~flag.mask();
+    }
+
+    protected void withoutFlags(AccessFlag... flags) {
+        for (AccessFlag flag : flags) {
+            withoutFlag(flag);
+        }
+    }
+
+    @Override
+    public void public_() {
+        withFlag(AccessFlag.PUBLIC);
+        withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void packagePrivate() {
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void private_() {
+        withFlag(AccessFlag.PRIVATE);
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void protected_() {
+        withFlag(AccessFlag.PROTECTED);
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
+    }
+
+    @Override
+    public void final_() {
+        withFlag(AccessFlag.FINAL);
     }
 
     public ClassDesc owner() {

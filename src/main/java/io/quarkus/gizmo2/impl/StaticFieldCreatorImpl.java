@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
+import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.FieldDesc;
@@ -17,7 +18,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
     private Consumer<BlockCreator> initializer;
 
     public StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name) {
-        super(owner, name, tc);
+        super(owner, name, tc, AccessFlag.STATIC.mask());
     }
 
     public void withInitial(final Constant initial) {

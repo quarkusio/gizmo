@@ -17,6 +17,34 @@ public sealed interface MemberCreator extends Annotatable permits ExecutableCrea
     void withFlag(AccessFlag flag);
 
     /**
+     * Add the {@code public} access flag to the member.
+     * Remove {@code private} and {@code protected}.
+     */
+    void public_();
+
+    /**
+     * Remove {@code public}, {@code private} and {@code protected} access flags.
+     */
+    void packagePrivate();
+
+    /**
+     * Add the {@code private} access flag to the member.
+     * Remove {@code public} and {@code protected}.
+     */
+    void private_();
+
+    /**
+     * Add the {@code protected} access flag to the member.
+     * Remove {@code public} and {@code private}.
+     */
+    void protected_();
+
+    /**
+     * Add the {@code final} access flag to the member.
+     */
+    void final_();
+
+    /**
      * {@return the descriptor of the class which contains this member}
      */
     ClassDesc owner();

@@ -18,7 +18,8 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator {
     public ClassCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
-        super(type, zb, 0);
+        super(type, zb, AccessFlag.SYNTHETIC.mask() 
+                | AccessFlag.PUBLIC.mask());
     }
 
     public void withFlag(final AccessFlag flag) {
@@ -81,6 +82,16 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
         var mc = new ConstructorCreatorImpl(this);
         mc.accept(builder);
         return mc.desc();
+    }
+
+    @Override
+    public void abstract_() {
+        withFlag(AccessFlag.ABSTRACT);
+    }
+
+    @Override
+    public void final_() {
+        withFlag(AccessFlag.FINAL);
     }
 
     void accept(final Consumer<ClassCreator> builder) {

@@ -12,12 +12,14 @@ import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
 import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
+import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
-public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator permits ConstructorCreatorImpl, MethodCreatorImpl {
+public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
+        permits ConstructorCreatorImpl, MethodCreatorImpl {
     protected final TypeCreatorImpl owner;
     protected int flags;
     protected List<ParamVarImpl> params = new ArrayList<>(4);
@@ -33,17 +35,16 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         addInvisible(mb);
         // lock parameters
         List<ParamVarImpl> params = this.params = List.copyOf(this.params);
-        mb.with(MethodParametersAttribute.of(params.stream().map(pv -> MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags())).toList()));
+        mb.with(MethodParametersAttribute
+                .of(params.stream().map(pv -> MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags())).toList()));
         // find parameter annotations, if any
-        if (params.stream().anyMatch(pvi -> ! pvi.visible.isEmpty())) {
+        if (params.stream().anyMatch(pvi -> !pvi.visible.isEmpty())) {
             mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(params.stream().map(
-                pvi -> pvi.visible
-            ).toList()));
+                    pvi -> pvi.visible).toList()));
         }
-        if (params.stream().anyMatch(pvi -> ! pvi.invisible.isEmpty())) {
+        if (params.stream().anyMatch(pvi -> !pvi.invisible.isEmpty())) {
             mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(params.stream().map(
-                pvi -> pvi.invisible
-            ).toList()));
+                    pvi -> pvi.invisible).toList()));
         }
         mb.withCode(cb -> {
             doCode(builder, cb, params);
@@ -58,7 +59,8 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         bc.accept(builder);
         bc.writeCode(cb, bc);
         if (bc.mayFallThrough()) {
-            throw new IllegalStateException("Outermost block of an executable member must not fall out (return or throw instead)");
+            throw new IllegalStateException(
+                    "Outermost block of an executable member must not fall out (return or throw instead)");
         }
     }
 
@@ -89,4 +91,43 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     public ClassDesc owner() {
         return owner.type();
     }
+
+    @Override
+    public void public_() {
+        withFlag(AccessFlag.PUBLIC);
+        withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void packagePrivate() {
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void private_() {
+        withFlag(AccessFlag.PRIVATE);
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
+    }
+
+    @Override
+    public void protected_() {
+        withFlag(AccessFlag.PROTECTED);
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
+    }
+
+    @Override
+    public void final_() {
+        withFlag(AccessFlag.FINAL);
+    }
+
+    protected void withoutFlag(AccessFlag flag) {
+        flags &= ~flag.mask();
+    }
+
+    protected void withoutFlags(AccessFlag... flags) {
+        for (AccessFlag flag : flags) {
+            withoutFlag(flag);
+        }
+    }
+
 }

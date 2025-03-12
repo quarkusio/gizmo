@@ -8,7 +8,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
@@ -26,7 +25,8 @@ import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator permits ClassCreatorImpl, InterfaceCreatorImpl {
+public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator
+        permits ClassCreatorImpl, InterfaceCreatorImpl {
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
     private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
@@ -57,6 +57,16 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     public void withFlag(final AccessFlag flag) {
         flags |= flag.mask();
+    }
+
+    protected void withoutFlag(final AccessFlag flag) {
+        flags &= ~flag.mask();
+    }
+
+    protected void withoutFlags(AccessFlag... flags) {
+        for (AccessFlag flag : flags) {
+            withoutFlag(flag);
+        }
     }
 
     public void sourceFile(final String name) {
@@ -128,6 +138,16 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return Expr.staticField(fc.desc());
     }
 
+    @Override
+    public void public_() {
+        withFlag(AccessFlag.PUBLIC);
+    }
+
+    @Override
+    public void packagePrivate() {
+        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
+    }
+
     void preAccept() {
         zb.withVersion(version.major(), 0);
     }
@@ -135,10 +155,11 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     void postAccept() {
         zb.withSuperclass(superSig.classDesc());
         zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.classDesc())).toList());
+        zb.withFlags(flags);
         zb.with(SignatureAttribute.of(signature()));
         addVisible(zb);
         addInvisible(zb);
-        if (! inits.isEmpty()) {
+        if (!inits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(ConstantDescs.CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {
                     BlockCreatorImpl bc = new BlockCreatorImpl(this, cb);

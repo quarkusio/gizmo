@@ -2,16 +2,16 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Annotatable;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.StaticFieldVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator for a type.
@@ -68,6 +68,16 @@ public sealed interface TypeCreator extends Annotatable permits ClassCreator, In
     }
 
     /**
+     * Add the {@code public} access flag to the type.
+     */
+    void public_();
+
+    /**
+     * Remove the {@code public} access flag.
+     */
+    void packagePrivate();
+
+    /**
      * Set the source file name for this type.
      *
      * @param name the source file name (must not be {@code null})
@@ -99,9 +109,10 @@ public sealed interface TypeCreator extends Annotatable permits ClassCreator, In
      * @param interface_ the interface (must not be {@code null})
      */
     default void implements_(Class<?> interface_) {
-        if (! interface_.isInterface()) {
+        if (!interface_.isInterface()) {
             throw new IllegalArgumentException("Only interfaces may be implemented");
         }
+        implements_(Util.classDesc(interface_));
     }
 
     /**
