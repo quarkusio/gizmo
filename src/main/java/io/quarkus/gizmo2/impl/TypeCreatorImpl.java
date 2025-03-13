@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import static java.lang.constant.ConstantDescs.CD_Object;
+import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -165,9 +166,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         addVisible(zb);
         addInvisible(zb);
         if (!inits.isEmpty()) {
-            zb.withMethod("<clinit>", MethodTypeDesc.of(ConstantDescs.CD_void), AccessFlag.STATIC.mask(), mb -> {
+            zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {
-                    BlockCreatorImpl bc = new BlockCreatorImpl(this, cb);
+                    BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void);
                     bc.accept(b0 -> {
                         for (Consumer<BlockCreator> init : inits) {
                             b0.block(init);

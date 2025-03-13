@@ -29,7 +29,7 @@ public class LoopTest {
                     bc.forEach(p, (loop, item) -> {
                         loop.return_(loop.cast(item, String.class));
                     });
-                    bc.returnNull(String.class);
+                    bc.returnNull();
                 });
             });
         });
