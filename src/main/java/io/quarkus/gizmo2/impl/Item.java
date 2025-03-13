@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.FieldDesc;
@@ -52,7 +51,7 @@ public abstract non-sealed class Item implements Expr {
             // we don't care about this one
             node = actual.pop(node);
         };
-        throw new IllegalStateException("Iteration past top");
+        throw missing();
     }
 
     /**
@@ -158,7 +157,7 @@ public abstract non-sealed class Item implements Expr {
      */
     protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
         if (node == null) {
-            throw new IllegalStateException("Iteration past top of list");
+            throw missing();
         }
         // no dependencies
         return node.prev();
@@ -214,6 +213,12 @@ public abstract non-sealed class Item implements Expr {
 
     void requireSameType(final Expr a, final Expr b) {
         if (! a.type().equals(b.type())) {
+            throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
+        }
+    }
+
+    void requireSameTypeKind(final Expr a, final Expr b) {
+        if (a.typeKind() != b.typeKind()) {
             throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
         }
     }

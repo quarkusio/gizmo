@@ -17,7 +17,7 @@ final class Rel extends Item {
 
     Rel(final Expr a, final Expr b, final If.Kind kind) {
         this.kind = kind;
-        requireSameType(a, b);
+        requireSameTypeKind(a, b);
         this.a = (Item) a;
         this.b = (Item) b;
         if (a.typeKind() == TypeKind.REFERENCE) {

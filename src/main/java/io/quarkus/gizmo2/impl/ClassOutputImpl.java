@@ -6,7 +6,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
