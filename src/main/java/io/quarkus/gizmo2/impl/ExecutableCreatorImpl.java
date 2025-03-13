@@ -135,8 +135,10 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         if (parameterCount != arraySize) {
             params = Arrays.copyOf(params, parameterCount);
         }
-        mb.with(MethodParametersAttribute
-                .of(Stream.of(params).map(pv -> pv == null ? EMPTY_PI : MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags())).toList()));
+        List<MethodParameterInfo> mpi = Stream.of(params).map(pv -> pv == null ? EMPTY_PI : MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags())).toList();
+        if (! mpi.isEmpty()) {
+            mb.with(MethodParametersAttribute.of(mpi));
+        }
         // find parameter annotations, if any
         if (Stream.of(params).anyMatch(pvi -> !pvi.visible.isEmpty())) {
             mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
@@ -152,7 +154,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
-        BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb);
+        BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
         if (this_ != null) {
             cb.localVariable(0, "this", this_.type(), bc.startLabel(), bc.endLabel());
         }

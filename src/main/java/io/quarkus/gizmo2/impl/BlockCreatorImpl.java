@@ -73,9 +73,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     private final Label endLabel;
     private final Item input;
     private final ClassDesc outputType;
+    private final ClassDesc returnType;
 
-    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder) {
-        this(owner, outerCodeBuilder, null, CD_void, ConstantImpl.ofVoid(), CD_void);
+    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
+        this(owner, outerCodeBuilder, null, CD_void, ConstantImpl.ofVoid(), CD_void, returnType);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent) {
@@ -83,14 +84,14 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc headerType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, headerType, ConstantImpl.ofVoid(), CD_void);
+        this(parent.owner, parent.outerCodeBuilder, parent, headerType, ConstantImpl.ofVoid(), CD_void, parent.returnType);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final Item input, final ClassDesc outputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType);
+        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType);
     }
 
-    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc inputType, final Item input, final ClassDesc outputType) {
+    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
@@ -104,6 +105,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
             head.insertNext(new BlockExpr(inputType));
         }
         this.outputType = outputType;
+        this.returnType = returnType;
     }
 
     Label newLabel() {
@@ -958,6 +960,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
                 t1.finally_(b2 -> b2.invokeInterface(MethodDesc.of(Lock.class, "unlock", void.class), lv));
             });
         });
+    }
+
+    public void returnNull() {
+        return_(ConstantImpl.ofNull(returnType));
     }
 
     public void return_() {

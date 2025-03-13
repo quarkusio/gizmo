@@ -2305,21 +2305,8 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     /**
      * Return {@code null} from the current method.
-     *
-     * @param type the return type
      */
-    default void returnNull(ClassDesc type) {
-        return_(Constant.ofNull(type));
-    }
-
-    /**
-     * Return {@code null} from the current method.
-     *
-     * @param type the return type
-     */
-    default void returnNull(Class<?> type) {
-        return_(Constant.ofNull(type));
-    }
+    void returnNull();
 
     //xxx more returns
 
