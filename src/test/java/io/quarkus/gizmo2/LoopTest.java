@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class LoopTest {
@@ -17,13 +16,7 @@ public class LoopTest {
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
             cc.implements_(StringListFun.class);
-            cc.constructor(con -> {
-                con.public_();
-                con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
-                    bc.return_();
-                });
-            });
+            cc.defaultConstructor();
             cc.method("apply", mc -> {
                 ParamVar p = mc.parameter("list", List.class);
                 mc.returning(String.class);
@@ -49,13 +42,7 @@ public class LoopTest {
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
             cc.implements_(StringListFun.class);
-            cc.constructor(con -> {
-                con.public_();
-                con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
-                    bc.return_();
-                });
-            });
+            cc.defaultConstructor();
             cc.method("apply", mc -> {
                 ParamVar p = mc.parameter("t", List.class);
                 mc.returning(String.class);
