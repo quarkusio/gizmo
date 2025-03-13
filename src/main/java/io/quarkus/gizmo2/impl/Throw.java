@@ -29,4 +29,12 @@ final class Throw extends Item {
         System.err.println("Throw-inside-try is currently broken, so don't release until it's fixed!");
         cb.athrow();
     }
+
+    public boolean mayFallThrough() {
+        return false;
+    }
+
+    public boolean mayThrow() {
+        return true;
+    }
 }

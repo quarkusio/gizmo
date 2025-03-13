@@ -58,9 +58,6 @@ final class Invoke extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        if (construct) {
-            cb.dup();
-        }
         cb.invoke(opcode, owner, name, type, isInterface);
     }
 }

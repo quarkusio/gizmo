@@ -39,6 +39,10 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
         super.extends_(desc);
     }
 
+    public ClassDesc superClass() {
+        return super.superClass();
+    }
+
     MethodDesc methodDesc(final String name, final MethodTypeDesc type) {
         return ClassMethodDesc.of(type(), name, type);
     }
