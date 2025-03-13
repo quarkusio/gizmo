@@ -87,7 +87,7 @@ abstract class If extends Item {
     }
 
     public boolean mayFallThrough() {
-        return whenTrue != null && whenTrue.mayFallThrough() || whenFalse != null && whenFalse.mayFallThrough();
+        return whenTrue == null || whenTrue.mayFallThrough() || whenFalse == null || whenFalse.mayFallThrough();
     }
 
     public boolean mayReturn() {

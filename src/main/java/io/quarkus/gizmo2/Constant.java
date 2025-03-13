@@ -52,7 +52,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
     static Constant ofNull(ClassDesc type) {
-        return ConstantImpl.of(type);
+        return ConstantImpl.ofNull(type);
     }
 
     /**
@@ -60,7 +60,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
     static Constant ofNull(Class<?> type) {
-        return ConstantImpl.of(type);
+        return ConstantImpl.ofNull(type);
     }
 
     /**

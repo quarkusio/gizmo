@@ -32,9 +32,11 @@ public class LoopTest {
                     // for(String e : list) {
                     // return e;
                     // }
+                    // return null;
                     bc.forEach(p, (loop, item) -> {
-                        loop.return_(item);
+                        loop.return_(loop.cast(item, String.class));
                     });
+                    bc.returnNull(String.class);
                 });
             });
         });
@@ -60,13 +62,13 @@ public class LoopTest {
                 mc.public_();
                 mc.body(bc -> {
                     // StringBuilder ret = new StringBuilder();
-                    var ret = bc.new_(StringBuilder.class);
+                    var ret = bc.define("ret", bc.new_(StringBuilder.class));
                     bc.forEach(p, (loop, item) -> {
                         // ret.append(item);
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);
-                        loop.invokeVirtual(append, ret, item);
+                        loop.invokeVirtual(append, ret, loop.cast(item, String.class));
                         // if(item.equals("bar")) break;
-                        loop.if_(loop.eq(item, Constant.of("bar")), isEqual -> {
+                        loop.if_(loop.exprEquals(item, Constant.of("bar")), isEqual -> {
                             isEqual.break_(loop);
                         });
                     });

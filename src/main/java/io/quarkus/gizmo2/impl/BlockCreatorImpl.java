@@ -649,8 +649,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
                     b1.if_(b1.lt(idx, length), b2 -> {
                         LocalVar val = b2.define("$$val" + depth, items.elem(idx));
                         builder.accept(b2, val);
-                        b2.inc(idx);
-                        b2.redo();
+                        if (b2.active()) {
+                            b2.inc(idx);
+                            b2.redo();
+                        }
                     });
                 });
             } else {
@@ -660,7 +662,9 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
                     b1.if_(b1.withIterator(itr).hasNext(), b2 -> {
                         LocalVar val = b2.define("$$val" + depth, b2.withIterator(itr).next());
                         builder.accept(b2, val);
-                        b2.redo(b1);
+                        if (b2.active()) {
+                            b2.redo(b1);
+                        }
                     });
                 });
             }
