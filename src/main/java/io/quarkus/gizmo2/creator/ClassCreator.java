@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -16,6 +17,12 @@ import io.quarkus.gizmo2.impl.Util;
  * A creator for a class type.
  */
 public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits ClassCreatorImpl {
+    /**
+     * {@return the superclass}
+     * @see #extends_(ClassDesc)
+     */
+    ClassDesc superClass();
+
     /**
      * Extend the given generic class.
      *
@@ -223,6 +230,23 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits Cl
      */
     default ConstructorDesc constructor(ConstructorDesc desc, Consumer<ConstructorCreator> builder) {
         return constructor(desc.type(), builder);
+    }
+
+    /**
+     * Add a default constructor to this class.
+     *
+     * @return the built constructor's selector for invocation (must not be {@code null})
+     */
+    default ConstructorDesc defaultConstructor() {
+        ConstructorDesc superCtor = ConstructorDesc.of(superClass());
+        return constructor(superCtor, cc -> {
+            cc.public_();
+            Var this_ = cc.this_();
+            cc.body(bc -> {
+                bc.invokeSpecial(superCtor, this_);
+                bc.return_();
+            });
+        });
     }
 
     /**

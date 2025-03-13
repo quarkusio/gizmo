@@ -614,7 +614,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
-        return addItem(new Invoke(ctor, new New(ctor.owner()), true, args));
+        return addItem(new Invoke(ctor, addItem(new Dup(addItem(new New(ctor.owner())))), true, args));
     }
 
     public Expr invokeStatic(final MethodDesc method, final List<Expr> args) {

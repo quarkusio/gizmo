@@ -7,6 +7,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 public final class TestBasic {
 
@@ -132,6 +133,20 @@ public final class TestBasic {
             });
         });
         tcm.staticMethod("testForEach", OneIterable.class).apply(List.of("one", "two", "three!"));
+    }
+
+    @Test
+    public void throwStuff() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestThrowingStuff"), cc -> {
+            cc.staticMethod("testThrowStuff", mc -> {
+                mc.body(bc -> {
+                    bc.throw_(Error.class, "Hello!");
+                });
+            });
+        });
+        Assertions.assertThrows(Error.class, tcm.staticMethod("testThrowStuff", Executable.class));
     }
 
     public interface OneIterable {
