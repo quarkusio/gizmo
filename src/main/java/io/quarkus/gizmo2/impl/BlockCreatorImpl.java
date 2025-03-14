@@ -6,6 +6,7 @@ import static java.util.Collections.nCopies;
 import java.io.PrintStream;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -74,6 +75,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     private final Item input;
     private final ClassDesc outputType;
     private final ClassDesc returnType;
+    private Consumer<BlockCreator> loopAction;
 
     BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
         this(owner, outerCodeBuilder, null, CD_void, ConstantImpl.ofVoid(), CD_void, returnType);
@@ -434,11 +436,51 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return addItem(new NewEmptyArray(elemType, (Item) size));
     }
 
-    public Expr newArray(final ClassDesc elementType, final List<Expr> values) {
-        if (values.isEmpty()) {
-            return newEmptyArray(elementType, ConstantImpl.of(0));
+    private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values, int idx) {
+        Dup dup = (Dup) stores.get(idx).arrayExpr();
+        Node prev = dup.insert(node);
+        insertNewArrayNextStore(nea, stores, prev, values, idx);
+        // post-process
+        // (not needed)
+    }
+
+    private void insertNewArrayStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
+        ArrayStore store = stores.get(idx);
+        Node storeNode = store.insert(node);
+        // skip predecessor (value)
+        Node beforeValNode = storeNode.prev();
+        Item value = values.get(idx);
+        if (value.bound()) {
+            beforeValNode = value.verify(beforeValNode);
         }
-        return addItem(new NewArray(elementType, values));
+        // (skip index for now)
+        // insert dup before value
+        insertNewArrayDup(nea, stores, beforeValNode.next(), values, idx);
+        // post-process (inserts index)
+        store.forEachDependency(storeNode, Item::insertIfUnbound);
+    }
+
+    private void insertNewArrayNextStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
+        if (idx == 0) {
+            // all elements processed
+            nea.forEachDependency(nea.insert(node), Item::insertIfUnbound);
+        } else {
+            insertNewArrayStore(nea, stores, node, values, idx - 1);
+        }
+    }
+
+    public Expr newArray(final ClassDesc elementType, final List<Expr> values) {
+        checkActive();
+        // build the object graph
+        int size = values.size();
+        List<ArrayStore> stores = new ArrayList<>(size);
+        NewEmptyArray nea = new NewEmptyArray(elementType, ConstantImpl.of(size));
+        for (int i = 0; i < size; i++) {
+            stores.add(new ArrayStore(new Dup(nea), ConstantImpl.of(i), (Item) values.get(i)));
+        }
+        // stitch the object graph into our list
+        insertNewArrayNextStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
+        return nea;
     }
 
     private Expr relZero(final Expr a, final If.Kind kind) {
@@ -861,6 +903,15 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         markDone();
     }
 
+    public void continue_(final BlockCreator loop) {
+        BlockCreatorImpl bci = (BlockCreatorImpl) loop;
+        Consumer<BlockCreator> action = bci.loopAction;
+        if (action == null) {
+            throw new IllegalArgumentException("Can only continue a loop");
+        }
+        action.accept(this);
+    }
+
     public void redo(final BlockCreator outer) {
         if (! outer.contains(this)) {
             throw new IllegalStateException("Invalid block nesting");
@@ -871,6 +922,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void loop(final Consumer<BlockCreator> body) {
         block(b0 -> {
+            ((BlockCreatorImpl)b0).loopAction = bb -> bb.redo(b0);
             body.accept(b0);
             b0.redo();
         });
@@ -878,6 +930,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void while_(final Function<BlockCreator, Expr> cond, final Consumer<BlockCreator> body) {
         block(b0 -> if_(b0.blockExpr(CD_boolean, cond), b1 -> {
+            ((BlockCreatorImpl)b1).loopAction = bb -> bb.redo(b0);
             body.accept(b1);
             b1.redo(b0);
         }));
@@ -885,8 +938,11 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void doWhile(final Consumer<BlockCreator> body, final Function<BlockCreator, Expr> cond) {
         block(b0 -> {
-            body.accept(b0);
-            if_(cond.apply(b0), b1 -> b1.redo(b0));
+            b0.block(b1 -> {
+                ((BlockCreatorImpl)b1).loopAction = bb -> bb.break_(b1);
+                body.accept(b1);
+            });
+            b0.if_(cond.apply(b0), b1 -> b1.redo(b0));
         });
     }
 

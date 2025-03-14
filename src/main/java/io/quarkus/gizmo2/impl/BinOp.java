@@ -50,36 +50,42 @@ final class BinOp extends Item {
         op.apply(cb);
     }
 
+    public StringBuilder toShortString(final StringBuilder sb) {
+        return b.toShortString(a.toShortString(sb).append(kind));
+    }
+
     enum Kind {
-        ADD(CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd),
-        SUB(CodeBuilder::isub, CodeBuilder::lsub, CodeBuilder::fsub, CodeBuilder::dsub),
-        MUL(CodeBuilder::imul, CodeBuilder::lmul, CodeBuilder::fmul, CodeBuilder::dmul),
-        DIV(CodeBuilder::idiv, CodeBuilder::ldiv, CodeBuilder::fdiv, CodeBuilder::ddiv),
-        REM(CodeBuilder::irem, CodeBuilder::lrem, CodeBuilder::frem, CodeBuilder::drem),
+        ADD(CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd, "+"),
+        SUB(CodeBuilder::isub, CodeBuilder::lsub, CodeBuilder::fsub, CodeBuilder::dsub, "-"),
+        MUL(CodeBuilder::imul, CodeBuilder::lmul, CodeBuilder::fmul, CodeBuilder::dmul, "*"),
+        DIV(CodeBuilder::idiv, CodeBuilder::ldiv, CodeBuilder::fdiv, CodeBuilder::ddiv, "/"),
+        REM(CodeBuilder::irem, CodeBuilder::lrem, CodeBuilder::frem, CodeBuilder::drem, "%"),
 
-        AND(CodeBuilder::iand, CodeBuilder::land),
-        OR(CodeBuilder::ior, CodeBuilder::lor),
-        XOR(CodeBuilder::ixor, CodeBuilder::lxor),
+        AND(CodeBuilder::iand, CodeBuilder::land, "&"),
+        OR(CodeBuilder::ior, CodeBuilder::lor, "|"),
+        XOR(CodeBuilder::ixor, CodeBuilder::lxor, "^"),
 
-        SHL(CodeBuilder::ishl, CodeBuilder::lshl),
-        SHR(CodeBuilder::ishr, CodeBuilder::lshr),
-        USHR(CodeBuilder::iushr, CodeBuilder::lushr),
+        SHL(CodeBuilder::ishl, CodeBuilder::lshl, "<<"),
+        SHR(CodeBuilder::ishr, CodeBuilder::lshr, ">>"),
+        USHR(CodeBuilder::iushr, CodeBuilder::lushr, ">>>"),
         ;
 
         final Op intOp;
         final Op longOp;
         final Op floatOp;
         final Op doubleOp;
+        final String symbol;
 
-        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp) {
+        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp, final String symbol) {
             this.intOp = intOp;
             this.longOp = longOp;
             this.floatOp = floatOp;
             this.doubleOp = doubleOp;
+            this.symbol = symbol;
         }
 
-        Kind(final Op intOp, final Op longOp) {
-            this(intOp, longOp, null, null);
+        Kind(final Op intOp, final Op longOp, final String symbol) {
+            this(intOp, longOp, null, null, symbol);
         }
 
         Op opFor(TypeKind tk) {
@@ -94,6 +100,10 @@ final class BinOp extends Item {
 
         boolean isValidFor(TypeKind tk) {
             return null != opFor(tk);
+        }
+
+        public String toString() {
+            return symbol;
         }
     }
 

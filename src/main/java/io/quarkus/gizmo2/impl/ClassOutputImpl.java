@@ -6,6 +6,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
@@ -30,9 +31,10 @@ final class ClassOutputImpl implements ClassOutput {
             ClassCreatorImpl tc = new ClassCreatorImpl(desc, zb);
             gizmo.do_(tc, cc -> cc.accept(builder));
         });
-        List<VerifyError> result = cf.verify(bytes);
+        ClassModel cm = cf.parse(bytes);
+        List<VerifyError> result = cf.verify(cm);
         if (! result.isEmpty()) {
-            IllegalArgumentException e = new IllegalArgumentException("Class failed validation");
+            IllegalArgumentException e = new IllegalArgumentException("Class failed validation" + cm.toDebugString());
             result.forEach(e::addSuppressed);
             throw e;
         }
