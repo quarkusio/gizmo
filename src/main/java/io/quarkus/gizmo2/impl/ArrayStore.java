@@ -15,6 +15,18 @@ final class ArrayStore extends Item {
         this.value = value;
     }
 
+    Item arrayExpr() {
+        return arrayExpr;
+    }
+
+    Item index() {
+        return index;
+    }
+
+    Item value() {
+        return value;
+    }
+
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return arrayExpr.process(index.process(value.process(node.prev(), op), op), op);
     }

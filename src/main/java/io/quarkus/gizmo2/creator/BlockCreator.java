@@ -2094,6 +2094,21 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
     void break_(BlockCreator outer);
 
     /**
+     * Resume the next iteration of an enclosing loop.
+     * A block creator is a loop if it was created using one of:
+     * <ul>
+     *     <li>{@link #loop(Consumer)}</li>
+     *     <li>{@link #while_(Function, Consumer)}</li>
+     *     <li>{@link #doWhile(Consumer, Function)}</li>
+     * </ul>
+     * To repeat an iteration, see {@link #redo(BlockCreator)}.
+     *
+     * @param loop the loop to continue (must not be {@code null})
+     * @throws IllegalArgumentException if the given block creator does not correspond to a loop
+     */
+    void continue_(BlockCreator loop);
+
+    /**
      * Restart an enclosing block.
      * Blocks which are part of an expression-accepting operation (i.e. a {@code BiConsumer<BlockCreator, Expr>}) may
      * not be the target of a {@code redo}.

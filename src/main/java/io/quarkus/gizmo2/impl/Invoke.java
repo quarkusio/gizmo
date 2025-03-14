@@ -23,11 +23,11 @@ final class Invoke extends Item {
     private final boolean construct;
 
     Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<Expr> args) {
-        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, false, (Item) instance, (List<Item>) (List) args);
+        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, false, (Item) instance, Util.reinterpretCast(args));
     }
 
     Invoke(final ConstructorDesc desc, Expr instance, boolean construct, List<Expr> args) {
-        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, construct, (Item) instance, (List<Item>) (List) args);
+        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, construct, (Item) instance, Util.reinterpretCast(args));
     }
 
     private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode, final boolean isInterface, final boolean construct, Item instance, final List<Item> args) {
