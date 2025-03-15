@@ -1,9 +1,8 @@
 package io.quarkus.gizmo2.creator;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.StaticFieldCreatorImpl;
 
 /**
@@ -23,5 +22,5 @@ public sealed interface StaticFieldCreator extends FieldCreator permits StaticFi
      *
      * @param init the builder for the initializer which yields the field initial value (must not be {@code null})
      */
-    void withInitializer(Function<BlockCreator, Expr> init);
+    void withInitializer(Consumer<BlockCreator> init);
 }

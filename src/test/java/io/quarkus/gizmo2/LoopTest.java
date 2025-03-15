@@ -83,17 +83,18 @@ public class LoopTest {
                 mc.body(bc -> {
                     LocalVar i = bc.define("i", Constant.of(0));
                     bc.doWhile(bc1 -> {
-                        bc1.if_(bc1.eq(bc1.rem(i, 2), Constant.of(0)), bc2 -> {
+                        bc1.if_(bc1.ne(bc1.rem(i, 2), Constant.of(0)), bc2 -> {
                             bc2.inc(i);
                             bc2.continue_(bc1);
                         });
-                        bc1.printf("Even number: ", bc1.box(i));
+                        bc1.printf("Even number: %d%n", bc1.box(i));
                         bc1.inc(i);
-                    }, bc1 -> bc1.le(i, 10));
+                    }, bc1 -> bc1.yield(bc1.le(i, 10)));
                     bc.return_();
                 });
             });
         });
+        tcm.staticMethod("test", Runnable.class).run();
     }
 
     public interface StringListFun {

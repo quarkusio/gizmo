@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
@@ -28,7 +27,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         this.initial = Objects.requireNonNull(initial, "initial");
     }
 
-    public void withInitializer(final Function<BlockCreator, Expr> init) {
+    public void withInitializer(final Consumer<BlockCreator> init) {
         if (initial != null || initializer != null) {
             throw new IllegalStateException("A static field may have only one initializer");
         }

@@ -15,11 +15,6 @@ final class New extends Item {
         return type;
     }
 
-    public boolean bound() {
-        // `new` can float around
-        return false;
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.new_(type);
     }
