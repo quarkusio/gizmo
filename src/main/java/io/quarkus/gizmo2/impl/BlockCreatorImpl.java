@@ -109,6 +109,14 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
         this.returnType = returnType;
     }
 
+    Node head() {
+        return head;
+    }
+
+    Node tail() {
+        return tail;
+    }
+
     Label newLabel() {
         return outerCodeBuilder.newLabel();
     }
@@ -863,19 +871,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
     public void break_(final BlockCreator outer) {
         ((BlockCreatorImpl) outer).breakTarget = true;
         if (outer != this) {
-            addItem(new Item() {
-                public boolean mayBreak() {
-                    return true;
-                }
-
-                public boolean mayFallThrough() {
-                    return false;
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.goto_(((BlockCreatorImpl) outer).endLabel());
-                }
-            });
+            addItem(new Break(outer));
         }
         markDone();
     }
