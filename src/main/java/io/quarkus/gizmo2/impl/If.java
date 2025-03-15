@@ -58,24 +58,47 @@ abstract class If extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         if (whenTrue != null) {
+            Node trueTail = whenTrue.tail();
             if (whenFalse != null) {
                 // if-else
-                op(kind).accept(cb, whenTrue.startLabel());
-                whenFalse.writeCode(cb, block);
-                if (whenFalse.mayFallThrough()) {
-                    cb.goto_(whenTrue.endLabel());
+                Node falseTail = whenFalse.tail();
+                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
+                    // just steal the goto target
+                    op(kind).accept(cb, goto_.target());
+                    whenFalse.writeCode(cb, block);
+                } else if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
+                    // just steal the goto target
+                    op(kind.invert()).accept(cb, goto_.target());
+                    whenTrue.writeCode(cb, block);
+                } else {
+                    op(kind).accept(cb, whenTrue.startLabel());
+                    whenFalse.writeCode(cb, block);
+                    if (whenFalse.mayFallThrough()) {
+                        cb.goto_(whenTrue.endLabel());
+                    }
+                    whenTrue.writeCode(cb, block);
                 }
-                whenTrue.writeCode(cb, block);
             } else {
                 // if
-                op(kind.invert()).accept(cb, whenTrue.endLabel());
-                whenTrue.writeCode(cb, block);
+                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
+                    // just steal the goto target
+                    op(kind).accept(cb, goto_.target());
+                } else {
+                    op(kind.invert()).accept(cb, whenTrue.endLabel());
+                    whenTrue.writeCode(cb, block);
+                }
             }
         } else {
             if (whenFalse != null) {
                 // unless
-                op(kind).accept(cb, whenFalse.endLabel());
-                whenFalse.writeCode(cb, block);
+                Node falseTail = whenFalse.tail();
+                if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
+                    // just steal the goto target
+                    op(kind.invert()).accept(cb, goto_.target());
+                } else {
+                    op(kind).accept(cb, whenFalse.endLabel());
+                    whenFalse.writeCode(cb, block);
+                }
             } else {
                 throw new IllegalStateException();
             }
