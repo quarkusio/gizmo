@@ -3,6 +3,7 @@ package io.quarkus.gizmo2;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.TypeKind;
+import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
@@ -12,7 +13,7 @@ import io.quarkus.gizmo2.creator.TypeCreator;
 /**
  * A typed thing whose type is a simple type.
  */
-public sealed interface SimpleTyped extends Typed permits Expr, FieldDesc, ClassCreator, FieldCreator, ParamCreator, SwitchExprCreator, TypeCreator {
+public sealed interface SimpleTyped extends Typed permits Expr, FieldDesc, BlockCreator, ClassCreator, FieldCreator, ParamCreator, SwitchExprCreator, TypeCreator {
     /**
      * {@return the type of this entity (not {@code null})}
      */

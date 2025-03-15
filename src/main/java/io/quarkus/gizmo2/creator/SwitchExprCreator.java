@@ -2,10 +2,9 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.SwitchExprCreatorImpl;
 
@@ -20,7 +19,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value (must not be {@code null})
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    void case_(Constant val, Function<BlockCreator, Expr> body);
+    void case_(Constant val, Consumer<BlockCreator> body);
 
     /**
      * Add a switch case.
@@ -28,7 +27,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value (must not be {@code null})
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    default void case_(ConstantDesc val, Function<BlockCreator, Expr> body) {
+    default void case_(ConstantDesc val, Consumer<BlockCreator> body) {
         case_(Constant.of(val), body);
     }
 
@@ -38,7 +37,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value (must not be {@code null})
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    default void case_(Constable val, Function<BlockCreator, Expr> body) {
+    default void case_(Constable val, Consumer<BlockCreator> body) {
         case_(Constant.of(val), body);
     }
 
@@ -48,7 +47,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    default void case_(int val, Function<BlockCreator, Expr> body) {
+    default void case_(int val, Consumer<BlockCreator> body) {
         case_(Constant.of(val), body);
     }
 
@@ -58,7 +57,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    default void case_(long val, Function<BlockCreator, Expr> body) {
+    default void case_(long val, Consumer<BlockCreator> body) {
         case_(Constant.of(val), body);
     }
 
@@ -68,7 +67,7 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      * @param val the switch case value (must not be {@code null})
      * @param body the builder for the body of the case (must not be {@code null})
      */
-    default void case_(String val, Function<BlockCreator, Expr> body) {
+    default void case_(String val, Consumer<BlockCreator> body) {
         case_(Constant.of(val), body);
     }
 
@@ -77,5 +76,5 @@ public sealed interface SwitchExprCreator extends SimpleTyped permits SwitchExpr
      *
      * @param body the builder for the body of the default case (must not be {@code null})
      */
-    void default_(Function<BlockCreator, Expr> body);
+    void default_(Consumer<BlockCreator> body);
 }

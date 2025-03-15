@@ -15,7 +15,7 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
 
-public final class TryImpl extends Item implements TryCreator, Scoped<TryImpl> {
+public final class TryImpl extends Item implements TryCreator {
     private static final int ST_INITIAL = 0;
     private static final int ST_BODY = 1;
     private static final int ST_CATCH = 2;

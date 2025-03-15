@@ -16,8 +16,8 @@ final class Yield extends Item {
 
     private final Item value;
 
-    Yield(final Item value) {
-        this.value = value;
+    Yield(final Expr value) {
+        this.value = (Item) value;
     }
 
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {

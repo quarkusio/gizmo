@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
@@ -21,6 +19,7 @@ import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.ops.ClassOps;
 import io.quarkus.gizmo2.creator.ops.CollectionOps;
@@ -37,7 +36,32 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A code block.
  */
-public sealed interface BlockCreator permits BlockCreatorImpl {
+public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImpl {
+    /**
+     * {@return the type of this block (may be {@code void})}
+     * If the type is non-{@code void}, then the block must {@linkplain #yield(Expr) a value}
+     * if it does not exit explicitly some other way.
+     */
+    ClassDesc type();
+
+    /**
+     * Yield a value from this block.
+     * If control falls out of a block, an implicit {@code yield(Constant.ofVoid())}
+     * is added to terminate it.
+     *
+     * @param value the value to yield (must not be {@code null})
+     * @throws IllegalArgumentException if the value type does not match the {@linkplain #type() type of the block}
+     */
+    void yield(Expr value);
+
+    /**
+     * Yield a {@code null} value from this block.
+     *
+     * @throws IllegalArgumentException if this block's type is primitive or {@code void}
+     */
+    default void yieldNull() {
+        this.yield(Constant.ofNull(type()));
+    }
 
     // general state
 
@@ -1650,7 +1674,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param other the expression to evaluate if {@code cond} is {@code false}
      * @return the boolean result of the operation (not {@code null})
      */
-    default Expr logicalOr(Expr cond, Function<BlockCreator, Expr> other) {
+    default Expr logicalOr(Expr cond, Consumer<BlockCreator> other) {
         return selectExpr(CD_boolean, cond, __ -> Constant.of(true), other);
     }
 
@@ -1661,7 +1685,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param other the expression to evaluate if {@code cond} is {@code true}
      * @return the boolean result of the operation (not {@code null})
      */
-    default Expr logicalAnd(Expr cond, Function<BlockCreator, Expr> other) {
+    default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
         return selectExpr(CD_boolean, cond, other, __ -> Constant.of(false));
     }
 
@@ -1677,7 +1701,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
      * @return the resultant value (must not be {@code null})
      */
-    default Expr selectExpr(Class<?> type, Expr cond, Function<BlockCreator, Expr> ifTrue, Function<BlockCreator, Expr> ifFalse) {
+    default Expr selectExpr(Class<?> type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse) {
         return selectExpr(Util.classDesc(type), cond, ifTrue, ifFalse);
     }
 
@@ -1690,7 +1714,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
      * @return the resultant value (must not be {@code null})
      */
-    Expr selectExpr(ClassDesc type, Expr cond, Function<BlockCreator, Expr> ifTrue, Function<BlockCreator, Expr> ifFalse);
+    Expr selectExpr(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
 
     /**
      * Evaluate a switch expression.
@@ -2003,7 +2027,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param nested the builder for the block body (must not be {@code null})
      * @return the returned value (not {@code null})
      */
-    Expr blockExpr(ClassDesc type, Function<BlockCreator, Expr> nested);
+    Expr blockExpr(ClassDesc type, Consumer<BlockCreator> nested);
 
     /**
      * Create a block expression which takes an argument.
@@ -2013,7 +2037,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param nested the builder for the block body (must not be {@code null})
      * @return the returned value (not {@code null})
      */
-    Expr blockExpr(Expr arg, ClassDesc type, BiFunction<BlockCreator, Expr, Expr> nested);
+    Expr blockExpr(Expr arg, ClassDesc type, BiConsumer<BlockCreator, Expr> nested);
 
     /**
      * If the given object is an instance of the given type, then execute the block with the narrowed object.
@@ -2086,7 +2110,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
 
     /**
      * Exit an enclosing block.
-     * Blocks which are part of an expression building operation (i.e. a {@code Function<BlockCreator, Expr>}) may
+     * Blocks have a non-{@code void} {@linkplain #type() type}
      * not be the target of a {@code break}.
      *
      * @param outer the block to break (must not be {@code null})
@@ -2098,8 +2122,8 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * A block creator is a loop if it was created using one of:
      * <ul>
      *     <li>{@link #loop(Consumer)}</li>
-     *     <li>{@link #while_(Function, Consumer)}</li>
-     *     <li>{@link #doWhile(Consumer, Function)}</li>
+     *     <li>{@link #while_(Consumer, Consumer)}</li>
+     *     <li>{@link #doWhile(Consumer, Consumer)}</li>
      * </ul>
      * To repeat an iteration, see {@link #redo(BlockCreator)}.
      *
@@ -2204,7 +2228,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param cond the condition which is evaluated at the top of the block (must not be {@code null})
      * @param body the loop body (must not be {@code null})
      */
-    void while_(Function<BlockCreator, Expr> cond, Consumer<BlockCreator> body);
+    void while_(Consumer<BlockCreator> cond, Consumer<BlockCreator> body);
 
     /**
      * Enter a {@code do}-{@code while} loop.
@@ -2213,7 +2237,7 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param body the loop body (must not be {@code null})
      * @param cond the condition which is evaluated at the bottom of the block (must not be {@code null})
      */
-    void doWhile(Consumer<BlockCreator> body, Function<BlockCreator, Expr> cond);
+    void doWhile(Consumer<BlockCreator> body, Consumer<BlockCreator> cond);
 
     /**
      * Enter a {@code try} block.
@@ -2590,6 +2614,6 @@ public sealed interface BlockCreator permits BlockCreatorImpl {
      * @param assertion the assertion expression maker (must not be {@code null})
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
-    void assert_(Function<BlockCreator, Expr> assertion, String message);
+    void assert_(Consumer<BlockCreator> assertion, String message);
 }
 

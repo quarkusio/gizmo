@@ -62,14 +62,7 @@ public abstract non-sealed class Item implements Expr {
      */
     public Node pop(Node node) {
         assert this == node.item();
-        if (isVoid()) {
-            // no operation; skip over dependencies
-            Node result = forEachDependency(node, Item::verify);
-            if (result == null) {
-                throw new IllegalStateException();
-            }
-            return result;
-        } else if (! bound()) {
+        if (! bound()) {
             // remove our dependencies
             Node result = forEachDependency(node, Item::pop);
             if (result == null) {
@@ -77,6 +70,13 @@ public abstract non-sealed class Item implements Expr {
             }
             // remove ourselves
             node.remove();
+            return result;
+        } else if (isVoid()) {
+            // no operation; skip over dependencies
+            Node result = forEachDependency(node, Item::verify);
+            if (result == null) {
+                throw new IllegalStateException();
+            }
             return result;
         } else {
             // add an explicit pop

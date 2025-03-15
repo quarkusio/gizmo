@@ -78,6 +78,16 @@ public final class Node {
         return oldNext.prev = next = new Node(oldNext, this, item);
     }
 
+    public void splicePrev(final Node prev) {
+        this.prev = prev;
+        prev.next = this;
+    }
+
+    public void spliceNext(final Node next) {
+        this.next = next;
+        next.prev = this;
+    }
+
     public Item remove() {
         if (next != null) {
             next.prev = prev;

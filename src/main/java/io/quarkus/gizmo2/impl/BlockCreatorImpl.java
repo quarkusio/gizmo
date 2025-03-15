@@ -17,7 +17,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
@@ -49,7 +48,7 @@ import io.quarkus.gizmo2.impl.constant.StringConstant;
 /**
  * The block builder implementation. Internal only.
  */
-sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scoped<BlockCreatorImpl> permits SwitchCreatorImpl.Case {
+sealed public class BlockCreatorImpl extends Item implements BlockCreator permits SwitchCreatorImpl.Case {
     private static final int ST_ACTIVE = 0;
     private static final int ST_NESTED = 1;
     private static final int ST_DONE = 2;
@@ -658,7 +657,10 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
-        return addItem(new Invoke(ctor, addItem(new Dup(addItem(new New(ctor.owner())))), true, args));
+        New new_ = addItem(new New(ctor.owner()));
+        Dup dup_ = addItem(new Dup(new_));
+        addItem(new Invoke(ctor, dup_, args));
+        return new_;
     }
 
     public Expr invokeStatic(final MethodDesc method, final List<Expr> args) {
@@ -674,7 +676,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
     }
 
     public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
-        return addItem(new Invoke(ctor, instance, false, args));
+        return addItem(new Invoke(ctor, instance, args));
     }
 
     public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
@@ -732,36 +734,43 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         return;
     }
 
-    public Expr blockExpr(final ClassDesc type, final Function<BlockCreator, Expr> nested) {
+    public Expr blockExpr(final ClassDesc type, final Consumer<BlockCreator> nested) {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
         state = ST_NESTED;
         block.accept(nested);
         state = ST_ACTIVE;
-        addItem(block);
-        return block;
+        // inline it
+        if (block.tail.item() instanceof Yield yield) {
+            // block should be safe to inline
+            Node node = block.head.next();
+            while (node.item() != yield) {
+                tail.insertPrev(node.item());
+                node = node.next();
+            }
+            return tail.prev().item();
+        } else {
+            addItem(block);
+            return block;
+        }
     }
 
-    public Expr blockExpr(final Expr arg, final ClassDesc type, final BiFunction<BlockCreator, Expr, Expr> nested) {
+    public Expr blockExpr(final Expr arg, final ClassDesc type, final BiConsumer<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, type);
         addItem(block);
-        return block.accept(nested);
+        block.accept(nested);
+        return block;
     }
 
     public void accept(final BiConsumer<? super BlockCreatorImpl, Expr> handler) {
         if (state != ST_ACTIVE) {
             throw new IllegalStateException("Block already processed");
         }
-        if (! type().equals(CD_void)) {
-            throw new IllegalStateException("Void accept on block which returns " + type());
-        }
         if (! (head.next().item() instanceof BlockExpr be)) {
             throw new IllegalStateException("Expected block expression");
         }
         handler.accept(this, be);
-        if (mayFallThrough()) {
-            cleanStack(tail.apply(Item::verify));
-        }
+        cleanStack(tail.apply(Item::verify));
         markDone();
     }
 
@@ -769,51 +778,19 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         if (state != ST_ACTIVE) {
             throw new IllegalStateException("Block already processed");
         }
-        if (! type().equals(CD_void)) {
-            throw new IllegalStateException("Void accept on block which returns " + type());
-        }
         handler.accept(this);
-        if (mayFallThrough()) {
-            cleanStack(tail.apply(Item::verify));
+        if (tail.item() instanceof Yield yield) {
+            Expr val = yield.value();
+            if (val.typeKind() != typeKind()) {
+                if (val.typeKind() == TypeKind.VOID) {
+                    throw new IllegalStateException("Block did not yield a value of type " + typeKind() + " (did you forget to call `yield(val)`?)");
+                } else {
+                    throw new IllegalStateException("Block yielded value of wrong type (expected a " + typeKind() + " but got " + val.type() + ")");
+                }
+            }
         }
+        cleanStack(tail.apply(Item::verify));
         markDone();
-    }
-
-    public Expr accept(final Function<? super BlockCreatorImpl, Expr> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
-        if (type().equals(CD_void)) {
-            throw new IllegalStateException("Function accept on void-typed block");
-        }
-        Item res = (Item) handler.apply(this);
-        if (mayFallThrough()) {
-            Node tail = this.tail;
-            tail.set(new Yield(res));
-            cleanStack(tail.apply(Item::verify));
-        }
-        markDone();
-        return this;
-    }
-
-    public Expr accept(final BiFunction<? super BlockCreatorImpl, Expr, Expr> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
-        if (type().equals(CD_void)) {
-            throw new IllegalStateException("Function accept on void-typed block");
-        }
-        if (! (head.next().item() instanceof BlockExpr be)) {
-            throw new IllegalStateException("Expected block expression");
-        }
-        Item res = (Item) handler.apply(this, be);
-        if (mayFallThrough()) {
-            Node tail = this.tail;
-            tail.set(new Yield(res));
-            cleanStack(tail.apply(Item::verify));
-        }
-        markDone();
-        return this;
     }
 
     public void ifInstanceOf(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, Expr> ifTrue) {
@@ -863,7 +840,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         doIfInsn(CD_void, cond, wt, wf);
     }
 
-    public Expr selectExpr(final ClassDesc type, final Expr cond, final Function<BlockCreator, Expr> whenTrue, final Function<BlockCreator, Expr> whenFalse) {
+    public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = new BlockCreatorImpl(this, type);
         BlockCreatorImpl wf = new BlockCreatorImpl(this, type);
         wt.accept(whenTrue);
@@ -924,25 +901,31 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         block(b0 -> {
             ((BlockCreatorImpl)b0).loopAction = bb -> bb.redo(b0);
             body.accept(b0);
-            b0.redo();
+            if (b0.active()) {
+                b0.redo();
+            }
         });
     }
 
-    public void while_(final Function<BlockCreator, Expr> cond, final Consumer<BlockCreator> body) {
+    public void while_(final Consumer<BlockCreator> cond, final Consumer<BlockCreator> body) {
         block(b0 -> if_(b0.blockExpr(CD_boolean, cond), b1 -> {
             ((BlockCreatorImpl)b1).loopAction = bb -> bb.redo(b0);
             body.accept(b1);
-            b1.redo(b0);
+            if (b1.active()) {
+                b1.redo(b0);
+            }
         }));
     }
 
-    public void doWhile(final Consumer<BlockCreator> body, final Function<BlockCreator, Expr> cond) {
+    public void doWhile(final Consumer<BlockCreator> body, final Consumer<BlockCreator> cond) {
         block(b0 -> {
             b0.block(b1 -> {
                 ((BlockCreatorImpl)b1).loopAction = bb -> bb.break_(b1);
                 body.accept(b1);
             });
-            b0.if_(cond.apply(b0), b1 -> b1.redo(b0));
+            if (b0.active()) {
+                b0.if_(b0.blockExpr(CD_boolean, cond), b1 -> b1.redo(b0));
+            }
         });
     }
 
@@ -1032,6 +1015,13 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
 
     public void throw_(final Expr val) {
         replaceLastItem(new Throw(val));
+    }
+
+    public void yield(final Expr val) {
+        if (typeKind().asLoadable() != val.typeKind().asLoadable()) {
+            throw new IllegalArgumentException("Yield value type kind " + val.typeKind() + " does not match expected " + typeKind());
+        }
+        replaceLastItem(val.equals(Constant.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
     public Expr exprHashCode(final Expr expr) {
@@ -1124,7 +1114,7 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator, Scope
         );
     }
 
-    public void assert_(final Function<BlockCreator, Expr> assertion, final String message) {
+    public void assert_(final Consumer<BlockCreator> assertion, final String message) {
         if_(logicalAnd(
             Constant.ofInvoke(
                 Constant.ofMethodHandle(InvokeKind.VIRTUAL, MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class)
