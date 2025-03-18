@@ -51,7 +51,7 @@ public abstract non-sealed class Item implements Expr {
             // we don't care about this one
             node = actual.pop(node);
         };
-        throw missing();
+        throw missing(toString());
     }
 
     /**
@@ -157,14 +157,14 @@ public abstract non-sealed class Item implements Expr {
      */
     protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
         if (node == null) {
-            throw missing();
+            throw missing(toString());
         }
         // no dependencies
         return node.prev();
     }
 
-    static IllegalStateException missing() {
-        return new IllegalStateException("Item is not at its expected location (use a variable to store values which are used away from their definition site");
+    static IllegalStateException missing(String itemToString) {
+        return new IllegalStateException("Item is not at its expected location (use a variable to store values which are used away from their definition site): " + itemToString);
     }
 
     public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);

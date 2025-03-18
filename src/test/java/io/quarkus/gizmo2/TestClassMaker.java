@@ -16,15 +16,16 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     private MethodHandles.Lookup lookup;
 
     public void accept(final ClassDesc classDesc, final byte[] bytes) {
-        // print class
-        System.out.println(ClassFile.of().parse(bytes).toDebugString());
+        if (System.getProperty("printClass") != null) {
+            System.out.println(ClassFile.of().parse(bytes).toDebugString());
+        }
         try {
             lookup = MethodHandles.lookup().defineHiddenClass(bytes, true);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         }
     }
-    
+
     public Class<?> definedClass() {
         return lookup.lookupClass();
     }
@@ -44,7 +45,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     public <T> T instanceMethod(String name, Class<T> asType) {
         Method sam = findSAMSimple(asType);
         Class<?>[] parameterTypes = sam.getParameterTypes();
-        MethodType mt = MethodType.methodType(sam.getReturnType(), Arrays.copyOfRange(parameterTypes, 1, parameterTypes.length));
+        MethodType mt = MethodType.methodType(sam.getReturnType(),
+                Arrays.copyOfRange(parameterTypes, 1, parameterTypes.length));
         try {
             return MethodHandleProxies.asInterfaceInstance(asType, lookup.findVirtual(lookup.lookupClass(), name, mt));
         } catch (NoSuchMethodException e) {
@@ -65,7 +67,7 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
             throw new IllegalAccessError(e.getMessage());
         }
     }
-    
+
     public <T> T noArgsConstructor(Class<T> asType) {
         try {
             return (T) lookup.findConstructor(lookup.lookupClass(), MethodType.methodType(void.class)).invoke();
@@ -79,7 +81,7 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     }
 
     private static Method findSAMSimple(Class<?> type) {
-        if (! type.isInterface()) {
+        if (!type.isInterface()) {
             throw new IllegalArgumentException("Not an interface");
         }
         // don't try too hard
