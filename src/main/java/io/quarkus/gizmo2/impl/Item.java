@@ -177,14 +177,7 @@ public abstract non-sealed class Item implements Expr {
     }
 
     /**
-     * {@return true if this node may throw an exception}
-     */
-    public boolean mayThrow() {
-        return false;
-    }
-
-    /**
-     * {@return true if this node may break out of the current block without falling through}
+     * {@return true if this node may break out of the current block to an enclosing block without falling through}
      * This includes restarting the current block or any sibling or enclosing block.
      */
     public boolean mayBreak() {

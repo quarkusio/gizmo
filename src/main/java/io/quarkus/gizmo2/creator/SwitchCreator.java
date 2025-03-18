@@ -5,6 +5,7 @@ import java.lang.constant.ConstantDesc;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.SwitchCreatorImpl;
 
 /**
@@ -13,65 +14,76 @@ import io.quarkus.gizmo2.impl.SwitchCreatorImpl;
  * To simulate fall-through behavior, use {@link BlockCreator#redo(SwitchCreator, Constant)}
  * or one of its variants at the end of each case.
  */
-public sealed interface SwitchCreator permits SwitchCreatorImpl {
-    // todo: the ability to have multiple values point to the same case
+public sealed interface SwitchCreator extends SimpleTyped permits SwitchCreatorImpl {
 
     /**
      * Add a switch case.
      *
-     * @param val the switch case value (must not be {@code null})
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param builder the switch case builder (must not be {@code null})
      */
-    void case_(Constant val, Consumer<BlockCreator> body);
+    void case_(Consumer<CaseCreator> builder);
 
     /**
-     * Add a switch case.
+     * Add a simple switch case.
      *
-     * @param val the switch case value (must not be {@code null})
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
      */
-    default void case_(ConstantDesc val, Consumer<BlockCreator> body) {
-        case_(Constant.of(val), body);
+    default void caseOf(Constant val, Consumer<BlockCreator> body) {
+        case_(cc -> {
+            cc.of(val);
+            cc.body(body);
+        });
     }
 
     /**
-     * Add a switch case.
+     * Add a simple switch case.
      *
-     * @param val the switch case value (must not be {@code null})
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
      */
-    default void case_(Constable val, Consumer<BlockCreator> body) {
-        case_(Constant.of(val), body);
+    default void caseOf(Constable val, Consumer<BlockCreator> body) {
+        caseOf(Constant.of(val), body);
     }
 
     /**
-     * Add a switch case.
+     * Add a simple switch case.
      *
-     * @param val the switch case value
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
      */
-    default void case_(int val, Consumer<BlockCreator> body) {
-        case_(Constant.of(val), body);
+    default void caseOf(ConstantDesc val, Consumer<BlockCreator> body) {
+        caseOf(Constant.of(val), body);
     }
 
     /**
-     * Add a switch case.
+     * Add a simple switch case.
      *
-     * @param val the switch case value
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
      */
-    default void case_(long val, Consumer<BlockCreator> body) {
-        case_(Constant.of(val), body);
+    default void caseOf(String val, Consumer<BlockCreator> body) {
+        caseOf(Constant.of(val), body);
     }
 
     /**
-     * Add a switch case.
+     * Add a simple switch case.
      *
-     * @param val the switch case value (must not be {@code null})
-     * @param body the builder for the body of the case (must not be {@code null})
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
      */
-    default void case_(String val, Consumer<BlockCreator> body) {
-        case_(Constant.of(val), body);
+    default void caseOf(int val, Consumer<BlockCreator> body) {
+        caseOf(Constant.of(val), body);
+    }
+
+    /**
+     * Add a simple switch case.
+     *
+     * @param val the case value to add (must not be {@code null})
+     * @param body the switch case body builder (must not be {@code null})
+     */
+    default void caseOf(long val, Consumer<BlockCreator> body) {
+        caseOf(Constant.of(val), body);
     }
 
     /**

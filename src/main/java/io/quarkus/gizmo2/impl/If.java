@@ -105,10 +105,6 @@ abstract class If extends Item {
         }
     }
 
-    public boolean mayThrow() {
-        return whenTrue != null && whenTrue.mayThrow() || whenFalse != null && whenFalse.mayThrow();
-    }
-
     public boolean mayFallThrough() {
         return whenTrue == null || whenTrue.mayFallThrough() || whenFalse == null || whenFalse.mayFallThrough();
     }
