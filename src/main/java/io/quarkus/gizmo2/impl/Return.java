@@ -7,13 +7,12 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 final class Return extends Item {
-    private final Item val;
+    static final Return RETURN_VOID = new Return(ConstantImpl.ofVoid());
 
-    Return() {
-        this(null);
-    }
+    private final Item val;
 
     Return(final Expr val) {
         this.val = (Item) val;

@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import static java.lang.constant.ConstantDescs.*;
-import static java.util.Collections.nCopies;
+import static java.util.Collections.*;
 
 import java.io.PrintStream;
 import java.lang.constant.ClassDesc;
@@ -33,22 +33,18 @@ import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
-import io.quarkus.gizmo2.creator.SwitchExprCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.impl.constant.ClassConstant;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
-import io.quarkus.gizmo2.impl.constant.EnumConstant;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
-import io.quarkus.gizmo2.impl.constant.StringConstant;
 
 /**
  * The block builder implementation. Internal only.
  */
-sealed public class BlockCreatorImpl extends Item implements BlockCreator permits SwitchCreatorImpl.Case {
+public final class BlockCreatorImpl extends Item implements BlockCreator {
     private static final int ST_ACTIVE = 0;
     private static final int ST_NESTED = 1;
     private static final int ST_DONE = 2;
@@ -138,21 +134,6 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
             //throw new IllegalStateException();
         }
         return breakTarget || tail.item().mayFallThrough();
-    }
-
-    public boolean mayThrow() {
-        if (active()) {
-            throw new IllegalStateException();
-        }
-        // todo: compute once & cache
-        Node node = tail;
-        while (node != null) {
-            if (node.item().mayThrow()) {
-                return true;
-            }
-            node = node.prev();
-        }
-        return false;
     }
 
     public boolean mayBreak() {
@@ -338,79 +319,52 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
         }, MethodTypeDesc.of(unboxType)), a);
     }
 
-    public void switchEnum(final Expr enumExpr, final Consumer<SwitchCreator> builder) {
-        SwitchCreatorImpl<? extends ConstantImpl> sci = new HashingSwitch<>(this, enumExpr, EnumConstant.class,
-            cb -> {
-                cb.invokevirtual(CD_Enum, "name", MethodTypeDesc.of(CD_String));
-                cb.invokevirtual(CD_String, "hashCode", MethodTypeDesc.of(CD_int));
-            },
-            cc -> cc.name().hashCode()
-        );
+    public Expr switchEnum(final ClassDesc outputType, final Expr enumExpr, final Consumer<SwitchCreator> builder) {
+        EnumSwitchCreatorImpl sci = new EnumSwitchCreatorImpl(this, enumExpr, outputType);
+        sci.accept(builder);
         addItem(sci);
+        return sci;
     }
 
-    public void switch_(final Expr expr, final Consumer<SwitchCreator> builder) {
+    public Expr switch_(final ClassDesc outputType, final Expr expr, final Consumer<SwitchCreator> builder) {
         SwitchCreatorImpl<? extends ConstantImpl> sci = switch (expr.typeKind().asLoadable()) {
-            case INT -> new IntSwitch(this, expr);
+            case INT -> new IntSwitchCreatorImpl(this, expr, outputType);
+            case LONG -> new LongSwitchCreatorImpl(this, expr, outputType);
             case REFERENCE -> {
                 if (expr.type().equals(CD_String)) {
-                    yield new HashingSwitch<>(this, expr, StringConstant.class);
+                    yield new StringSwitchCreatorImpl(this, expr, outputType);
                 } else if (expr.type().equals(CD_Class)) {
-                    yield new HashingSwitch<>(this, expr, ClassConstant.class,
-                        cb -> {
-                            cb.invokevirtual(CD_Class, "descriptorString", MethodTypeDesc.of(CD_String));
-                            cb.invokevirtual(CD_String, "hashCode", MethodTypeDesc.of(CD_int));
-                        },
-                        cc -> cc.desc().descriptorString().hashCode()
-                    );
+                    yield new ClassSwitchCreatorImpl(this, expr, outputType);
                 } else {
                     throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
                 }
             }
             default -> throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
         };
+        sci.accept(builder);
         addItem(sci);
+        return sci;
     }
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
-        addItem(new Item() {
-            protected Node insert(final Node node) {
-                Node res = super.insert(node);
-                cleanStack(res);
-                return res;
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                SwitchCreatorImpl<?> cast = (SwitchCreatorImpl<?>) switch_;
-                BlockCreatorImpl matched = cast.findCase(case_);
+        addItem(new Goto() {
+            Label target() {
+                SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
+                SwitchCreatorImpl<?>.CaseCreatorImpl matched = sci.findCase(case_);
                 if (matched == null) {
-                    matched = cast.findDefault();
+                    return sci.default_.startLabel();
                 }
-                cb.goto_(matched.startLabel());
-            }
-
-            public boolean mayFallThrough() {
-                return false;
+                return matched.body.startLabel();
             }
         });
     }
 
     public void redoDefault(final SwitchCreator switch_) {
-        addItem(new Item() {
-            protected Node insert(final Node node) {
-                Node res = super.insert(node);
-                cleanStack(node);
-                return res;
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+        addItem(new Goto() {
+            Label target() {
                 SwitchCreatorImpl<?> cast = (SwitchCreatorImpl<?>) switch_;
                 BlockCreatorImpl default_ = cast.findDefault();
-                cb.goto_(default_.startLabel());
-            }
-
-            public boolean mayFallThrough() {
-                return false;
+                return default_.startLabel();
             }
         });
     }
@@ -630,10 +584,6 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
 
     public Expr neg(final Expr a) {
         return addItem(new Neg(a));
-    }
-
-    public Expr switchExpr(final Expr val, final Consumer<SwitchExprCreator> builder) {
-        throw new UnsupportedOperationException();
     }
 
     public Expr lambda(final MethodDesc sam, final Consumer<LambdaCreator> builder) {
@@ -1002,11 +952,14 @@ sealed public class BlockCreatorImpl extends Item implements BlockCreator permit
     }
 
     public void return_() {
-        replaceLastItem(new Return());
+        replaceLastItem(Return.RETURN_VOID);
     }
 
     public void return_(final Expr val) {
-        replaceLastItem(new Return(val));
+        if (TypeKind.from(returnType).asLoadable() != val.typeKind().asLoadable()) {
+            throw new IllegalArgumentException("Return value type kind " + val.typeKind() + " does not match expected " + typeKind());
+        }
+        replaceLastItem(val.equals(Constant.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
 
     public void throw_(final Expr val) {

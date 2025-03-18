@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 /**
  * A creator that has a body.
  */
-public sealed interface BodyCreator permits InstanceBodyCreator, LambdaCreator, StaticExecutableCreator, TryCreator {
+public sealed interface BodyCreator permits CaseCreator, InstanceBodyCreator, LambdaCreator, StaticExecutableCreator, TryCreator {
     /**
      * Build the body of this executable code.
      *

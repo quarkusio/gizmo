@@ -33,8 +33,4 @@ final class Throw extends Item {
     public boolean mayFallThrough() {
         return false;
     }
-
-    public boolean mayThrow() {
-        return true;
-    }
 }

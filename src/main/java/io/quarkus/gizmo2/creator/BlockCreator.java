@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator;
 
-import static java.lang.constant.ConstantDescs.CD_boolean;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
@@ -1716,16 +1716,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     Expr selectExpr(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
 
-    /**
-     * Evaluate a switch expression.
-     *
-     * @param val the value to switch on (must not be {@code null})
-     * @param builder the builder which constructs the switch expression (must not be {@code null})
-     * @return the result of the switch expression (must not be {@code null})
-     */
-    Expr switchExpr(Expr val, Consumer<SwitchExprCreator> builder);
-
-
     // lambda
 
     /**
@@ -2090,13 +2080,26 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the value to switch on (must not be {@code null})
      * @param builder the builder for the {@code switch} statement (must not be {@code null})
      */
-    void switchEnum(Expr val, Consumer<SwitchCreator> builder);
+    default void switchEnum(Expr val, Consumer<SwitchCreator> builder) {
+        switchEnum(CD_void, val, builder);
+    }
+
+    /**
+     * Construct a {@code switch} expression for {@code enum} constants.
+     *
+     * @param outputType the output type of this {@code switch} (must not be {@code null})
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder for the {@code switch} statement (must not be {@code null})
+     * @return the switch expression result (not {@code null})
+     */
+    Expr switchEnum(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
 
     /**
      * Construct a {@code switch} statement.
-     * The switch value must be one of these supported types:
+     * The type of the switch value must be of one of these supported types:
      * <ul>
      *     <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     *     <li>{@code long}</li>
      *     <li>{@code java.lang.String}</li>
      *     <li>{@code java.lang.Class}</li>
      * </ul>
@@ -2106,7 +2109,28 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the value to switch on (must not be {@code null})
      * @param builder the builder for the {@code switch} statement (must not be {@code null})
      */
-    void switch_(Expr val, Consumer<SwitchCreator> builder);
+    default void switch_(Expr val, Consumer<SwitchCreator> builder) {
+        switch_(CD_void, val, builder);
+    }
+
+    /**
+     * Construct a {@code switch} statement.
+     * The type of the switch value must be of one of these supported types:
+     * <ul>
+     *     <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     *     <li>{@code long}</li>
+     *     <li>{@code java.lang.String}</li>
+     *     <li>{@code java.lang.Class}</li>
+     * </ul>
+     * The type of the {@code switch} creator depends on the type of the value.
+     * For {@code enum} switches, use {@link #switchEnum(Expr, Consumer)}.
+     *
+     * @param outputType the output type of this {@code switch} (must not be {@code null})
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder for the {@code switch} statement (must not be {@code null})
+     * @return the switch expression result (not {@code null})
+     */
+    Expr switch_(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
 
     /**
      * Exit an enclosing block.

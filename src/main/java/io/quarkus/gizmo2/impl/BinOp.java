@@ -6,7 +6,6 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 final class BinOp extends Item {
     private final Item a;
@@ -26,13 +25,6 @@ final class BinOp extends Item {
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return a.process(b.process(node.prev(), op), op);
-    }
-
-    public boolean mayThrow() {
-        TypeKind loadableKind = typeKind().asLoadable();
-        return (kind == Kind.DIV || kind == Kind.REM)
-            && (loadableKind == TypeKind.INT || loadableKind == TypeKind.LONG)
-            && ! (b instanceof ConstantImpl bc && bc.isNonZero());
     }
 
     public ClassDesc type() {
