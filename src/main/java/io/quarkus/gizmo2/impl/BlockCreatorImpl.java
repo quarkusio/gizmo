@@ -665,6 +665,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 b0.block(b1 -> {
                     b1.if_(b1.withIterator(itr).hasNext(), b2 -> {
                         LocalVar val = b2.define("$$val" + depth, b2.withIterator(itr).next());
+                        ((BlockCreatorImpl) b2).loopAction = bb -> bb.redo(b1);
                         builder.accept(b2, val);
                         if (b2.active()) {
                             b2.redo(b1);
@@ -854,8 +855,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void while_(final Consumer<BlockCreator> cond, final Consumer<BlockCreator> body) {
-        block(b0 -> if_(b0.blockExpr(CD_boolean, cond), b1 -> {
-            ((BlockCreatorImpl)b1).loopAction = bb -> bb.redo(b0);
+        block(b0 -> b0.if_(b0.blockExpr(CD_boolean, cond), b1 -> {
+            ((BlockCreatorImpl) b1).loopAction = bb -> bb.redo(b0);
             body.accept(b1);
             if (b1.active()) {
                 b1.redo(b0);
