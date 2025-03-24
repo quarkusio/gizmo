@@ -216,6 +216,12 @@ public abstract non-sealed class Item implements Expr {
         }
     }
 
+    void requireSameLoadableTypeKind(final Expr a, final Expr b) {
+        if (a.typeKind().asLoadable() != b.typeKind().asLoadable()) {
+            throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
+        }
+    }
+
     public LValueExpr elem(final Expr index) {
         if (! type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");

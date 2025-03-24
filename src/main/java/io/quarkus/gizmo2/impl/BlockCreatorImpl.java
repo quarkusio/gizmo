@@ -448,7 +448,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         switch (a.typeKind().asLoadable()) {
             case INT, REFERENCE -> {
                 // normal relZero
-                return new RelZero(a, kind);
+                return addItemIfBound(new RelZero(a, kind));
             }
             case LONG -> {
                 // wrap with cmp
@@ -471,7 +471,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 } else if (b instanceof IntConstant bc && bc.intValue() == 0) {
                     return relZero(a, kind);
                 } else {
-                    return new Rel(a, b, kind);
+                    return addItemIfBound(new Rel(a, b, kind));
                 }
             }
             case LONG -> {
@@ -488,7 +488,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 } else if (b instanceof NullConstant) {
                     return relZero(a, kind);
                 } else {
-                    return new Rel(a, b, kind);
+                    return addItemIfBound(new Rel(a, b, kind));
                 }
             }
             default -> throw new IllegalStateException();
@@ -1091,6 +1091,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     // non-public
+
+    <I extends Item> I addItemIfBound(I item) {
+        if (item.bound()) {
+            addItem(item);
+        }
+        return item;
+    }
 
     <I extends Item> I addItem(I item) {
         checkActive();
