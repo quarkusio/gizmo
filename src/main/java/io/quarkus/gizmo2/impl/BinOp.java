@@ -14,7 +14,7 @@ final class BinOp extends Item {
 
     BinOp(final Expr a, final Expr b, final Kind kind) {
         // todo: automatic conversions, unboxing
-        requireSameType(a, b);
+        requireSameLoadableTypeKind(a, b);
         this.a = (Item) a;
         this.b = (Item) b;
         this.kind = kind;
