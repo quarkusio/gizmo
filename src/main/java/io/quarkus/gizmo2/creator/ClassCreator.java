@@ -16,7 +16,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a class type.
  */
-public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits ClassCreatorImpl {
+public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits AnonymousClassCreator, ClassCreatorImpl {
     /**
      * {@return the superclass}
      * @see #extends_(ClassDesc)

@@ -30,6 +30,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         permits ClassCreatorImpl, InterfaceCreatorImpl {
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
+    private final ClassOutputImpl output;
     private ClassDesc superType = ConstantDescs.CD_Object;
     private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
     private ClassSignature sig;
@@ -39,10 +40,15 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
 
-    TypeCreatorImpl(final ClassDesc type, final ClassBuilder zb, final int flags) {
+    TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
         this.type = type;
+        this.output = output;
         this.zb = zb;
         this.flags = flags;
+    }
+
+    public ClassOutputImpl output() {
+        return output;
     }
 
     public void withVersion(final ClassFileFormatVersion version) {

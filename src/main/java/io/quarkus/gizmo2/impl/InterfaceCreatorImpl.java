@@ -15,8 +15,8 @@ import io.quarkus.gizmo2.creator.InterfaceCreator;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
 
-    InterfaceCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
-        super(type, zb, AccessFlag.INTERFACE.mask()
+    InterfaceCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb) {
+        super(type, output, zb, AccessFlag.INTERFACE.mask()
                 | AccessFlag.ABSTRACT.mask()
                 | AccessFlag.SYNTHETIC.mask()
                 | AccessFlag.PUBLIC.mask());

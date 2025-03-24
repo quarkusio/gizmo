@@ -1741,6 +1741,58 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder);
 
+    // anon class
+
+    /**
+     * Create a new anonymous class instance.
+     * Unlike Java anonymous classes,
+     * the anonymous class definition created here may implement additional interfaces.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param superCtor the superclass constructor to invoke (must not be {@code null})
+     * @param args the constructor arguments (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    Expr newAnonymousClass(ConstructorDesc superCtor, List<Expr> args, Consumer<AnonymousClassCreator> builder);
+
+    /**
+     * Create a new anonymous class instance
+     * which implements an interface.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param interface_ the interface to implement (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    default Expr newAnonymousClass(ClassDesc interface_, Consumer<AnonymousClassCreator> builder) {
+        return newAnonymousClass(
+            ConstructorDesc.of(Object.class),
+            List.of(),
+            cc -> {
+                cc.implements_(interface_);
+                builder.accept(cc);
+            }
+        );
+    }
+
+    /**
+     * Create a new anonymous class instance
+     * which implements a single class or interface.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param supertype the supertype to implement (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    default Expr newAnonymousClass(Class<?> supertype, Consumer<AnonymousClassCreator> builder) {
+        if (supertype.isInterface()) {
+            return newAnonymousClass(Util.classDesc(supertype), builder);
+        } else {
+            final ConstructorDesc superCtor = ConstructorDesc.of(supertype);
+            return newAnonymousClass(superCtor, List.of(), builder);
+        }
+    }
 
     // conversion
 

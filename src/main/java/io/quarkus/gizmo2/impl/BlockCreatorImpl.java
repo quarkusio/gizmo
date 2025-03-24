@@ -12,16 +12,26 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import io.github.dmlloyd.classfile.Attributes;
+import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassModel;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
+import io.github.dmlloyd.classfile.MethodModel;
 import io.github.dmlloyd.classfile.Opcode;
 import io.github.dmlloyd.classfile.TypeKind;
+import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
+import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
+import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
+import io.github.dmlloyd.classfile.attribute.NestMembersAttribute;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
@@ -30,6 +40,7 @@ import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.creator.AnonymousClassCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
@@ -71,6 +82,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final ClassDesc outputType;
     private final ClassDesc returnType;
     private Consumer<BlockCreator> loopAction;
+
+    private int anonClassCount;
 
     BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
         this(owner, outerCodeBuilder, null, CD_void, ConstantImpl.ofVoid(), CD_void, returnType);
@@ -588,6 +601,43 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr lambda(final MethodDesc sam, final Consumer<LambdaCreator> builder) {
         throw new UnsupportedOperationException();
+    }
+
+    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args, final Consumer<AnonymousClassCreator> builder) {
+        ClassDesc ownerDesc = owner.type();
+        int idx = ++anonClassCount;
+        String ds = ownerDesc.descriptorString();
+        ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$" + idx + ";");
+        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        final ArrayList<Expr> captureExprs = new ArrayList<>();
+
+        byte[] bytes = cf.build(desc, zb -> {
+            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            zb.with(NestHostAttribute.of(ownerDesc));
+            zb.with(InnerClassesAttribute.of(
+                InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)
+            ));
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb, superCtor, captureExprs);
+            tc.preAccept();
+            builder.accept(tc);
+            tc.freezeCaptures();
+            tc.constructor(cc -> {
+                tc.ctorSetups().forEach(action -> action.accept(cc));
+            });
+            tc.postAccept();
+        });
+        ClassModel cm = cf.parse(bytes);
+        List<VerifyError> result = cf.verify(cm);
+        if (! result.isEmpty()) {
+            IllegalArgumentException e = new IllegalArgumentException("Class failed validation" + cm.toDebugString());
+            result.forEach(e::addSuppressed);
+            throw e;
+        }
+        List<MethodModel> methods = cm.methods();
+        MethodModel ourCtor = methods.get(methods.size() - 1);
+        owner.output().outputHandler().accept(desc, bytes);
+        return new_(ConstructorDesc.of(desc, ourCtor.methodTypeSymbol()),
+            Stream.concat(args.stream(), captureExprs.stream()).toList());
     }
 
     public Expr cast(final Expr a, final ClassDesc toType) {
