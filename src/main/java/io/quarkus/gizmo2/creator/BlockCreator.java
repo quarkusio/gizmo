@@ -8,6 +8,7 @@ import java.lang.constant.ConstantDesc;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
@@ -25,6 +26,7 @@ import io.quarkus.gizmo2.creator.ops.ClassOps;
 import io.quarkus.gizmo2.creator.ops.CollectionOps;
 import io.quarkus.gizmo2.creator.ops.IteratorOps;
 import io.quarkus.gizmo2.creator.ops.ListOps;
+import io.quarkus.gizmo2.creator.ops.MapOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
@@ -2519,6 +2521,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default SetOps withSet(Expr receiver) {
         return new SetOps(this, receiver);
     }
+    
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Map}}
+     * 
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default MapOps withMap(Expr receiver) {
+        return new MapOps(this, receiver);
+    }
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
@@ -2575,7 +2586,27 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr setOf(Expr... items) {
         return setOf(List.of(items));
     }
+    
+    /**
+     * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param entries
+     * @return map expression (not {@code null})
+     * @see BlockCreator#withMap(Expr)
+     */
+    Expr mapOf(List<Expr> items);
 
+    /**
+     * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param entries
+     * @return map expression (not {@code null})
+     * @see BlockCreator#withMap(Expr)
+     */
+    default Expr mapOf(Expr... items) {
+        return mapOf(List.of(items));
+    }
+    
     /**
      * Iterate the given target.
      *
