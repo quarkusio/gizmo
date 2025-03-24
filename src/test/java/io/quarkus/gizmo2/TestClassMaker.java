@@ -70,7 +70,7 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
 
     public <T> T noArgsConstructor(Class<T> asType) {
         try {
-            return (T) lookup.findConstructor(lookup.lookupClass(), MethodType.methodType(void.class)).invoke();
+            return asType.cast(lookup.findConstructor(lookup.lookupClass(), MethodType.methodType(void.class)).invoke());
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {

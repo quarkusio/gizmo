@@ -1677,7 +1677,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalOr(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, __ -> Constant.of(true), other);
+        return selectExpr(CD_boolean, cond, bc -> bc.yield(Constant.of(true)), other);
     }
 
     /**
@@ -1688,7 +1688,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, other, __ -> Constant.of(false));
+        return selectExpr(CD_boolean, cond, other, bc -> bc.yield(Constant.of(false)));
     }
 
 
