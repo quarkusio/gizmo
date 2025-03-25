@@ -271,6 +271,11 @@ public abstract non-sealed class Item implements Expr {
         public FieldDesc desc() {
             return desc;
         }
+        
+        @Override
+        public ClassDesc type() {
+            return desc.type();
+        }
 
         Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
             return switch (mode) {
@@ -302,6 +307,10 @@ public abstract non-sealed class Item implements Expr {
         Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
             return switch (mode) {
                 case AsDeclared -> new Item() {
+                    public ClassDesc type() {
+                        return FieldDeref.this.type();
+                    }
+                    
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
                         return FieldDeref.this.process(value.process(node.prev(), op), op);
                     }
@@ -311,6 +320,10 @@ public abstract non-sealed class Item implements Expr {
                     }
                 };
                 default -> new Item() {
+                    public ClassDesc type() {
+                        return FieldDeref.this.type();
+                    }
+                    
                     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                         return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
                     }
