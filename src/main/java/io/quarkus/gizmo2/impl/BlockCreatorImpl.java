@@ -784,7 +784,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             }
             // failed
         }
-        return addItem(new IfZero(type, If.Kind.NE, wt, null, (Item) cond));
+        return addItem(new IfZero(type, If.Kind.NE, wt, wf, (Item) cond));
     }
 
     private void doIf(final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
@@ -1045,6 +1045,23 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
         } else {
             return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, items));
+        }
+    }
+
+    @Override
+    public Expr mapOf(List<Expr> items) {
+        int size = items.size();
+        if (size % 2 != 0) {
+            throw new IllegalArgumentException("Invalid number of items: " + items);
+        }
+        if (size <= 20) {
+            List<Expr> args = new ArrayList<>(size * 2);
+            for (Expr item : items) {
+                args.add(item);
+            }
+            return invokeStatic(MethodDesc.of(Map.class, "of", Map.class, nCopies(args.size(), Object.class)), args);
+        } else {
+            throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
     }
 
