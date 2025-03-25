@@ -19,5 +19,8 @@ public final class AbstractMethodCreatorImpl extends MethodCreatorImpl implement
 
     void accept(final Consumer<? super AbstractMethodCreatorImpl> builder) {
         builder.accept(this);
+        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+            doBody(null, mb);
+        });
     }
 }

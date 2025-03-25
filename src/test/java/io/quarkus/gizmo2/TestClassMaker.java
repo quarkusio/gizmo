@@ -7,10 +7,14 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassHierarchyResolver;
+import io.github.dmlloyd.classfile.ClassModel;
+import io.quarkus.gizmo2.impl.Util;
 
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -111,9 +115,11 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
 
     private static class TestClassLoader extends ClassLoader implements BiConsumer<ClassDesc, byte[]> {
         private final ConcurrentHashMap<String, byte[]> classes = new ConcurrentHashMap<>();
+        private final ClassFile cf;
 
         private TestClassLoader() {
             super("[TEST]", TestClassMaker.class.getClassLoader());
+            cf = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(this::getClassInfo));
         }
 
         public Class<?> loadClass(final String name) throws ClassNotFoundException {
@@ -146,6 +152,26 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                         if (bytes == null) {
                             return super.loadClass(dotName);
                         }
+                        ClassModel cm = cf.parse(bytes);
+                        List<VerifyError> result = cf.verify(cm);
+                        if (result != null) {
+                            switch (result.size()) {
+                                case 0 -> {}
+                                case 1 -> {
+                                    VerifyError ve = result.get(0);
+                                    VerifyError nve = new VerifyError(ve.getMessage() + cm.toDebugString());
+                                    nve.setStackTrace(ve.getStackTrace());
+                                    throw nve;
+                                }
+                                default -> {
+                                    VerifyError ve = new VerifyError("Multiple verification errors occurred" + cm.toDebugString());
+                                    for (VerifyError subError : result) {
+                                        ve.addSuppressed(subError);
+                                    }
+                                    throw ve;
+                                }
+                            }
+                        }
                         try {
                             return defineClass(dotName, bytes, 0, bytes.length);
                         } catch (LinkageError e) {
@@ -168,6 +194,21 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                 if (existing != null) {
                     throw new IllegalArgumentException("Duplicate class " + classDesc);
                 }
+            }
+        }
+
+        private ClassHierarchyResolver.ClassHierarchyInfo getClassInfo(final ClassDesc classDesc) {
+            Class<?> loaded;
+            try {
+                loaded = loadClass(classDesc);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+            if (loaded.isInterface()) {
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofInterface();
+            } else {
+                Class<?> superClass = loaded.getSuperclass();
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(superClass == null ? null : Util.classDesc(superClass));
             }
         }
     }

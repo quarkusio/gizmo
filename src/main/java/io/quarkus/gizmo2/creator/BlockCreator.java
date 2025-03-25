@@ -5,6 +5,7 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
+import java.lang.constant.DynamicCallSiteDesc;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -1728,8 +1729,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the lambda object (not {@code null})
      */
     default Expr lambda(Class<?> type, Consumer<LambdaCreator> builder) {
-        // todo: extract SAM from type
-        throw new UnsupportedOperationException();
+        return lambda(Util.findSam(type), Util.classDesc(type), builder);
     }
 
     /**
@@ -1739,7 +1739,19 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param builder the builder for the lambda body (must not be {@code null})
      * @return the lambda object (not {@code null})
      */
-    Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder);
+    default Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder) {
+        return lambda(sam, sam.owner(), builder);
+    }
+
+    /**
+     * Construct a lambda instance with the given type.
+     *
+     * @param sam the descriptor of the single abstract method of the lambda (must not be {@code null})
+     * @param owner the type of the final lambda (must not be {@code null})
+     * @param builder the builder for the lambda body (must not be {@code null})
+     * @return the lambda object (not {@code null})
+     */
+    Expr lambda(MethodDesc sam, ClassDesc owner, Consumer<LambdaCreator> builder);
 
     // anon class
 
@@ -2038,6 +2050,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr invokeInterface(MethodDesc method, Expr instance, Expr... args) {
         return invokeInterface(method, instance, List.of(args));
     }
+
+    Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc);
 
     // control flow
 

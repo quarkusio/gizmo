@@ -148,9 +148,11 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
                     pvi -> pvi != null ? pvi.invisible : List.<Annotation>of()).toList()));
         }
-        mb.withCode(cb -> {
-            doCode(builder, cb);
-        });
+        if (builder != null) {
+            mb.withCode(cb -> {
+                doCode(builder, cb);
+            });
+        }
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {

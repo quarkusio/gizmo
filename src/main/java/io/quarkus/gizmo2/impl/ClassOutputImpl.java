@@ -1,12 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
@@ -39,13 +37,6 @@ public final class ClassOutputImpl implements ClassOutput {
                 cc.postAccept();
             });
         });
-        ClassModel cm = cf.parse(bytes);
-        List<VerifyError> result = cf.verify(cm);
-        if (! result.isEmpty()) {
-            IllegalArgumentException e = new IllegalArgumentException("Class failed validation" + cm.toDebugString());
-            result.forEach(e::addSuppressed);
-            throw e;
-        }
         outputHandler.accept(desc, bytes);
         return desc;
     }
@@ -62,12 +53,6 @@ public final class ClassOutputImpl implements ClassOutput {
                 ic.accept(builder);
             });
         });
-        List<VerifyError> result = cf.verify(bytes);
-        if (! result.isEmpty()) {
-            IllegalArgumentException e = new IllegalArgumentException("Class failed validation");
-            result.forEach(e::addSuppressed);
-            throw e;
-        }
         outputHandler.accept(desc, bytes);
         return desc;
     }

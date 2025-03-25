@@ -21,7 +21,7 @@ public sealed interface LambdaCreator extends BodyCreator, CapturingCreator perm
      * @param position the parameter position, starting from 0
      * @return the parameter's variable (not {@code null})
      */
-    ParamVar param(String name, int position);
+    ParamVar parameter(String name, int position);
 
     /**
      * Build the body of the lambda.

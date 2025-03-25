@@ -19,5 +19,8 @@ public final class StaticNativeMethodCreatorImpl extends MethodCreatorImpl imple
 
     void accept(final Consumer<? super StaticNativeMethodCreatorImpl> builder) {
         builder.accept(this);
+        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+            doBody(null, mb);
+        });
     }
 }

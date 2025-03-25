@@ -115,4 +115,29 @@ public final class Node {
         }
         return sb.toString();
     }
+
+    public String debugFind(Item item) {
+        if (item().equals(item)) {
+            return "Found at this node";
+        }
+        Node current = next();
+        int cnt = 1;
+        while (current != null) {
+            if (current.item().equals(item)) {
+                return "Found at +" + cnt;
+            }
+            cnt++;
+            current = current.next();
+        }
+        cnt = 1;
+        current = prev();
+        while (current != null) {
+            if (current.item().equals(item)) {
+                return "Found at -" + cnt;
+            }
+            cnt++;
+            current = current.prev();
+        }
+        return "Not found";
+    }
 }

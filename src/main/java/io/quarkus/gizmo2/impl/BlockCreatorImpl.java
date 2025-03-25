@@ -5,9 +5,13 @@ import static java.util.Collections.*;
 
 import java.io.PrintStream;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.DirectMethodHandleDesc;
+import java.lang.constant.DynamicCallSiteDesc;
+import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +24,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.Attributes;
 import io.github.dmlloyd.classfile.ClassFile;
 import io.github.dmlloyd.classfile.ClassModel;
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -31,7 +34,6 @@ import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
 import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
 import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
-import io.github.dmlloyd.classfile.attribute.NestMembersAttribute;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
@@ -47,6 +49,7 @@ import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
@@ -599,8 +602,53 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new Neg(a));
     }
 
-    public Expr lambda(final MethodDesc sam, final Consumer<LambdaCreator> builder) {
-        throw new UnsupportedOperationException();
+    public Expr lambda(final MethodDesc sam, final ClassDesc samOwner, final Consumer<LambdaCreator> builder) {
+        ClassDesc ownerDesc = owner.type();
+        String ds = ownerDesc.descriptorString();
+        ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$lambda;");
+        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        final ArrayList<Expr> captureExprs = new ArrayList<>();
+        byte[] bytes = cf.build(desc, zb -> {
+            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb, ConstructorDesc.of(Object.class), captureExprs);
+            if (sam instanceof InterfaceMethodDesc imd) {
+                // implement the interface too
+                tc.implements_(imd.owner());
+            }
+            tc.final_();
+            tc.method(sam, imc -> {
+                imc.public_();
+                LambdaCreatorImpl lc = new LambdaCreatorImpl(tc, (InstanceMethodCreatorImpl) imc);
+                tc.preAccept();
+                builder.accept(lc);
+                tc.freezeCaptures();
+                tc.constructor(cc -> {
+                    tc.ctorSetups().forEach(action -> action.accept(cc));
+                });
+                tc.postAccept();
+            });
+        });
+        owner.buildLambdaBootstrap();
+        String encoded = Base64.getEncoder().encodeToString(bytes);
+        MethodTypeDesc ctorType = MethodTypeDesc.of(
+            samOwner,
+            captureExprs.stream().map(Expr::type).toArray(ClassDesc[]::new)
+        );
+        return invokeDynamic(DynamicCallSiteDesc.of(
+            MethodHandleDesc.ofMethod(
+                DirectMethodHandleDesc.Kind.STATIC,
+                ownerDesc,
+                "defineLambdaCallSite",
+                MethodTypeDesc.of(
+                    CD_CallSite,
+                    CD_MethodHandles_Lookup,
+                    CD_String,
+                    CD_MethodType
+                )
+            ),
+            encoded,
+            ctorType
+        ));
     }
 
     public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args, final Consumer<AnonymousClassCreator> builder) {
@@ -627,12 +675,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             tc.postAccept();
         });
         ClassModel cm = cf.parse(bytes);
-        List<VerifyError> result = cf.verify(cm);
-        if (! result.isEmpty()) {
-            IllegalArgumentException e = new IllegalArgumentException("Class failed validation" + cm.toDebugString());
-            result.forEach(e::addSuppressed);
-            throw e;
-        }
         List<MethodModel> methods = cm.methods();
         MethodModel ourCtor = methods.get(methods.size() - 1);
         owner.output().outputHandler().accept(desc, bytes);
@@ -665,9 +707,22 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
-        New new_ = addItem(new New(ctor.owner()));
-        Dup dup_ = addItem(new Dup(new_));
+        checkActive();
+        New new_ =  new New(ctor.owner());
+        Dup dup_ = new Dup(new_);
+        Node node = tail.prev();
+        // insert New & Dup *before* the arguments
+        for (int i = args.size() - 1; i >= 0; i --) {
+            Item arg = (Item) args.get(i);
+            if (arg.bound()) {
+                node = arg.verify(node);
+            }
+        }
+        Node dupNode = dup_.insert(node.next());
+        Node newNode = new_.insert(dupNode);
+        // finally, add the invoke at tail
         addItem(new Invoke(ctor, dup_, args));
+        // the New is all that is left on the stack now
         return new_;
     }
 
@@ -689,6 +744,18 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
+    }
+
+    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc) {
+        return addItem(new Item() {
+            public ClassDesc type() {
+                return callSiteDesc.invocationType().returnType();
+            }
+
+            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+                cb.invokedynamic(callSiteDesc);
+            }
+        });
     }
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, Expr> builder) {
