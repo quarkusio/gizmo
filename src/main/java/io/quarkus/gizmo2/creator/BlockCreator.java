@@ -5,6 +5,7 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
+import java.lang.constant.DynamicCallSiteDesc;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -1677,7 +1678,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalOr(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, __ -> Constant.of(true), other);
+        return selectExpr(CD_boolean, cond, bc -> bc.yield(Constant.of(true)), other);
     }
 
     /**
@@ -1688,7 +1689,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, other, __ -> Constant.of(false));
+        return selectExpr(CD_boolean, cond, other, bc -> bc.yield(Constant.of(false)));
     }
 
 
@@ -1728,8 +1729,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the lambda object (not {@code null})
      */
     default Expr lambda(Class<?> type, Consumer<LambdaCreator> builder) {
-        // todo: extract SAM from type
-        throw new UnsupportedOperationException();
+        return lambda(Util.findSam(type), Util.classDesc(type), builder);
     }
 
     /**
@@ -1739,8 +1739,72 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param builder the builder for the lambda body (must not be {@code null})
      * @return the lambda object (not {@code null})
      */
-    Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder);
+    default Expr lambda(MethodDesc sam, Consumer<LambdaCreator> builder) {
+        return lambda(sam, sam.owner(), builder);
+    }
 
+    /**
+     * Construct a lambda instance with the given type.
+     *
+     * @param sam the descriptor of the single abstract method of the lambda (must not be {@code null})
+     * @param owner the type of the final lambda (must not be {@code null})
+     * @param builder the builder for the lambda body (must not be {@code null})
+     * @return the lambda object (not {@code null})
+     */
+    Expr lambda(MethodDesc sam, ClassDesc owner, Consumer<LambdaCreator> builder);
+
+    // anon class
+
+    /**
+     * Create a new anonymous class instance.
+     * Unlike Java anonymous classes,
+     * the anonymous class definition created here may implement additional interfaces.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param superCtor the superclass constructor to invoke (must not be {@code null})
+     * @param args the constructor arguments (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    Expr newAnonymousClass(ConstructorDesc superCtor, List<Expr> args, Consumer<AnonymousClassCreator> builder);
+
+    /**
+     * Create a new anonymous class instance
+     * which implements an interface.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param interface_ the interface to implement (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    default Expr newAnonymousClass(ClassDesc interface_, Consumer<AnonymousClassCreator> builder) {
+        return newAnonymousClass(
+            ConstructorDesc.of(Object.class),
+            List.of(),
+            cc -> {
+                cc.implements_(interface_);
+                builder.accept(cc);
+            }
+        );
+    }
+
+    /**
+     * Create a new anonymous class instance
+     * which implements a single class or interface.
+     * The type of the returned instance is the anonymous class type.
+     *
+     * @param supertype the supertype to implement (must not be {@code null})
+     * @param builder the builder for the anonymous class (must not be {@code null})
+     * @return the anonymous class instance (not {@code null})
+     */
+    default Expr newAnonymousClass(Class<?> supertype, Consumer<AnonymousClassCreator> builder) {
+        if (supertype.isInterface()) {
+            return newAnonymousClass(Util.classDesc(supertype), builder);
+        } else {
+            final ConstructorDesc superCtor = ConstructorDesc.of(supertype);
+            return newAnonymousClass(superCtor, List.of(), builder);
+        }
+    }
 
     // conversion
 
@@ -1986,6 +2050,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr invokeInterface(MethodDesc method, Expr instance, Expr... args) {
         return invokeInterface(method, instance, List.of(args));
     }
+
+    Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc);
 
     // control flow
 

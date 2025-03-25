@@ -17,6 +17,8 @@ import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.Set;
 import java.util.function.IntPredicate;
 
 import io.github.dmlloyd.classfile.Signature;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import sun.reflect.ReflectionFactory;
 
 public final class Util {
@@ -179,5 +182,24 @@ public final class Util {
         } else {
             throw new IllegalArgumentException(sig.toString());
         }
+    }
+
+    public static MethodDesc findSam(final Class<?> type) {
+        // this is a slow and expensive operation, but there seems to be no way around it.
+        Method sam = null;
+        for (Method method : type.getMethods()) {
+            int mods = method.getModifiers();
+            if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && ! Modifier.isStatic(mods)) {
+                if (sam == null) {
+                    sam = method;
+                } else {
+                    throw new IllegalArgumentException("Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
+                }
+            }
+        }
+        if (sam == null) {
+            throw new IllegalArgumentException("No SAM found on " + type);
+        }
+        return MethodDesc.of(sam.getDeclaringClass(), sam.getName(), sam.getReturnType(), sam.getParameterTypes());
     }
 }

@@ -303,7 +303,7 @@ public abstract non-sealed class Item implements Expr {
             return switch (mode) {
                 case AsDeclared -> new Item() {
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return Item.this.process(value.process(node.prev(), op), op);
+                        return FieldDeref.this.process(value.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -312,7 +312,7 @@ public abstract non-sealed class Item implements Expr {
                 };
                 default -> new Item() {
                     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofFieldVarHandle(desc).process(Item.this.process(value.process(node.prev(), op), op), op);
+                        return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

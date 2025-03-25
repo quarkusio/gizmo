@@ -7,34 +7,43 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassHierarchyResolver;
+import io.github.dmlloyd.classfile.ClassModel;
+import io.quarkus.gizmo2.impl.Util;
 
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
+    private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-    private MethodHandles.Lookup lookup;
+    private final TestClassLoader cl = new TestClassLoader();
+    private ClassDesc desc;
 
     public void accept(final ClassDesc classDesc, final byte[] bytes) {
         if (System.getProperty("printClass") != null) {
             System.out.println(ClassFile.of().parse(bytes).toDebugString());
         }
-        try {
-            lookup = MethodHandles.lookup().defineHiddenClass(bytes, true);
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
+        cl.accept(classDesc, bytes);
+        desc = classDesc;
     }
 
     public Class<?> definedClass() {
-        return lookup.lookupClass();
+        try {
+            return cl.loadClass(desc);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Class was not defined");
+        }
     }
 
     public <T> T staticMethod(String name, Class<T> asType) {
         Method sam = findSAMSimple(asType);
         MethodType mt = MethodType.methodType(sam.getReturnType(), sam.getParameterTypes());
         try {
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findStatic(lookup.lookupClass(), name, mt));
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
+            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findStatic(definedClass(), name, mt));
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {
@@ -48,7 +57,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
         MethodType mt = MethodType.methodType(sam.getReturnType(),
                 Arrays.copyOfRange(parameterTypes, 1, parameterTypes.length));
         try {
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findVirtual(lookup.lookupClass(), name, mt));
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
+            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findVirtual(definedClass(), name, mt));
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {
@@ -60,7 +70,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
         Method sam = findSAMSimple(asType);
         MethodType mt = MethodType.methodType(void.class, sam.getParameterTypes());
         try {
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findConstructor(lookup.lookupClass(), mt));
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
+            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findConstructor(definedClass(), mt));
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {
@@ -70,7 +81,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
 
     public <T> T noArgsConstructor(Class<T> asType) {
         try {
-            return (T) lookup.findConstructor(lookup.lookupClass(), MethodType.methodType(void.class)).invoke();
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
+            return asType.cast(lookup.findConstructor(definedClass(), MethodType.methodType(void.class)).invoke());
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {
@@ -99,5 +111,105 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
             throw new IllegalArgumentException("No obvious SAM found");
         }
         return sam;
+    }
+
+    private static class TestClassLoader extends ClassLoader implements BiConsumer<ClassDesc, byte[]> {
+        private final ConcurrentHashMap<String, byte[]> classes = new ConcurrentHashMap<>();
+        private final ClassFile cf;
+
+        private TestClassLoader() {
+            super("[TEST]", TestClassMaker.class.getClassLoader());
+            cf = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(this::getClassInfo));
+        }
+
+        public Class<?> loadClass(final String name) throws ClassNotFoundException {
+            return name.startsWith("[") ? loadClass(ClassDesc.ofDescriptor(name)) : loadClass(ClassDesc.of(name));
+        }
+
+        public Class<?> loadClass(final ClassDesc desc) throws ClassNotFoundException {
+            if (desc.isArray()) {
+                return loadClass(desc.componentType()).arrayType();
+            } else {
+                String ds = desc.descriptorString();
+                if (desc.isPrimitive()) {
+                    return switch (ds.charAt(0)) {
+                        case 'B' -> byte.class;
+                        case 'C' -> char.class;
+                        case 'D' -> double.class;
+                        case 'F' -> float.class;
+                        case 'I' -> int.class;
+                        case 'J' -> long.class;
+                        case 'S' -> short.class;
+                        case 'V' -> void.class;
+                        case 'Z' -> boolean.class;
+                        default -> throw new ClassNotFoundException(desc.toString());
+                    };
+                } else {
+                    String dotName = ds.substring(1, ds.length() - 1).replace('/', '.');
+                    Class<?> loaded = findLoadedClass(dotName);
+                    if (loaded == null) {
+                        byte[] bytes = classes.get(dotName);
+                        if (bytes == null) {
+                            return super.loadClass(dotName);
+                        }
+                        ClassModel cm = cf.parse(bytes);
+                        List<VerifyError> result = cf.verify(cm);
+                        if (result != null) {
+                            switch (result.size()) {
+                                case 0 -> {}
+                                case 1 -> {
+                                    VerifyError ve = result.get(0);
+                                    VerifyError nve = new VerifyError(ve.getMessage() + cm.toDebugString());
+                                    nve.setStackTrace(ve.getStackTrace());
+                                    throw nve;
+                                }
+                                default -> {
+                                    VerifyError ve = new VerifyError("Multiple verification errors occurred" + cm.toDebugString());
+                                    for (VerifyError subError : result) {
+                                        ve.addSuppressed(subError);
+                                    }
+                                    throw ve;
+                                }
+                            }
+                        }
+                        try {
+                            return defineClass(dotName, bytes, 0, bytes.length);
+                        } catch (LinkageError e) {
+                            loaded = findLoadedClass(dotName);
+                            if (loaded == null) {
+                                throw e;
+                            }
+                        }
+                    }
+                    return loaded;
+                }
+            }
+        }
+
+        public void accept(final ClassDesc classDesc, final byte[] bytes) {
+            if (classDesc.isClassOrInterface()) {
+                String ds = classDesc.descriptorString();
+                String dotName = ds.substring(1, ds.length() - 1).replace('/', '.');
+                byte[] existing = classes.putIfAbsent(dotName, bytes);
+                if (existing != null) {
+                    throw new IllegalArgumentException("Duplicate class " + classDesc);
+                }
+            }
+        }
+
+        private ClassHierarchyResolver.ClassHierarchyInfo getClassInfo(final ClassDesc classDesc) {
+            Class<?> loaded;
+            try {
+                loaded = loadClass(classDesc);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+            if (loaded.isInterface()) {
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofInterface();
+            } else {
+                Class<?> superClass = loaded.getSuperclass();
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(superClass == null ? null : Util.classDesc(superClass));
+            }
+        }
     }
 }

@@ -19,5 +19,8 @@ public final class NativeMethodCreatorImpl extends MethodCreatorImpl implements 
 
     void accept(final Consumer<? super NativeMethodCreatorImpl> builder) {
         builder.accept(this);
+        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+            doBody(null, mb);
+        });
     }
 }

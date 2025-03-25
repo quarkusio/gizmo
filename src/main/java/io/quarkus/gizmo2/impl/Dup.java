@@ -23,6 +23,12 @@ final class Dup extends Item {
         return prev;
     }
 
+    Node verify(Node node) {
+        super.verify(node);
+        // re-process the node
+        return node.prev();
+    }
+
     protected Node process(final Node node, final BiFunction<Item, Node, Node> op) {
         super.process(node, op);
         return node.prev();

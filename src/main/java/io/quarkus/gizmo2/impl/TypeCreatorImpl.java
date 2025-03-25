@@ -1,12 +1,16 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_Object;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -18,7 +22,9 @@ import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
+import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
@@ -30,6 +36,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         permits ClassCreatorImpl, InterfaceCreatorImpl {
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
+    private final ClassOutputImpl output;
     private ClassDesc superType = ConstantDescs.CD_Object;
     private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
     private ClassSignature sig;
@@ -38,11 +45,17 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private List<Consumer<BlockCreator>> inits = List.of();
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
+    private boolean hasLambdaBootstrap;
 
-    TypeCreatorImpl(final ClassDesc type, final ClassBuilder zb, final int flags) {
+    TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
         this.type = type;
+        this.output = output;
         this.zb = zb;
         this.flags = flags;
+    }
+
+    public ClassOutputImpl output() {
+        return output;
     }
 
     public void withVersion(final ClassFileFormatVersion version) {
@@ -180,4 +193,91 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     abstract MethodDesc methodDesc(final String name, final MethodTypeDesc type);
+
+    void buildLambdaBootstrap() {
+        if (! hasLambdaBootstrap) {
+            staticMethod(
+                "defineLambdaCallSite",
+                MethodTypeDesc.of(
+                    CD_CallSite,
+                    CD_MethodHandles_Lookup,
+                    CD_String,
+                    CD_MethodType
+                ),
+                smc -> {
+                    smc.withFlag(AccessFlag.PRIVATE);
+                    ParamVar lookup = smc.parameter("lookup", 0);
+                    ParamVar base64 = smc.parameter("base64", 1);
+                    ParamVar methodType = smc.parameter("methodType", 2);
+                    smc.body(b0 -> {
+                        var decoder = b0.define("decoder", b0.invokeStatic(MethodDesc.of(
+                            Base64.class,
+                            "getDecoder",
+                            Base64.Decoder.class
+                        )));
+                        var bytes = b0.define("bytes", b0.invokeVirtual(MethodDesc.of(
+                            Base64.Decoder.class,
+                            "decode",
+                            byte[].class,
+                            String.class
+                        ), decoder, base64));
+                        var definedLookup = b0.define("definedLookup", b0.invokeVirtual(MethodDesc.of(
+                                MethodHandles.Lookup.class,
+                                "defineHiddenClass",
+                                MethodHandles.Lookup.class,
+                                byte[].class,
+                                boolean.class,
+                                MethodHandles.Lookup.ClassOption[].class
+                            ),
+                            lookup,
+                            bytes,
+                            Constant.of(false),
+                            b0.newArray(MethodHandles.Lookup.ClassOption.class, Constant.of(MethodHandles.Lookup.ClassOption.NESTMATE))
+                        ));
+                        var definedClass = b0.define("definedClass", b0.invokeVirtual(
+                            MethodDesc.of(
+                                MethodHandles.Lookup.class,
+                                "lookupClass",
+                                Class.class
+                            ),
+                            definedLookup
+                        ));
+                        var ctorType = b0.define("ctorType", b0.invokeVirtual(
+                            MethodDesc.of(
+                                MethodType.class,
+                                "changeReturnType",
+                                MethodType.class,
+                                Class.class
+                            ),
+                            methodType,
+                            Constant.of(void.class)
+                        ));
+                        var ctorHandle = b0.define("ctorHandle", b0.invokeVirtual(
+                            MethodDesc.of(
+                                MethodHandles.Lookup.class,
+                                "findConstructor",
+                                MethodHandle.class,
+                                Class.class,
+                                MethodType.class
+                            ),
+                            definedLookup,
+                            definedClass,
+                            ctorType
+                        ));
+                        b0.return_(b0.new_(ConstantCallSite.class, b0.invokeVirtual(
+                            MethodDesc.of(
+                                MethodHandle.class,
+                                "asType",
+                                MethodHandle.class,
+                                MethodType.class
+                            ),
+                            ctorHandle,
+                            methodType
+                        )));
+                    });
+                }
+            );
+            hasLambdaBootstrap = true;
+        }
+    }
 }

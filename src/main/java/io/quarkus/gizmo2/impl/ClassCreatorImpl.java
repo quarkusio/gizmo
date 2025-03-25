@@ -18,9 +18,9 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator {
-    public ClassCreatorImpl(final ClassDesc type, final ClassBuilder zb) {
-        super(type, zb, AccessFlag.SYNTHETIC.mask() 
+public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
+    public ClassCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb) {
+        super(type, output, zb, AccessFlag.SYNTHETIC.mask()
                 | AccessFlag.PUBLIC.mask());
     }
 
@@ -102,11 +102,5 @@ public final class ClassCreatorImpl extends TypeCreatorImpl implements ClassCrea
     @Override
     public void final_() {
         withFlag(AccessFlag.FINAL);
-    }
-
-    void accept(final Consumer<ClassCreator> builder) {
-        preAccept();
-        builder.accept(this);
-        postAccept();
     }
 }
