@@ -7,13 +7,11 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
 import io.github.dmlloyd.classfile.ClassHierarchyResolver;
-import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.impl.Util;
 
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
@@ -54,13 +52,26 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     public <T> T instanceMethod(String name, Class<T> asType) {
         Method sam = findSAMSimple(asType);
         Class<?>[] parameterTypes = sam.getParameterTypes();
-        MethodType mt = MethodType.methodType(sam.getReturnType(),
-                Arrays.copyOfRange(parameterTypes, 1, parameterTypes.length));
+        MethodType mt = MethodType.methodType(sam.getReturnType(), parameterTypes);
+        Method target = null;
+        for (Method candidate : definedClass().getDeclaredMethods()) {
+            int modifiers = candidate.getModifiers();
+            if (Modifier.isStatic(modifiers)) {
+                continue;
+            }
+            if (candidate.getName().equals(name)) {
+                if (target != null) {
+                    throw new IllegalArgumentException("Multiple methods called " + name + " exist on " + definedClass());
+                }
+                target = candidate;
+            }
+        }
+        if (target == null) {
+            throw new IllegalAccessError("No method called " + name + " was found on " + definedClass());
+        }
         try {
             MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findVirtual(definedClass(), name, mt));
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
+            return MethodHandleProxies.asInterfaceInstance(asType, lookup.unreflect(target).asType(mt));
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         }
@@ -151,26 +162,6 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                         byte[] bytes = classes.get(dotName);
                         if (bytes == null) {
                             return super.loadClass(dotName);
-                        }
-                        ClassModel cm = cf.parse(bytes);
-                        List<VerifyError> result = cf.verify(cm);
-                        if (result != null) {
-                            switch (result.size()) {
-                                case 0 -> {}
-                                case 1 -> {
-                                    VerifyError ve = result.get(0);
-                                    VerifyError nve = new VerifyError(ve.getMessage() + cm.toDebugString());
-                                    nve.setStackTrace(ve.getStackTrace());
-                                    throw nve;
-                                }
-                                default -> {
-                                    VerifyError ve = new VerifyError("Multiple verification errors occurred" + cm.toDebugString());
-                                    for (VerifyError subError : result) {
-                                        ve.addSuppressed(subError);
-                                    }
-                                    throw ve;
-                                }
-                            }
                         }
                         try {
                             return defineClass(dotName, bytes, 0, bytes.length);
