@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
+import io.quarkus.gizmo2.desc.ConstructorDesc;
 import org.junit.jupiter.api.Test;
 
 public class FieldAccessTest {
@@ -20,6 +21,7 @@ public class FieldAccessTest {
             cc.constructor(con -> {
                 // this.bravo = "charlie";
                 con.body(bc -> {
+                    bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
                     var bravo = con.this_().field(bravoDesc); 
                     bc.set(bravo, Constant.of("charlie"));
                     bc.return_();

@@ -248,11 +248,15 @@ public abstract non-sealed class Item implements Expr {
             }
 
             protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return Item.this.forEachDependency(node.prev(), op);
+                return Item.this.forEachDependency(node, op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 Item.this.writeCode(cb, block);
+            }
+
+            public String itemName() {
+                return Item.this.itemName() + ":bound";
             }
         };
     }
@@ -268,6 +272,10 @@ public abstract non-sealed class Item implements Expr {
             return Item.this.process(node.prev(), op);
         }
 
+        public boolean bound() {
+            return false;
+        }
+
         public FieldDesc desc() {
             return desc;
         }
@@ -275,6 +283,10 @@ public abstract non-sealed class Item implements Expr {
         @Override
         public ClassDesc type() {
             return desc.type();
+        }
+
+        public String itemName() {
+            return Item.this.itemName() + "." + desc.name();
         }
 
         Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
@@ -286,7 +298,7 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofFieldVarHandle(desc).process(Item.this.process(node.prev(), op), op);
+                        return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -300,6 +312,10 @@ public abstract non-sealed class Item implements Expr {
                             type()
                         ));
                     }
+
+                    public String itemName() {
+                        return FieldDeref.this.itemName() + ":get*";
+                    }
                 };
             };
         }
@@ -307,23 +323,19 @@ public abstract non-sealed class Item implements Expr {
         Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
             return switch (mode) {
                 case AsDeclared -> new Item() {
-                    public ClassDesc type() {
-                        return FieldDeref.this.type();
-                    }
-                    
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return Item.this.process(value.process(node.prev(), op), op);
+                        return FieldDeref.this.process(value.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.putfield(owner(), name(), type());
+                        cb.putfield(owner(), name(), desc().type());
+                    }
+
+                    public String itemName() {
+                        return FieldDeref.this.itemName() + ":set";
                     }
                 };
                 default -> new Item() {
-                    public ClassDesc type() {
-                        return FieldDeref.this.type();
-                    }
-                    
                     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                         return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
                     }
@@ -336,8 +348,12 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "setVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            type()
+                            desc().type()
                         ));
+                    }
+
+                    public String itemName() {
+                        return FieldDeref.this.itemName() + ":set*";
                     }
                 };
             };
