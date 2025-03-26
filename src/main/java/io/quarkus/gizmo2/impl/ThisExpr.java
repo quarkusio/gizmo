@@ -27,4 +27,8 @@ public final class ThisExpr extends Item implements Var {
     public String name() {
         return "this";
     }
+
+    public String itemName() {
+        return "this";
+    }
 }

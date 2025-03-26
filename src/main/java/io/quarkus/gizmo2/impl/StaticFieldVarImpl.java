@@ -56,6 +56,10 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                     type()
                 ));
             }
+
+            public String itemName() {
+                return "StaticFieldVar:get";
+            }
         };
     }
 
@@ -87,6 +91,10 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                         ));
                     }
                 }
+            }
+
+            public String itemName() {
+                return "StaticFieldVar:set";
             }
         };
     }
