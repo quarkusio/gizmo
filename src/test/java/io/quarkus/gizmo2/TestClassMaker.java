@@ -12,6 +12,7 @@ import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
 import io.github.dmlloyd.classfile.ClassHierarchyResolver;
+import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.impl.Util;
 
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
