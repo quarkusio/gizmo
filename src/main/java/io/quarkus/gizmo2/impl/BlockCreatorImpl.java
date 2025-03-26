@@ -322,7 +322,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (unboxType == null) {
             throw new IllegalArgumentException("No unbox type for " + boxType);
         }
-        return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(boxType)) {
+        return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(unboxType)) {
             case BOOLEAN -> "booleanValue";
             case BYTE -> "byteValue";
             case CHAR -> "charValue";
