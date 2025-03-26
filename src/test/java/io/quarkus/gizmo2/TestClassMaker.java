@@ -7,7 +7,6 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -152,28 +151,16 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                         if (bytes == null) {
                             return super.loadClass(dotName);
                         }
-                        ClassModel cm = cf.parse(bytes);
-                        List<VerifyError> result = cf.verify(cm);
-                        if (result != null) {
-                            switch (result.size()) {
-                                case 0 -> {}
-                                case 1 -> {
-                                    VerifyError ve = result.get(0);
-                                    VerifyError nve = new VerifyError(ve.getMessage() + cm.toDebugString());
-                                    nve.setStackTrace(ve.getStackTrace());
-                                    throw nve;
-                                }
-                                default -> {
-                                    VerifyError ve = new VerifyError("Multiple verification errors occurred" + cm.toDebugString());
-                                    for (VerifyError subError : result) {
-                                        ve.addSuppressed(subError);
-                                    }
-                                    throw ve;
-                                }
-                            }
-                        }
                         try {
-                            return defineClass(dotName, bytes, 0, bytes.length);
+                            Class<?> defined = defineClass(dotName, bytes, 0, bytes.length);
+                            // trigger all verify errors
+                            defined.getDeclaredMethods();
+                            return defined;
+                        } catch (VerifyError e) {
+                            ClassModel cm = cf.parse(bytes);
+                            VerifyError ve = new VerifyError(e.getMessage() + cm.toDebugString());
+                            ve.setStackTrace(e.getStackTrace());
+                            throw ve;
                         } catch (LinkageError e) {
                             loaded = findLoadedClass(dotName);
                             if (loaded == null) {
