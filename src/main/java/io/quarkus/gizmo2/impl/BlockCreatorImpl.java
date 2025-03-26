@@ -1181,6 +1181,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
     }
+    
+    @Override
+    public Expr optionalOf(Expr value) {
+        return invokeStatic(MethodDesc.of(Optional.class, "of", Optional.class, Object.class), value);
+    }
+
+    @Override
+    public Expr optionalOfNullable(Expr value) {
+        return invokeStatic(MethodDesc.of(Optional.class, "ofNullable", Optional.class, Object.class), value);
+    }
 
     public void line(final int lineNumber) {
         addItem(new Item() {

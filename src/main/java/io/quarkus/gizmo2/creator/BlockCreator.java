@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
@@ -29,6 +30,7 @@ import io.quarkus.gizmo2.creator.ops.IteratorOps;
 import io.quarkus.gizmo2.creator.ops.ListOps;
 import io.quarkus.gizmo2.creator.ops.MapOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
+import io.quarkus.gizmo2.creator.ops.OptionalOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -2596,7 +2598,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default MapOps withMap(Expr receiver) {
         return new MapOps(this, receiver);
     }
-
+    
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
      * @param receiver the instance to invoke upon (must not be {@code null})
@@ -2605,6 +2607,14 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return new IteratorOps(this, receiver);
     }
 
+    /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Optional}}
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default OptionalOps withOptional(Expr receiver) {
+        return new OptionalOps(this, receiver);
+    }
+    
     /**
      * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
      *
@@ -2656,7 +2666,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
      *
-     * @param entries
+     * @param items the keys and values from which the map is populated
      * @return map expression (not {@code null})
      * @see BlockCreator#withMap(Expr)
      */
@@ -2665,13 +2675,31 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
      *
-     * @param entries
+     * @param items the keys and values from which the map is populated
      * @return map expression (not {@code null})
      * @see BlockCreator#withMap(Expr)
      */
     default Expr mapOf(Expr... items) {
         return mapOf(List.of(items));
     }
+    
+    /**
+     * Generate a call to {@link Optional#of()}.
+     * 
+     * @param value the expression to pass in to the call (must not be {@code null})
+     * @return optional expression (not {@code null})
+     * @see BlockCreator#withOptional(Expr)
+     */
+    Expr optionalOf(Expr value);
+    
+    /**
+     * Generate a call to {@link Optional#ofNullable(Object)}.
+     * 
+     * @param value the expression to pass in to the call (must not be {@code null})
+     * @return optional expression (not {@code null})
+     * @see BlockCreator#withOptional(Expr)
+     */
+    Expr optionalOfNullable(Expr value);
     
     /**
      * Iterate the given target.
