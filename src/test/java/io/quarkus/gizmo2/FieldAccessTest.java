@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 public class FieldAccessTest {
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testInstanceField() {
         TestClassMaker tcm = new TestClassMaker();
@@ -22,7 +23,7 @@ public class FieldAccessTest {
                 // this.bravo = "charlie";
                 con.body(bc -> {
                     bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
-                    var bravo = con.this_().field(bravoDesc); 
+                    var bravo = con.this_().field(bravoDesc);
                     bc.set(bravo, Constant.of("charlie"));
                     bc.return_();
                 });
@@ -42,6 +43,7 @@ public class FieldAccessTest {
         assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testStaticField() {
         TestClassMaker tcm = new TestClassMaker();
@@ -51,12 +53,7 @@ public class FieldAccessTest {
                 fc.withType(String.class);
                 fc.withInitial(Constant.of("charlie"));
             });
-            cc.constructor(mc -> {
-                mc.body(b0 -> {
-                    b0.invokeSpecial(ConstructorDesc.of(Object.class), mc.this_());
-                    b0.return_();
-                });
-            });
+            cc.defaultConstructor();
             cc.method("test", mc -> {
                 // int test() {
                 //    return bravo.length();
