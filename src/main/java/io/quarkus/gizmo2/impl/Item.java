@@ -324,7 +324,7 @@ public abstract non-sealed class Item implements Expr {
             return switch (mode) {
                 case AsDeclared -> new Item() {
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return FieldDeref.this.process(value.process(node.prev(), op), op);
+                        return Item.this.process(value.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
