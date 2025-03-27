@@ -2053,7 +2053,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return invokeInterface(method, instance, List.of(args));
     }
 
-    Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc);
+    Expr invokeDynamic(DynamicCallSiteDesc callSiteDesc, List<Expr> args);
+
+    default Expr invokeDynamic(DynamicCallSiteDesc callSiteDesc, Expr... args) {
+        return invokeDynamic(callSiteDesc, List.of(args));
+    }
 
     // control flow
 
