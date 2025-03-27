@@ -31,6 +31,15 @@
     </licenses>
 
     <properties>
+        <!--
+          - These properties should not be necessary due to the `build-release-17` control file being present,
+          - but IntelliJ does not import the project correctly without these, regardless, so set them directly
+          - to give it the clues it is sorely lacking.
+          -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
         <version.classfile>24.0</version.classfile>
         <version.junit>5.12.1</version.junit>
 
