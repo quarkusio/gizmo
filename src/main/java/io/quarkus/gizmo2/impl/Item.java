@@ -226,8 +226,7 @@ public abstract non-sealed class Item implements Expr {
         if (! type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");
         }
-        final ClassDesc type = type().componentType();
-        return new ArrayDeref(type, index);
+        return new ArrayDeref(type().componentType(), index);
     }
 
     public Expr length() {
@@ -365,11 +364,11 @@ public abstract non-sealed class Item implements Expr {
     }
 
     final class ArrayDeref extends LValueExprImpl {
-        private final ClassDesc type;
+        private final ClassDesc componentType;
         private final Item index;
 
-        public ArrayDeref(final ClassDesc type, final Expr index) {
-            this.type = type;
+        public ArrayDeref(final ClassDesc componentType, final Expr index) {
+            this.componentType = componentType;
             this.index = (Item) index;
         }
 
@@ -393,7 +392,7 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     public ClassDesc type() {
-                        return type;
+                        return componentType;
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -414,7 +413,7 @@ public abstract non-sealed class Item implements Expr {
 
         Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
             return switch (mode) {
-                case AsDeclared, Plain -> new ArrayStore(Item.this, index, value);
+                case AsDeclared, Plain -> new ArrayStore(Item.this, index, value, componentType);
                 default -> new Item() {
                     public String itemName() {
                         return "ArrayDeref$SetVolatile" + super.itemName();
@@ -436,7 +435,7 @@ public abstract non-sealed class Item implements Expr {
         }
 
         public ClassDesc type() {
-            return type;
+            return componentType;
         }
 
         public boolean bound() {

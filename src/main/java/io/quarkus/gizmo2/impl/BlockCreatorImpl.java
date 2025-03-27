@@ -409,8 +409,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ((LValueExprImpl) var).emitDec(this, amount);
     }
 
-    public Expr newEmptyArray(final ClassDesc elemType, final Expr size) {
-        return addItem(new NewEmptyArray(elemType, (Item) size));
+    public Expr newEmptyArray(final ClassDesc componentType, final Expr size) {
+        return addItem(new NewEmptyArray(componentType, (Item) size));
     }
 
     private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values, int idx) {
@@ -446,14 +446,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr newArray(final ClassDesc elementType, final List<Expr> values) {
+    public Expr newArray(final ClassDesc componentType, final List<Expr> values) {
         checkActive();
         // build the object graph
         int size = values.size();
         List<ArrayStore> stores = new ArrayList<>(size);
-        NewEmptyArray nea = new NewEmptyArray(elementType, ConstantImpl.of(size));
+        NewEmptyArray nea = new NewEmptyArray(componentType, ConstantImpl.of(size));
         for (int i = 0; i < size; i++) {
-            stores.add(new ArrayStore(new Dup(nea), ConstantImpl.of(i), (Item) values.get(i)));
+            stores.add(new ArrayStore(new Dup(nea), ConstantImpl.of(i), (Item) values.get(i), componentType));
         }
         // stitch the object graph into our list
         insertNewArrayNextStore(nea, stores, tail, Util.reinterpretCast(values), values.size());

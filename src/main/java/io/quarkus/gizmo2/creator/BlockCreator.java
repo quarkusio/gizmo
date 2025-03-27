@@ -369,63 +369,63 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Create a new, empty array of the given type.
      *
-     * @param elemType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    Expr newEmptyArray(ClassDesc elemType, Expr size);
+    Expr newEmptyArray(ClassDesc componentType, Expr size);
 
     /**
      * Create a new, empty array of the given type.
      *
-     * @param elemType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    default Expr newEmptyArray(Class<?> elemType, Expr size) {
-        return newEmptyArray(Util.classDesc(elemType), size);
+    default Expr newEmptyArray(Class<?> componentType, Expr size) {
+        return newEmptyArray(Util.classDesc(componentType), size);
     }
 
     /**
      * Create a new array with the given type, initialized with the given values.
      *
-     * @param elementType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    Expr newArray(ClassDesc elementType, List<Expr> values);
+    Expr newArray(ClassDesc componentType, List<Expr> values);
 
     /**
      * Create a new array with the given type, initialized with the given values.
      *
-     * @param elementType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    default Expr newArray(ClassDesc elementType, Expr... values) {
-        return newArray(elementType, List.of(values));
+    default Expr newArray(ClassDesc componentType, Expr... values) {
+        return newArray(componentType, List.of(values));
     }
 
     /**
      * Create a new array with the given type, initialized with the given values.
      *
-     * @param elementType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    default Expr newArray(Class<?> elementType, List<Expr> values) {
-        return newArray(Util.classDesc(elementType), values);
+    default Expr newArray(Class<?> componentType, List<Expr> values) {
+        return newArray(Util.classDesc(componentType), values);
     }
 
     /**
      * Create a new array with the given type, initialized with the given values.
      *
-     * @param elementType the element type (must not be {@code null})
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    default Expr newArray(Class<?> elementType, Expr... values) {
-        return newArray(elementType, List.of(values));
+    default Expr newArray(Class<?> componentType, Expr... values) {
+        return newArray(componentType, List.of(values));
     }
 
     // relational ops
@@ -2593,7 +2593,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default SetOps withSet(Expr receiver) {
         return new SetOps(this, receiver);
     }
-    
+
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Map}}
      * 
@@ -2602,7 +2602,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default MapOps withMap(Expr receiver) {
         return new MapOps(this, receiver);
     }
-    
+
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
      * @param receiver the instance to invoke upon (must not be {@code null})
@@ -2618,7 +2618,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default OptionalOps withOptional(Expr receiver) {
         return new OptionalOps(this, receiver);
     }
-    
+
     /**
      * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
      *
@@ -2688,23 +2688,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
     
     /**
-     * Generate a call to {@link Optional#of()}.
-     * 
+     * Generate a call to {@link Optional#of(Object)}.
+     *
      * @param value the expression to pass in to the call (must not be {@code null})
      * @return optional expression (not {@code null})
      * @see BlockCreator#withOptional(Expr)
      */
     Expr optionalOf(Expr value);
-    
+
     /**
      * Generate a call to {@link Optional#ofNullable(Object)}.
-     * 
+     *
      * @param value the expression to pass in to the call (must not be {@code null})
      * @return optional expression (not {@code null})
      * @see BlockCreator#withOptional(Expr)
      */
     Expr optionalOfNullable(Expr value);
-    
+
     /**
      * Iterate the given target.
      *

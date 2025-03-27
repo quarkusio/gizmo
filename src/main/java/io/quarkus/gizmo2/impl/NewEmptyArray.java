@@ -12,8 +12,8 @@ final class NewEmptyArray extends Item {
     private final ClassDesc arrayType;
     private final Item size;
 
-    NewEmptyArray(final ClassDesc elemType, final Item size) {
-        arrayType = elemType.arrayType();
+    NewEmptyArray(final ClassDesc componentType, final Item size) {
+        arrayType = componentType.arrayType();
         this.size = size;
     }
 
