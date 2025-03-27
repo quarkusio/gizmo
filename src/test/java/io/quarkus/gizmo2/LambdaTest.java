@@ -13,6 +13,37 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 public class LambdaTest {
 
     @Test
+    public void testRunnableLambda() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.RunnableLambda", cc -> {
+            cc.staticMethod("runTest", smc -> {
+                // static int runTest() {
+                //    AtomicInteger ret = new AtomicInteger(1);
+                //    Runnable runnable = () -> ret.incrementAndGet();
+                //    runnable.run();
+                //    return ret.get();
+                // }
+                smc.returning(int.class);
+                smc.body(b0 -> {
+                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    Expr runnable = b0.lambda(Runnable.class, lc -> {
+                        var capturedRet = lc.capture(ret);
+                        lc.body(b1 -> {
+                            b1.invokeVirtual(MethodDesc.of(AtomicInteger.class, "incrementAndGet", int.class), capturedRet);
+                            b1.return_();
+                        });
+                    });
+                    b0.invokeInterface(MethodDesc.of(Runnable.class, "run", void.class), runnable);
+                    var retVal = b0.invokeVirtual(MethodDesc.of(AtomicInteger.class, "get", int.class), ret);
+                    b0.return_(retVal);
+                });
+            });
+        });
+        assertEquals(1, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+    }
+
+    @Test
     public void testBasicLambdas() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
@@ -44,8 +75,9 @@ public class LambdaTest {
                         lc.body(lbc -> {
                             var suppliedValueInteger = lbc.cast(input, Integer.class);
                             var suppliedValueInt = lbc.unbox(suppliedValueInteger);
-                            lbc.invokeInterface(MethodDesc.of(AtomicInteger.class, "set", void.class, int.class), capturedRet,
+                            lbc.invokeVirtual(MethodDesc.of(AtomicInteger.class, "set", void.class, int.class), capturedRet,
                                     suppliedValueInt);
+                            lbc.return_();
                         });
                     }));
                     bc.invokeInterface(MethodDesc.of(Consumer.class, "accept", void.class, Object.class), consumer,
