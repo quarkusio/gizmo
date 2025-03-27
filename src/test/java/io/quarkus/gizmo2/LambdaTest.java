@@ -44,6 +44,41 @@ public class LambdaTest {
     }
 
     @Test
+    public void testConsumerLambda() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.ConsumerLambda", cc -> {
+            cc.staticMethod("runTest", smc -> {
+                // static int runTest() {
+                //    AtomicInteger ret = new AtomicInteger(1);
+                //    Consumer consumer = val -> ret.set(val);
+                //    consumer.accept(10);
+                //    return ret.get();
+                // }
+                smc.returning(int.class);
+                smc.body(b0 -> {
+                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    Expr consumer = b0.lambda(Consumer.class, lc -> {
+                        var capturedRet = lc.capture(ret);
+                        var input = lc.parameter("t", 0);
+                        lc.body(b1 -> {
+                            var unboxedInput = b1.unbox(b1.cast(input, Integer.class));
+                            b1.invokeVirtual(MethodDesc.of(AtomicInteger.class, "set", void.class, int.class), capturedRet,
+                                    unboxedInput);
+                            b1.return_();
+                        });
+                    });
+                    b0.invokeInterface(MethodDesc.of(Consumer.class, "accept", void.class, Object.class), consumer,
+                            b0.box(Constant.of(10)));
+                    var retVal = b0.invokeVirtual(MethodDesc.of(AtomicInteger.class, "get", int.class), ret);
+                    b0.return_(retVal);
+                });
+            });
+        });
+        assertEquals(10, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+    }
+
+    @Test
     public void testBasicLambdas() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
@@ -80,8 +115,9 @@ public class LambdaTest {
                             lbc.return_();
                         });
                     }));
+                    var boxedSuppliedValue = bc.box(suppliedValue);
                     bc.invokeInterface(MethodDesc.of(Consumer.class, "accept", void.class, Object.class), consumer,
-                            bc.box(suppliedValue));
+                            boxedSuppliedValue);
                     var retVal = bc.invokeVirtual(MethodDesc.of(AtomicInteger.class, "get", int.class), ret);
                     bc.return_(retVal);
                 });
