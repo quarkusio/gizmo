@@ -35,8 +35,17 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ConstantImpl of(Constable constable) {
+        Objects.requireNonNull(constable, "constable");
         if (constable instanceof ConstantImpl con) {
             return con;
+        } else if (constable instanceof Boolean val) {
+            return of(val);
+        } else if (constable instanceof Byte val) {
+            return of(val);
+        } else if (constable instanceof Short val) {
+            return of(val);
+        } else if (constable instanceof Character val) {
+            return of(val);
         } else {
             return of(constable.describeConstable().orElseThrow(IllegalArgumentException::new));
         }
@@ -72,8 +81,6 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
             return of(desc);
         } else if (dcd instanceof VarHandle.VarHandleDesc desc) {
             return of(desc);
-        } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_NULL_CONSTANT)) {
-            return ofNull(dcd.constantType());
         } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_ENUM_CONSTANT)) {
             // "wrong spelling" of enum constant
             return of(Enum.EnumDesc.of(dcd.constantType(), dcd.constantName()));
@@ -101,6 +108,19 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_INVOKE)) {
             // "wrong spelling" of invoke constant
             return ofInvoke(of(dcd.bootstrapMethod()), dcd.bootstrapArgsList().stream().map(Constant::of).toList());
+        } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_EXPLICIT_CAST)
+                   && dcd.constantName().equals(ConstantDescs.DEFAULT_NAME)) {
+            // "wrong spelling" of primitive constant
+            if (dcd.constantType().equals(ConstantDescs.CD_byte)) {
+                return of(((Integer) dcd.bootstrapArgs()[0]).byteValue());
+            } else if (dcd.constantType().equals(ConstantDescs.CD_short)) {
+                return of(((Integer) dcd.bootstrapArgs()[0]).shortValue());
+            } else if (dcd.constantType().equals(ConstantDescs.CD_char)) {
+                return of((char) ((Integer) dcd.bootstrapArgs()[0]).intValue());
+            } else {
+                // primitive constants of other types don't reach here
+                return GizmoImpl.current().dynamicConstant(dcd);
+            }
         } else {
             return GizmoImpl.current().dynamicConstant(dcd);
         }
@@ -162,6 +182,30 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         return GizmoImpl.current().enumConstant(value);
     }
 
+    public static ByteConstant of(Byte value) {
+        return GizmoImpl.current().byteConstant(value);
+    }
+
+    public static ByteConstant of(byte value) {
+        return of(Byte.valueOf(value));
+    }
+
+    public static ShortConstant of(Short value) {
+        return GizmoImpl.current().shortConstant(value);
+    }
+
+    public static ShortConstant of(short value) {
+        return of(Short.valueOf(value));
+    }
+
+    public static CharConstant of(Character value) {
+        return GizmoImpl.current().charConstant(value);
+    }
+
+    public static CharConstant of(char value) {
+        return of(Character.valueOf(value));
+    }
+
     public static IntConstant of(Integer value) {
         return GizmoImpl.current().intConstant(value);
     }
@@ -192,6 +236,10 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
 
     public static DoubleConstant of(double value) {
         return GizmoImpl.current().doubleConstant(value);
+    }
+
+    public static BooleanConstant of(Boolean value) {
+        return value ? BooleanConstant.TRUE : BooleanConstant.FALSE;
     }
 
     public static BooleanConstant of(boolean value) {

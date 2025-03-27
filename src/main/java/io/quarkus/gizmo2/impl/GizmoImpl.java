@@ -18,6 +18,8 @@ import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.impl.constant.ArrayVarHandleConstant;
+import io.quarkus.gizmo2.impl.constant.ByteConstant;
+import io.quarkus.gizmo2.impl.constant.CharConstant;
 import io.quarkus.gizmo2.impl.constant.ClassConstant;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.DoubleConstant;
@@ -27,6 +29,7 @@ import io.quarkus.gizmo2.impl.constant.FloatConstant;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.LongConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
+import io.quarkus.gizmo2.impl.constant.ShortConstant;
 import io.quarkus.gizmo2.impl.constant.StaticFieldVarHandleConstant;
 import io.quarkus.gizmo2.impl.constant.StaticFinalFieldConstant;
 import io.quarkus.gizmo2.impl.constant.StringConstant;
@@ -96,6 +99,18 @@ public final class GizmoImpl implements Gizmo {
 
     public StringConstant stringConstant(String value) {
         return (StringConstant) constants.computeIfAbsent(value, StringConstant::new);
+    }
+
+    public ByteConstant byteConstant(Byte value) {
+        return (ByteConstant) funnyHashCodeConstants.computeIfAbsent(new ByteConstant(value), Function.identity());
+    }
+
+    public ShortConstant shortConstant(Short value) {
+        return (ShortConstant) funnyHashCodeConstants.computeIfAbsent(new ShortConstant(value), Function.identity());
+    }
+
+    public CharConstant charConstant(Character value) {
+        return (CharConstant) funnyHashCodeConstants.computeIfAbsent(new CharConstant(value), Function.identity());
     }
 
     public IntConstant intConstant(Integer value) {

@@ -24,7 +24,7 @@ final class Rel extends Item {
             if (kind.if_acmp == null) {
                 throw new IllegalStateException("Invalid comparison for reference types");
             }
-        } else if (a.typeKind() != TypeKind.INT) {
+        } else if (a.typeKind().asLoadable() != TypeKind.INT) {
             throw new UnsupportedOperationException("Only supported on int and reference types");
         }
     }

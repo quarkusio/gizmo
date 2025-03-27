@@ -99,6 +99,54 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * {@return a constant for the given value}
      * @param value the value to create a constant from (must not be {@code null})
      */
+    static Constant of(Byte value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from
+     */
+    static Constant of(byte value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from (must not be {@code null})
+     */
+    static Constant of(Short value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from
+     */
+    static Constant of(short value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from (must not be {@code null})
+     */
+    static Constant of(Character value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from
+     */
+    static Constant of(char value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from (must not be {@code null})
+     */
     static Constant of(Integer value) {
         return ConstantImpl.of(value);
     }
@@ -156,6 +204,14 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param value the value to create a constant from
      */
     static Constant of(double value) {
+        return ConstantImpl.of(value);
+    }
+
+    /**
+     * {@return a constant for the given value}
+     * @param value the value to create a constant from
+     */
+    static Constant of(Boolean value) {
         return ConstantImpl.of(value);
     }
 
