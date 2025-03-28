@@ -9,6 +9,7 @@ import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -169,4 +170,20 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
      * @return a variable for the static field (not {@code null})
      */
     StaticFieldVar staticField(String name, Consumer<StaticFieldCreator> builder);
+
+    /**
+     * Add a public static final field to this type.
+     * 
+     * @param name the field name (must not be {@code null})
+     * @param value the constant value (must not be {@code null})
+     * @return a variable for the static field (not {@code null})
+     */
+    default StaticFieldVar constantField(String name, Constant value) {
+        return staticField(name, sfc -> {
+            sfc.public_();
+            sfc.final_();
+            sfc.withType(value.type());
+            sfc.withInitial(value);
+        });
+    }
 }
