@@ -19,7 +19,7 @@ public class LambdaTest {
         g.class_("io.quarkus.gizmo2.RunnableLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
-                //    AtomicInteger ret = new AtomicInteger(1);
+                //    AtomicInteger ret = new AtomicInteger();
                 //    Runnable runnable = () -> ret.incrementAndGet();
                 //    runnable.run();
                 //    return ret.get();
@@ -50,7 +50,7 @@ public class LambdaTest {
         g.class_("io.quarkus.gizmo2.ConsumerLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
-                //    AtomicInteger ret = new AtomicInteger(1);
+                //    AtomicInteger ret = new AtomicInteger();
                 //    Consumer consumer = val -> ret.set(val);
                 //    consumer.accept(10);
                 //    return ret.get();
