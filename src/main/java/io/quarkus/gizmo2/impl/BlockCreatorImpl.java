@@ -1084,7 +1084,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void return_(final Expr val) {
         if (TypeKind.from(returnType).asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Return value type kind " + val.typeKind() + " does not match expected " + typeKind());
+            throw new IllegalArgumentException("Return value type '" + val.type().displayName()
+                    + "' does not match expected '" + returnType.displayName() + "'");
         }
         replaceLastItem(val.equals(Constant.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
@@ -1095,7 +1096,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void yield(final Expr val) {
         if (typeKind().asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Yield value type kind " + val.typeKind() + " does not match expected " + typeKind());
+            throw new IllegalArgumentException("Yield value type '" + val.type().displayName()
+                    + "' does not match expected '" + type().displayName() + "'");
         }
         replaceLastItem(val.equals(Constant.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
