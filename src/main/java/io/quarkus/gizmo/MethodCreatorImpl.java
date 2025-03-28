@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.objectweb.asm.AnnotationVisitor;
@@ -138,6 +139,29 @@ class MethodCreatorImpl extends BytecodeCreatorImpl implements MethodCreator {
             }
         }
         int varCount = allocateLocalVariables(localVarCount);
+        MethodCheckerVisitor checker = new MethodCheckerVisitor();
+        checker.check(this);
+        if (methodDescriptor.getName().equals("<init>")
+                && methodDescriptor.getReturnType().equals("V")
+                && !checker.isSuperOrThisCalled()) {
+            if (classCreator.getSuperClass().equals("java/lang/Object")) {
+                //auto add super(); when inherit of object
+                MethodDescriptor desc = MethodDescriptor.ofConstructor("java.lang.Object");
+                operations.add(0, new InvokeOperation(null, desc, resolve(checkScope(getThis())), resolve(checkScope(new ResultHandle[0])), false, true));
+            } else {
+                throw new RuntimeException("Missing super() or this() for constructor [declaringClassName="
+                        + getDeclaringClassName() + ", methodDescriptor=" + methodDescriptor + "]");
+            }
+        }
+        if (!checker.isReturningValue()) {
+            //auto add returnVAlue(null) at the end of operation for void and ctor method
+            if (methodDescriptor.getReturnType().equals("V")) {
+                returnValue(null);
+            } else {
+                throw new RuntimeException("Missing returnValue for method [declaringClassName="
+                        + getDeclaringClassName() + ", methodDescriptor=" + methodDescriptor + "]");
+            }
+        }
         writeOperations(visitor);
         visitor.visitMaxs(0, varCount);
 
