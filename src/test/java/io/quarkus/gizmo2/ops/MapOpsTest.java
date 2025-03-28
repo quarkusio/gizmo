@@ -1,4 +1,4 @@
-package io.quarkus.gizmo2;
+package io.quarkus.gizmo2.ops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -8,6 +8,9 @@ import java.util.function.IntSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.MapOps;
 
 public class MapOpsTest {
