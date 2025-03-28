@@ -1,18 +1,22 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.TypeKind;
 
 final class ArrayStore extends Item {
     private final Item arrayExpr;
     private final Item index;
     private final Item value;
+    private final ClassDesc componentType;
 
-    ArrayStore(final Item arrayExpr, final Item index, final Item value) {
+    ArrayStore(final Item arrayExpr, final Item index, final Item value, final ClassDesc componentType) {
         this.arrayExpr = arrayExpr;
         this.index = index;
         this.value = value;
+        this.componentType = componentType;
     }
 
     Item arrayExpr() {
@@ -32,6 +36,6 @@ final class ArrayStore extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.arrayStore(arrayExpr.typeKind());
+        cb.arrayStore(TypeKind.from(componentType));
     }
 }
