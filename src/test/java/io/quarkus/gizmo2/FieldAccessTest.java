@@ -68,4 +68,27 @@ public class FieldAccessTest {
         });
         assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testConstantField() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.Alpha", cc -> {
+            var bravo = cc.constantField("BRAVO", Constant.of("charlie"));
+            cc.defaultConstructor();
+            cc.method("test", mc -> {
+                // int test() {
+                //    return BRAVO.length();
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    var b = bc.get(bravo);
+                    var length = bc.withString(b).length();
+                    bc.return_(length);
+                });
+            });
+        });
+        assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
+    }
 }
