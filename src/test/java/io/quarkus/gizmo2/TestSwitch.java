@@ -5,12 +5,57 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.constant.ClassDesc;
 import java.util.function.IntUnaryOperator;
-import java.util.function.ToIntFunction;
 
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import org.junit.jupiter.api.Test;
 
 public final class TestSwitch {
+
+    @FunctionalInterface
+    public interface CharUnaryOperator {
+        char apply(char operand);
+    }
+
+    @Test
+    public void testCharSwitch() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestCharSwitchExpr"), zc -> {
+            zc.staticMethod("frobnicate", mc -> {
+                mc.returning(char.class);
+                ParamVar cp = mc.parameter("cp", char.class);
+                mc.body(b0 -> {
+                    b0.return_(b0.switch_(CD_char, cp, sc -> {
+                        sc.case_(cc -> {
+                            cc.of('a');
+                            cc.body(b1 -> b1.yield(Constant.of('i')));
+                        });
+                        sc.case_(cc -> {
+                            cc.of('e');
+                            cc.body(b1 -> b1.yield(Constant.of('o')));
+                        });
+                        sc.case_(cc -> {
+                            cc.of('i');
+                            cc.body(b1 -> b1.yield(Constant.of('u')));
+                        });
+                        sc.case_(cc -> {
+                            cc.of('o');
+                            cc.body(b1 -> b1.yield(Constant.of('a')));
+                        });
+                        sc.case_(cc -> {
+                            cc.of('u');
+                            cc.body(b1 -> b1.yield(Constant.of('e')));
+                        });
+                        sc.default_(b1 -> b1.yield(cp));
+                    }));
+                });
+            });
+        });
+        CharUnaryOperator frobnicate = tcm.staticMethod("frobnicate", CharUnaryOperator.class);
+        assertEquals('i', frobnicate.apply('a'));
+        assertEquals('q', frobnicate.apply('q'));
+        assertEquals('o', frobnicate.apply('e'));
+    }
 
     @Test
     public void testIntSwitch() {
@@ -24,23 +69,23 @@ public final class TestSwitch {
                     b0.return_(b0.switch_(CD_int, cp, sc -> {
                         sc.case_(cc -> {
                             cc.of('a');
-                            cc.body(b1 -> b1.yield(IntConstant.of('i')));
+                            cc.body(b1 -> b1.yield(Constant.of((int) 'i')));
                         });
                         sc.case_(cc -> {
                             cc.of('e');
-                            cc.body(b1 -> b1.yield(IntConstant.of('o')));
+                            cc.body(b1 -> b1.yield(Constant.of((int) 'o')));
                         });
                         sc.case_(cc -> {
                             cc.of('i');
-                            cc.body(b1 -> b1.yield(IntConstant.of('u')));
+                            cc.body(b1 -> b1.yield(Constant.of((int) 'u')));
                         });
                         sc.case_(cc -> {
                             cc.of('o');
-                            cc.body(b1 -> b1.yield(IntConstant.of('a')));
+                            cc.body(b1 -> b1.yield(Constant.of((int) 'a')));
                         });
                         sc.case_(cc -> {
                             cc.of('u');
-                            cc.body(b1 -> b1.yield(IntConstant.of('e')));
+                            cc.body(b1 -> b1.yield(Constant.of((int) 'e')));
                         });
                         sc.default_(b1 -> b1.yield(cp));
                     }));

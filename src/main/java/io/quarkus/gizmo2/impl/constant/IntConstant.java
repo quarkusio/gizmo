@@ -7,7 +7,7 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class IntConstant extends ConstantImpl {
+public final class IntConstant extends IntBasedConstant {
     private final Integer value;
 
     public IntConstant(Integer value) {
@@ -20,38 +20,7 @@ public final class IntConstant extends ConstantImpl {
     }
 
     public int intValue() {
-        return value.intValue();
-    }
-
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        int unboxed = value.intValue();
-        switch (unboxed) {
-            case -5 -> {
-                cb.iconst_5();
-                cb.ineg();
-            }
-            case -4 -> {
-                cb.iconst_4();
-                cb.ineg();
-            }
-            case -3 -> {
-                cb.iconst_3();
-                cb.ineg();
-            }
-            case -2 -> {
-                cb.iconst_2();
-                cb.ineg();
-            }
-            default -> cb.loadConstant(value);
-        }
-    }
-
-    public boolean isZero() {
-        return value.intValue() == 0;
-    }
-
-    public boolean isNonZero() {
-        return value.intValue() != 0;
+        return value;
     }
 
     public boolean equals(final ConstantImpl obj) {
@@ -72,9 +41,5 @@ public final class IntConstant extends ConstantImpl {
 
     public Optional<Integer> describeConstable() {
         return Optional.of(value);
-    }
-
-    public StringBuilder toShortString(final StringBuilder b) {
-        return b.append(value).append(" (0x").append(Integer.toHexString(value.intValue())).append(')');
     }
 }
