@@ -186,6 +186,17 @@ public final class StringOps extends ObjectOps implements ComparableOps {
         return lastIndexOf(Constant.of(str));
     }
 
+    /**
+     * Generate a call to {@link String#concat(String)}.
+     *
+     * @param other the string to concatenate to this one (must not be {@code null})
+     * @return the expression of the result (not {@code null})
+     */
+    public Expr concat(final Expr other) {
+        return invokeInstance(String.class, "concat", String.class, other);
+    }
+
+    @Override
     public Expr compareTo(final Expr other) {
         return invokeInstance(int.class, "compareTo", String.class, other);
     }
