@@ -176,21 +176,6 @@ public abstract non-sealed class Item implements Expr {
         return true;
     }
 
-    /**
-     * {@return true if this node may break out of the current block to an enclosing block without falling through}
-     * This includes restarting the current block or any sibling or enclosing block.
-     */
-    public boolean mayBreak() {
-        return false;
-    }
-
-    /**
-     * {@return true if this node may return from the current method}
-     */
-    public boolean mayReturn() {
-        return false;
-    }
-
     public String toString() {
         return toString(new StringBuilder()).toString();
     }

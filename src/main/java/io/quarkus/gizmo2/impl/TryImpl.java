@@ -135,7 +135,7 @@ public final class TryImpl extends Item implements TryCreator {
             }
         }
         body.writeCode(cb, block);
-        if (body.mayFallThrough()) {
+        if (body.mayFallThrough() && (finally_ == null || finally_.mayFallThrough())) {
             cb.goto_(after);
         }
         Iterator<Catch> iterator = catches.iterator();

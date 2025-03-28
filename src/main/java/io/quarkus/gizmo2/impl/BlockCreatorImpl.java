@@ -152,36 +152,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return breakTarget || tail.item().mayFallThrough();
     }
 
-    public boolean mayBreak() {
-        if (active()) {
-            throw new IllegalStateException();
-        }
-        // todo: compute once & cache
-        Node node = tail;
-        while (node != null) {
-            if (node.item().mayBreak()) {
-                return true;
-            }
-            node = node.prev();
-        }
-        return false;
-    }
-
-    public boolean mayReturn() {
-        if (active()) {
-            throw new IllegalStateException();
-        }
-        // todo: compute once & cache
-        Node node = tail;
-        while (node != null) {
-            if (node.item().mayReturn()) {
-                return true;
-            }
-            node = node.prev();
-        }
-        return false;
-    }
-
     public Node pop(final Node node) {
         assert this == node.item();
         if (isVoid()) {
@@ -1277,7 +1247,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     <C extends Cleanup> C cleanup(C cleanup) {
-        checkActive();
         if (blockCleanup != null) {
             throw new IllegalStateException("Block cleanup was already set");
         }
