@@ -219,8 +219,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
                 throw new IllegalStateException("Parameter already defined at position " + position);
             }
             pc = new ParamCreatorImpl(type.parameterType(position));
-            final MethodTypeDesc finalType = type;
-            slot = IntStream.range(0, position).map(i -> TypeKind.from(finalType.parameterType(i)).slotSize()).sum();
+            slot = firstSlot() + IntStream.range(0, position).mapToObj(type::parameterType).map(TypeKind::from).mapToInt(TypeKind::slotSize).sum();
         }
         ParamVarImpl pv = pc.apply(builder, name, position, slot);
         params[position] = pv;

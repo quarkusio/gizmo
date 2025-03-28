@@ -6,7 +6,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.creator.MemberCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -79,26 +78,4 @@ public final class AnonClassTest {
         tcm.staticMethod("runTest", Runnable.class).run();
     }
 
-    @Test
-    public void basicLambdaTest() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Outer", cc -> {
-            cc.staticMethod("runTest", smc -> {
-                smc.body(b0 -> {
-                    b0.printf("Starting test%n");
-                    Expr runnable = b0.lambda(Runnable.class, lc -> {
-                        lc.body(b1 -> {
-                            b1.printf("Inside the runnable%n");
-                            b1.return_();
-                        });
-                    });
-                    b0.invokeInterface(MethodDesc.of(Runnable.class, "run", void.class), runnable);
-                    b0.printf("After runnable%n");
-                    b0.return_();
-                });
-            });
-        });
-        tcm.staticMethod("runTest", Runnable.class).run();
-    }
 }

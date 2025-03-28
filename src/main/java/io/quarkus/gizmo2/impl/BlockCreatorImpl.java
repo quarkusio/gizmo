@@ -320,7 +320,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassDesc boxType = a.type();
         ClassDesc unboxType = unboxTypes.get(boxType);
         if (unboxType == null) {
-            throw new IllegalArgumentException("No unbox type for " + boxType);
+            throw new IllegalArgumentException("No unbox type for " + boxType.displayName());
         }
         return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(unboxType)) {
             case BOOLEAN -> "booleanValue";
@@ -648,7 +648,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             ),
             encoded,
             ctorType
-        ));
+        ), captureExprs);
     }
 
     public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args, final Consumer<AnonymousClassCreator> builder) {
@@ -746,8 +746,17 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
     }
 
-    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc) {
+    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<Expr> args) {
         return addItem(new Item() {
+            protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
+                node = node.prev();
+                for (int i = args.size() - 1; i >= 0; i--) {
+                    final Item arg = (Item) args.get(i);
+                    node = arg.process(node, op);
+                }
+                return node;
+            }
+
             public ClassDesc type() {
                 return callSiteDesc.invocationType().returnType();
             }
