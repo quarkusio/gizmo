@@ -32,6 +32,7 @@ import io.quarkus.gizmo2.creator.ops.MapOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
 import io.quarkus.gizmo2.creator.ops.OptionalOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
+import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -2619,6 +2620,115 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return new OptionalOps(this, receiver);
     }
 
+    /**
+     * Creates a {@code StringBuilder} generator that helps to generate a chain of
+     * {@code append} calls and a final {@code toString} call.
+     *
+     * <pre>
+     * StringBuilderOps str = bc.withNewStringBuilder();
+     * str.append("constant");
+     * str.append(someExpr);
+     * Expr result = str.objToString();
+     * </pre>
+     *
+     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
+     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
+     * has an overload:
+     * <ul>
+     * <li>primitive types</li>
+     * <li>{@code char[]}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.CharSequence}</li>
+     * <li>{@code java.lang.Object}</li>
+     * </ul>
+     *
+     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
+     * and if {@code Arrays.toString} should be used, it must be generated manually.
+     * <p>
+     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
+     * provided. Other {@code StringBuilder} methods are not provided either. This is just
+     * a simple utility for generating code that concatenates strings, e.g. for implementing
+     * the {@code toString} method.
+     *
+     * @return a convenience wrapper for accessing instance methods of a newly created {@link StringBuilder}
+     */
+    default StringBuilderOps withNewStringBuilder() {
+        return new StringBuilderOps(this);
+    }
+
+    /**
+     * Creates a {@code StringBuilder} generator that helps to generate a chain of
+     * {@code append} calls and a final {@code toString} call.
+     *
+     * <pre>
+     * StringBuilderOps str = bc.withNewStringBuilder(16);
+     * str.append("constant");
+     * str.append(someExpr);
+     * Expr result = str.objToString();
+     * </pre>
+     *
+     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
+     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
+     * has an overload:
+     * <ul>
+     * <li>primitive types</li>
+     * <li>{@code char[]}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.CharSequence}</li>
+     * <li>{@code java.lang.Object}</li>
+     * </ul>
+     *
+     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
+     * and if {@code Arrays.toString} should be used, it must be generated manually.
+     * <p>
+     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
+     * provided. Other {@code StringBuilder} methods are not provided either. This is just
+     * a simple utility for generating code that concatenates strings, e.g. for implementing
+     * the {@code toString} method.
+     *
+     * @param capacity the capacity of the newly created {@link StringBuilder}
+     * @return a convenience wrapper for accessing instance methods of a newly created {@link StringBuilder}
+     */
+    default StringBuilderOps withNewStringBuilder(int capacity) {
+        return new StringBuilderOps(this, capacity);
+    }
+
+    /**
+     * Creates a {@code StringBuilder} generator that helps to generate a chain of
+     * {@code append} calls and a final {@code toString} call.
+     *
+     * <pre>
+     * StringBuilderOps str = bc.withStringBuilder(theStringBuilder);
+     * str.append("constant");
+     * str.append(someExpr);
+     * Expr result = str.objToString();
+     * </pre>
+     *
+     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
+     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
+     * has an overload:
+     * <ul>
+     * <li>primitive types</li>
+     * <li>{@code char[]}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.CharSequence}</li>
+     * <li>{@code java.lang.Object}</li>
+     * </ul>
+     *
+     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
+     * and if {@code Arrays.toString} should be used, it must be generated manually.
+     * <p>
+     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
+     * provided. Other {@code StringBuilder} methods are not provided either. This is just
+     * a simple utility for generating code that concatenates strings, e.g. for implementing
+     * the {@code toString} method.
+     *
+     * @param receiver the {@link StringBuilder}
+     * @return a convenience wrapper for accessing instance methods of the given {@link StringBuilder}
+     */
+    default StringBuilderOps withStringBuilder(Expr receiver) {
+        return new StringBuilderOps(this, receiver);
+    }
     /**
      * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
      *

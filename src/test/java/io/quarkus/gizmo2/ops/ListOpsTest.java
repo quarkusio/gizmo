@@ -1,4 +1,4 @@
-package io.quarkus.gizmo2;
+package io.quarkus.gizmo2.ops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -7,6 +7,10 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.ListOps;
 
 public class ListOpsTest {
