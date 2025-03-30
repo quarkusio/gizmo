@@ -230,10 +230,28 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public Expr length() {
-        if (! type().isArray()) {
+        if (!type().isArray()) {
             throw new IllegalArgumentException("Length is only allowed on arrays (expression type is actually " + type() + ")");
         }
-        return null;
+        return new Item() {
+            @Override
+            public ClassDesc type() {
+                return ConstantDescs.CD_int;
+            }
+
+            @Override
+            public boolean bound() {
+                return Item.this.bound();
+            }
+
+            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+                return Item.this.process(node.prev(), op);
+            }
+
+            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+                cb.arraylength();
+            }
+        };
     }
 
     public InstanceFieldVar field(final FieldDesc desc) {

@@ -31,23 +31,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, V
      * {@return an lvalue for an element of this array}
      * @param index the array index (must not be {@code null})
      */
-    default LValueExpr elem(Constant index) {
-        return elem((Expr) index);
-    }
-
-    /**
-     * {@return an lvalue for an element of this array}
-     * @param index the array index (must not be {@code null})
-     */
-    default LValueExpr elem(ConstantDesc index) {
-        return elem(Constant.of(index));
-    }
-
-    /**
-     * {@return an lvalue for an element of this array}
-     * @param index the array index (must not be {@code null})
-     */
-    default LValueExpr elem(Constable index) {
+    default LValueExpr elem(Integer index) {
         return elem(Constant.of(index));
     }
 

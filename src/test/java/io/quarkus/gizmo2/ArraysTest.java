@@ -15,6 +15,35 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ArraysTest {
+
+    @Test
+    public void testArrayVariableLength() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.ArrayOps", cc -> {
+            cc.staticMethod("runTest", mc -> {
+                // static int runTest() {
+                //    String[] arr = new String[5];
+                //    arr[0] = "foo";
+                //    arr[1] = "bar";
+                //    if (!arr[1].equals("bar")) {
+                //       return -1;
+                //    }
+                //    return arr.length;
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    var arr = bc.define("arr", bc.newEmptyArray(String.class, Constant.of(5)));
+                    bc.set(arr.elem(0), Constant.of("foo"));
+                    bc.set(arr.elem(Constant.of(1)), Constant.of("bar"));
+                    bc.unless(bc.exprEquals(arr.elem(Integer.valueOf(1)), Constant.of("bar")), fail -> fail.return_(-1));
+                    bc.return_(arr.length());
+                });
+            });
+        });
+        assertEquals(5, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+    }
+
     @Test
     public void createPrimitiveArray() {
         testCreateArray(bc -> bc.newArray(boolean.class, Constant.of(true), Constant.of(false)), "[true, false]");
@@ -135,7 +164,8 @@ public class ArraysTest {
                 mc.body(bc -> {
                     Expr array = bytecode.apply(bc);
                     if (array.type().componentType().isArray()) {
-                        Expr toString = bc.invokeStatic(MethodDesc.of(Arrays.class, "deepToString", String.class, Object[].class), array);
+                        Expr toString = bc
+                                .invokeStatic(MethodDesc.of(Arrays.class, "deepToString", String.class, Object[].class), array);
                         bc.return_(toString);
                     } else {
                         ClassDesc arrayType = array.type().componentType().isPrimitive()
