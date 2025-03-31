@@ -9,6 +9,7 @@ import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 /**
  * A typed thing whose type is a simple type.

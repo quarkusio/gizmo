@@ -12,7 +12,7 @@ import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
 public final class StaticFinalFieldConstant extends ConstantImpl {

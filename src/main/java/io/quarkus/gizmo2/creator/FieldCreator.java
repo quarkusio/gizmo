@@ -3,8 +3,8 @@ package io.quarkus.gizmo2.creator;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.Signature;
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.FieldCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 

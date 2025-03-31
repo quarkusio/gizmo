@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.desc;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDesc;
 
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.Typed;
 
 /**

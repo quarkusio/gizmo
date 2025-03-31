@@ -5,9 +5,9 @@ import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.MethodHandleDesc;
 import java.util.Optional;
 
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 

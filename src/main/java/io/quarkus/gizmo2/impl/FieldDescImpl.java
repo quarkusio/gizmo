@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
 
-import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 public final class FieldDescImpl implements FieldDesc {
     private final ClassDesc owner;

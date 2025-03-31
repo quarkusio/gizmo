@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import org.junit.jupiter.api.Test;
 
 public class FieldAccessTest {
