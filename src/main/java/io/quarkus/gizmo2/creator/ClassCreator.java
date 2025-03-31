@@ -2,6 +2,7 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
@@ -11,6 +12,7 @@ import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.ClassCreatorImpl;
+import io.quarkus.gizmo2.impl.EqualsHashCodeToStringGenerator;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
@@ -259,4 +261,82 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      */
     void final_();
 
+    /**
+     * Generates a structural {@code equals} method in this class that compares given
+     * {@code fields}. The generated code is similar to what IDEs would typically
+     * generate from a template:
+     * <ol>
+     * <li>Reference equality is tested. If {@code this} is idential to the
+     * <em>other</em> object, {@code true} is returned.</li>
+     * <li>Type of the <em>other</em> object is tested using {@code instanceof}.
+     * If the <em>other</em> object is not an instance of this class, {@code false}
+     * is returned.</li>
+     * <li>All fields are compared. Primitive types are compared using {@code ==},
+     * object types are compared using {@code Objects.equals}, single-dimension arrays
+     * are compared using {@code Arrays.equals}, and multi-dimensional arrays are
+     * compared using {@code Arrays.deepEquals}. If one of the comparisons fails,
+     * {@code false} is returned.</li>
+     * <li>Otherwise, {@code true} is returned.</li>
+     * </ol>
+     * <p>
+     * If one of the fields doesn't belong to this class, an exception is thrown.
+     *
+     * @param fields fields to consider in the {@code equals} method (must not be {@code null})
+     */
+    default void generateEquals(List<FieldDesc> fields) {
+        new EqualsHashCodeToStringGenerator(this, fields).generateEquals();
+    }
+
+    /**
+     * Generates structural {@code equals} and {@code hashCode} methods in this
+     * class, based on given {@code fields}. The generated code is similar
+     * to what IDEs would typically generate from a template. See
+     * {@link #generateEquals(List)} for description of the generated {@code equals}
+     * method. The {@code hashCode} method is generated like so:
+     * <ol>
+     * <li>If no field is given, 0 is returned.</li>
+     * <li>Otherwise, a result variable is allocated with initial value of 1.</li>
+     * <li>For each field, a hash code is computed. Hash code for primitive types
+     * is computed using {@code Integer.hashCode} and equivalent methods, for object
+     * types using {@code Objects.hashCode}, for single-dimension arrays using
+     * {@code Arrays.hashCode}, and for multi-dimensional arrays using
+     * {@code Arrays.deepHashCode}. Then, the result is updated like so:
+     * {@code result = 31 * result + fieldHashCode}.</li>
+     * <li>At the end, the result is returned.</li>
+     * </ol>
+     * <p>
+     * is thrown. If one of the fields doesn't belong to this class, an exception is thrown.
+     *
+     * @param fields fields to consider in the {@code equals} and {@code hashCode} methods (must not be {@code null})
+     */
+    default void generateEqualsAndHashCode(List<FieldDesc> fields) {
+        EqualsHashCodeToStringGenerator generator = new EqualsHashCodeToStringGenerator(this, fields);
+        generator.generateEquals();
+        generator.generateHashCode();
+    }
+
+    /**
+     * Generates a {@code toString} methods in this class, based on given {@code fields}.
+     * The generated code is similar to what IDEs would typically generate from a template:
+     * <ol>
+     * <li>An empty {@code StringBuilder} is allocated.</li>
+     * <li>Simple name of the class is appended.</li>
+     * <li>An opening parenthesis {@code '('} is appended.</li>
+     * <li>For each field, its name is appended, followed by the equals sign {@code '='},
+     * followed by the field value. Primitive types and object types are appended
+     * to the {@code StringBuilder} directly, {@code Arrays.toString} is used for
+     * single-dimension arrays, and {@code Arrays.deepToString} for multi-dimensional
+     * arrays. A comma followed by a space {@code ", "} are appended between fields.
+     * </li>
+     * <li>A closing parenthesis {@code ')'} is appended.</li>
+     * <li>The {@code StringBuilder.toString()} outcome is returned.</li>
+     * </ol>
+     * <p>
+     * If one of the fields doesn't belong to this class, an exception is thrown.
+     *
+     * @param fields fields to consider in the {@code toString} methods (must not be {@code null})
+     */
+    default void generateToString(List<FieldDesc> fields) {
+        new EqualsHashCodeToStringGenerator(this, fields).generateToString();
+    }
 }
