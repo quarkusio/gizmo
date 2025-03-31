@@ -6,10 +6,6 @@ import io.github.dmlloyd.classfile.Label;
 abstract class Goto extends Item {
     Goto() {}
 
-    public boolean mayBreak() {
-        return true;
-    }
-
     public boolean mayFallThrough() {
         return false;
     }

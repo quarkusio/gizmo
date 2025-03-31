@@ -28,10 +28,6 @@ final class Return extends Item {
         return false;
     }
 
-    public boolean mayReturn() {
-        return true;
-    }
-
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         if (val != null && val.typeKind() != TypeKind.VOID) {
             return val.process(node.prev(), op);

@@ -109,10 +109,6 @@ abstract class If extends Item {
         return whenTrue == null || whenTrue.mayFallThrough() || whenFalse == null || whenFalse.mayFallThrough();
     }
 
-    public boolean mayReturn() {
-        return whenTrue != null && whenTrue.mayReturn() || whenFalse != null && whenFalse.mayReturn();
-    }
-
     abstract IfOp op(Kind kind);
 
     interface IfOp {

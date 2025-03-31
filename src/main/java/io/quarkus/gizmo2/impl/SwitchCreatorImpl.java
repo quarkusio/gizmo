@@ -55,13 +55,8 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
      * The minimum and maximum hash values.
      */
     int min, max;
-
-    static final int FL_FALL_THROUGH = 0b001;
-    static final int FL_BREAK        = 0b010;
-    static final int FL_RETURN       = 0b100;
-
+    boolean fallThrough;
     boolean done;
-    int flags = 0;
 
     SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type, final Class<C> constantType) {
         this.enclosing = enclosing;
@@ -83,15 +78,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
     }
 
     public boolean mayFallThrough() {
-        return (flags & FL_FALL_THROUGH) != 0;
-    }
-
-    public boolean mayBreak() {
-        return (flags & FL_BREAK) != 0;
-    }
-
-    public boolean mayReturn() {
-        return (flags & FL_RETURN) != 0;
+        return fallThrough;
     }
 
     public final ClassDesc type() {
@@ -107,7 +94,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
             builder.accept(this);
             if (default_ == null) {
                 if (type.equals(CD_void)) {
-                    flags |= FL_FALL_THROUGH;
+                    fallThrough = true;
                 } else {
                     throw new IllegalStateException("Missing default branch on switch expression");
                 }
@@ -126,17 +113,9 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
         }
         default_ = new BlockCreatorImpl(enclosing, VoidConstant.INSTANCE, type());
         body.accept(default_);
-        int mask = 0;
         if (default_.mayFallThrough()) {
-            mask |= FL_FALL_THROUGH;
+            fallThrough = true;
         }
-        if (default_.mayReturn()) {
-            mask |= FL_RETURN;
-        }
-        if (default_.mayBreak()) {
-            mask |= FL_BREAK;
-        }
-        flags |= mask;
     }
 
     public void case_(final Consumer<CaseCreator> builder) {
@@ -207,17 +186,9 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
             state = ST_BODY;
             try {
                 body.accept(builder);
-                int mask = 0;
                 if (body.mayFallThrough()) {
-                    mask |= FL_FALL_THROUGH;
+                    fallThrough = true;
                 }
-                if (body.mayReturn()) {
-                    mask |= FL_RETURN;
-                }
-                if (body.mayBreak()) {
-                    mask |= FL_BREAK;
-                }
-                flags |= mask;
             } finally {
                 state = ST_DONE;
             }
