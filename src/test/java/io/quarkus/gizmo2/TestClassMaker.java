@@ -1,11 +1,15 @@
 package io.quarkus.gizmo2;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.constant.ClassDesc;
 import java.lang.invoke.MethodHandleProxies;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -24,6 +28,13 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     public void accept(final ClassDesc classDesc, final byte[] bytes) {
         if (System.getProperty("printClass") != null) {
             System.out.println(ClassFile.of().parse(bytes).toDebugString());
+        }
+        if (System.getProperty("dumpClass") != null) {
+            try {
+                Files.write(Paths.get(classDesc.displayName() + ".class"), bytes);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
         cl.accept(classDesc, bytes);
         desc = classDesc;
