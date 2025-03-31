@@ -11,7 +11,7 @@ import io.github.dmlloyd.classfile.AnnotationValue;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import org.junit.jupiter.api.Test;
 
-public class TestAnnotationCreator {
+public class AnnotationCreatorTest {
 
     @Test
     public void testBasic() {

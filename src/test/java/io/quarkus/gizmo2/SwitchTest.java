@@ -6,10 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.constant.ClassDesc;
 import java.util.function.IntUnaryOperator;
 
-import io.quarkus.gizmo2.impl.constant.IntConstant;
 import org.junit.jupiter.api.Test;
 
-public final class TestSwitch {
+public final class SwitchTest {
 
     @FunctionalInterface
     public interface CharUnaryOperator {
