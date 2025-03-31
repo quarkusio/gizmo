@@ -2114,6 +2114,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue);
 
     /**
+     * If the given object is <em>not</em> an instance of the given type, then execute the given block.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
+     */
+    void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse);
+
+    /**
      * If the given object is an instance of the given type, then execute the first block with the narrowed object,
      * otherwise execute the other block.
      *

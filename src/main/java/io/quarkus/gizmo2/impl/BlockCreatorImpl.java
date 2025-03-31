@@ -853,6 +853,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if_(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)));
     }
 
+    public void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse) {
+        doIf(instanceOf(obj, type), null, ifFalse);
+    }
+
     public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, Expr> ifTrue, final Consumer<BlockCreator> ifFalse) {
         ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)), ifFalse);
     }
