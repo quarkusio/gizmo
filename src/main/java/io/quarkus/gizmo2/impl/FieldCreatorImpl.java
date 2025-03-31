@@ -47,7 +47,7 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         if (type.equals(CD_void)) {
             throw new IllegalArgumentException("Fields cannot have void type");
         }
-        genericType = Signature.ClassTypeSig.of(type);
+        genericType = Signature.of(type);
         desc = null;
     }
 
