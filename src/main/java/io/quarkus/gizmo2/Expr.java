@@ -1,8 +1,6 @@
 package io.quarkus.gizmo2;
 
 import java.lang.constant.ClassDesc;
-import java.lang.constant.Constable;
-import java.lang.constant.ConstantDesc;
 
 import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Item;
