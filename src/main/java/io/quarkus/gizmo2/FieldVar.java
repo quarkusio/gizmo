@@ -2,6 +2,8 @@ package io.quarkus.gizmo2;
 
 import java.lang.constant.ClassDesc;
 
+import io.quarkus.gizmo2.desc.FieldDesc;
+
 /**
  * A variable corresponding to a field.
  */

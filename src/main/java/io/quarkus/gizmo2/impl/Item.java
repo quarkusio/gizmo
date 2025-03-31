@@ -12,9 +12,9 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.LValueExpr;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 public abstract non-sealed class Item implements Expr {

@@ -2,7 +2,7 @@ package io.quarkus.gizmo2.impl.constant;
 
 import java.lang.invoke.VarHandle;
 
-import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 public final class StaticFieldVarHandleConstant extends VarHandleConstant {
     private final FieldDesc field;

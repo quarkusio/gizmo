@@ -11,6 +11,7 @@ import java.util.List;
 
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 

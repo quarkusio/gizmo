@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.Var;
@@ -16,6 +15,7 @@ import io.quarkus.gizmo2.creator.AnonymousClassCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 /**
  * A capturing class creator.

@@ -8,9 +8,9 @@ import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator {
     private Constant initial;

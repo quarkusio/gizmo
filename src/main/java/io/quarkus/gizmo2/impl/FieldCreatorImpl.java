@@ -8,8 +8,8 @@ import java.util.Objects;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.FieldDesc;
 import io.quarkus.gizmo2.creator.FieldCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator
         permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {

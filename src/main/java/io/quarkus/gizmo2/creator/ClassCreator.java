@@ -8,7 +8,7 @@ import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
-import io.quarkus.gizmo2.FieldDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.ClassCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
