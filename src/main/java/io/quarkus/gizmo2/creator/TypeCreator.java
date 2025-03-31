@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.creator;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
@@ -12,6 +13,8 @@ import io.quarkus.gizmo2.Annotatable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -186,4 +189,30 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
             sfc.withInitial(value);
         });
     }
+
+    /**
+     * {@return a list of descriptors of all static fields added to this class so far}
+     */
+    List<FieldDesc> staticFields();
+
+    /**
+     * {@return a list of descriptors of all instance fields added to this class so far}
+     */
+    List<FieldDesc> instanceFields();
+
+    /**
+     * {@return a list of descriptors of all static methods added to this class so far}
+     */
+    List<MethodDesc> staticMethods();
+
+    /**
+     * {@return a list of descriptors of all instance methods added to this class so far}
+     */
+    List<MethodDesc> instanceMethods();
+
+    /**
+     * {@return a list of descriptors of all constructors added to this class so far}
+     */
+    List<ConstructorDesc> constructors();
+
 }
