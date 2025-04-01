@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import static java.lang.constant.ConstantDescs.CD_char;
 
-public class CharConstant extends IntBasedConstant {
+public final class CharConstant extends IntBasedConstant {
     private final Character value;
 
     public CharConstant(Character value) {
@@ -14,8 +14,8 @@ public class CharConstant extends IntBasedConstant {
     }
 
     @Override
-    int intValue() {
-        return value;
+    public int intValue() {
+        return value.charValue();
     }
 
     public boolean equals(final ConstantImpl obj) {
@@ -31,7 +31,7 @@ public class CharConstant extends IntBasedConstant {
     }
 
     public DynamicConstantDesc<Character> desc() {
-        return describeConstable().get();
+        return describeConstable().orElseThrow();
     }
 
     public Optional<DynamicConstantDesc<Character>> describeConstable() {

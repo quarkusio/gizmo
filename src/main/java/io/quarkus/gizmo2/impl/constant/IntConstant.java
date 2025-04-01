@@ -4,9 +4,6 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-
 public final class IntConstant extends IntBasedConstant {
     private final Integer value;
 

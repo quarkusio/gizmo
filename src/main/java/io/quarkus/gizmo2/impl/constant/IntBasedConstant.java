@@ -1,19 +1,16 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import java.lang.constant.ClassDesc;
+
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDesc;
-import java.lang.constant.ConstantDescs;
-import java.util.Optional;
-
-abstract class IntBasedConstant extends ConstantImpl {
+public abstract class IntBasedConstant extends ConstantImpl {
     IntBasedConstant(ClassDesc type) {
         super(type);
     }
 
-    abstract int intValue();
+    public abstract int intValue();
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         int i = intValue();

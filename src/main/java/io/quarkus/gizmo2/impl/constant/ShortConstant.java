@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import static java.lang.constant.ConstantDescs.CD_short;
 
-public class ShortConstant extends IntBasedConstant {
+public final class ShortConstant extends IntBasedConstant {
     private final Short value;
 
     public ShortConstant(Short value) {
@@ -14,8 +14,8 @@ public class ShortConstant extends IntBasedConstant {
     }
 
     @Override
-    int intValue() {
-        return value;
+    public int intValue() {
+        return value.intValue();
     }
 
     public boolean equals(final ConstantImpl obj) {
@@ -31,7 +31,7 @@ public class ShortConstant extends IntBasedConstant {
     }
 
     public DynamicConstantDesc<Short> desc() {
-        return describeConstable().get();
+        return describeConstable().orElseThrow();
     }
 
     public Optional<DynamicConstantDesc<Short>> describeConstable() {
