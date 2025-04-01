@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.SimpleTyped;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -243,7 +243,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
         ConstructorDesc superCtor = ConstructorDesc.of(superClass());
         return constructor(superCtor, cc -> {
             cc.public_();
-            Var this_ = cc.this_();
+            This this_ = cc.this_();
             cc.body(bc -> {
                 bc.invokeSpecial(superCtor, this_);
                 bc.return_();

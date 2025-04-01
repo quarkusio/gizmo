@@ -39,10 +39,10 @@ import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
 import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
 import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
 import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InvokeKind;
-import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.AnonymousClassCreator;
@@ -191,39 +191,39 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return lv;
     }
 
-    public Expr get(final LValueExpr var, final AccessMode mode) {
-        return addItem(((LValueExprImpl) var).emitGet(this, mode));
+    public Expr get(final Assignable var, final AccessMode mode) {
+        return addItem(((AssignableImpl) var).emitGet(this, mode));
     }
 
-    public void set(final LValueExpr var, final Expr value, final AccessMode mode) {
-        addItem(((LValueExprImpl) var).emitSet(this, (Item) value, mode));
+    public void set(final Assignable var, final Expr value, final AccessMode mode) {
+        addItem(((AssignableImpl) var).emitSet(this, (Item) value, mode));
     }
 
-    public void andAssign(final LValueExpr var, final Expr arg) {
+    public void andAssign(final Assignable var, final Expr arg) {
         set(var, and(var, arg));
     }
 
-    public void orAssign(final LValueExpr var, final Expr arg) {
+    public void orAssign(final Assignable var, final Expr arg) {
         set(var, or(var, arg));
     }
 
-    public void xorAssign(final LValueExpr var, final Expr arg) {
+    public void xorAssign(final Assignable var, final Expr arg) {
         set(var, xor(var, arg));
     }
 
-    public void shlAssign(final LValueExpr var, final Expr arg) {
+    public void shlAssign(final Assignable var, final Expr arg) {
         set(var, shl(var, arg));
     }
 
-    public void shrAssign(final LValueExpr var, final Expr arg) {
+    public void shrAssign(final Assignable var, final Expr arg) {
         set(var, shr(var, arg));
     }
 
-    public void ushrAssign(final LValueExpr var, final Expr arg) {
+    public void ushrAssign(final Assignable var, final Expr arg) {
         set(var, ushr(var, arg));
     }
 
-    public void addAssign(final LValueExpr var, final Expr arg) {
+    public void addAssign(final Assignable var, final Expr arg) {
         if (arg instanceof Constant c) {
             inc(var, c);
         } else {
@@ -231,7 +231,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public void subAssign(final LValueExpr var, final Expr arg) {
+    public void subAssign(final Assignable var, final Expr arg) {
         if (arg instanceof Constant c) {
             dec(var, c);
         } else {
@@ -239,15 +239,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public void mulAssign(final LValueExpr var, final Expr arg) {
+    public void mulAssign(final Assignable var, final Expr arg) {
         set(var, mul(var, arg));
     }
 
-    public void divAssign(final LValueExpr var, final Expr arg) {
+    public void divAssign(final Assignable var, final Expr arg) {
         set(var, div(var, arg));
     }
 
-    public void remAssign(final LValueExpr var, final Expr arg) {
+    public void remAssign(final Assignable var, final Expr arg) {
         set(var, rem(var, arg));
     }
 
@@ -375,12 +375,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         invokeVirtual(MethodDesc.of(Throwable.class, "addSuppressed", void.class, Throwable.class), throwable, suppressed);
     }
 
-    public void inc(final LValueExpr var, Constant amount) {
-        ((LValueExprImpl) var).emitInc(this, amount);
+    public void inc(final Assignable var, Constant amount) {
+        ((AssignableImpl) var).emitInc(this, amount);
     }
 
-    public void dec(final LValueExpr var, Constant amount) {
-        ((LValueExprImpl) var).emitDec(this, amount);
+    public void dec(final Assignable var, Constant amount) {
+        ((AssignableImpl) var).emitDec(this, amount);
     }
 
     public Expr newEmptyArray(final ClassDesc componentType, final Expr size) {

@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.impl.constant.IntBasedConstant;
 
-public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
+public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
     private final ClassDesc type;
     private final BlockCreatorImpl owner;

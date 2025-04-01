@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator;
 
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 
 /**
  * A thing which has an instance body.
@@ -9,5 +9,5 @@ public sealed interface InstanceBodyCreator extends BodyCreator permits Instance
     /**
      * {@return the {@code this} expression}
      */
-    Var this_();
+    This this_();
 }

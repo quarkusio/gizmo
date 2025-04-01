@@ -7,7 +7,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 /**
  * A variable corresponding to a field.
  */
-public sealed interface FieldVar extends Var, LValueExpr permits InstanceFieldVar, StaticFieldVar {
+public sealed interface FieldVar extends Var permits InstanceFieldVar, StaticFieldVar {
     default ClassDesc type() {
         return desc().type();
     }

@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 
@@ -13,7 +13,7 @@ public final class DefaultMethodCreatorImpl extends MethodCreatorImpl implements
     }
 
     @Override
-    public Var this_() {
+    public This this_() {
         return super.this_();
     }
 
