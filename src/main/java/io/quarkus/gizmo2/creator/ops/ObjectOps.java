@@ -67,61 +67,61 @@ public class ObjectOps {
     }
 
     /**
-     * Perform an instance invocation.
+     * Perform an instance invocation of a method with 3 parameters.
      *
      * @param returnType the return type (must not be {@code null})
      * @param name the method name (must not be {@code null})
-     * @param arg0Type the first argument type (must not be {@code null})
-     * @param arg1Type the second argument type (must not be {@code null})
-     * @param arg2Type the third argument type (must not be {@code null})
+     * @param param0Type the first parameter type (must not be {@code null})
+     * @param param1Type the second parameter type (must not be {@code null})
+     * @param param2Type the third parameter type (must not be {@code null})
      * @param arg0 the first argument value (must not be {@code null})
      * @param arg1 the second argument value (must not be {@code null})
      * @param arg2 the third argument value (must not be {@code null})
      * @return the invocation result expression (not {@code null})
      */
-    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Class<?> arg2Type, Expr arg0, Expr arg1, Expr arg2) {
-        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(arg0Type, arg1Type, arg2Type));
+    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> param0Type, Class<?> param1Type, Class<?> param2Type, Expr arg0, Expr arg1, Expr arg2) {
+        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(param0Type, param1Type, param2Type));
         return receiverType.isInterface() ?
                bc.invokeInterface(md, obj, List.of(arg0, arg1, arg2)) :
                bc.invokeVirtual(md, obj, List.of(arg0, arg1, arg2));
     }
 
     /**
-     * Perform an instance invocation.
+     * Perform an instance invocation of a method with 2 parameters.
      *
      * @param returnType the return type (must not be {@code null})
      * @param name the method name (must not be {@code null})
-     * @param arg0Type the first argument type (must not be {@code null})
-     * @param arg1Type the second argument type (must not be {@code null})
+     * @param param0Type the first parameter type (must not be {@code null})
+     * @param param1Type the second parameter type (must not be {@code null})
      * @param arg0 the first argument value (must not be {@code null})
      * @param arg1 the second argument value (must not be {@code null})
      * @return the invocation result expression (not {@code null})
      */
-    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Expr arg0, Expr arg1) {
-        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(arg0Type, arg1Type));
+    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> param0Type, Class<?> param1Type, Expr arg0, Expr arg1) {
+        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(param0Type, param1Type));
         return receiverType.isInterface() ?
                bc.invokeInterface(md, obj, List.of(arg0, arg1)) :
                bc.invokeVirtual(md, obj, List.of(arg0, arg1));
     }
 
     /**
-     * Perform an instance invocation.
+     * Perform an instance invocation of a method with 1 parameter.
      *
      * @param returnType the return type (must not be {@code null})
      * @param name the method name (must not be {@code null})
-     * @param argType the argument type (must not be {@code null})
+     * @param paramType the parameter type (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      * @return the invocation result expression (not {@code null})
      */
-    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> argType, Expr arg) {
-        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(argType));
+    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> paramType, Expr arg) {
+        MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(paramType));
         return receiverType.isInterface() ?
                bc.invokeInterface(md, obj, List.of(arg)) :
                bc.invokeVirtual(md, obj, List.of(arg));
     }
 
     /**
-     * Perform an instance invocation.
+     * Perform an instance invocation of a method with no parameter.
      *
      * @param returnType the return type (must not be {@code null})
      * @param name the method name (must not be {@code null})
@@ -135,7 +135,7 @@ public class ObjectOps {
     }
 
     /**
-     * Perform a {@code void} instance invocation on the receiver type.
+     * Perform an instance invocation of a method with no parameter that returns {@code void}.
      *
      * @param name the method name (must not be {@code null})
      */

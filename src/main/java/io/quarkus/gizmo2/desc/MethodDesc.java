@@ -41,12 +41,12 @@ public sealed interface MethodDesc extends MemberDesc, MethodTyped permits Class
      *
      * @param owner the class which contains the method (must not be {@code null})
      * @param name the name of the method (must not be {@code null})
-     * @param returning the class of the method return type (must not be {@code null})
-     * @param argTypes the classes of the argument types (must not be {@code null})
+     * @param returnType the class of the return type (must not be {@code null})
+     * @param paramTypes the classes of the parameter types (must not be {@code null})
      * @return the method descriptor (must not be {@code null})
      */
-    static MethodDesc of(Class<?> owner, String name, Class<?> returning, Class<?>... argTypes) {
-        return of(owner, name, MethodType.methodType(returning, argTypes));
+    static MethodDesc of(Class<?> owner, String name, Class<?> returnType, Class<?>... paramTypes) {
+        return of(owner, name, MethodType.methodType(returnType, paramTypes));
     }
 
     /**
@@ -54,11 +54,11 @@ public sealed interface MethodDesc extends MemberDesc, MethodTyped permits Class
      *
      * @param owner the class which contains the method (must not be {@code null})
      * @param name the name of the method (must not be {@code null})
-     * @param returning the class of the method return type (must not be {@code null})
-     * @param argTypes the classes of the argument types (must not be {@code null})
+     * @param returnType the class of the return type (must not be {@code null})
+     * @param paramTypes the classes of the parameter types (must not be {@code null})
      * @return the method descriptor (must not be {@code null})
      */
-    static MethodDesc of(Class<?> owner, String name, Class<?> returning, List<Class<?>> argTypes) {
-        return of(owner, name, MethodType.methodType(returning, argTypes));
+    static MethodDesc of(Class<?> owner, String name, Class<?> returnType, List<Class<?>> paramTypes) {
+        return of(owner, name, MethodType.methodType(returnType, paramTypes));
     }
 }
