@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
 import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
@@ -1053,10 +1054,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void return_(final Expr val) {
-        if (TypeKind.from(returnType).asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Return value type '" + val.type().displayName()
-                    + "' does not match expected '" + returnType.displayName() + "'");
-        }
+        requireSameLoadableTypeKind(returnType, val.type());
         replaceLastItem(val.equals(Constant.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
 
@@ -1065,10 +1063,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void yield(final Expr val) {
-        if (typeKind().asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Yield value type '" + val.type().displayName()
-                    + "' does not match expected '" + type().displayName() + "'");
-        }
+        requireSameLoadableTypeKind(this, val);
         replaceLastItem(val.equals(Constant.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 

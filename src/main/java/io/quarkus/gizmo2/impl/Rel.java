@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
