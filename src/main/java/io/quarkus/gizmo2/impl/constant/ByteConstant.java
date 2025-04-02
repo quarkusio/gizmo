@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import static java.lang.constant.ConstantDescs.CD_byte;
 
-public class ByteConstant extends IntBasedConstant {
+public final class ByteConstant extends IntBasedConstant {
     private final Byte value;
 
     public ByteConstant(Byte value) {
@@ -14,8 +14,8 @@ public class ByteConstant extends IntBasedConstant {
     }
 
     @Override
-    int intValue() {
-        return value;
+    public int intValue() {
+        return value.intValue();
     }
 
     public boolean equals(final ConstantImpl obj) {
@@ -31,7 +31,7 @@ public class ByteConstant extends IntBasedConstant {
     }
 
     public DynamicConstantDesc<Byte> desc() {
-        return describeConstable().get();
+        return describeConstable().orElseThrow();
     }
 
     public Optional<DynamicConstantDesc<Byte>> describeConstable() {

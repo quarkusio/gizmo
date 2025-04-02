@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.impl.constant.IntConstant;
+import io.quarkus.gizmo2.impl.constant.IntBasedConstant;
 
 public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
     private final String name;
@@ -102,7 +102,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.iinc(slot, ((IntConstant) amount).intValue());
+                    cb.iinc(slot, ((IntBasedConstant) amount).intValue());
                 }
             });
         } else {
@@ -118,7 +118,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.iinc(slot, -((IntConstant) amount).intValue());
+                    cb.iinc(slot, -((IntBasedConstant) amount).intValue());
                 }
             });
         } else {
