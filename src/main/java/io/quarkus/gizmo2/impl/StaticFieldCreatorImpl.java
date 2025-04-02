@@ -56,6 +56,8 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(flags);
+            addVisible(fb);
+            addInvisible(fb);
             if (initial != null) {
                 fb.with(ConstantValueAttribute.of(initial.desc()));
             }
