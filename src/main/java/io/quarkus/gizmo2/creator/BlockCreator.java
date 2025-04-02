@@ -2138,7 +2138,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param cond the boolean condition expression (must not be {@code null})
      * @param whenFalse the builder for a block to execute if the condition is false (must not be {@code null})
      */
-    void unless(Expr cond, Consumer<BlockCreator> whenFalse);
+    void ifNot(Expr cond, Consumer<BlockCreator> whenFalse);
 
     /**
      * A general {@code if}-{@code else} conditional.

@@ -36,7 +36,7 @@ public class ArraysTest {
                     var arr = bc.define("arr", bc.newEmptyArray(String.class, Constant.of(5)));
                     bc.set(arr.elem(0), Constant.of("foo"));
                     bc.set(arr.elem(Constant.of(1)), Constant.of("bar"));
-                    bc.unless(bc.exprEquals(arr.elem(Integer.valueOf(1)), Constant.of("bar")), fail -> fail.return_(-1));
+                    bc.ifNot(bc.exprEquals(arr.elem(Integer.valueOf(1)), Constant.of("bar")), fail -> fail.return_(-1));
                     bc.return_(arr.length());
                 });
             });

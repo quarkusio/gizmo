@@ -908,7 +908,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         doIf(cond, whenTrue, null);
     }
 
-    public void unless(final Expr cond, final Consumer<BlockCreator> whenFalse) {
+    public void ifNot(final Expr cond, final Consumer<BlockCreator> whenFalse) {
         doIf(cond, null, whenFalse);
     }
 
