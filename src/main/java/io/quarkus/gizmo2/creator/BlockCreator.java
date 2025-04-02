@@ -2114,6 +2114,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue);
 
     /**
+     * If the given object is <em>not</em> an instance of the given type, then execute the given block.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
+     */
+    void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse);
+
+    /**
      * If the given object is an instance of the given type, then execute the first block with the narrowed object,
      * otherwise execute the other block.
      *
@@ -2138,7 +2147,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param cond the boolean condition expression (must not be {@code null})
      * @param whenFalse the builder for a block to execute if the condition is false (must not be {@code null})
      */
-    void unless(Expr cond, Consumer<BlockCreator> whenFalse);
+    void ifNot(Expr cond, Consumer<BlockCreator> whenFalse);
 
     /**
      * A general {@code if}-{@code else} conditional.
@@ -2500,52 +2509,64 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // useful helpers/utilities
 
     /**
-     * {@return the hash code of the given expression}
+     * Generates call to one of the static methods to compute a hash code of given expression.
+     * That is:
+     * <ul>
+     * <li>for reference types, {@code Objects.hashCode(expr)}</li>
+     * <li>for primitive types, the static {@code hashCode(expr)} method on the corresponding wrapper class</li>
+     * </ul>
+     *
      * @param expr the expression, which can be of any type (must not be {@code null})
+     * @return an {@code int} expression representing the hash code of given expression (not {@code null})
      */
     Expr exprHashCode(Expr expr);
 
     /**
-     * Determine the equality of the given objects using <em>value equality</em>
-     * rather than <em>reference equality</em>.
-     * This is analogous to using {@link Object#equals(Object)} to compare references.
-     * For non-reference types, this would be equivalent to {@link #eq(Expr, Expr)}.
+     * Generates call to the {@code Objects#equals(a, b)} method if at least one
+     * of the given expressions is of a reference type (boxing the other if primitive).
+     * If both expressions are of a primitive type, this is equivalent to {@link #eq(Expr, Expr)}.
      *
      * @param a the first expression (must not be {@code null})
      * @param b the second expression (must not be {@code null})
-     * @return a {@code boolean} expression representing the equality (or lack thereof) between the two values
+     * @return a {@code boolean} expression representing the equality between the two values (not {@code null})
      */
     Expr exprEquals(Expr a, Expr b);
 
     /**
-     * Determine the equality of the given objects using <em>value equality</em>
-     * rather than <em>reference equality</em>.
-     * This is analogous to using {@link Object#equals(Object)} to compare references.
-     * For non-reference types, this would be equivalent to {@link #eq(Expr, Expr)}.
+     * Generates call to one of the {@code String#valueOf(expr)} overloads, based on the type of the argument.
      *
-     * @param a the first expression (must not be {@code null})
-     * @param b the second expression (must not be {@code null})
-     * @return a {@code boolean} expression representing the equality (or lack thereof) between the two values
-     */
-    default Expr exprEquals(Expr a, ConstantDesc b) {
-        return exprEquals(a, Constant.of(b));
-    }
-
-    /**
-     * {@return a string expression for the given expression}
      * @param expr the expression, which can be of any type
+     * @return a {@code String} expression representing the string value of given expression (not {@code null})
      */
     Expr exprToString(Expr expr);
 
     /**
-     * Generate a call to one of the {@code Arrays#equals(a, b)} overloads, based on the type of the first argument.
-     * The argument types must be the same.
+     * Generates call to one of the {@code Arrays#hashCode(expr)} overloads, based on the type of the argument,
+     * or to {@code Arrays#deepHashCode(expr)} in case of multidimensional arrays.
+     *
+     * @param expr the array instance (must not be {@code null})
+     * @return an {@code int} expression representing the hash code of given array (not {@code null})
+     */
+    Expr arrayHashCode(Expr expr);
+
+    /**
+     * Generates call to one of the {@code Arrays#equals(a, b)} overloads, based on the type of the first argument,
+     * or to {@code Arrays#deepEquals(a, b)} in case of multidimensional arrays.
      *
      * @param a the first array instance (must not be {@code null})
      * @param b the second array instance (must not be {@code null})
-     * @return the expression representing the result of the equality check (not {@code null})
+     * @return a {@code boolean} expression representing the equality between the two arrays (not {@code null})
      */
     Expr arrayEquals(Expr a, Expr b);
+
+    /**
+     * Generates call to one of the {@code Arrays#toString(expr)} overloads, based on the type of the argument,
+     * or to {@code Arrays#deepToString(expr)} in case of multidimensional arrays.
+     *
+     * @param expr the array instance (must not be {@code null})
+     * @return a {@code String} expression representing the string value of given array (not {@code null})
+     */
+    Expr arrayToString(Expr expr);
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Object}}
@@ -2575,6 +2596,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * {@return a convenience wrapper for accessing instance methods of {@link Collection}}
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
+
     default CollectionOps withCollection(Expr receiver) {
         return new CollectionOps(this, receiver);
     }

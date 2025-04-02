@@ -189,24 +189,6 @@ public abstract non-sealed class Item implements Expr {
         return b.append(itemName()).append('@').append(Integer.toHexString(hashCode()));
     }
 
-    void requireSameType(final Expr a, final Expr b) {
-        if (! a.type().equals(b.type())) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
-        }
-    }
-
-    void requireSameTypeKind(final Expr a, final Expr b) {
-        if (a.typeKind() != b.typeKind()) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
-        }
-    }
-
-    void requireSameLoadableTypeKind(final Expr a, final Expr b) {
-        if (a.typeKind().asLoadable() != b.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type() + " and " + b.type());
-        }
-    }
-
     public LValueExpr elem(final Expr index) {
         if (! type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");

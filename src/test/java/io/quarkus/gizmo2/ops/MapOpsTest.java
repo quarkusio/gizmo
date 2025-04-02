@@ -58,14 +58,14 @@ public class MapOpsTest {
                     var size = mapOps.size();
                     bc.if_(bc.ne(size, 2), fail -> fail.return_(1));
                     bc.if_(mapOps.isEmpty(), fail -> fail.return_(2));
-                    bc.unless(mapOps.containsKey(Constant.of("foo")), fail -> fail.return_(3));
-                    bc.unless(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
+                    bc.ifNot(mapOps.containsKey(Constant.of("foo")), fail -> fail.return_(3));
+                    bc.ifNot(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
                             fail -> fail.return_(4));
-                    bc.unless(bc.exprEquals(mapOps.remove(Constant.of("alpha")), Constant.of("bravo")),
+                    bc.ifNot(bc.exprEquals(mapOps.remove(Constant.of("alpha")), Constant.of("bravo")),
                             fail -> fail.return_(5));
                     bc.if_(bc.ne(mapOps.size(), 1), fail -> fail.return_(6));
                     mapOps.clear();
-                    bc.unless(mapOps.isEmpty(), fail -> fail.return_(7));
+                    bc.ifNot(mapOps.isEmpty(), fail -> fail.return_(7));
                     bc.return_(0);
                 });
             });
@@ -91,7 +91,7 @@ public class MapOpsTest {
                     assertThrows(IllegalArgumentException.class, () -> bc.mapOf(Constant.of("foo")));
                     var map = bc.define("map", bc.mapOf(Constant.of("foo"), Constant.of("bar")));
                     MapOps mapOps = bc.withMap(map);
-                    bc.unless(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
+                    bc.ifNot(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
                             fail -> fail.return_(-1));
                     bc.return_(mapOps.size());
                 });

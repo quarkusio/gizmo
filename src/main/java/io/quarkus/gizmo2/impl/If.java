@@ -90,7 +90,7 @@ abstract class If extends Item {
             }
         } else {
             if (whenFalse != null) {
-                // unless
+                // if not
                 Node falseTail = whenFalse.tail();
                 if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
                     // just steal the goto target

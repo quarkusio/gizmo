@@ -38,7 +38,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         Objects.requireNonNull(builder, "builder");
         var mc = new DefaultMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public MethodDesc privateMethod(final String name, final Consumer<InstanceMethodCreator> builder) {
@@ -46,7 +48,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         Objects.requireNonNull(builder, "builder");
         var mc = new PrivateInterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public MethodDesc method(final String name, final Consumer<AbstractMethodCreator> builder) {
@@ -54,7 +58,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         Objects.requireNonNull(builder, "builder");
         var mc = new AbstractMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     void accept(final Consumer<InterfaceCreator> builder) {

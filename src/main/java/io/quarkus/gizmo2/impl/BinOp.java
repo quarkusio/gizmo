@@ -7,6 +7,8 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
+
 final class BinOp extends Item {
     private final Item a;
     private final Item b;

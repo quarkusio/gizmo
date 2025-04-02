@@ -1,5 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
@@ -852,6 +856,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if_(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)));
     }
 
+    public void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse) {
+        doIf(instanceOf(obj, type), null, ifFalse);
+    }
+
     public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, Expr> ifTrue, final Consumer<BlockCreator> ifFalse) {
         ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)), ifFalse);
     }
@@ -907,7 +915,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         doIf(cond, whenTrue, null);
     }
 
-    public void unless(final Expr cond, final Consumer<BlockCreator> whenFalse) {
+    public void ifNot(final Expr cond, final Consumer<BlockCreator> whenFalse) {
         doIf(cond, null, whenFalse);
     }
 
@@ -1053,10 +1061,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void return_(final Expr val) {
-        if (TypeKind.from(returnType).asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Return value type '" + val.type().displayName()
-                    + "' does not match expected '" + returnType.displayName() + "'");
-        }
+        requireSameLoadableTypeKind(returnType, val.type());
         replaceLastItem(val.equals(Constant.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
 
@@ -1065,10 +1070,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void yield(final Expr val) {
-        if (typeKind().asLoadable() != val.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Yield value type '" + val.type().displayName()
-                    + "' does not match expected '" + type().displayName() + "'");
-        }
+        requireSameLoadableTypeKind(this, val);
         replaceLastItem(val.equals(Constant.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
@@ -1082,7 +1084,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), expr);
             case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), expr);
             case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), expr);
-            case REFERENCE -> invokeVirtual(MethodDesc.of(Object.class, "hashCode", int.class), expr);
+            case REFERENCE -> invokeStatic(MethodDesc.of(Objects.class, "hashCode", int.class, Object.class), expr);
             case VOID -> Constant.of(0); // null constant
         };
     }
@@ -1108,20 +1110,47 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case LONG -> long.class;
             case FLOAT -> float.class;
             case DOUBLE -> double.class;
-            case REFERENCE -> expr.type().isArray() ? switch (TypeKind.from(expr.type().componentType())) {
-                case CHAR -> char[].class;
-                default -> Object.class;
-            } : Object.class;
+            case REFERENCE -> expr.type().equals(CD_char.arrayType()) ? char[].class : Object.class;
             default -> throw new IllegalArgumentException("Invalid type for `toString`: " + expr);
         }), expr);
     }
 
+    public Expr arrayHashCode(final Expr expr) {
+        requireArray(expr);
+
+        ClassDesc componentType = expr.type().componentType();
+        if (componentType.isArray()) {
+            return invokeStatic(MethodDesc.of(Arrays.class, "deepHashCode", int.class, Object[].class), expr);
+        } else {
+            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : expr.type();
+            return invokeStatic(MethodDesc.of(Arrays.class, "hashCode", MethodTypeDesc.of(CD_int, type)), expr);
+        }
+    }
+
     public Expr arrayEquals(final Expr a, final Expr b) {
-        ClassDesc type = switch (TypeKind.from(a.type().componentType())) {
-            case REFERENCE -> CD_Object.arrayType();
-            default -> a.type();
-        };
-        return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), a, b);
+        requireArray(a);
+        requireArray(b);
+        requireSameTypeKind(a.type().componentType(), b.type().componentType());
+
+        ClassDesc componentType = a.type().componentType();
+        if (componentType.isArray()) {
+            return invokeStatic(MethodDesc.of(Arrays.class, "deepEquals", boolean.class, Object[].class, Object[].class), a, b);
+        } else {
+            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : a.type();
+            return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), a, b);
+        }
+    }
+
+    public Expr arrayToString(final Expr expr) {
+        requireArray(expr);
+
+        ClassDesc componentType = expr.type().componentType();
+        if (componentType.isArray()) {
+            return invokeStatic(MethodDesc.of(Arrays.class, "deepToString", String.class, Object[].class), expr);
+        } else {
+            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : expr.type();
+            return invokeStatic(MethodDesc.of(Arrays.class, "toString", MethodTypeDesc.of(CD_String, type)), expr);
+        }
     }
 
     public Expr classForName(final Expr className) {

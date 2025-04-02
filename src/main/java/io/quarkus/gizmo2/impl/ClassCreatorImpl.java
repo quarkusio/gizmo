@@ -52,7 +52,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         Objects.requireNonNull(builder, "builder");
         var fc = new InstanceFieldCreatorImpl(this, type(), name);
         fc.accept(builder);
-        return fc.desc();
+        FieldDesc desc = fc.desc();
+        instanceFields.add(desc);
+        return desc;
     }
 
     public MethodDesc method(final String name, final Consumer<InstanceMethodCreator> builder) {
@@ -60,7 +62,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         Objects.requireNonNull(builder, "builder");
         var mc = new InstanceMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public MethodDesc abstractMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
@@ -68,7 +72,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         Objects.requireNonNull(builder, "builder");
         var mc = new AbstractMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public MethodDesc nativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
@@ -76,7 +82,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         Objects.requireNonNull(builder, "builder");
         var mc = new NativeMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public MethodDesc staticNativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
@@ -84,14 +92,18 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         Objects.requireNonNull(builder, "builder");
         var mc = new StaticNativeMethodCreatorImpl(this, name);
         mc.accept(builder);
-        return mc.desc();
+        MethodDesc desc = mc.desc();
+        instanceMethods.add(desc);
+        return desc;
     }
 
     public ConstructorDesc constructor(final Consumer<ConstructorCreator> builder) {
         Objects.requireNonNull(builder, "builder");
         var mc = new ConstructorCreatorImpl(this);
         mc.accept(builder);
-        return mc.desc();
+        ConstructorDesc desc = mc.desc();
+        constructors.add(desc);
+        return desc;
     }
 
     @Override

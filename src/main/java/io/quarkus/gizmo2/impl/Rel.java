@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
@@ -59,7 +61,7 @@ final class Rel extends Item {
         switch (typeKind().asLoadable()) {
             case INT -> kind.if_icmp.accept(cb, true_);
             case REFERENCE -> kind.if_acmp.accept(cb, true_);
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(typeKind().asLoadable());
         }
         cb.iconst_0();
         cb.goto_(end);

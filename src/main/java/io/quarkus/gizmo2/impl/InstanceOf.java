@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -16,7 +17,7 @@ final class InstanceOf extends Item {
     }
 
     public ClassDesc type() {
-        return type;
+        return ConstantDescs.CD_boolean;
     }
 
     public boolean bound() {

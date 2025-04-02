@@ -97,7 +97,7 @@ public class BoxUnboxTest {
                     var lu = bc.define("lv", bc.unbox(l));
                     var fu = bc.define("fv", bc.unbox(f));
                     var du = bc.define("dv", bc.unbox(d));
-                    bc.unless(bc.unbox(bool), fail -> fail.return_(1));
+                    bc.ifNot(bc.unbox(bool), fail -> fail.return_(1));
                     bc.if_(bc.ne(bc.unbox(b), Constant.of((byte) 123)), fail -> fail.return_(2));
                     bc.if_(bc.ne(bc.unbox(s), Constant.of((short) 456)), fail -> fail.return_(3));
                     bc.if_(bc.ne(bc.unbox(c), Constant.of('a')), fail -> fail.return_(4));

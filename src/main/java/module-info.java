@@ -6,6 +6,7 @@ module io.quarkus.gizmo2 {
 
     // for accessing serializable lambdas via ReflectionFactory
     requires jdk.unsupported;
+    requires io.smallrye.common.constraint;
 
     exports io.quarkus.gizmo2;
     exports io.quarkus.gizmo2.creator;

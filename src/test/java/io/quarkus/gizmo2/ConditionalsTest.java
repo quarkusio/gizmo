@@ -38,10 +38,10 @@ public class ConditionalsTest {
     }
 
     @Test
-    public void testUnless() {
+    public void testIfNot() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Unless", cc -> {
+        g.class_("io.quarkus.gizmo2.IfNot", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test(Object val) {
                 //    int len = val.toString().length();
@@ -55,7 +55,7 @@ public class ConditionalsTest {
                 mc.body(bc -> {
                     var len = bc.define("len",
                             bc.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
-                    bc.unless(bc.eq(len, 5), BlockCreator::returnFalse);
+                    bc.ifNot(bc.eq(len, 5), BlockCreator::returnFalse);
                     bc.returnTrue();
                 });
             });

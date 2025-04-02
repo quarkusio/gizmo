@@ -11,6 +11,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -30,6 +31,8 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator
@@ -46,6 +49,12 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
     private boolean hasLambdaBootstrap;
+
+    protected final List<FieldDesc> staticFields = new ArrayList<>();
+    protected final List<FieldDesc> instanceFields = new ArrayList<>();
+    protected final List<MethodDesc> staticMethods = new ArrayList<>();
+    protected final List<MethodDesc> instanceMethods = new ArrayList<>();
+    protected final List<ConstructorDesc> constructors = new ArrayList<>();
 
     TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
         this.type = type;
@@ -146,7 +155,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         Objects.requireNonNull(builder, "builder");
         StaticMethodCreatorImpl smc = new StaticMethodCreatorImpl(this, name);
         smc.accept(builder);
-        return smc.desc();
+        MethodDesc desc = smc.desc();
+        staticMethods.add(desc);
+        return desc;
     }
 
     public StaticFieldVar staticField(final String name, final Consumer<StaticFieldCreator> builder) {
@@ -154,7 +165,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         Objects.requireNonNull(builder, "builder");
         var fc = new StaticFieldCreatorImpl(this, type(), name);
         fc.accept(builder);
-        return Expr.staticField(fc.desc());
+        FieldDesc desc = fc.desc();
+        staticFields.add(desc);
+        return Expr.staticField(desc);
     }
 
     @Override
@@ -279,5 +292,30 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
             );
             hasLambdaBootstrap = true;
         }
+    }
+
+    @Override
+    public List<FieldDesc> staticFields() {
+        return Collections.unmodifiableList(staticFields);
+    }
+
+    @Override
+    public List<FieldDesc> instanceFields() {
+        return Collections.unmodifiableList(instanceFields);
+    }
+
+    @Override
+    public List<MethodDesc> staticMethods() {
+        return Collections.unmodifiableList(staticMethods);
+    }
+
+    @Override
+    public List<MethodDesc> instanceMethods() {
+        return Collections.unmodifiableList(instanceMethods);
+    }
+
+    @Override
+    public List<ConstructorDesc> constructors() {
+        return Collections.unmodifiableList(constructors);
     }
 }

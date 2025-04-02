@@ -47,12 +47,12 @@ public class OptionalOpsTest {
                     var bar = bc.define("bar", bc.optionalOfNullable(Constant.of("bar")));
                     var baz = bc.define("baz", bc.optionalOfNullable(Constant.ofNull(String.class)));
                     bc.if_(bc.withOptional(foo).isEmpty(), fail -> fail.return_(1));
-                    bc.unless(bc.withOptional(foo).isPresent(), fail -> fail.return_(2));
-                    bc.unless(bc.exprEquals(Constant.of("foo"), bc.withOptional(foo).get()), fail -> fail.return_(3));
+                    bc.ifNot(bc.withOptional(foo).isPresent(), fail -> fail.return_(2));
+                    bc.ifNot(bc.exprEquals(Constant.of("foo"), bc.withOptional(foo).get()), fail -> fail.return_(3));
                     bc.if_(bc.withOptional(bar).isEmpty(), fail -> fail.return_(4));
                     bc.if_(bc.withOptional(baz).isPresent(), fail -> fail.return_(5));
                     var qux = Constant.of("qux");
-                    bc.unless(bc.exprEquals(qux, bc.withOptional(baz).orElse(qux)), fail -> fail.return_(6));
+                    bc.ifNot(bc.exprEquals(qux, bc.withOptional(baz).orElse(qux)), fail -> fail.return_(6));
                     bc.return_(0);
                 });
             });
