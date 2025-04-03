@@ -66,17 +66,18 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
     Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
         return new Item() {
             protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                node = value.process(node, op);
                 if (mode != AccessMode.AsDeclared) {
                     node = ConstantImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
+                } else {
+                    node = value.process(node.prev(), op);
                 }
                 return node;
             }
-
+            
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 switch (mode) {
                     case AsDeclared -> {
-                        cb.putstatic(owner(), name(), type());
+                        cb.putstatic(owner(), name(), desc().type());
                     }
                     default -> {
                         cb.invokevirtual(CD_VarHandle, switch (mode) {
