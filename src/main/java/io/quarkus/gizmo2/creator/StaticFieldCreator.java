@@ -11,7 +11,6 @@ import io.quarkus.gizmo2.impl.StaticFieldCreatorImpl;
 public sealed interface StaticFieldCreator extends FieldCreator permits StaticFieldCreatorImpl {
     /**
      * Provide an initial constant value for this field.
-     * An initial constant value must be only one of the types permitted by the JVMS.
      *
      * @param initial the initial value (must not be {@code null})
      */

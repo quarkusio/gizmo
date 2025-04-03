@@ -1,16 +1,17 @@
 package io.quarkus.gizmo2.impl;
 
+import static java.lang.constant.ConstantDescs.*;
+
 import java.lang.constant.ClassDesc;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.common.constraint.Assert;
 
 public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator {
     private Constant initial;
@@ -21,20 +22,28 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
     }
 
     public void withInitial(final Constant initial) {
-        if (this.initial != null || initializer != null) {
-            throw new IllegalStateException("A static field may have only one initializer");
+        Assert.checkNotNullParam("initial", initial);
+        checkOneInit();
+        if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {
+            this.initial = initial;
+        } else {
+            initializer = (bc -> bc.setStaticField(desc(), initial));
         }
-        this.initial = Objects.requireNonNull(initial, "initial");
     }
 
     public void withInitializer(final Consumer<BlockCreator> init) {
+        Assert.checkNotNullParam("init", init);
+        checkOneInit();
+        initializer = (b0 -> {
+            FieldDesc desc = desc();
+            b0.setStaticField(desc, b0.blockExpr(desc.type(), init));
+        });
+    }
+
+    private void checkOneInit() {
         if (initial != null || initializer != null) {
             throw new IllegalStateException("A static field may have only one initializer");
         }
-        initializer = (b0 -> {
-            FieldDesc desc = desc();
-            b0.set(Expr.staticField(desc), b0.blockExpr(desc.type(), init));
-        });
     }
 
     void accept(Consumer<StaticFieldCreator> builder) {
