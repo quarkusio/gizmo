@@ -1,13 +1,15 @@
 package io.quarkus.gizmo2;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import org.junit.jupiter.api.Test;
 
 public class FieldAccessTest {
 
@@ -55,19 +57,33 @@ public class FieldAccessTest {
                 fc.withInitial(Constant.of("charlie"));
             });
             cc.defaultConstructor();
-            cc.method("test", mc -> {
-                // int test() {
-                //    return bravo.length();
+            cc.staticMethod("test", mc -> {
+                // Object test(Object input) {
+                //    if (input != null) {
+                //       Alpha.bravo = Alpha.bravo.concat("s");
+                //    }
+                //    if (input == null) {
+                //       Alpha.bravo = "NULL";
+                //    }
+                //    return Alpha.bravo.length();
                 // }
-                mc.returning(int.class);
+                mc.returning(Object.class);
+                ParamVar input = mc.parameter("input", Object.class);
                 mc.body(bc -> {
-                    var b = bc.get(bravo);
-                    var length = bc.withString(b).length();
-                    bc.return_(length);
+                    bc.ifNotNull(input, bc1 -> {
+                        var b = bc1.get(bravo);
+                        var newVal = bc1.withString(b).concat(Constant.of("s"));
+                        bc1.set(bravo, newVal);
+                    });
+                    bc.ifNull(input, bc1 -> {
+                        bc1.setStaticField(bravo.desc(), Constant.of("NULL"));
+                    });
+                    bc.return_(bc.getStaticField(bravo.desc()));
                 });
             });
         });
-        assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
+        assertEquals("charlies", tcm.staticMethod("test", Function.class).apply("foo").toString());
+        assertEquals("NULL", tcm.staticMethod("test", Function.class).apply(null).toString());
     }
 
     @SuppressWarnings("unchecked")

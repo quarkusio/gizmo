@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
-import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
@@ -902,7 +901,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         doIfInsn(CD_void, cond, wt, wf);
     }
-
+    
     public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = new BlockCreatorImpl(this, type);
         BlockCreatorImpl wf = new BlockCreatorImpl(this, type);

@@ -9,8 +9,8 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -31,7 +31,9 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
         }
         if (System.getProperty("dumpClass") != null) {
             try {
-                Files.write(Paths.get(classDesc.displayName() + ".class"), bytes);
+                Path path = Paths.get(classDesc.displayName() + ".class");
+                System.out.println("Dump class to: " + path.toAbsolutePath().toString());
+                Files.write(path, bytes);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

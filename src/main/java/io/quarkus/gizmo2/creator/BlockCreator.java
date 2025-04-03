@@ -35,6 +35,7 @@ import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -2159,6 +2160,26 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void ifElse(Expr cond, Consumer<BlockCreator> whenTrue, Consumer<BlockCreator> whenFalse);
 
     /**
+     * An {@code if (obj == null)} conditional.
+     *
+     * @param obj the object reference to test (must not be {@code null})
+     * @param whenTrue the builder for a block to execute if the object reference is null (must not be {@code null})
+     */
+    default void ifNull(Expr obj, Consumer<BlockCreator> whenTrue) {
+        if_(eq(obj, Constant.ofNull(obj.type())), whenTrue);
+    }
+
+    /**
+     * An {@code if (obj != null)} conditional.
+     *
+     * @param obj the object reference to test (must not be {@code null})
+     * @param whenTrue the builder for a block to execute if the object reference is not null (must not be {@code null})
+     */
+    default void ifNotNull(Expr obj, Consumer<BlockCreator> whenTrue) {
+        if_(ne(obj, Constant.ofNull(obj.type())), whenTrue);
+    }
+    
+    /**
      * Construct a {@code switch} statement for {@code enum} constants.
      *
      * @param val the value to switch on (must not be {@code null})
@@ -2900,5 +2921,26 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
     void assert_(Consumer<BlockCreator> assertion, String message);
+    
+    /**
+     * Read the value from a static field.
+     * 
+     * @param desc the field descriptor (must not be {@code null})
+     * @return the memory value (not {@code null})
+     */
+    default Expr getStaticField(FieldDesc desc) {
+        return get(Expr.staticField(desc));
+    }
+    
+    /**
+     * Write the value to a static field.
+     * 
+     * @param desc the field descriptor (must not be {@code null})
+     * @param value the value to write
+     * @return the memory value (not {@code null})
+     */
+    default void setStaticField(FieldDesc desc, Expr value) {
+        set(Expr.staticField(desc), value);
+    }
+    
 }
-
