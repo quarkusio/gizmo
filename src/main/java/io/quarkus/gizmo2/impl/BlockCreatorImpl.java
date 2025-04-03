@@ -746,7 +746,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         });
     }
 
-    public void forEach(final Expr fn, final BiConsumer<BlockCreator, Expr> builder) {
+    public void forEach(final Expr fn, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         block(fn, (b0, fn0) -> {
             Var items = b0.define("$$items" + depth, fn0);
             if (items.type().isArray()) {
@@ -781,7 +781,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         });
     }
 
-    public void block(final Expr arg, BiConsumer<BlockCreator, Expr> nested) {
+    void block(final Expr arg, BiConsumer<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, CD_void);
         block.accept(nested);
         addItem(block);
@@ -819,7 +819,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr blockExpr(final Expr arg, final ClassDesc type, final BiConsumer<BlockCreator, Expr> nested) {
+    Expr blockExpr(final Expr arg, final ClassDesc type, final BiConsumer<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, type);
         addItem(block);
         block.accept(nested);
@@ -861,16 +861,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         markDone();
     }
 
-    public void ifInstanceOf(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, Expr> ifTrue) {
-        if_(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)));
+    public void ifInstanceOf(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue) {
+        if_(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, cast(obj, type))));
     }
 
     public void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse) {
         doIf(instanceOf(obj, type), null, ifFalse);
     }
 
-    public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, Expr> ifTrue, final Consumer<BlockCreator> ifFalse) {
-        ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.cast(obj, type)), ifFalse);
+    public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue, final Consumer<BlockCreator> ifFalse) {
+        ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), ifFalse);
     }
 
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {

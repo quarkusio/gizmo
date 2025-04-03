@@ -2069,7 +2069,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param items the array or collection (must not be {@code null})
      * @param builder the builder for the loop body (must not be {@code null})
      */
-    void forEach(Expr items, BiConsumer<BlockCreator, Expr> builder);
+    void forEach(Expr items, BiConsumer<BlockCreator, ? super LocalVar> builder);
 
     /**
      * Create a nested block.
@@ -2077,14 +2077,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param nested the builder for the block body (must not be {@code null})
      */
     void block(Consumer<BlockCreator> nested);
-
-    /**
-     * Create a block which takes an argument.
-     *
-     * @param arg the block argument (must not be {@code null})
-     * @param nested the builder for the block body (must not be {@code null})
-     */
-    void block(Expr arg, BiConsumer<BlockCreator, Expr> nested);
 
     /**
      * Create a block expression.
@@ -2096,23 +2088,13 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr blockExpr(ClassDesc type, Consumer<BlockCreator> nested);
 
     /**
-     * Create a block expression which takes an argument.
-     *
-     * @param arg the block argument (must not be {@code null})
-     * @param type the output type (must not be {@code null})
-     * @param nested the builder for the block body (must not be {@code null})
-     * @return the returned value (not {@code null})
-     */
-    Expr blockExpr(Expr arg, ClassDesc type, BiConsumer<BlockCreator, Expr> nested);
-
-    /**
      * If the given object is an instance of the given type, then execute the block with the narrowed object.
      *
      * @param obj the object to test (must not be {@code null})
      * @param type the type to check for (must not be {@code null})
      * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
      */
-    void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue);
+    void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue);
 
     /**
      * If the given object is <em>not</em> an instance of the given type, then execute the given block.
@@ -2132,7 +2114,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
      * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
      */
-    void ifInstanceOfElse(Expr obj, ClassDesc type, BiConsumer<BlockCreator, Expr> ifTrue, Consumer<BlockCreator> ifFalse);
+    void ifInstanceOfElse(Expr obj, ClassDesc type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue, Consumer<BlockCreator> ifFalse);
 
     /**
      * A general {@code if} conditional.
@@ -2263,7 +2245,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Restart an enclosing block.
-     * Blocks which are part of an expression-accepting operation (i.e. a {@code BiConsumer<BlockCreator, Expr>}) may
+     * Blocks which are part of an expression-accepting operation may
      * not be the target of a {@code redo}.
      *
      * @param outer the block to restart (must not be {@code null})
