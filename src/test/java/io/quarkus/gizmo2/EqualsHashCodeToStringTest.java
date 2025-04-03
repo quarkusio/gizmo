@@ -118,11 +118,12 @@ public class EqualsHashCodeToStringTest {
                 for (int i = 0; i < params.length; i++) {
                     paramVars.add(mc.parameter("param" + i, params[i]));
                 }
+                Var this_ = mc.this_();
                 mc.body(b0 -> {
-                    b0.invokeSpecial(ConstructorDesc.of(Object.class), mc.this_());
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
 
                     for (int i = 0; i < params.length; i++) {
-                        b0.set(mc.this_().field(fields.get(i)), paramVars.get(i));
+                        b0.set(this_.field(fields.get(i)), paramVars.get(i));
                     }
 
                     b0.return_();

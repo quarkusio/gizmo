@@ -24,9 +24,10 @@ public class FieldAccessTest {
             });
             cc.constructor(con -> {
                 // this.bravo = "charlie";
+                Var this_ = con.this_();
                 con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
-                    var bravo = con.this_().field(bravoDesc);
+                    bc.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    var bravo = this_.field(bravoDesc);
                     bc.set(bravo, Constant.of("charlie"));
                     bc.return_();
                 });
@@ -36,8 +37,9 @@ public class FieldAccessTest {
                 //    return bravo.length();
                 // }
                 mc.returning(int.class);
+                Var this_ = mc.this_();
                 mc.body(bc -> {
-                    var b = bc.get(mc.this_().field(bravoDesc));
+                    var b = bc.get(this_.field(bravoDesc));
                     var length = bc.withString(b).length();
                     bc.return_(length);
                 });

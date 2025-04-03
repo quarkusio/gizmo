@@ -64,8 +64,9 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
 
     void freezeCaptures() {
         ctorSetups.add(cc -> {
+            Var this_ = cc.this_();
             cc.body(b0 -> {
-                b0.invokeSpecial(superCtor, cc.this_(), superArgs);
+                b0.invokeSpecial(superCtor, this_, superArgs);
                 for (Consumer<BlockCreator> capture : captures) {
                     capture.accept(b0);
                 }
