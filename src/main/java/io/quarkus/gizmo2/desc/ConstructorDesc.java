@@ -25,7 +25,7 @@ public sealed interface ConstructorDesc extends MemberDesc permits ConstructorDe
     }
 
     /**
-     * Construct a new instance for a no-arguments constructor.
+     * Construct a new instance for a zero-parameter constructor.
      *
      * @param owner the descriptor of the class which contains the member (must not be {@code null})
      * @return the constructor descriptor (not {@code null})
@@ -38,11 +38,11 @@ public sealed interface ConstructorDesc extends MemberDesc permits ConstructorDe
      * Construct a new instance.
      *
      * @param owner the descriptor of the class which contains the member (must not be {@code null})
-     * @param argTypes a list of descriptors corresponding to the argument types (must not be {@code null})
+     * @param paramTypes a list of descriptors corresponding to the parameter types (must not be {@code null})
      * @return the constructor descriptor (not {@code null})
      */
-    static ConstructorDesc of(ClassDesc owner, List<ClassDesc> argTypes) {
-        return of(owner, MethodTypeDesc.of(ConstantDescs.CD_void, argTypes.toArray(ClassDesc[]::new)));
+    static ConstructorDesc of(ClassDesc owner, List<ClassDesc> paramTypes) {
+        return of(owner, MethodTypeDesc.of(ConstantDescs.CD_void, paramTypes.toArray(ClassDesc[]::new)));
     }
 
     /**
@@ -71,22 +71,22 @@ public sealed interface ConstructorDesc extends MemberDesc permits ConstructorDe
      * Construct a new instance.
      *
      * @param owner the class which contains the member (must not be {@code null})
-     * @param argTypes a list of argument types (must not be {@code null})
+     * @param paramTypes a list of parameter types (must not be {@code null})
      * @return the constructor descriptor (not {@code null})
      */
-    static ConstructorDesc of(Class<?> owner, Class<?>... argTypes) {
-        return of(owner, MethodType.methodType(void.class, argTypes));
+    static ConstructorDesc of(Class<?> owner, Class<?>... paramTypes) {
+        return of(owner, MethodType.methodType(void.class, paramTypes));
     }
 
     /**
      * Construct a new instance.
      *
      * @param owner the class which contains the member (must not be {@code null})
-     * @param argTypes a list of argument types (must not be {@code null})
+     * @param paramTypes a list of parameter types (must not be {@code null})
      * @return the constructor descriptor (not {@code null})
      */
-    static ConstructorDesc of(Class<?> owner, List<Class<?>> argTypes) {
-        return of(owner, MethodType.methodType(void.class, argTypes));
+    static ConstructorDesc of(Class<?> owner, List<Class<?>> paramTypes) {
+        return of(owner, MethodType.methodType(void.class, paramTypes));
     }
 
     /**

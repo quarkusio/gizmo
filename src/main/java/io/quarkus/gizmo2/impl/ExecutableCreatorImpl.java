@@ -23,7 +23,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotation
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ParamVar;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
@@ -236,7 +236,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         type = null;
     }
 
-    Var this_() {
+    This this_() {
         // used only in instance subclasses
         ThisExpr this_ = this.this_;
         if (this_ == null) {

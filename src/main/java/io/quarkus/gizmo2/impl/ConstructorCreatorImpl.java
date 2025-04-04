@@ -6,7 +6,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -42,7 +42,7 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     }
 
     @Override
-    public Var this_() {
+    public This this_() {
         return super.this_();
     }
 

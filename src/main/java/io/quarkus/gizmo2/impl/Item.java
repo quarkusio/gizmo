@@ -11,9 +11,9 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
-import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
@@ -189,7 +189,7 @@ public abstract non-sealed class Item implements Expr {
         return b.append(itemName()).append('@').append(Integer.toHexString(hashCode()));
     }
 
-    public LValueExpr elem(final Expr index) {
+    public Assignable elem(final Expr index) {
         if (! type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");
         }
@@ -245,7 +245,7 @@ public abstract non-sealed class Item implements Expr {
         };
     }
 
-    public final class FieldDeref extends LValueExprImpl implements InstanceFieldVar {
+    public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
         private final FieldDesc desc;
 
         private FieldDeref(final FieldDesc desc) {
@@ -348,7 +348,7 @@ public abstract non-sealed class Item implements Expr {
         }
     }
 
-    final class ArrayDeref extends LValueExprImpl {
+    final class ArrayDeref extends AssignableImpl {
         private final ClassDesc componentType;
         private final Item index;
 

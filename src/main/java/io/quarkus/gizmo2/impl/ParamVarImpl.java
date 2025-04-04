@@ -9,7 +9,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.ParamVar;
 
-public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
+public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     private final ClassDesc type;
     private final String name;
     private final int index;

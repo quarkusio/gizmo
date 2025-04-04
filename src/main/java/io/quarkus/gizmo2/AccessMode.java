@@ -12,7 +12,7 @@ public enum AccessMode {
     AsDeclared(true, true),
     /**
      * Access using "plain" semantics.
-     * All lvalues support this type of access.
+     * All assignables support this type of access.
      */
     Plain(true, true),
     /**
