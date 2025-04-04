@@ -57,6 +57,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.NullConstant;
+import io.quarkus.gizmo2.impl.constant.VoidConstant;
 
 /**
  * The block builder implementation. Internal only.
@@ -80,7 +81,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final Node head;
     private final Node tail;
     private boolean breakTarget;
-    private Cleanup blockCleanup = null;
+    /**
+     * Set if this block is within a try block.
+     */
+    TryFinally tryFinally;
     private int state;
     private final Label startLabel;
     private final Label endLabel;
@@ -107,11 +111,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType);
     }
 
+    BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType, final ClassDesc outputType) {
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstantImpl.ofVoid(), outputType, parent.returnType);
+    }
+
     private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
         depth = parent == null ? 0 : parent.depth + 1;
+        tryFinally = parent == null ? null : parent.tryFinally;
         startLabel = newLabel();
         endLabel = newLabel();
         this.input = input;
@@ -132,8 +141,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return tail;
     }
 
+    BlockCreatorImpl parent() {
+        return parent;
+    }
+
     Label newLabel() {
         return outerCodeBuilder.newLabel();
+    }
+
+    ClassDesc returnType() {
+        return returnType;
     }
 
     public ClassDesc type() {
@@ -305,7 +322,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case FLOAT -> "floatValue";
             case DOUBLE -> "doubleValue";
             default -> throw new IllegalStateException();
-        }, MethodTypeDesc.of(unboxType)), a);
+        }, MethodTypeDesc.of(unboxType, Util.NO_DESCS)), a);
     }
 
     public Expr switchEnum(final ClassDesc outputType, final Expr enumExpr, final Consumer<SwitchCreator> builder) {
@@ -336,26 +353,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
-        addItem(new Goto() {
-            Label target() {
-                SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
-                SwitchCreatorImpl<?>.CaseCreatorImpl matched = sci.findCase(case_);
-                if (matched == null) {
-                    return sci.default_.startLabel();
-                }
-                return matched.body.startLabel();
-            }
-        });
+        SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
+        if (! sci.contains(this)) {
+            throw new IllegalArgumentException("The given switch statement does not enclose this block");
+        }
+        addItem(new RedoCase(switch_, case_));
     }
 
     public void redoDefault(final SwitchCreator switch_) {
-        addItem(new Goto() {
-            Label target() {
-                SwitchCreatorImpl<?> cast = (SwitchCreatorImpl<?>) switch_;
-                BlockCreatorImpl default_ = cast.findDefault();
-                return default_.startLabel();
-            }
-        });
+        addItem(new RedoDefault(switch_));
     }
 
     public Expr iterate(final Expr items) {
@@ -824,10 +830,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (state != ST_ACTIVE) {
             throw new IllegalStateException("Block already processed");
         }
-        if (! (head.next().item() instanceof BlockExpr be)) {
-            throw new IllegalStateException("Expected block expression");
+        Expr input;
+        if (head.next().item() instanceof BlockExpr be) {
+            input = be;
+        } else {
+            // void-input-typed block
+            input = VoidConstant.INSTANCE;
         }
-        handler.accept(this, be);
+        handler.accept(this, input);
         cleanStack(tail.apply(Item::verify));
         markDone();
     }
@@ -980,25 +990,26 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void try_(final Consumer<TryCreator> body) {
-        addItem(new TryImpl(this)).accept(body);
+        TryCreatorImpl tci = new TryCreatorImpl(this);
+        tci.accept(body);
+        tci.addTo(this);
     }
 
-    public void autoClose(final Expr resource, final BiConsumer<BlockCreator, Expr> body) {
+    public void autoClose(final Expr resource, final BiConsumer<BlockCreator, ? super LocalVar> body) {
         block(resource, (b0, opened) -> {
             LocalVar rsrc = b0.define("$$resource" + depth, opened);
             b0.try_(t1 -> {
                 t1.body(b2 -> body.accept(b2, rsrc));
-                t1.catch_(CD_Throwable, (b2, e2) -> {
+                t1.catch_(CD_Throwable, "e2", (b2, e2) -> {
                     b2.try_(t3 -> {
                         t3.body(b4 -> {
                             b4.close(rsrc);
-                            b4.throw_(e2);
                         });
-                        t3.catch_(CD_Throwable, (b4, e4) -> {
+                        t3.catch_(CD_Throwable, "e4", (b4, e4) -> {
                             b4.addSuppressed(e2, e4);
-                            b4.throw_(e2);
                         });
                     });
+                    b2.throw_(e2);
                 });
             });
             b0.close(rsrc);
@@ -1176,16 +1187,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     @Override
     public Expr mapOf(List<Expr> items) {
+        items = List.copyOf(items);
         int size = items.size();
         if (size % 2 != 0) {
             throw new IllegalArgumentException("Invalid number of items: " + items);
         }
         if (size <= 20) {
-            List<Expr> args = new ArrayList<>(size * 2);
-            for (Expr item : items) {
-                args.add(item);
-            }
-            return invokeStatic(MethodDesc.of(Map.class, "of", Map.class, nCopies(args.size(), Object.class)), args);
+            return invokeStatic(MethodDesc.of(Map.class, "of", Map.class, nCopies(items.size(), Object.class)), items);
         } else {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
@@ -1272,14 +1280,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         item.forEachDependency(tail, Item::insertIfUnbound);
         markDone();
         return item;
-    }
-
-    <C extends Cleanup> C cleanup(C cleanup) {
-        if (blockCleanup != null) {
-            throw new IllegalStateException("Block cleanup was already set");
-        }
-        blockCleanup = cleanup;
-        return cleanup;
     }
 
     private void checkActive() {

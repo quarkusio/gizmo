@@ -1,7 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.BlockCreatorImpl.cleanStack;
-
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -14,19 +12,12 @@ final class Throw extends Item {
         thrown = (Item) val;
     }
 
-    protected Node insert(final Node node) {
-        Node res = super.insert(node);
-        cleanStack(node.prev());
-        return res;
-    }
-
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return thrown.process(node.prev(), op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        // TODO: cleanup within a try is handled in a catch-all; yet return still needs cleanup in this case...
-        System.err.println("Throw-inside-try is currently broken, so don't release until it's fixed!");
+        // no cleanup blobs here
         cb.athrow();
     }
 

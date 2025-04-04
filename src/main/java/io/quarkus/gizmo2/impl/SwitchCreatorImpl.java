@@ -138,6 +138,14 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
         return default_;
     }
 
+    boolean contains(final BlockCreatorImpl block) {
+        return (default_ != null && default_.contains(block))
+            || cases.stream()
+            .map(CaseCreatorImpl.class::cast)
+            .map(CaseCreatorImpl::body)
+            .anyMatch(b -> b.contains(block));
+    }
+
     public final class CaseCreatorImpl implements CaseCreator {
         private static final int ST_INITIAL = 0;
         private static final int ST_CASE_VALS = 1;
@@ -174,6 +182,10 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
             if (existing != null) {
                 throw new IllegalArgumentException("Duplicate case for constant " + val);
             }
+        }
+
+        BlockCreatorImpl body() {
+            return body;
         }
 
         public void body(final Consumer<BlockCreator> builder) {

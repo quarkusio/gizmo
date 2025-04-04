@@ -1,7 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.BlockCreatorImpl.cleanStack;
-
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -23,7 +21,7 @@ final class Yield extends Item {
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
         node = node.prev();
         node = value.isVoid() ? node : value.process(node, op);
-        return cleanStack(node);
+        return node;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

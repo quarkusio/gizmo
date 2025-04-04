@@ -182,7 +182,7 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                             // trigger all verify errors
                             defined.getDeclaredMethods();
                             return defined;
-                        } catch (VerifyError e) {
+                        } catch (VerifyError | ClassFormatError e) {
                             ClassModel cm = cf.parse(bytes);
                             VerifyError ve = new VerifyError(e.getMessage() + cm.toDebugString());
                             ve.setStackTrace(e.getStackTrace());

@@ -293,7 +293,8 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "getVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            type()
+                            type(),
+                            Util.NO_DESCS
                         ));
                     }
 
@@ -332,7 +333,8 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "setVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            desc().type()
+                            desc().type(),
+                            Util.NO_DESCS
                         ));
                     }
 

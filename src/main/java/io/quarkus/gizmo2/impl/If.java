@@ -64,11 +64,11 @@ abstract class If extends Item {
                 Node falseTail = whenFalse.tail();
                 if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind).accept(cb, goto_.target());
+                    op(kind).accept(cb, goto_.target(block));
                     whenFalse.writeCode(cb, block);
                 } else if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target());
+                    op(kind.invert()).accept(cb, goto_.target(block));
                     whenTrue.writeCode(cb, block);
                 } else {
                     op(kind).accept(cb, whenTrue.startLabel());
@@ -82,7 +82,7 @@ abstract class If extends Item {
                 // if
                 if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind).accept(cb, goto_.target());
+                    op(kind).accept(cb, goto_.target(block));
                 } else {
                     op(kind.invert()).accept(cb, whenTrue.endLabel());
                     whenTrue.writeCode(cb, block);
@@ -94,7 +94,7 @@ abstract class If extends Item {
                 Node falseTail = whenFalse.tail();
                 if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target());
+                    op(kind.invert()).accept(cb, goto_.target(block));
                 } else {
                     op(kind).accept(cb, whenFalse.endLabel());
                     whenFalse.writeCode(cb, block);
