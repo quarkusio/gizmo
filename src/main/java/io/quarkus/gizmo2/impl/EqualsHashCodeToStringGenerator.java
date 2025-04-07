@@ -4,6 +4,7 @@ import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
@@ -34,8 +35,9 @@ public class EqualsHashCodeToStringGenerator {
             mc.public_();
             mc.returning(boolean.class);
             ParamVar other = mc.parameter("other", Object.class);
+            Var this_ = mc.this_();
             mc.body(b0 -> {
-                b0.if_(b0.eq(mc.this_(), other), BlockCreator::returnTrue);
+                b0.if_(b0.eq(this_, other), BlockCreator::returnTrue);
                 b0.ifNotInstanceOf(other, thisClass, BlockCreator::returnFalse);
 
                 Expr otherCast = b0.define("other", b0.cast(other, thisClass));
@@ -44,7 +46,7 @@ public class EqualsHashCodeToStringGenerator {
                         throw new IllegalArgumentException("Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
-                    LocalVar thisValue = b0.define("thisValue", b0.get(mc.this_().field(field)));
+                    LocalVar thisValue = b0.define("thisValue", b0.get(this_.field(field)));
                     LocalVar thatValue = b0.define("thatValue", b0.get(otherCast.field(field)));
                     String fieldDesc = field.type().descriptorString();
                     switch (fieldDesc.charAt(0)) {
@@ -83,6 +85,7 @@ public class EqualsHashCodeToStringGenerator {
         cc.method("hashCode", mc -> {
             mc.public_();
             mc.returning(int.class);
+            Var this_ = mc.this_();
             mc.body(b0 -> {
                 if (fields.isEmpty()) {
                     b0.return_(0);
@@ -95,7 +98,7 @@ public class EqualsHashCodeToStringGenerator {
                         throw new IllegalArgumentException("Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
-                    Expr value = b0.get(mc.this_().field(field));
+                    Expr value = b0.get(this_.field(field));
                     Expr hash = field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value);
                     b0.set(result, b0.add(b0.mul(Constant.of(31), result), hash));
                 }
@@ -111,6 +114,7 @@ public class EqualsHashCodeToStringGenerator {
         cc.method("toString", mc -> {
             mc.public_();
             mc.returning(String.class);
+            Var this_ = mc.this_();
             mc.body(b0 -> {
                 StringBuilderOps result = b0.withNewStringBuilder();
                 result.append(thisClass.displayName() + '(');
@@ -127,7 +131,7 @@ public class EqualsHashCodeToStringGenerator {
                         result.append(", " + field.name() + '=');
                     }
 
-                    Expr value = b0.get(mc.this_().field(field));
+                    Expr value = b0.get(this_.field(field));
                     result.append(field.type().isArray() ? b0.arrayToString(value) : value);
 
                     first = false;

@@ -34,6 +34,11 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     private static final ParamVarImpl[] NO_PARAMS = new ParamVarImpl[0];
     private static final MethodParameterInfo EMPTY_PI = MethodParameterInfo.of(Optional.empty(), 0);
 
+    static final int ST_INITIAL = 0;
+    static final int ST_BODY = 1;
+    static final int ST_POST_BODY = 2;
+    static final int ST_DONE = 3;
+
     final BitSet locals = new BitSet();
     final TypeCreatorImpl typeCreator;
 
@@ -44,6 +49,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     ParamVarImpl[] params = NO_PARAMS;
     int nextParam;
     ThisExpr this_;
+    int state = ST_INITIAL;
 
     ExecutableCreatorImpl(final TypeCreatorImpl typeCreator, final int flags) {
         this.typeCreator = typeCreator;
@@ -59,6 +65,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     public void withType(final MethodTypeDesc desc) {
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Type may no longer be changed");
+        }
         if (typeEstablished) {
             MethodTypeDesc type = type();
             if (! desc.equals(type)) {
@@ -116,6 +125,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
 
     void returning(final ClassDesc type) {
         Objects.requireNonNull(type, "type");
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Return type may no longer be changed");
+        }
         ClassDesc returnType = this.returnType;
         if (returnType == null) {
             assert ! typeEstablished;
@@ -142,11 +154,11 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         // find parameter annotations, if any
         if (Stream.of(params).anyMatch(pvi -> !pvi.visible.isEmpty())) {
             mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
-                    pvi -> pvi != null ? pvi.visible : List.<Annotation>of()).toList()));
+                pvi -> pvi != null ? pvi.visible : List.<Annotation>of()).toList()));
         }
         if (Stream.of(params).anyMatch(pvi -> !pvi.invisible.isEmpty())) {
             mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
-                    pvi -> pvi != null ? pvi.invisible : List.<Annotation>of()).toList()));
+                pvi -> pvi != null ? pvi.invisible : List.<Annotation>of()).toList()));
         }
         if (builder != null) {
             mb.withCode(cb -> {
@@ -176,9 +188,17 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     abstract String name();
 
     void body(final Consumer<BlockCreator> builder) {
-        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
-            doBody(builder, mb);
-        });
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Body established twice");
+        }
+        state = ST_BODY;
+        try {
+            typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+                doBody(builder, mb);
+            });
+        } finally {
+            state = ST_POST_BODY;
+        }
     }
 
     public ParamVar parameter(final String name, final Consumer<ParamCreator> builder) {
@@ -186,6 +206,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     public ParamVar parameter(final String name, final int position, final Consumer<ParamCreator> builder) {
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Parameters may no longer be established");
+        }
         MethodTypeDesc type = this.type;
         if (type != null && ! typeEstablished) {
             clearType();
@@ -237,6 +260,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     Var this_() {
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Parameters may no longer be established");
+        }
         // used only in instance subclasses
         ThisExpr this_ = this.this_;
         if (this_ == null) {
