@@ -13,7 +13,7 @@ import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
-public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFieldVar {
+public final class StaticFieldVarImpl extends AssignableImpl implements StaticFieldVar {
     private final FieldDesc desc;
 
     StaticFieldVarImpl(FieldDesc desc) {

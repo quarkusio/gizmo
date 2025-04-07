@@ -1,15 +1,11 @@
 package io.quarkus.gizmo2;
 
-import io.quarkus.gizmo2.impl.ThisExpr;
-
 /**
- * An lvalue expression that is stored in a variable.
+ * An {@link Assignable} expression whose storage is a variable.
  */
-public sealed interface Var extends Expr permits FieldVar, LocalVar, ParamVar, ThisExpr {
+public sealed interface Var extends Assignable permits FieldVar, LocalVar, ParamVar {
     /**
      * {@return the variable name}
      */
     String name();
-
-
 }

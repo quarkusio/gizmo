@@ -7,7 +7,7 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class VoidConstant extends ConstantImpl{
+public final class VoidConstant extends ConstantImpl {
     public static final VoidConstant INSTANCE = new VoidConstant();
 
     private VoidConstant() {
