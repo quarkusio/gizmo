@@ -138,9 +138,5 @@ final class TryFinally extends Item {
         ClassDesc type() {
             return action.type();
         }
-
-        void terminate(BlockCreatorImpl bci, Expr input) {
-            action.terminate(bci, input);
-        }
     }
 }
