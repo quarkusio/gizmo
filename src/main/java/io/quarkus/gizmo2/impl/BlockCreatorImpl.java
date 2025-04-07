@@ -94,6 +94,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private Consumer<BlockCreator> loopAction;
 
     private int anonClassCount;
+    private List<Consumer<BlockCreator>> postInits;
 
     BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
         this(owner, outerCodeBuilder, null, CD_void, ConstantImpl.ofVoid(), CD_void, returnType);
@@ -121,6 +122,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this.owner = owner;
         depth = parent == null ? 0 : parent.depth + 1;
         tryFinally = parent == null ? null : parent.tryFinally;
+        postInits = parent == null ? List.of() : parent.postInits;
         startLabel = newLabel();
         endLabel = newLabel();
         this.input = input;
@@ -718,7 +720,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
-        return addItem(new Invoke(ctor, instance, args));
+        Invoke invoke = new Invoke(ctor, instance, args);
+        addItem(invoke);
+        if (instance instanceof ThisExpr) {
+            // self-init
+            for (Consumer<BlockCreator> postInit : postInits) {
+                postInit.accept(this);
+            }
+        }
+        return invoke;
     }
 
     public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
@@ -1252,6 +1262,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     // non-public
+
+    void postInit(final List<Consumer<BlockCreator>> postInits) {
+        this.postInits = postInits;
+    }
 
     <I extends Item> I addItemIfBound(I item) {
         if (item.bound()) {

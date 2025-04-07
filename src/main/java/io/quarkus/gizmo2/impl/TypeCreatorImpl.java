@@ -34,6 +34,7 @@ import io.quarkus.gizmo2.creator.TypeCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator
         permits ClassCreatorImpl, InterfaceCreatorImpl {
@@ -45,7 +46,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private ClassSignature sig;
     private List<Signature.TypeParam> typeParams = List.of();
     final ClassBuilder zb;
-    private List<Consumer<BlockCreator>> inits = List.of();
+    private List<Consumer<BlockCreator>> staticInits = List.of();
+    List<Consumer<BlockCreator>> preInits = List.of();
+    List<Consumer<BlockCreator>> postInits = List.of();
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
     private boolean hasLambdaBootstrap;
@@ -144,11 +147,31 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         implements_(Signature.ClassTypeSig.of(interface_));
     }
 
-    public void initializer(final Consumer<BlockCreator> builder) {
-        if (inits.isEmpty()) {
-            inits = new ArrayList<>(4);
+    public void staticInitializer(final Consumer<BlockCreator> builder) {
+        if (staticInits.isEmpty()) {
+            staticInits = new ArrayList<>(4);
         }
-        inits.add(Objects.requireNonNull(builder, "builder"));
+        staticInits.add(Assert.checkNotNullParam("builder", builder));
+    }
+
+    public void instanceInitializer(final Consumer<BlockCreator> builder) {
+        if (! constructors.isEmpty()) {
+            throw new IllegalStateException("Instance initializers may not be added once constructors exist");
+        }
+        if (postInits.isEmpty()) {
+            postInits = new ArrayList<>(4);
+        }
+        postInits.add(Assert.checkNotNullParam("builder", builder));
+    }
+
+    void instancePreinitializer(final Consumer<BlockCreator> builder) {
+        if (! constructors.isEmpty()) {
+            throw new IllegalStateException("Instance initializers may not be added once constructors exist");
+        }
+        if (preInits.isEmpty()) {
+            preInits = new ArrayList<>(4);
+        }
+        preInits.add(Assert.checkNotNullParam("builder", builder));
     }
 
     public MethodDesc staticMethod(final String name, final Consumer<StaticMethodCreator> builder) {
@@ -191,12 +214,12 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         zb.with(SignatureAttribute.of(signature()));
         addVisible(zb);
         addInvisible(zb);
-        if (!inits.isEmpty()) {
+        if (! staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {
                     BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void);
                     bc.accept(b0 -> {
-                        for (Consumer<BlockCreator> init : inits) {
+                        for (Consumer<BlockCreator> init : staticInits) {
                             b0.block(init);
                         }
                     });

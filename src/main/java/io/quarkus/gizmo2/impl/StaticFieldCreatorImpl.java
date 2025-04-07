@@ -49,7 +49,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
     void accept(Consumer<StaticFieldCreator> builder) {
         builder.accept(this);
         if (initializer != null) {
-            tc.initializer(initializer);
+            tc.staticInitializer(initializer);
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(flags);
