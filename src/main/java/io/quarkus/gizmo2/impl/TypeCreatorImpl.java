@@ -25,6 +25,7 @@ import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -277,16 +278,53 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                             definedClass,
                             ctorType
                         ));
-                        b0.return_(b0.new_(ConstantCallSite.class, b0.invokeVirtual(
-                            MethodDesc.of(
-                                MethodHandle.class,
-                                "asType",
-                                MethodHandle.class,
-                                MethodType.class
-                            ),
-                            ctorHandle,
-                            methodType
-                        )));
+                        b0.ifElse(b0.eq(
+                            b0.invokeVirtual(
+                                MethodDesc.of(
+                                    MethodType.class,
+                                    "parameterCount",
+                                    int.class),
+                                methodType
+                            ), 0
+                        ), t1 -> {
+                            // no parameters, so it should be a singleton
+                            LocalVar instance = t1.define("instance", t1.invokeVirtual(
+                                MethodDesc.of(MethodHandle.class, "invoke", Object.class),
+                                ctorHandle
+                            ));
+                            LocalVar constHandle = t1.define("constHandle", t1.invokeStatic(
+                                MethodDesc.of(
+                                    MethodHandles.class,
+                                    "constant",
+                                    MethodHandle.class,
+                                    Class.class,
+                                    Object.class
+                                ),
+                                definedClass,
+                                instance
+                            ));
+                            t1.return_(t1.new_(ConstantCallSite.class, t1.invokeVirtual(
+                                MethodDesc.of(
+                                    MethodHandle.class,
+                                    "asType",
+                                    MethodHandle.class,
+                                    MethodType.class
+                                ),
+                                constHandle,
+                                methodType
+                            )));
+                        }, f1 -> {
+                            f1.return_(f1.new_(ConstantCallSite.class, f1.invokeVirtual(
+                                MethodDesc.of(
+                                    MethodHandle.class,
+                                    "asType",
+                                    MethodHandle.class,
+                                    MethodType.class
+                                ),
+                                ctorHandle,
+                                methodType
+                            )));
+                        });
                     });
                 }
             );
