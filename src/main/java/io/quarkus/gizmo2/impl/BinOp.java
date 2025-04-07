@@ -34,7 +34,7 @@ final class BinOp extends Item {
     }
 
     public boolean bound() {
-        return a.bound() || b.bound();
+        return a.bound() || b.bound() || kind == Kind.DIV || kind == Kind.REM;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

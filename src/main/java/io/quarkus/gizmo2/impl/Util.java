@@ -30,6 +30,11 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import sun.reflect.ReflectionFactory;
 
 public final class Util {
+    /**
+     * No descriptors array. Prevents ambiguity in cases where a non-varargs overload is e.g. {@code @since 21} or later.
+     */
+    public static final ClassDesc[] NO_DESCS = new ClassDesc[0];
+
     private Util() {}
 
     private static final ClassValue<ClassDesc> constantCache = new ClassValue<ClassDesc>() {
