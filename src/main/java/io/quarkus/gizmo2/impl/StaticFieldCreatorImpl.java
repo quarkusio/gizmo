@@ -17,8 +17,9 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
     private Constant initial;
     private Consumer<BlockCreator> initializer;
 
-    public StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name) {
-        super(owner, name, tc, AccessFlag.STATIC.mask());
+    public StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name, final boolean isInterface) {
+        super(owner, name, tc, AccessFlag.STATIC.mask()
+                | (isInterface ? AccessFlag.PUBLIC.mask() | AccessFlag.FINAL.mask() : 0));
     }
 
     public void withInitial(final Constant initial) {

@@ -56,7 +56,7 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
     public MethodDesc method(final String name, final Consumer<AbstractMethodCreator> builder) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(builder, "builder");
-        var mc = new AbstractMethodCreatorImpl(this, name);
+        var mc = new InterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
         instanceMethods.add(desc);

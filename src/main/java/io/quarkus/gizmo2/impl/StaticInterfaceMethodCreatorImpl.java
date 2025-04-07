@@ -1,19 +1,19 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.function.Consumer;
-
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 
-public final class StaticMethodCreatorImpl extends MethodCreatorImpl implements StaticMethodCreator {
-    StaticMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
-        super(owner, name, AccessFlag.STATIC.mask());
+import java.util.function.Consumer;
+
+public final class StaticInterfaceMethodCreatorImpl extends MethodCreatorImpl implements StaticMethodCreator {
+    StaticInterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
+        super(owner, name, AccessFlag.STATIC.mask() | AccessFlag.PUBLIC.mask());
     }
 
     public void withFlag(final AccessFlag flag) {
         switch (flag) {
-            case PUBLIC, PRIVATE, PROTECTED, STATIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL, VARARGS -> flags |= flag.mask();
+            case PUBLIC, STATIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, FINAL, VARARGS -> flags |= flag.mask();
             default -> throw new IllegalArgumentException(flag.toString());
         }
     }
@@ -26,7 +26,7 @@ public final class StaticMethodCreatorImpl extends MethodCreatorImpl implements 
         return 0;
     }
 
-    void accept(final Consumer<? super StaticMethodCreatorImpl> builder) {
+    void accept(final Consumer<? super StaticInterfaceMethodCreatorImpl> builder) {
         builder.accept(this);
     }
 }

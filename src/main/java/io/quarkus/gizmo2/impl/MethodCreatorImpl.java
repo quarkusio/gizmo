@@ -5,7 +5,7 @@ import java.lang.constant.ClassDesc;
 import io.quarkus.gizmo2.creator.MethodCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator permits AbstractMethodCreatorImpl, DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, NativeMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl, StaticMethodCreatorImpl, StaticNativeMethodCreatorImpl {
+public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator permits AbstractMethodCreatorImpl, DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, NativeMethodCreatorImpl, InterfaceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl, StaticMethodCreatorImpl, StaticInterfaceMethodCreatorImpl, StaticNativeMethodCreatorImpl {
     final String name;
     private MethodDesc desc;
 
