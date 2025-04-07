@@ -239,7 +239,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static BooleanConstant of(Boolean value) {
-        return value ? BooleanConstant.TRUE : BooleanConstant.FALSE;
+        return value.booleanValue() ? BooleanConstant.TRUE : BooleanConstant.FALSE;
     }
 
     public static BooleanConstant of(boolean value) {

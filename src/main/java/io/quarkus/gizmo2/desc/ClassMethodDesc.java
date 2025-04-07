@@ -5,7 +5,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodType;
 
 import io.quarkus.gizmo2.impl.ClassMethodDescImpl;
-import io.quarkus.gizmo2.impl.GizmoImpl;
 
 /**
  * A descriptor for a method on a class.
@@ -20,7 +19,7 @@ public sealed interface ClassMethodDesc extends MethodDesc permits ClassMethodDe
      * @return the new descriptor (not {@code null})
      */
     static ClassMethodDesc of(ClassDesc owner, String name, MethodTypeDesc type) {
-        return GizmoImpl.current().classMethodDesc(owner, name, type);
+        return new ClassMethodDescImpl(owner, name, type);
     }
 
     /**

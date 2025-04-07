@@ -11,7 +11,7 @@ public final class FieldDescImpl implements FieldDesc {
     private final ClassDesc type;
     private final int hashCode;
 
-    FieldDescImpl(final ClassDesc owner, final String name, final ClassDesc type) {
+    public FieldDescImpl(final ClassDesc owner, final String name, final ClassDesc type) {
         this.owner = owner;
         this.name = name;
         this.type = type;

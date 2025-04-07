@@ -17,7 +17,7 @@ public final class IntConstant extends IntBasedConstant {
     }
 
     public int intValue() {
-        return value;
+        return value.intValue();
     }
 
     public boolean equals(final ConstantImpl obj) {
