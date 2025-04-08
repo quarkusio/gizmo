@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.FieldDescImpl;
-import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
@@ -21,7 +20,7 @@ public sealed interface FieldDesc extends MemberDesc, SimpleTyped permits FieldD
      * @return the field descriptor (not {@code null})
      */
     static FieldDesc of(ClassDesc owner, String name, ClassDesc type) {
-        return GizmoImpl.current().fieldDesc(owner, name, type);
+        return new FieldDescImpl(owner, name, type);
     }
 
     /**

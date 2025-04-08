@@ -6,7 +6,7 @@ import java.lang.constant.MethodTypeDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 
 public final class InterfaceMethodDescImpl extends MethodDescImpl implements InterfaceMethodDesc {
-    InterfaceMethodDescImpl(final ClassDesc owner, final String name, final MethodTypeDesc type) {
+    public InterfaceMethodDescImpl(final ClassDesc owner, final String name, final MethodTypeDesc type) {
         super(owner, name, type);
     }
 

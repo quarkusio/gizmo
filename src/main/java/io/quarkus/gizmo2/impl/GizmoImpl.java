@@ -1,30 +1,25 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicConstantDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.impl.constant.ArrayVarHandleConstant;
 import io.quarkus.gizmo2.impl.constant.ByteConstant;
 import io.quarkus.gizmo2.impl.constant.CharConstant;
 import io.quarkus.gizmo2.impl.constant.ClassConstant;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.DoubleConstant;
 import io.quarkus.gizmo2.impl.constant.DynamicConstant;
 import io.quarkus.gizmo2.impl.constant.EnumConstant;
+import io.quarkus.gizmo2.impl.constant.FieldVarHandleConstant;
 import io.quarkus.gizmo2.impl.constant.FloatConstant;
 import io.quarkus.gizmo2.impl.constant.IntConstant;
 import io.quarkus.gizmo2.impl.constant.LongConstant;
@@ -33,7 +28,6 @@ import io.quarkus.gizmo2.impl.constant.ShortConstant;
 import io.quarkus.gizmo2.impl.constant.StaticFieldVarHandleConstant;
 import io.quarkus.gizmo2.impl.constant.StaticFinalFieldConstant;
 import io.quarkus.gizmo2.impl.constant.StringConstant;
-import io.quarkus.gizmo2.impl.constant.FieldVarHandleConstant;
 
 public final class GizmoImpl implements Gizmo {
     private static final ThreadLocal<GizmoImpl> current = new ThreadLocal<>();
@@ -77,56 +71,46 @@ public final class GizmoImpl implements Gizmo {
         }
     }
 
-    private final ConcurrentHashMap<ClassDesc, NullConstant> nullConstants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ConstantDesc, ConstantImpl> constants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ConstantImpl, ConstantImpl> funnyHashCodeConstants = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<FieldDesc, StaticFieldVarImpl> staticFields = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<FieldDesc, StaticFinalFieldConstant> staticFinalFieldConstants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<FieldDesc, StaticFieldVarHandleConstant> staticFieldVarHandleConstants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<FieldDescImpl, FieldDescImpl> fieldDescs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<FieldDesc, FieldVarHandleConstant> fieldVarHandleConstants = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<InterfaceMethodDescImpl, InterfaceMethodDescImpl> interfaceMethodDescs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ClassMethodDescImpl, ClassMethodDescImpl> classMethodDescs = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<ClassDesc, ArrayVarHandleConstant> arrayVarHandleConstants = new ConcurrentHashMap<>();
 
     public NullConstant nullConstant(ClassDesc type) {
-        return nullConstants.computeIfAbsent(type, NullConstant::new);
+        return new NullConstant(type);
     }
 
     public ClassConstant classConstant(ClassDesc value) {
-        return (ClassConstant) constants.computeIfAbsent(value, ClassConstant::new);
+        return new ClassConstant(value);
     }
 
     public StringConstant stringConstant(String value) {
-        return (StringConstant) constants.computeIfAbsent(value, StringConstant::new);
+        return new StringConstant(value);
     }
 
     public ByteConstant byteConstant(Byte value) {
-        return (ByteConstant) funnyHashCodeConstants.computeIfAbsent(new ByteConstant(value), Function.identity());
+        return new ByteConstant(value);
     }
 
     public ShortConstant shortConstant(Short value) {
-        return (ShortConstant) funnyHashCodeConstants.computeIfAbsent(new ShortConstant(value), Function.identity());
+        return new ShortConstant(value);
     }
 
     public CharConstant charConstant(Character value) {
-        return (CharConstant) funnyHashCodeConstants.computeIfAbsent(new CharConstant(value), Function.identity());
+        return new CharConstant(value);
     }
 
     public IntConstant intConstant(Integer value) {
-        return (IntConstant) constants.computeIfAbsent(value, IntConstant::new);
+        return new IntConstant(value);
     }
 
     public LongConstant longConstant(Long value) {
-        return (LongConstant) constants.computeIfAbsent(value, LongConstant::new);
+        return new LongConstant(value);
     }
 
     public FloatConstant floatConstant(float value) {
-        return (FloatConstant) funnyHashCodeConstants.computeIfAbsent(new FloatConstant(value), Function.identity());
+        return new FloatConstant(value);
     }
 
     public DoubleConstant doubleConstant(double value) {
-        return (DoubleConstant) funnyHashCodeConstants.computeIfAbsent(new DoubleConstant(value), Function.identity());
+        return new DoubleConstant(value);
     }
 
     public StaticFieldVar staticField(final FieldDesc desc) {
@@ -134,19 +118,7 @@ public final class GizmoImpl implements Gizmo {
     }
 
     public StaticFinalFieldConstant staticFinalFieldConstant(final FieldDesc desc) {
-        return staticFinalFieldConstants.computeIfAbsent(desc, StaticFinalFieldConstant::new);
-    }
-
-    public FieldDesc fieldDesc(final ClassDesc owner, final String name, final ClassDesc type) {
-        return fieldDescs.computeIfAbsent(new FieldDescImpl(owner, name, type), Function.identity());
-    }
-
-    public InterfaceMethodDesc interfaceMethodDesc(final ClassDesc owner, final String name, final MethodTypeDesc type) {
-        return interfaceMethodDescs.computeIfAbsent(new InterfaceMethodDescImpl(owner, name, type), Function.identity());
-    }
-
-    public ClassMethodDesc classMethodDesc(final ClassDesc owner, final String name, final MethodTypeDesc type) {
-        return classMethodDescs.computeIfAbsent(new ClassMethodDescImpl(owner, name, type), Function.identity());
+        return new StaticFinalFieldConstant(desc);
     }
 
     public ClassOutput classOutput(final BiConsumer<ClassDesc, byte[]> outputHandler) {
@@ -154,22 +126,22 @@ public final class GizmoImpl implements Gizmo {
     }
 
     public EnumConstant enumConstant(final Enum.EnumDesc<?> value) {
-        return (EnumConstant) funnyHashCodeConstants.computeIfAbsent(new EnumConstant(value), Function.identity());
+        return new EnumConstant(value);
     }
 
     public DynamicConstant dynamicConstant(final DynamicConstantDesc<?> value) {
-        return (DynamicConstant) constants.computeIfAbsent(value, DynamicConstant::new);
+        return new DynamicConstant(value);
     }
 
     public FieldVarHandleConstant fieldVarHandleConstant(final FieldDesc desc) {
-        return fieldVarHandleConstants.computeIfAbsent(desc, FieldVarHandleConstant::new);
+        return new FieldVarHandleConstant(desc);
     }
 
     public StaticFieldVarHandleConstant staticFieldVarHandleConstant(final FieldDesc desc) {
-        return staticFieldVarHandleConstants.computeIfAbsent(desc, StaticFieldVarHandleConstant::new);
+        return new StaticFieldVarHandleConstant(desc);
     }
 
     public ArrayVarHandleConstant arrayVarHandleConstant(final ClassDesc arrayType) {
-        return arrayVarHandleConstants.computeIfAbsent(arrayType, ArrayVarHandleConstant::new);
+        return new ArrayVarHandleConstant(arrayType);
     }
 }
