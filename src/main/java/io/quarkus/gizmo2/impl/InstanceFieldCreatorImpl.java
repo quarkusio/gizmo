@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Constant;
@@ -15,7 +16,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
     private Consumer<BlockCreator> initializer;
 
     public InstanceFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name) {
-        super(owner, name, tc, 0);
+        super(owner, name, tc, Set.of());
     }
 
     public void withInitial(final Constant initial) {

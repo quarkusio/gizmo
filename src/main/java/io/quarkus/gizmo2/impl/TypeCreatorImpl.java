@@ -180,9 +180,17 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     public MethodDesc staticMethod(final String name, final Consumer<StaticMethodCreator> builder) {
         Objects.requireNonNull(builder, "builder");
-        StaticMethodCreatorImpl smc = new StaticMethodCreatorImpl(this, name);
-        smc.accept(builder);
-        MethodDesc desc = smc.desc();
+        MethodDesc desc;
+        boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
+        if (isInterface) {
+            StaticInterfaceMethodCreatorImpl smc = new StaticInterfaceMethodCreatorImpl(this, name);
+            smc.accept(builder);
+            desc = smc.desc();
+        } else {
+            StaticMethodCreatorImpl smc = new StaticMethodCreatorImpl(this, name);
+            smc.accept(builder);
+            desc = smc.desc();
+        }
         staticMethods.add(desc);
         return desc;
     }
@@ -190,7 +198,8 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public StaticFieldVar staticField(final String name, final Consumer<StaticFieldCreator> builder) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(builder, "builder");
-        var fc = new StaticFieldCreatorImpl(this, type(), name);
+        boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
+        var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
         staticFields.add(desc);

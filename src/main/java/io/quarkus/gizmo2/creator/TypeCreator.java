@@ -133,6 +133,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param name the method name (must not be {@code null})
      * @param builder the builder for the method (must not be {@code null})
@@ -142,6 +144,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type having the given predefined method type.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param name the method name (must not be {@code null})
      * @param type the method type (must not be {@code null})
@@ -157,6 +161,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type having the same name and type as the given method.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param desc the original method descriptor (must not be {@code null})
      * @param builder the builder for the method (must not be {@code null})
@@ -168,6 +174,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static field to this type.
+     * <p>
+     * Static fields on interfaces are always {@code public} and {@code final}.
      *
      * @param name the field name (must not be {@code null})
      * @param builder the builder for the field (must not be {@code null})
@@ -176,7 +184,7 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
     StaticFieldVar staticField(String name, Consumer<StaticFieldCreator> builder);
 
     /**
-     * Add a public static final field to this type.
+     * Add a public static final field to this type. The field is initialized to the given {@code value}.
      * 
      * @param name the field name (must not be {@code null})
      * @param value the constant value (must not be {@code null})
