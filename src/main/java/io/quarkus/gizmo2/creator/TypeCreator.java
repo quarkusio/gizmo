@@ -174,6 +174,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static field to this type.
+     * <p>
+     * Static fields on interfaces are always {@code public} and {@code final}.
      *
      * @param name the field name (must not be {@code null})
      * @param builder the builder for the field (must not be {@code null})
@@ -182,7 +184,7 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
     StaticFieldVar staticField(String name, Consumer<StaticFieldCreator> builder);
 
     /**
-     * Add a public static final field to this type.
+     * Add a public static final field to this type. The field is initialized to the given {@code value}.
      * 
      * @param name the field name (must not be {@code null})
      * @param value the constant value (must not be {@code null})

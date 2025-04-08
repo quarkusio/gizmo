@@ -5,6 +5,7 @@ import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
+import java.util.Set;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
@@ -16,15 +17,22 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
     final ClassDesc owner;
     final String name;
     final TypeCreatorImpl tc;
+    final Set<AccessFlag> unremovableFlags;
     Signature genericType = Signature.of(CD_int);
     ClassDesc type = CD_int;
-    int flags = 0;
+    int flags;
     private FieldDesc desc;
 
-    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc, final int flags) {
+    // `defaultFlags` are also flags that cannot be removed
+    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc, final Set<AccessFlag> defaultFlags) {
         this.owner = owner;
         this.name = name;
         this.tc = tc;
+        this.unremovableFlags = defaultFlags;
+        int flags = 0;
+        for (AccessFlag defaultFlag : defaultFlags) {
+            flags |= defaultFlag.mask();
+        }
         this.flags = flags;
     }
 
@@ -51,49 +59,53 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         desc = null;
     }
 
-    public void withFlag(final AccessFlag flag) {
+    public final void withFlag(final AccessFlag flag) {
         if (flag.locations().contains(AccessFlag.Location.FIELD) && flag != AccessFlag.STATIC) {
             flags |= flag.mask();
         } else {
-            throw new IllegalArgumentException("Invalid flag for instance field: " + flag);
+            throw new IllegalArgumentException("Cannot add flag " + flag);
         }
     }
 
-    void withoutFlag(AccessFlag flag) {
-        flags &= ~flag.mask();
+    final void withoutFlag(AccessFlag flag) {
+        if (unremovableFlags.contains(flag)) {
+            throw new IllegalArgumentException("Cannot remove flag " + flag);
+        } else {
+            flags &= ~flag.mask();
+        }
     }
 
-    void withoutFlags(AccessFlag... flags) {
+    final void withoutFlags(AccessFlag... flags) {
         for (AccessFlag flag : flags) {
             withoutFlag(flag);
         }
     }
 
     @Override
-    public void public_() {
+    public final void public_() {
         withFlag(AccessFlag.PUBLIC);
         withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
     @Override
-    public void packagePrivate() {
+    public final void packagePrivate() {
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
     @Override
-    public void private_() {
+    public final void private_() {
         withFlag(AccessFlag.PRIVATE);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
     }
 
     @Override
-    public void protected_() {
+    public final void protected_() {
         withFlag(AccessFlag.PROTECTED);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
     }
 
     @Override
-    public void final_() {
+    public final void final_() {
         withFlag(AccessFlag.FINAL);
     }
 
