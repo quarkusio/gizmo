@@ -28,6 +28,7 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
@@ -42,6 +43,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
     private final ClassOutputImpl output;
+    private final ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
     private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
     private ClassSignature sig;
@@ -62,6 +64,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
         this.type = type;
+        this_ = new ThisExpr(type);
         this.output = output;
         this.zb = zb;
         this.flags = flags;
@@ -192,6 +195,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         FieldDesc desc = fc.desc();
         staticFields.add(desc);
         return Expr.staticField(desc);
+    }
+
+    public This this_() {
+        return this_;
     }
 
     @Override

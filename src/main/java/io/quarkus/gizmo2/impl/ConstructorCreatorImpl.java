@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -50,11 +49,6 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
             ((BlockCreatorImpl) b0).postInit(postInits);
             builder.accept(b0);
         });
-    }
-
-    @Override
-    public Var this_() {
-        return super.this_();
     }
 
     public void withFlag(final AccessFlag flag) {

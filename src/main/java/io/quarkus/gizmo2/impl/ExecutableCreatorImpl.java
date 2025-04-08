@@ -23,7 +23,6 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotation
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ParamVar;
-import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
@@ -48,7 +47,6 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     int flags;
     ParamVarImpl[] params = NO_PARAMS;
     int nextParam;
-    ThisExpr this_;
     int state = ST_INITIAL;
 
     ExecutableCreatorImpl(final TypeCreatorImpl typeCreator, final int flags) {
@@ -169,8 +167,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
-        if (this_ != null) {
-            cb.localVariable(0, "this", this_.type(), bc.startLabel(), bc.endLabel());
+        if ((flags & AccessFlag.STATIC.mask()) == 0) {
+            // reserve `this` for all instance methods
+            cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
         }
         for (ParamVarImpl param : params) {
             if (param != null) {
@@ -257,19 +256,6 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
 
     void clearType() {
         type = null;
-    }
-
-    Var this_() {
-        if (state >= ST_BODY) {
-            throw new IllegalStateException("Parameters may no longer be established");
-        }
-        // used only in instance subclasses
-        ThisExpr this_ = this.this_;
-        if (this_ == null) {
-            this_ = this.this_ = new ThisExpr(owner());
-            locals.set(0);
-        }
-        return this_;
     }
 
     int firstSlot() {

@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.SimpleTyped;
-import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -258,13 +257,21 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
         ConstructorDesc superCtor = ConstructorDesc.of(superClass());
         return constructor(superCtor, cc -> {
             cc.public_();
-            Var this_ = cc.this_();
             cc.body(bc -> {
-                bc.invokeSpecial(superCtor, this_);
+                bc.invokeSpecial(superCtor, this_());
                 bc.return_();
             });
         });
     }
+
+    /**
+     * Add a general instance initializer block to the type.
+     * A type may have many instance initializers;
+     * they will be concatenated in the order that they are added.
+     *
+     * @param builder the builder (must not be {@code null})
+     */
+    void instanceInitializer(Consumer<BlockCreator> builder);
 
     /**
      * Add the {@code abstract} access flag to the class.
@@ -281,7 +288,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * {@code fields}. The generated code is similar to what IDEs would typically
      * generate from a template:
      * <ol>
-     * <li>Reference equality is tested. If {@code this} is idential to the
+     * <li>Reference equality is tested. If {@code this} is identical to the
      * <em>other</em> object, {@code true} is returned.</li>
      * <li>Type of the <em>other</em> object is tested using {@code instanceof}.
      * If the <em>other</em> object is not an instance of this class, {@code false}

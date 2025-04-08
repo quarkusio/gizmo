@@ -4,7 +4,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
@@ -14,7 +13,7 @@ import io.quarkus.gizmo2.Annotatable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -133,15 +132,6 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
     void staticInitializer(Consumer<BlockCreator> builder);
 
     /**
-     * Add a general instance initializer block to the type.
-     * A type may have many instance initializers;
-     * they will be concatenated in the order that they are added.
-     *
-     * @param builder the builder (must not be {@code null})
-     */
-    void instanceInitializer(Consumer<BlockCreator> builder);
-
-    /**
      * Add a static method to this type.
      *
      * @param name the method name (must not be {@code null})
@@ -200,6 +190,12 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
             sfc.withInitial(value);
         });
     }
+
+    /**
+     * {@return the {@code this} expression}
+     * This expression is only valid for instance methods and constructors.
+     */
+    This this_();
 
     /**
      * {@return a list of descriptors of all static fields added to this class so far}
