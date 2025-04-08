@@ -1,7 +1,9 @@
 package io.quarkus.gizmo2;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.constant.ClassDesc;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
@@ -109,5 +111,75 @@ public class FieldAccessTest {
             });
         });
         assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
+    }
+
+    @Test
+    public void testInstanceConstantField() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        String className = "io.quarkus.gizmo2.InstanceConstantFieldTest";
+        g.class_(className, zc -> {
+            // create an instance field and initialize it to a constant value
+            FieldDesc field1 = zc.field("field1", ifc -> {
+                ifc.withType(String.class);
+                ifc.final_();
+                ifc.withInitial("Hello world");
+            });
+            // create a constructor that does not explicitly initialize the field
+            zc.constructor(cc -> {
+                Var this_ = cc.this_();
+                cc.public_();
+                cc.body(b0 -> {
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.return_();
+                });
+            });
+            // a test method to verify the result
+            zc.staticMethod("test0", smc -> {
+                smc.returning(boolean.class);
+                smc.public_();
+                smc.body(b0 -> {
+                    Expr instance = b0.new_(ClassDesc.of(className));
+                    b0.return_(b0.exprEquals(instance.field(field1), Constant.of("Hello world")));
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void testInstanceInitializedField() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        String className = "io.quarkus.gizmo2.InstanceInitializedFieldTest";
+        g.class_(className, zc -> {
+            // create an instance field and initialize it to a non-constant value
+            FieldDesc field1 = zc.field("field1", ifc -> {
+                ifc.withType(String.class);
+                ifc.final_();
+                ifc.withInitializer(b0 -> {
+                    b0.yield(b0.withString(Constant.of("Hello")).concat(Constant.of(" world")));
+                });
+            });
+            // create a constructor that does not explicitly initialize the field
+            zc.constructor(cc -> {
+                Var this_ = cc.this_();
+                cc.public_();
+                cc.body(b0 -> {
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.return_();
+                });
+            });
+            // a test method to verify the result
+            zc.staticMethod("test0", smc -> {
+                smc.returning(boolean.class);
+                smc.public_();
+                smc.body(b0 -> {
+                    Expr instance = b0.new_(ClassDesc.of(className));
+                    b0.return_(b0.exprEquals(instance.field(field1), Constant.of("Hello world")));
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
     }
 }

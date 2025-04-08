@@ -93,13 +93,13 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new StaticNativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        staticMethods.add(desc);
         return desc;
     }
 
     public ConstructorDesc constructor(final Consumer<ConstructorCreator> builder) {
         Objects.requireNonNull(builder, "builder");
-        var mc = new ConstructorCreatorImpl(this);
+        var mc = new ConstructorCreatorImpl(this, preInits, postInits);
         mc.accept(builder);
         ConstructorDesc desc = mc.desc();
         constructors.add(desc);
