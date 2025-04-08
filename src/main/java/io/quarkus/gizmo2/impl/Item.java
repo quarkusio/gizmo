@@ -119,14 +119,23 @@ public abstract non-sealed class Item implements Expr {
 
     /**
      * Replace this item with the given replacement.
-     * This item must be the previous item in the iterator.
      *
-     * @param node        the list iterator (must not be {@code null})
+     * @param node the item's node (must not be {@code null})
      * @param replacement the replacement item (must not be {@code null})
      */
     protected void replace(Node node, Item replacement) {
         assert this == node.item();
         node.set(replacement);
+    }
+
+    /**
+     * Delete this item from the list.
+     *
+     * @param node the item's node (must not be {@code null})
+     */
+    protected void remove(Node node) {
+        assert this == node.item();
+        node.remove();
     }
 
     /**

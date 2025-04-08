@@ -880,11 +880,21 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             if (prevItem == cond) {
                 if (cond instanceof Rel rel) {
                     IfRel ifRel = new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right());
-                    rel.replace(tail.prev(), ifRel);
+                    if (ifRel.mayFallThrough()) {
+                        rel.replace(tail.prev(), ifRel);
+                    } else {
+                        rel.remove(tail.prev());
+                        replaceLastItem(ifRel);
+                    }
                     return ifRel;
                 } else if (cond instanceof RelZero rz) {
                     IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input());
-                    rz.replace(tail.prev(), ifZero);
+                    if (ifZero.mayFallThrough()) {
+                        rz.replace(tail.prev(), ifZero);
+                    } else {
+                        rz.remove(tail.prev());
+                        replaceLastItem(ifZero);
+                    }
                     return ifZero;
                 }
             }
