@@ -1,0 +1,359 @@
+package io.quarkus.gizmo2;
+
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import org.junit.jupiter.api.Test;
+
+import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
+import java.lang.constant.MethodTypeDesc;
+import java.util.function.Supplier;
+
+import static java.lang.constant.ConstantDescs.CD_String;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class InvocationTest {
+    @Test
+    public void invokeStaticOnClass() {
+        // class StaticInvocation {
+        //     static String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        //
+        //     static Object invoke() {
+        //         return returnString("input"); // <--- invokestatic
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
+            MethodDesc returnString = cc.staticMethod("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    bc.return_(bc.invokeStatic(returnString, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeVirtualOnClass() {
+        // class VirtualInvocation {
+        //     String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        //
+        //     static Object invoke() {
+        //         return new VirtualInvocation().returnString("input"); // <--- invokevirtual
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.VirtualInvocation", cc -> {
+            cc.defaultConstructor();
+
+            MethodDesc returnString = cc.method("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    bc.return_(bc.invokeVirtual(returnString, instance, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeSpecialOnClass() {
+        // class MySuperclass {
+        //     String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        // }
+        //
+        // class SpecialInvocation extends MySuperclass {
+        //     String returnStringCaller(String input) {
+        //         return super.returnString(input); // <--- invokespecial
+        //     }
+        //
+        //     static Object invoke() {
+        //         return new SpecialInvocation().returnStringCaller("input");
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc superclass = g.class_("io.quarkus.gizmo2.MySuperclass", cc -> {
+            cc.defaultConstructor();
+
+            cc.method("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
+            cc.extends_(superclass);
+
+            cc.defaultConstructor();
+
+            MethodDesc returnStringCaller = cc.method("returnStringCaller", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    MethodDesc desc = ClassMethodDesc.of(superclass, "returnString",
+                            MethodTypeDesc.of(CD_String, CD_String));
+                    bc.return_(bc.invokeSpecial(desc, cc.this_(), input));
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeInterfaceOnClass() {
+        // interface MyInterface {
+        //     String returnString(String input);
+        // }
+        //
+        // class InterfaceInvocation implements MyInterface {
+        //     public String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        //
+        //     static Object invoke() {
+        //         return ((MyInterface) new InterfaceInvocation()).returnString("input"); // <--- invokeinterface
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
+            cc.method("returnString", mc -> {
+                mc.parameter("input", String.class);
+                mc.returning(String.class);
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+            cc.implements_(myInterface);
+
+            cc.defaultConstructor();
+
+            cc.method("returnString", mc -> {
+                mc.public_();
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                            MethodTypeDesc.of(CD_String, CD_String));
+                    bc.return_(bc.invokeInterface(desc, instance, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeStaticOnInterface() {
+        // interface MyInterface {
+        //     static String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        // }
+        //
+        // class StaticInterfaceInvocation {
+        //     static Object invoke() {
+        //         return MyInterface.returnString("input"); // <--- invokestatic
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
+            cc.staticMethod("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                            MethodTypeDesc.of(CD_String, CD_String));
+                    bc.return_(bc.invokeStatic(desc, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeSpecialOnInterface() {
+        // interface MyInterface {
+        //     default String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        // }
+        //
+        // class SpecialInterfaceInvocation implements MyInterface {
+        //     String returnStringCaller(String input) {
+        //         return MyInterface.super.returnString(input); // <--- invokespecial
+        //     }
+        //
+        //     static Object invoke() {
+        //         return new SpecialInterfaceInvocation().returnStringCaller("input");
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
+            cc.defaultMethod("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
+            cc.implements_(myInterface);
+
+            cc.defaultConstructor();
+
+            MethodDesc returnStringCaller = cc.method("returnStringCaller", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                            MethodTypeDesc.of(CD_String, CD_String));
+                    bc.return_(bc.invokeSpecial(desc, cc.this_(), input));
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    @Test
+    public void invokeInterfaceOnInterface() {
+        // interface MyInterface {
+        //     String returnString(String input);
+        //
+        //     default String returnStringCaller(String input) {
+        //         return returnString(input); // <--- invokeinterface
+        //     }
+        // }
+        //
+        // class InterfaceInvocation implements MyInterface {
+        //     public String returnString(String input) {
+        //         return input + "_foobar";
+        //     }
+        //
+        //     static Object invoke() {
+        //         return new InterfaceInvocation().returnStringCaller("foobar");
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
+            MethodDesc returnString = cc.method("returnString", mc -> {
+                mc.parameter("input", String.class);
+                mc.returning(String.class);
+            });
+
+            cc.defaultMethod("returnStringCaller", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.invokeInterface(returnString, cc.this_(), input));
+                });
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+            cc.implements_(myInterface);
+
+            cc.defaultConstructor();
+
+            cc.method("returnString", mc -> {
+                mc.public_();
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnStringCaller",
+                            MethodTypeDesc.of(CD_String, CD_String));
+                    bc.return_(bc.invokeInterface(desc, instance, Constant.of("input")));
+                });
+            });
+        });
+        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+}
