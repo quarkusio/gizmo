@@ -53,7 +53,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
                 ifc.withFlag(AccessFlag.PRIVATE);
                 ifc.withFlag(AccessFlag.FINAL);
             });
-            InstanceFieldVar fv = cc.this_().field(desc);
+            InstanceFieldVar fv = this_().field(desc);
             captures.add(b0 -> {
                 b0.set(fv, param);
             });
@@ -64,9 +64,8 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
 
     void freezeCaptures() {
         ctorSetups.add(cc -> {
-            Var this_ = cc.this_();
             cc.body(b0 -> {
-                b0.invokeSpecial(superCtor, this_, superArgs);
+                b0.invokeSpecial(superCtor, this_(), superArgs);
                 for (Consumer<BlockCreator> capture : captures) {
                     capture.accept(b0);
                 }

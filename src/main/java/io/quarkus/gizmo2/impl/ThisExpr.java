@@ -3,9 +3,9 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.Var;
+import io.quarkus.gizmo2.This;
 
-public final class ThisExpr extends Item implements Var {
+public final class ThisExpr extends Item implements This {
     private final ClassDesc type;
 
     ThisExpr(final ClassDesc type) {

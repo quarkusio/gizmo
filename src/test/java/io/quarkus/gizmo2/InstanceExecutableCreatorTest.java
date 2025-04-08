@@ -23,9 +23,8 @@ public class InstanceExecutableCreatorTest {
             cc.implements_(ClassTypeSig.of(Function.class.getName(), TypeArg.of(ClassTypeSig.of(String.class.getName()))));
             cc.constructor(con -> {
                 con.public_();
-                Var this_ = con.this_();
                 con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
                     bc.return_();
                 });
             });
@@ -42,11 +41,10 @@ public class InstanceExecutableCreatorTest {
                 ParamVar p = mc.parameter("t", Object.class);
                 mc.returning(Object.class);
                 mc.public_();
-                Var this_ = mc.this_();
                 mc.body(bc -> {
                     // return convert((String)t);
                     Expr strVal = bc.cast(p, String.class);
-                    bc.return_(bc.invokeVirtual(convert, this_, strVal));
+                    bc.return_(bc.invokeVirtual(convert, cc.this_(), strVal));
                 });
             });
         });

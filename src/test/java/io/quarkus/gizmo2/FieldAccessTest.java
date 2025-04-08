@@ -26,10 +26,9 @@ public class FieldAccessTest {
             });
             cc.constructor(con -> {
                 // this.bravo = "charlie";
-                Var this_ = con.this_();
                 con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), this_);
-                    var bravo = this_.field(bravoDesc);
+                    bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
+                    var bravo = cc.this_().field(bravoDesc);
                     bc.set(bravo, Constant.of("charlie"));
                     bc.return_();
                 });
@@ -39,9 +38,8 @@ public class FieldAccessTest {
                 //    return bravo.length();
                 // }
                 mc.returning(int.class);
-                Var this_ = mc.this_();
                 mc.body(bc -> {
-                    var b = bc.get(this_.field(bravoDesc));
+                    var b = bc.get(cc.this_().field(bravoDesc));
                     var length = bc.withString(b).length();
                     bc.return_(length);
                 });
@@ -127,10 +125,9 @@ public class FieldAccessTest {
             });
             // create a constructor that does not explicitly initialize the field
             zc.constructor(cc -> {
-                Var this_ = cc.this_();
                 cc.public_();
                 cc.body(b0 -> {
-                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), zc.this_());
                     b0.return_();
                 });
             });
@@ -163,10 +160,9 @@ public class FieldAccessTest {
             });
             // create a constructor that does not explicitly initialize the field
             zc.constructor(cc -> {
-                Var this_ = cc.this_();
                 cc.public_();
                 cc.body(b0 -> {
-                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), zc.this_());
                     b0.return_();
                 });
             });

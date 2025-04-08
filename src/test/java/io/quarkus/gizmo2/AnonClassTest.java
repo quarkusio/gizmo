@@ -66,9 +66,8 @@ public final class AnonClassTest {
         ClassDesc baseDesc = g.class_("io.quarkus.gizmo2.Base", cc -> {
             cc.constructor(mc -> {
                 mc.public_();
-                Var this_ = mc.this_();
                 mc.body(b0 -> {
-                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
                     b0.return_();
                 });
             });

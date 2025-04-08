@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.Item;
 /**
  * An expression.
  */
-public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, Var, Item {
+public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, This, Var, Item {
     /**
      * {@return the expression type (not {@code null})}
      */

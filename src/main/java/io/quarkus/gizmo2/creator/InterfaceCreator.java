@@ -115,5 +115,4 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
     default MethodDesc method(MethodDesc desc, Consumer<AbstractMethodCreator> builder) {
         return method(desc.name(), desc.type(), builder);
     }
-
 }
