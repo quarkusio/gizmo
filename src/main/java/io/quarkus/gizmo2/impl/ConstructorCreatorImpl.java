@@ -1,12 +1,18 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.BRIDGE;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PRIVATE;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PROTECTED;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PUBLIC;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNTHETIC;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.VARARGS;
 import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -17,7 +23,7 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     private ConstructorDesc desc;
 
     ConstructorCreatorImpl(final TypeCreatorImpl owner, final List<Consumer<BlockCreator>> preInits, final List<Consumer<BlockCreator>> postInits) {
-        super(owner, 0);
+        super(owner, Set.of(), Set.of(PUBLIC, PRIVATE, PROTECTED, SYNTHETIC, BRIDGE, VARARGS));
         this.preInits = preInits;
         this.postInits = postInits;
     }
@@ -51,17 +57,9 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         });
     }
 
-    public void withFlag(final AccessFlag flag) {
-        switch (flag) {
-            case PUBLIC, PRIVATE, PROTECTED, SYNTHETIC, BRIDGE, VARARGS -> flags |= flag.mask();
-            default -> throw new IllegalArgumentException(flag.toString());
-        }
-    }
-
     void accept(final Consumer<? super ConstructorCreatorImpl> builder) {
         builder.accept(this);
     }
-
 
     void clearType() {
         desc = null;

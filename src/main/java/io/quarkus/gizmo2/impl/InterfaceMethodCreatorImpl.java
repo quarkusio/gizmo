@@ -1,23 +1,20 @@
 package io.quarkus.gizmo2.impl;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
-import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 
+import java.util.Set;
 import java.util.function.Consumer;
+
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.ABSTRACT;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.BRIDGE;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PUBLIC;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNCHRONIZED;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNTHETIC;
+import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.VARARGS;
 
 public final class InterfaceMethodCreatorImpl extends MethodCreatorImpl implements AbstractMethodCreator {
     InterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
-        super(owner, name, AccessFlag.ABSTRACT.mask() | AccessFlag.PUBLIC.mask());
-    }
-
-    public void withFlag(final AccessFlag flag) {
-        switch (flag) {
-            case ABSTRACT, PUBLIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, VARARGS -> flags |= flag.mask();
-            default -> throw new IllegalArgumentException(flag.toString());
-        }
+        super(owner, name, Set.of(ABSTRACT, PUBLIC), Set.of(ABSTRACT, PUBLIC, SYNCHRONIZED, SYNTHETIC, BRIDGE, VARARGS));
     }
 
     void accept(final Consumer<? super InterfaceMethodCreatorImpl> builder) {

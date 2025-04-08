@@ -1,7 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.util.Set;
 
+import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.creator.MethodCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
@@ -9,8 +11,8 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
     final String name;
     private MethodDesc desc;
 
-    MethodCreatorImpl(final TypeCreatorImpl owner, final String name, final int flags) {
-        super(owner, flags);
+    MethodCreatorImpl(final TypeCreatorImpl owner, final String name, final Set<AccessFlag> defaultFlags, Set<AccessFlag> allowedFlags) {
+        super(owner, defaultFlags, allowedFlags);
         this.name = name;
     }
 

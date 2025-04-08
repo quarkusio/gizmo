@@ -133,6 +133,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param name the method name (must not be {@code null})
      * @param builder the builder for the method (must not be {@code null})
@@ -142,6 +144,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type having the given predefined method type.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param name the method name (must not be {@code null})
      * @param type the method type (must not be {@code null})
@@ -157,6 +161,8 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a static method to this type having the same name and type as the given method.
+     * <p>
+     * Static methods on interfaces are always {@code public}.
      *
      * @param desc the original method descriptor (must not be {@code null})
      * @param builder the builder for the method (must not be {@code null})

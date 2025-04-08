@@ -9,6 +9,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -41,6 +42,9 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     final BitSet locals = new BitSet();
     final TypeCreatorImpl typeCreator;
 
+    final Set<AccessFlag> allowedFlags;
+    final Set<AccessFlag> unremovableFlags;
+
     ClassDesc returnType;
     boolean typeEstablished;
     MethodTypeDesc type = null;
@@ -49,8 +53,17 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     int nextParam;
     int state = ST_INITIAL;
 
-    ExecutableCreatorImpl(final TypeCreatorImpl typeCreator, final int flags) {
+    // `defaultFlags` are also flags that cannot be removed
+    // `allowedFlags` must contain all `defaultFlags`
+    ExecutableCreatorImpl(final TypeCreatorImpl typeCreator, final Set<AccessFlag> defaultFlags, final Set<AccessFlag> allowedFlags) {
         this.typeCreator = typeCreator;
+        assert allowedFlags.containsAll(defaultFlags);
+        this.allowedFlags = allowedFlags;
+        this.unremovableFlags = defaultFlags;
+        int flags = 0;
+        for (AccessFlag defaultFlag : defaultFlags) {
+            flags |= defaultFlag.mask();
+        }
         this.flags = flags;
     }
 
@@ -266,36 +279,46 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         return typeCreator.type();
     }
 
-    public void public_() {
+    public final void public_() {
         withFlag(AccessFlag.PUBLIC);
         withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
-    public void packagePrivate() {
+    public final void packagePrivate() {
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
-    public void private_() {
+    public final void private_() {
         withFlag(AccessFlag.PRIVATE);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
     }
 
-    public void protected_() {
+    public final void protected_() {
         withFlag(AccessFlag.PROTECTED);
         withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
     }
 
-    public void final_() {
+    public final void final_() {
         withFlag(AccessFlag.FINAL);
     }
 
-    abstract void withFlag(AccessFlag flag);
-
-    void withoutFlag(AccessFlag flag) {
-        flags &= ~flag.mask();
+    public final void withFlag(AccessFlag flag) {
+        if (allowedFlags.contains(flag)) {
+            flags |= flag.mask();
+        } else {
+            throw new IllegalArgumentException("Cannot add flag " + flag);
+        }
     }
 
-    void withoutFlags(AccessFlag... flags) {
+    final void withoutFlag(AccessFlag flag) {
+        if (unremovableFlags.contains(flag)) {
+            throw new IllegalArgumentException("Cannot remove flag " + flag);
+        } else {
+            flags &= ~flag.mask();
+        }
+    }
+
+    final void withoutFlags(AccessFlag... flags) {
         for (AccessFlag flag : flags) {
             withoutFlag(flag);
         }
