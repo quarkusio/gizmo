@@ -34,6 +34,7 @@ import io.quarkus.gizmo2.creator.ops.OptionalOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
+import io.quarkus.gizmo2.creator.ops.ThrowableOps;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -2658,6 +2659,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
+     * {@return a convenience wrapper for accessing instance methods of {@link Throwable}}
+     *
+     * @param receiver the instance to invoke upon (must not be {@code null})
+     */
+    default ThrowableOps withThrowable(Expr throwable) {
+        return new ThrowableOps(this, throwable);
+    }
+
+    /**
      * Creates a {@code StringBuilder} generator that helps to generate a chain of
      * {@code append} calls and a final {@code toString} call.
      *
@@ -2872,15 +2882,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param closeable the closeable object (must not be {@code null})
      */
     void close(Expr closeable);
-
-    /**
-     * Add a suppressed exception to the given throwable.
-     *
-     * @param throwable the throwable (must not be {@code null})
-     * @param suppressed the suppressed throwable (must not be {@code null})
-     */
-    // TODO: withThrowable(throwable).addSuppressed(suppressed) ?
-    void addSuppressed(Expr throwable, Expr suppressed);
 
     // debug stuff
 

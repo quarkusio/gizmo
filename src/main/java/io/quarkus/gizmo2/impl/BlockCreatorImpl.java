@@ -378,10 +378,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         invokeInterface(MethodDesc.of(AutoCloseable.class, "close", void.class), closeable);
     }
 
-    public void addSuppressed(final Expr throwable, final Expr suppressed) {
-        invokeVirtual(MethodDesc.of(Throwable.class, "addSuppressed", void.class, Throwable.class), throwable, suppressed);
-    }
-
     public void inc(final LValueExpr var, Constant amount) {
         ((LValueExprImpl) var).emitInc(this, amount);
     }
@@ -698,7 +694,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             }
         }
         Node dupNode = dup_.insert(node.next());
-        Node newNode = new_.insert(dupNode);
+        new_.insert(dupNode);
         // finally, add the invoke at tail
         addItem(new Invoke(ctor, dup_, args));
         // the New is all that is left on the stack now
@@ -1028,7 +1024,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                             b4.close(rsrc);
                         });
                         t3.catch_(CD_Throwable, "e4", (b4, e4) -> {
-                            b4.addSuppressed(e2, e4);
+                            b4.withThrowable(e2).addSuppressed(e4);
                         });
                     });
                     b2.throw_(e2);
