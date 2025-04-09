@@ -32,6 +32,7 @@ abstract class If extends Item {
         LE(CodeBuilder::ifle, CodeBuilder::if_icmple),
         GT(CodeBuilder::ifgt, CodeBuilder::if_icmpgt),
         ;
+
         static final List<Kind> values = List.of(values());
 
         final IfOp if_;
@@ -49,7 +50,6 @@ abstract class If extends Item {
         Kind(final IfOp if_, final IfOp if_icmp) {
             this(if_, if_icmp, null, null);
         }
-
 
         Kind invert() {
             return values.get(ordinal() ^ 1);

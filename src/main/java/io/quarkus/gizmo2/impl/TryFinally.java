@@ -51,6 +51,7 @@ final class TryFinally extends Item {
         }
         return cleanup.label();
     }
+
     public boolean mayFallThrough() {
         return body.mayFallThrough() && cleanupTemplate.mayFallThrough();
     }
@@ -73,10 +74,11 @@ final class TryFinally extends Item {
         // handle each specific case separately, since they may all have distinct stack maps
         for (Cleanup value : cleanups.values()) {
             cb.labelBinding(value.label());
-            if (! cleanupTemplate.mayFallThrough()) {
+            if (!cleanupTemplate.mayFallThrough()) {
                 // skip it
                 switch (TypeKind.from(value.type()).slotSize()) {
-                    case 0 -> {}
+                    case 0 -> {
+                    }
                     case 1 -> cb.pop();
                     case 2 -> cb.pop2();
                 }
@@ -94,7 +96,7 @@ final class TryFinally extends Item {
         }
         // penultimate case: handle rethrow
         cb.labelBinding(cleanupAndThrow);
-        if (! cleanupTemplate.mayFallThrough() && body.type().equals(CD_void)) {
+        if (!cleanupTemplate.mayFallThrough() && body.type().equals(CD_void)) {
             // cleanup cannot fall through; go to the simple case
             cb.pop();
             // initialize cleanup-and-yield
@@ -125,7 +127,8 @@ final class TryFinally extends Item {
     }
 
     abstract static class CleanupKey {
-        CleanupKey() {}
+        CleanupKey() {
+        }
 
         ClassDesc type() {
             return CD_void;

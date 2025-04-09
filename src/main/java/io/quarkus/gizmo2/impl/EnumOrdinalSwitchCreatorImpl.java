@@ -20,7 +20,8 @@ import io.quarkus.gizmo2.impl.constant.EnumConstant;
 public final class EnumOrdinalSwitchCreatorImpl extends PerfectHashSwitchCreatorImpl<EnumConstant> {
     final List<EnumConstant> constants;
 
-    EnumOrdinalSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type, final Class<? extends Enum<?>> enumClass) {
+    EnumOrdinalSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
+            final Class<? extends Enum<?>> enumClass) {
         super(enclosing, switchVal, type, EnumConstant.class);
         constants = Stream.of(enumClass.getEnumConstants()).map(EnumConstant::of).map(EnumConstant.class::cast).toList();
     }

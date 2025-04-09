@@ -18,7 +18,8 @@ public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
     final List<Annotation> visible;
     private final int flags;
 
-    public ParamVarImpl(final ClassDesc type, final String name, final int index, final int slot, final int flags, final List<Annotation> invisible, final List<Annotation> visible) {
+    public ParamVarImpl(final ClassDesc type, final String name, final int index, final int slot, final int flags,
+            final List<Annotation> invisible, final List<Annotation> visible) {
         this.type = type;
         this.name = name;
         this.index = index;

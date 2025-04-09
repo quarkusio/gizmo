@@ -31,9 +31,8 @@ public final class InvokeConstant extends ConstantImpl {
 
     public ConstantDesc desc() {
         return DynamicConstantDesc.of(
-            ConstantDescs.BSM_INVOKE,
-            args.stream().map(ConstantImpl::describeConstable).map(Optional::orElseThrow).toArray(ConstantDesc[]::new)
-        );
+                ConstantDescs.BSM_INVOKE,
+                args.stream().map(ConstantImpl::describeConstable).map(Optional::orElseThrow).toArray(ConstantDesc[]::new));
     }
 
     public Optional<? extends ConstantDesc> describeConstable() {

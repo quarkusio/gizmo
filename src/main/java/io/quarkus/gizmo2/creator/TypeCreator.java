@@ -185,7 +185,7 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
 
     /**
      * Add a public static final field to this type. The field is initialized to the given {@code value}.
-     * 
+     *
      * @param name the field name (must not be {@code null})
      * @param value the constant value (must not be {@code null})
      * @return a variable for the static field (not {@code null})

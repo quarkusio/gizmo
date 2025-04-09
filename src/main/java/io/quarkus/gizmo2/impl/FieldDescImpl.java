@@ -35,7 +35,8 @@ public final class FieldDescImpl implements FieldDesc {
     }
 
     public boolean equals(final FieldDescImpl other) {
-        return this == other || other != null && hashCode == other.hashCode && name.equals(other.name) && owner.equals(other.owner) && type.equals(other.type);
+        return this == other || other != null && hashCode == other.hashCode && name.equals(other.name)
+                && owner.equals(other.owner) && type.equals(other.type);
     }
 
     public int hashCode() {

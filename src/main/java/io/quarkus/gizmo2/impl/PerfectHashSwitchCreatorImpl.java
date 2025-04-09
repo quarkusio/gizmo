@@ -10,9 +10,11 @@ import io.github.dmlloyd.classfile.instruction.SwitchCase;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
-sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C> permits EnumOrdinalSwitchCreatorImpl, IntSwitchCreatorImpl {
+sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C>
+        permits EnumOrdinalSwitchCreatorImpl, IntSwitchCreatorImpl {
 
-    PerfectHashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type, final Class<C> constantType) {
+    PerfectHashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
+            final Class<C> constantType) {
         super(enclosing, switchVal, type, constantType);
     }
 
@@ -26,9 +28,9 @@ sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstantImpl> exten
         }
 
         List<SwitchCase> switchCases = casesByConstant.entrySet().stream()
-            .map(c -> SwitchCase.of(staticHash(c.getKey()), c.getValue().body.startLabel()))
-            .sorted(Comparator.comparingInt(SwitchCase::caseValue))
-            .toList();
+                .map(c -> SwitchCase.of(staticHash(c.getKey()), c.getValue().body.startLabel()))
+                .sorted(Comparator.comparingInt(SwitchCase::caseValue))
+                .toList();
 
         hash(cb);
         if ((double) casesByConstant.size() / ((double) (max - min)) >= TABLESWITCH_DENSITY) {

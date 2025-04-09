@@ -233,7 +233,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                 return ClassHierarchyResolver.ClassHierarchyInfo.ofInterface();
             } else {
                 Class<?> superClass = loaded.getSuperclass();
-                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(superClass == null ? null : Util.classDesc(superClass));
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(
+                        superClass == null ? null : Util.classDesc(superClass));
             }
         }
     }

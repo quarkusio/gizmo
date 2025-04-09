@@ -19,7 +19,8 @@ import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import io.quarkus.gizmo2.impl.constant.VoidConstant;
 
-public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends Item implements SwitchCreator permits HashSwitchCreatorImpl, PerfectHashSwitchCreatorImpl {
+public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends Item implements SwitchCreator
+        permits HashSwitchCreatorImpl, PerfectHashSwitchCreatorImpl {
 
     static final double TABLESWITCH_DENSITY = 0.9;
 
@@ -58,7 +59,8 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
     boolean fallThrough;
     boolean done;
 
-    SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type, final Class<C> constantType) {
+    SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
+            final Class<C> constantType) {
         this.enclosing = enclosing;
         this.switchVal = (Item) switchVal;
         this.type = type;
@@ -140,10 +142,10 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
 
     boolean contains(final BlockCreatorImpl block) {
         return (default_ != null && default_.contains(block))
-            || cases.stream()
-            .map(CaseCreatorImpl.class::cast)
-            .map(CaseCreatorImpl::body)
-            .anyMatch(b -> b.contains(block));
+                || cases.stream()
+                        .map(CaseCreatorImpl.class::cast)
+                        .map(CaseCreatorImpl::body)
+                        .anyMatch(b -> b.contains(block));
     }
 
     public final class CaseCreatorImpl implements CaseCreator {

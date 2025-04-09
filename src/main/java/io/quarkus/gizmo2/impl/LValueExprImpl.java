@@ -5,7 +5,8 @@ import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.LValueExpr;
 
 public non-sealed abstract class LValueExprImpl extends Item implements LValueExpr {
-    LValueExprImpl() {}
+    LValueExprImpl() {
+    }
 
     abstract Item emitGet(final BlockCreatorImpl block, final AccessMode mode);
 

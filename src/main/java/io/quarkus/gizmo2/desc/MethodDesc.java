@@ -11,7 +11,8 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A descriptor for a method.
  */
-public sealed interface MethodDesc extends MemberDesc, MethodTyped permits ClassMethodDesc, InterfaceMethodDesc, MethodDescImpl {
+public sealed interface MethodDesc extends MemberDesc, MethodTyped
+        permits ClassMethodDesc, InterfaceMethodDesc, MethodDescImpl {
     /**
      * Construct a new instance.
      *
@@ -21,7 +22,9 @@ public sealed interface MethodDesc extends MemberDesc, MethodTyped permits Class
      * @return the method descriptor (must not be {@code null})
      */
     static MethodDesc of(Class<?> owner, String name, MethodTypeDesc type) {
-        return owner.isInterface() ? InterfaceMethodDesc.of(Util.classDesc(owner), name, type) : ClassMethodDesc.of(Util.classDesc(owner), name, type);
+        return owner.isInterface()
+                ? InterfaceMethodDesc.of(Util.classDesc(owner), name, type)
+                : ClassMethodDesc.of(Util.classDesc(owner), name, type);
     }
 
     /**

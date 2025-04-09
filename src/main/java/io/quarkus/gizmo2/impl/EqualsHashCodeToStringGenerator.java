@@ -41,7 +41,8 @@ public class EqualsHashCodeToStringGenerator {
                 Expr otherCast = b0.define("other", b0.cast(other, thisClass));
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
-                        throw new IllegalArgumentException("Field does not belong to " + thisClass.displayName() + ": " + field);
+                        throw new IllegalArgumentException(
+                                "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
                     LocalVar thisValue = b0.define("thisValue", b0.get(cc.this_().field(field)));
@@ -92,7 +93,8 @@ public class EqualsHashCodeToStringGenerator {
                 LocalVar result = b0.define("result", Constant.of(1));
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
-                        throw new IllegalArgumentException("Field does not belong to " + thisClass.displayName() + ": " + field);
+                        throw new IllegalArgumentException(
+                                "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
                     Expr value = b0.get(cc.this_().field(field));
@@ -118,7 +120,8 @@ public class EqualsHashCodeToStringGenerator {
                 boolean first = true;
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
-                        throw new IllegalArgumentException("Field does not belong to " + thisClass.displayName() + ": " + field);
+                        throw new IllegalArgumentException(
+                                "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
                     if (first) {

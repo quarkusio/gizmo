@@ -4,7 +4,8 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 
 abstract class Goto extends Item {
-    Goto() {}
+    Goto() {
+    }
 
     public boolean mayFallThrough() {
         return false;

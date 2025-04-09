@@ -17,8 +17,10 @@ import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 /**
  * A hashing switch implementation.
  */
-abstract sealed class HashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C> permits ClassSwitchCreatorImpl, EnumSwitchCreatorImpl, LongSwitchCreatorImpl, StringSwitchCreatorImpl {
-    HashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type, final Class<C> constantType) {
+abstract sealed class HashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C>
+        permits ClassSwitchCreatorImpl, EnumSwitchCreatorImpl, LongSwitchCreatorImpl, StringSwitchCreatorImpl {
+    HashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
+            final Class<C> constantType) {
         super(enclosing, switchVal, type, constantType);
     }
 
@@ -37,22 +39,22 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstantImpl> extends Swit
 
         // `cases` is a linked map, so this sort is stable
         List<Map.Entry<C, CaseCreatorImpl>> sortedCases = casesByConstant.entrySet().stream()
-            .sorted(Comparator.comparingInt(e -> staticHash(e.getKey())))
-            .toList();
+                .sorted(Comparator.comparingInt(e -> staticHash(e.getKey())))
+                .toList();
 
         int[] hashes = casesByConstant.keySet().stream()
-            .mapToInt(this::staticHash)
-            .sorted()
-            .distinct()
-            .toArray();
+                .mapToInt(this::staticHash)
+                .sorted()
+                .distinct()
+                .toArray();
 
         Label[] caseLabels = IntStream.of(hashes)
-            .mapToObj(val -> cb.newLabel())
-            .toArray(Label[]::new);
+                .mapToObj(val -> cb.newLabel())
+                .toArray(Label[]::new);
 
         List<SwitchCase> switchCases = IntStream.range(0, hashes.length)
-            .mapToObj(i -> SwitchCase.of(hashes[i], caseLabels[i]))
-            .toList();
+                .mapToObj(i -> SwitchCase.of(hashes[i], caseLabels[i]))
+                .toList();
 
         TypeKind tk = switchVal.typeKind();
         // todo: improved alloc scheme

@@ -1,15 +1,16 @@
 package io.quarkus.gizmo2;
 
-import io.quarkus.gizmo2.desc.ConstructorDesc;
-import io.quarkus.gizmo2.desc.FieldDesc;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
 
 public class EqualsHashCodeToStringTest {
     @Test

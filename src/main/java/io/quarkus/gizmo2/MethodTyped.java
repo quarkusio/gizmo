@@ -54,6 +54,7 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
 
     /**
      * {@return the type of the parameter with the given index}
+     *
      * @param idx the parameter index
      * @throws IndexOutOfBoundsException if the parameter index is out of bounds
      */
@@ -63,6 +64,7 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
 
     /**
      * {@return the type kind of the parameter with the given index}
+     *
      * @param idx the parameter index
      * @throws IndexOutOfBoundsException if the parameter index is out of bounds
      */
@@ -72,6 +74,7 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
 
     /**
      * {@return the number of slots occupied by the parameter with the given index}
+     *
      * @param idx the parameter index
      * @throws IndexOutOfBoundsException if the parameter index is out of bounds
      */
@@ -80,7 +83,9 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
     }
 
     /**
-     * {@return {@code true} if the type of the parameter with the given index is a primitive type, or {@code false} if it is not}
+     * {@return {@code true} if the type of the parameter with the given index is a primitive type, or {@code false} if it is
+     * not}
+     *
      * @param idx the parameter index
      * @throws IndexOutOfBoundsException if the parameter index is out of bounds
      */

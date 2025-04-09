@@ -1,9 +1,9 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static java.lang.constant.ConstantDescs.CD_byte;
+
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
-
-import static java.lang.constant.ConstantDescs.CD_byte;
 
 public final class ByteConstant extends IntBasedConstant {
     private final Byte value;

@@ -7,5 +7,6 @@ import io.quarkus.gizmo2.impl.PrivateInterfaceMethodCreatorImpl;
 /**
  * A creator for an instance method.
  */
-public sealed interface InstanceMethodCreator extends InstanceExecutableCreator, MethodCreator permits DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl {
+public sealed interface InstanceMethodCreator extends InstanceExecutableCreator, MethodCreator
+        permits DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl {
 }

@@ -227,7 +227,7 @@ public class LoopTest {
     public interface StringListFun {
 
         String apply(List<String> list);
-        
+
     }
 
 }

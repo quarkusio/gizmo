@@ -16,9 +16,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
 public final class StaticFinalFieldConstant extends ConstantImpl {
-    private static final DirectMethodHandleDesc BSM_GET_STATIC_FINAL2
-        = ConstantDescs.ofConstantBootstrap(CD_ConstantBootstraps, "getStaticFinal",
-            CD_Object, CD_Class, CD_Class);
+    private static final DirectMethodHandleDesc BSM_GET_STATIC_FINAL2 = ConstantDescs.ofConstantBootstrap(CD_ConstantBootstraps,
+            "getStaticFinal", CD_Object, CD_Class, CD_Class);
 
     private final FieldDesc fieldDesc;
 
@@ -49,17 +48,15 @@ public final class StaticFinalFieldConstant extends ConstantImpl {
         ClassDesc owner = fieldDesc.owner();
         if (type.equals(owner)) {
             return DynamicConstantDesc.ofNamed(
-                ConstantDescs.BSM_GET_STATIC_FINAL,
-                name,
-                owner
-            );
+                    ConstantDescs.BSM_GET_STATIC_FINAL,
+                    name,
+                    owner);
         } else {
             return DynamicConstantDesc.ofNamed(
-                BSM_GET_STATIC_FINAL2,
-                name,
-                type,
-                owner
-            );
+                    BSM_GET_STATIC_FINAL2,
+                    name,
+                    type,
+                    owner);
         }
     }
 

@@ -10,7 +10,8 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribut
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import io.quarkus.gizmo2.Annotatable;
 
-public abstract sealed class AnnotatableCreatorImpl implements Annotatable permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
+public abstract sealed class AnnotatableCreatorImpl implements Annotatable
+        permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
     List<Annotation> invisible = List.of();
     List<Annotation> visible = List.of();
 
@@ -39,13 +40,13 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable permi
     }
 
     void addInvisible(Consumer<? super RuntimeInvisibleAnnotationsAttribute> consumer) {
-        if (! invisible.isEmpty()) {
+        if (!invisible.isEmpty()) {
             consumer.accept(RuntimeInvisibleAnnotationsAttribute.of(visible));
         }
     }
 
     void addVisible(Consumer<? super RuntimeVisibleAnnotationsAttribute> consumer) {
-        if (! visible.isEmpty()) {
+        if (!visible.isEmpty()) {
             consumer.accept(RuntimeVisibleAnnotationsAttribute.of(visible));
         }
     }

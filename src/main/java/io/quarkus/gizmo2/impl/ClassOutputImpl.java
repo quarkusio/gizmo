@@ -23,7 +23,7 @@ public final class ClassOutputImpl implements ClassOutput {
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {
-        if (! desc.isClassOrInterface()) {
+        if (!desc.isClassOrInterface()) {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
 
@@ -42,7 +42,7 @@ public final class ClassOutputImpl implements ClassOutput {
     }
 
     public ClassDesc interface_(final ClassDesc desc, final Consumer<InterfaceCreator> builder) {
-        if (! desc.isClassOrInterface()) {
+        if (!desc.isClassOrInterface()) {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);

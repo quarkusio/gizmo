@@ -4,32 +4,32 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.function.BooleanSupplier;
 
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import org.junit.jupiter.api.Test;
 
 public final class TryTest {
     @Test
     public void testJavacCrasher() {
-        /*
-          // This code construct crashes javac as of 2025-03-28.
-          // The error is "code too large for try statement".
-          // We really only pass this because of a gimmick, but it's cool anyway.
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          try { foo.equals(bar); } finally {
-          return foo+bar;
-          }}}}}}}}}}}}
-        */
+        // This code construct crashes javac as of 2025-03-28.
+        // The error is "code too large for try statement".
+        // We really only pass this because of a gimmick, but it's cool anyway.
+        //
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // try { foo.equals(bar); } finally {
+        // return foo+bar;
+        // }}}}}}}}}}}}
 
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
@@ -66,8 +66,7 @@ public final class TryTest {
                                                                     try11.finally_(b12 -> b12.try_(try12 -> {
                                                                         try12.body(b13 -> b13.withObject(foo).objEquals(bar));
                                                                         try12.finally_(b13 -> b13.return_(
-                                                                            b13.withString(foo).concat(bar)
-                                                                        ));
+                                                                                b13.withString(foo).concat(bar)));
                                                                     }));
                                                                 }));
                                                             }));
@@ -84,7 +83,7 @@ public final class TryTest {
                 });
             });
         });
-        assertEquals("hello"+"world", tcm.staticMethod("crashIt", CrashIt.class).crashIt("hello", "world"));
+        assertEquals("hello" + "world", tcm.staticMethod("crashIt", CrashIt.class).crashIt("hello", "world"));
     }
 
     @Test

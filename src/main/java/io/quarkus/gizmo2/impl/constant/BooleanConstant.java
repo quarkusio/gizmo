@@ -35,7 +35,7 @@ public final class BooleanConstant extends ConstantImpl {
     }
 
     public boolean isZero() {
-        return ! value;
+        return !value;
     }
 
     public boolean isNonZero() {

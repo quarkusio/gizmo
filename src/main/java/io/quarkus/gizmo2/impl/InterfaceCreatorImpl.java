@@ -7,11 +7,11 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
-import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
 

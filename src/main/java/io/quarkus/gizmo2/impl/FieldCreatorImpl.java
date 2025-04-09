@@ -24,7 +24,8 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
     private FieldDesc desc;
 
     // `defaultFlags` are also flags that cannot be removed
-    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc, final Set<AccessFlag> defaultFlags) {
+    public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc,
+            final Set<AccessFlag> defaultFlags) {
         this.owner = owner;
         this.name = name;
         this.tc = tc;

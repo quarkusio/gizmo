@@ -44,7 +44,7 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         if (type.equals(ConstantDescs.CD_void)) {
             throw new IllegalArgumentException("Bad type for parameter: " + type);
         }
-        if (typeEstablished && ! type.equals(this.type)) {
+        if (typeEstablished && !type.equals(this.type)) {
             throw new IllegalArgumentException("Given type " + type + " differs from established type " + this.type);
         }
         this.type = type;
@@ -52,7 +52,7 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
 
     void establishType(ClassDesc type) {
         if (typeEstablished) {
-            if (! type.equals(this.type)) {
+            if (!type.equals(this.type)) {
                 throw new IllegalArgumentException("Established type " + type + " differs from existing type " + this.type);
             }
         } else {
