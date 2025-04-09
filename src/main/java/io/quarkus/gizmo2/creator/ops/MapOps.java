@@ -93,8 +93,8 @@ public class MapOps extends ObjectOps {
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr clear() {
-        return invokeInstance(void.class, "clear");
+    public void clear() {
+        invokeInstance(void.class, "clear");
     }
 
 }
