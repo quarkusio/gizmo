@@ -53,7 +53,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var fc = new InstanceFieldCreatorImpl(this, type(), name);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
-        instanceFields.add(desc);
+        if (fields.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate field added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -63,7 +65,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new InstanceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -73,7 +77,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new AbstractMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -83,7 +89,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new NativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -93,7 +101,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new StaticNativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        staticMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.TRUE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -102,7 +112,9 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new ConstructorCreatorImpl(this, preInits, postInits);
         mc.accept(builder);
         ConstructorDesc desc = mc.desc();
-        constructors.add(desc);
+        if (!constructors.add(desc)) {
+            throw new IllegalArgumentException("Duplicate constructor added: %s".formatted(desc));
+        }
         return desc;
     }
 
