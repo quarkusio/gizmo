@@ -16,10 +16,21 @@ final class BinOp extends Item {
 
     BinOp(final Expr a, final Expr b, final Kind kind) {
         // todo: automatic conversions, unboxing
-        requireSameLoadableTypeKind(a, b);
+        switch (kind.operands) {
+            case SAME -> requireSameLoadableTypeKind(a, b);
+            case SECOND_INT -> {
+                // the first operand is checked later by `isValidFor()`
+                if (b.typeKind().asLoadable() != TypeKind.INT) {
+                    throw new IllegalArgumentException("Second operand must be int, but is " + b.type().displayName());
+                }
+            }
+        }
+
         this.a = (Item) a;
         this.b = (Item) b;
         this.kind = kind;
+        // it is important here that `type()` (to which `typeKind()` delegates) returns the type
+        // of the _first_ operand, at least for operations that use `Operands.SECOND_INT` (see above)
         if (!kind.isValidFor(typeKind())) {
             throw new IllegalArgumentException("Operation is not valid for type kind of " + typeKind());
         }
@@ -38,7 +49,7 @@ final class BinOp extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        Op op = kind.opFor(typeKind());
+        Operation op = kind.opFor(typeKind());
         // we validated op above
         assert op != null;
         op.apply(cb);
@@ -48,29 +59,41 @@ final class BinOp extends Item {
         return b.toShortString(a.toShortString(sb).append(kind));
     }
 
+    enum Operands {
+        SAME,
+        SECOND_INT,
+    }
+
+    interface Operation {
+        void apply(CodeBuilder cb);
+    }
+
     enum Kind {
-        ADD(CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd, "+"),
-        SUB(CodeBuilder::isub, CodeBuilder::lsub, CodeBuilder::fsub, CodeBuilder::dsub, "-"),
-        MUL(CodeBuilder::imul, CodeBuilder::lmul, CodeBuilder::fmul, CodeBuilder::dmul, "*"),
-        DIV(CodeBuilder::idiv, CodeBuilder::ldiv, CodeBuilder::fdiv, CodeBuilder::ddiv, "/"),
-        REM(CodeBuilder::irem, CodeBuilder::lrem, CodeBuilder::frem, CodeBuilder::drem, "%"),
+        ADD(Operands.SAME, CodeBuilder::iadd, CodeBuilder::ladd, CodeBuilder::fadd, CodeBuilder::dadd, "+"),
+        SUB(Operands.SAME, CodeBuilder::isub, CodeBuilder::lsub, CodeBuilder::fsub, CodeBuilder::dsub, "-"),
+        MUL(Operands.SAME, CodeBuilder::imul, CodeBuilder::lmul, CodeBuilder::fmul, CodeBuilder::dmul, "*"),
+        DIV(Operands.SAME, CodeBuilder::idiv, CodeBuilder::ldiv, CodeBuilder::fdiv, CodeBuilder::ddiv, "/"),
+        REM(Operands.SAME, CodeBuilder::irem, CodeBuilder::lrem, CodeBuilder::frem, CodeBuilder::drem, "%"),
 
-        AND(CodeBuilder::iand, CodeBuilder::land, "&"),
-        OR(CodeBuilder::ior, CodeBuilder::lor, "|"),
-        XOR(CodeBuilder::ixor, CodeBuilder::lxor, "^"),
+        AND(Operands.SAME, CodeBuilder::iand, CodeBuilder::land, "&"),
+        OR(Operands.SAME, CodeBuilder::ior, CodeBuilder::lor, "|"),
+        XOR(Operands.SAME, CodeBuilder::ixor, CodeBuilder::lxor, "^"),
 
-        SHL(CodeBuilder::ishl, CodeBuilder::lshl, "<<"),
-        SHR(CodeBuilder::ishr, CodeBuilder::lshr, ">>"),
-        USHR(CodeBuilder::iushr, CodeBuilder::lushr, ">>>"),
+        SHL(Operands.SECOND_INT, CodeBuilder::ishl, CodeBuilder::lshl, "<<"),
+        SHR(Operands.SECOND_INT, CodeBuilder::ishr, CodeBuilder::lshr, ">>"),
+        USHR(Operands.SECOND_INT, CodeBuilder::iushr, CodeBuilder::lushr, ">>>"),
         ;
 
-        final Op intOp;
-        final Op longOp;
-        final Op floatOp;
-        final Op doubleOp;
+        final Operands operands;
+        final Operation intOp;
+        final Operation longOp;
+        final Operation floatOp;
+        final Operation doubleOp;
         final String symbol;
 
-        Kind(final Op intOp, final Op longOp, final Op floatOp, final Op doubleOp, final String symbol) {
+        Kind(final Operands operands, final Operation intOp, final Operation longOp, final Operation floatOp,
+                final Operation doubleOp, final String symbol) {
+            this.operands = operands;
             this.intOp = intOp;
             this.longOp = longOp;
             this.floatOp = floatOp;
@@ -78,11 +101,11 @@ final class BinOp extends Item {
             this.symbol = symbol;
         }
 
-        Kind(final Op intOp, final Op longOp, final String symbol) {
-            this(intOp, longOp, null, null, symbol);
+        Kind(final Operands operands, final Operation intOp, final Operation longOp, final String symbol) {
+            this(operands, intOp, longOp, null, null, symbol);
         }
 
-        Op opFor(TypeKind tk) {
+        Operation opFor(TypeKind tk) {
             return switch (tk.asLoadable()) {
                 case INT -> intOp;
                 case LONG -> longOp;
@@ -99,9 +122,5 @@ final class BinOp extends Item {
         public String toString() {
             return symbol;
         }
-    }
-
-    interface Op {
-        void apply(CodeBuilder cb);
     }
 }
