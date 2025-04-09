@@ -11,9 +11,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
@@ -56,11 +59,17 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private int flags;
     private boolean hasLambdaBootstrap;
 
-    protected final List<FieldDesc> staticFields = new ArrayList<>();
-    protected final List<FieldDesc> instanceFields = new ArrayList<>();
-    protected final List<MethodDesc> staticMethods = new ArrayList<>();
-    protected final List<MethodDesc> instanceMethods = new ArrayList<>();
-    protected final List<ConstructorDesc> constructors = new ArrayList<>();
+    /**
+     * All fields on the class.
+     * The map value is {@code true} if the member is {@code static}, or {@code false} if it is not.
+     */
+    final Map<FieldDesc, Boolean> fields = new LinkedHashMap<>();
+    /**
+     * All methods on the class.
+     * The map value is {@code true} if the member is {@code static}, or {@code false} if it is not.
+     */
+    final Map<MethodDesc, Boolean> methods = new LinkedHashMap<>();
+    final Set<ConstructorDesc> constructors = new LinkedHashSet<>();
 
     TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
         this.type = type;
@@ -191,7 +200,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
             smc.accept(builder);
             desc = smc.desc();
         }
-        staticMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.TRUE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -202,7 +213,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
-        staticFields.add(desc);
+        if (fields.putIfAbsent(desc, Boolean.TRUE) != null) {
+            throw new IllegalArgumentException("Duplicate field added: %s".formatted(desc));
+        }
         return Expr.staticField(desc);
     }
 
@@ -354,26 +367,26 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     @Override
     public List<FieldDesc> staticFields() {
-        return Collections.unmodifiableList(staticFields);
+        return fields.entrySet().stream().filter(e -> e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<FieldDesc> instanceFields() {
-        return Collections.unmodifiableList(instanceFields);
+        return fields.entrySet().stream().filter(e -> !e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<MethodDesc> staticMethods() {
-        return Collections.unmodifiableList(staticMethods);
+        return methods.entrySet().stream().filter(e -> e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<MethodDesc> instanceMethods() {
-        return Collections.unmodifiableList(instanceMethods);
+        return methods.entrySet().stream().filter(e -> !e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<ConstructorDesc> constructors() {
-        return Collections.unmodifiableList(constructors);
+        return List.copyOf(constructors);
     }
 }

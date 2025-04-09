@@ -39,7 +39,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         var mc = new DefaultMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -49,7 +51,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         var mc = new PrivateInterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
@@ -59,7 +63,9 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
         var mc = new InterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        instanceMethods.add(desc);
+        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
+        }
         return desc;
     }
 
