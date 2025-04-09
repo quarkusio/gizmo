@@ -41,12 +41,13 @@ import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
- * A code block.
+ * A code block. All blocks have a {@linkplain #type() type} and if that type is not {@code void},
+ * the block must {@linkplain #yield(Expr) yield} a value (or exit some other way).
  */
 public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImpl {
     /**
      * {@return the type of this block (may be {@code void})}
-     * If the type is non-{@code void}, then the block must {@linkplain #yield(Expr) a value}
+     * If the type is non-{@code void}, then the block must {@linkplain #yield(Expr) yield} a value
      * if it does not exit explicitly some other way.
      */
     ClassDesc type();
@@ -99,7 +100,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * {@return true if this block contains the block of the given variable, or false if it does not}
+     * {@return true if this block contains the block that owns the given variable, or false if it does not}
      * @param var the variable (must not be {@code null})
      */
     default boolean contains(LocalVar var) {
@@ -109,8 +110,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // lexical variables
 
     /**
-     * Declare a local variable.
-     * Local variables may not be read before they are written.
+     * Declare a local variable, but doesn't assign it a value.
+     * Such variables may not be read before they are written.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
@@ -119,8 +122,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     LocalVar declare(String name, ClassDesc type);
 
     /**
-     * Declare a local variable.
-     * Local variables may not be read before they are written.
+     * Declare a local variable, but doesn't assign it a value.
+     * Such variables may not be read before they are written.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
@@ -132,6 +137,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Declare a local variable and define its initial value.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param value the variable initial value (must not be {@code null})
@@ -146,6 +153,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Declare a local variable which is initialized to the given variable's current value.
      * The given variable may be a parameter, local variable, or field variable.
+     * <p>
+     * The name of the new variable is the same as the name of the {@code original}.
      *
      * @param original the original variable (must not be {@code null})
      * @return the new local variable (must not be {@code null})
