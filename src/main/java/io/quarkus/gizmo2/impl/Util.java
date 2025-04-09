@@ -21,7 +21,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.IntPredicate;
 
@@ -164,6 +166,12 @@ public final class Util {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <T, R> List<R> reinterpretCast(List<T> list) {
         return (List) list;
+    }
+
+    public static <K, V> Map<V, K> reverseMap(Map<K, V> original) {
+        Map<V, K> result = new HashMap<>();
+        original.forEach((k, v) -> result.put(v, k));
+        return result;
     }
 
     public static ClassDesc erased(Signature sig) {
