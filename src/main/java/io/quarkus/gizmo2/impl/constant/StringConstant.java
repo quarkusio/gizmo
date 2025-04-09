@@ -59,8 +59,8 @@ public final class StringConstant extends ConstantImpl {
                     if (Character.isISOControl(cp)) {
                         assert cp < 256;
                         b.append('\\').append('u').append("00")
-                            .append(hexDigits[cp >>> 4])
-                            .append(hexDigits[cp & 0x0f]);
+                                .append(hexDigits[cp >>> 4])
+                                .append(hexDigits[cp & 0x0f]);
                     } else {
                         b.appendCodePoint(cp);
                     }

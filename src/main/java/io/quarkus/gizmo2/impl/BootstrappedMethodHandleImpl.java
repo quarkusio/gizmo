@@ -25,7 +25,8 @@ public final class BootstrappedMethodHandleImpl extends Item {
     private final MethodTypeDesc methodHandleType;
     private final List<Constant> bootstrapArguments;
 
-    public BootstrappedMethodHandleImpl(final ClassDesc owner, final MethodDesc bootstrapMethodDesc, final MethodTypeDesc methodHandleType, final List<Constant> bootstrapArguments) {
+    public BootstrappedMethodHandleImpl(final ClassDesc owner, final MethodDesc bootstrapMethodDesc,
+            final MethodTypeDesc methodHandleType, final List<Constant> bootstrapArguments) {
         this.owner = owner;
         this.bootstrapMethodDesc = bootstrapMethodDesc;
         this.methodHandleType = methodHandleType;
@@ -38,21 +39,19 @@ public final class BootstrappedMethodHandleImpl extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.invokedynamic(DynamicCallSiteDesc.of(
-            MethodHandleDesc.ofMethod(
-                bootstrapMethodDesc instanceof InterfaceMethodDesc ? DirectMethodHandleDesc.Kind.INTERFACE_STATIC : DirectMethodHandleDesc.Kind.STATIC,
-                owner,
-                bootstrapMethodDesc.name(),
-                bootstrapMethodDesc.type()
-            ),
-            "_",
-            methodHandleType,
-            bootstrapArguments.stream().map(Constant::desc).toArray(ConstantDesc[]::new)
-        ));
+                MethodHandleDesc.ofMethod(
+                        bootstrapMethodDesc instanceof InterfaceMethodDesc ? DirectMethodHandleDesc.Kind.INTERFACE_STATIC
+                                : DirectMethodHandleDesc.Kind.STATIC,
+                        owner,
+                        bootstrapMethodDesc.name(),
+                        bootstrapMethodDesc.type()),
+                "_",
+                methodHandleType,
+                bootstrapArguments.stream().map(Constant::desc).toArray(ConstantDesc[]::new)));
         // now extract the method handle from the call site
         cb.invokevirtual(
-            ConstantDescs.CD_MethodHandle,
-            "getMethodHandle",
-            MethodTypeDesc.of(ConstantDescs.CD_MethodHandle)
-        );
+                ConstantDescs.CD_MethodHandle,
+                "getMethodHandle",
+                MethodTypeDesc.of(ConstantDescs.CD_MethodHandle));
     }
 }

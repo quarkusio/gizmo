@@ -15,7 +15,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add a default method to the interface.
      * These methods are always {@code public}.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -25,8 +25,8 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add a default method to the interface having the given predefined type.
      * These methods are always {@code public}.
      *
-     * @param name    the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -41,7 +41,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add a default method to the interface having the same name and type as the given method.
      * These methods are always {@code public}.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -52,7 +52,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
     /**
      * Add a private instance method to the interface.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -61,8 +61,8 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
     /**
      * Add a private method to the interface having the given predefined type.
      *
-     * @param name    the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -76,7 +76,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
     /**
      * Add a private method to the interface having the same name and type as the given method.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -88,7 +88,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add an interface method to the interface.
      * These methods are always {@code public}.
      *
-     * @param name    the method name (must not be {@code null})
+     * @param name the method name (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -98,8 +98,8 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add an interface method to the interface having the given predefined type.
      * These methods are always {@code public}.
      *
-     * @param name    the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -114,7 +114,7 @@ public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCr
      * Add an interface method to the interface having the same name and type as the given method.
      * These methods are always {@code public}.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */

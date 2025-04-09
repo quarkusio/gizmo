@@ -40,7 +40,7 @@ public final class MethodTypeConstant extends ConstantImpl {
     public StringBuilder toShortString(final StringBuilder b) {
         b.append('(');
         int pc = desc.parameterCount();
-        for (int i = 0; i < pc; i ++) {
+        for (int i = 0; i < pc; i++) {
             b.append(desc.parameterType(i).descriptorString());
         }
         return b.append(')').append(desc.returnType().descriptorString());

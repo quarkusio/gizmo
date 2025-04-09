@@ -1,8 +1,6 @@
 package io.quarkus.gizmo2;
 
-import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.desc.MethodDesc;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -12,7 +10,10 @@ import java.util.function.Function;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class ArraysTest {
 

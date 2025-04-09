@@ -28,7 +28,8 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
     private final ArrayList<Expr> superArgs;
     private final ThisExpr this_;
 
-    AnonymousClassCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final ConstructorDesc superCtor, final ArrayList<Expr> captureExprs) {
+    AnonymousClassCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb,
+            final ConstructorDesc superCtor, final ArrayList<Expr> captureExprs) {
         super(type, output, zb);
         this.superCtor = superCtor;
         extends_(superCtor.owner());
@@ -37,7 +38,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
         ctorSetups.add(cc -> {
             MethodTypeDesc ctorType = superCtor.type();
             int cnt = ctorType.parameterCount();
-            for (int i = 0; i < cnt; i ++) {
+            for (int i = 0; i < cnt; i++) {
                 superArgs.add(cc.parameter("p" + i, ctorType.parameterType(i)));
             }
         });

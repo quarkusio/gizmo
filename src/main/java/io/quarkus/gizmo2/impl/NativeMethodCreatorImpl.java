@@ -1,10 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.Set;
-import java.util.function.Consumer;
-
-import io.quarkus.gizmo2.creator.AbstractMethodCreator;
-
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.BRIDGE;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.NATIVE;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PRIVATE;
@@ -12,6 +7,11 @@ import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PROTECTED;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PUBLIC;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNTHETIC;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.VARARGS;
+
+import java.util.Set;
+import java.util.function.Consumer;
+
+import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 
 public final class NativeMethodCreatorImpl extends MethodCreatorImpl implements AbstractMethodCreator {
     NativeMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {

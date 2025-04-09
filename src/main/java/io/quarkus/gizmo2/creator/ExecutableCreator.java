@@ -12,7 +12,8 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for an executable (i.e. something that can be called with arguments).
  */
-public sealed interface ExecutableCreator extends MethodTyped permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
+public sealed interface ExecutableCreator extends MethodTyped
+        permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     /**
      * {@return the type descriptor of this executable (not {@code null})}
      */
@@ -27,7 +28,7 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param desc the executable type (must not be {@code null})
      * @throws IllegalStateException if the executable type has already been established
      * @throws IllegalArgumentException if some parameters are already defined,
-     *      and their types do not match the given type descriptor
+     *         and their types do not match the given type descriptor
      */
     void withType(MethodTypeDesc desc);
 
@@ -41,8 +42,8 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param name the parameter name (must not be {@code null})
      * @param builder the parameter builder (must not be {@code null})
      * @return the parameter variable (not {@code null})
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      */
     ParamVar parameter(String name, Consumer<ParamCreator> builder);
 
@@ -57,8 +58,8 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param position the parameter position, counting up from zero (not including {@code this})
      * @param builder the parameter builder (must not be {@code null})
      * @return the parameter variable (not {@code null})
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      * @throws IndexOutOfBoundsException if the parameter position is out of range
      */
     ParamVar parameter(String name, int position, Consumer<ParamCreator> builder);
@@ -73,12 +74,13 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param name the parameter name (must not be {@code null})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the next position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the next position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      */
     default ParamVar parameter(String name) {
-        return parameter(name, pc -> {});
+        return parameter(name, pc -> {
+        });
     }
 
     /**
@@ -92,13 +94,14 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param position the parameter position, counting up from zero (not including {@code this})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the given position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the given position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      * @throws IndexOutOfBoundsException if the parameter position is out of range
      */
     default ParamVar parameter(String name, int position) {
-        return parameter(name, position, pc -> {});
+        return parameter(name, position, pc -> {
+        });
     }
 
     /**
@@ -112,9 +115,9 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param type the parameter type (must not be {@code null})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the next position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the next position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      */
     default ParamVar parameter(String name, ClassDesc type) {
         return parameter(name, pc -> {
@@ -134,9 +137,9 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param type the parameter type (must not be {@code null})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the given position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the given position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      * @throws IndexOutOfBoundsException if the parameter position is out of range
      */
     default ParamVar parameter(String name, int position, ClassDesc type) {
@@ -156,9 +159,9 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param type the parameter type (must not be {@code null})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the next position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the next position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      */
     default ParamVar parameter(String name, Class<?> type) {
         return parameter(name, Util.classDesc(type));
@@ -176,9 +179,9 @@ public sealed interface ExecutableCreator extends MethodTyped permits InstanceEx
      * @param type the parameter type (must not be {@code null})
      * @return the parameter variable (not {@code null})
      * @throws IllegalStateException if the type of this executable has not yet been established,
-     *      or if the parameter with the given position has already been declared
-     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method type,
-     *      or if the number of parameters exceeds the number of parameters in the established type
+     *         or if the parameter with the given position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
      * @throws IndexOutOfBoundsException if the parameter position is out of range
      */
     default ParamVar parameter(String name, int position, Class<?> type) {

@@ -41,12 +41,13 @@ import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
- * A code block.
+ * A code block. All blocks have a {@linkplain #type() type} and if that type is not {@code void},
+ * the block must {@linkplain #yield(Expr) yield} a value (or exit some other way).
  */
 public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImpl {
     /**
      * {@return the type of this block (may be {@code void})}
-     * If the type is non-{@code void}, then the block must {@linkplain #yield(Expr) a value}
+     * If the type is non-{@code void}, then the block must {@linkplain #yield(Expr) yield} a value
      * if it does not exit explicitly some other way.
      */
     ClassDesc type();
@@ -86,12 +87,14 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return true if this block is contained by the given block, or false if it is not}
+     *
      * @param other the containing block (must not be {@code null})
      */
     boolean isContainedBy(BlockCreator other);
 
     /**
      * {@return true if this block contains the given block, or false if it does not}
+     *
      * @param other the contained block (must not be {@code null})
      */
     default boolean contains(BlockCreator other) {
@@ -99,7 +102,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * {@return true if this block contains the block of the given variable, or false if it does not}
+     * {@return true if this block contains the block that owns the given variable, or false if it does not}
+     *
      * @param var the variable (must not be {@code null})
      */
     default boolean contains(LocalVar var) {
@@ -109,8 +113,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // lexical variables
 
     /**
-     * Declare a local variable.
-     * Local variables may not be read before they are written.
+     * Declare a local variable, but doesn't assign it a value.
+     * Such variables may not be read before they are written.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
@@ -119,8 +125,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     LocalVar declare(String name, ClassDesc type);
 
     /**
-     * Declare a local variable.
-     * Local variables may not be read before they are written.
+     * Declare a local variable, but doesn't assign it a value.
+     * Such variables may not be read before they are written.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
@@ -132,6 +140,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Declare a local variable and define its initial value.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param value the variable initial value (must not be {@code null})
@@ -146,6 +156,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Declare a local variable which is initialized to the given variable's current value.
      * The given variable may be a parameter, local variable, or field variable.
+     * <p>
+     * The name of the new variable is the same as the name of the {@code original}.
      *
      * @param original the original variable (must not be {@code null})
      * @return the new local variable (must not be {@code null})
@@ -153,7 +165,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default LocalVar define(Var original) {
         return define(original.name(), original);
     }
-
 
     // reading memory
 
@@ -181,9 +192,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Write a value to memory with the given atomicity mode.
      *
-     * @param var   the lvalue (must not be {@code null})
+     * @param var the lvalue (must not be {@code null})
      * @param value the value to write (must not be {@code null})
-     * @param mode  the atomicity mode for the access (must not be {@code null})
+     * @param mode the atomicity mode for the access (must not be {@code null})
      */
     void set(LValueExpr var, Expr value, AccessMode mode);
 
@@ -279,7 +290,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var2 the second variable (must not be {@code null})
      * @param var3 the third variable (must not be {@code null})
      */
-    default void rotate(LValueExpr var1, LValueExpr var2,  LValueExpr var3) {
+    default void rotate(LValueExpr var1, LValueExpr var2, LValueExpr var3) {
         Expr get1 = get(var1);
         set(var1, get(var3));
         set(var3, get(var2));
@@ -296,7 +307,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var3 the third variable (must not be {@code null})
      * @param var4 the fourth variable (must not be {@code null})
      */
-    default void rotate(LValueExpr var1, LValueExpr var2,  LValueExpr var3, LValueExpr var4) {
+    default void rotate(LValueExpr var1, LValueExpr var2, LValueExpr var3, LValueExpr var4) {
         Expr get1 = get(var1);
         set(var1, get(var4));
         set(var4, get(var3));
@@ -896,7 +907,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     Expr cmpg(Expr a, Expr b);
 
-
     // bitwise
 
     /**
@@ -1117,7 +1127,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr ushr(Expr a, long b) {
         return ushr(a, Constant.of(b, a.typeKind()));
     }
-
 
     // arithmetic
 
@@ -1569,7 +1578,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     Expr neg(Expr a);
 
-
     // arithmetic-assign
 
     /**
@@ -1611,7 +1619,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param arg the argument value (must not be {@code null})
      */
     void remAssign(LValueExpr var, Expr arg);
-
 
     // bitwise-assign
 
@@ -1663,11 +1670,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     void ushrAssign(LValueExpr var, Expr arg);
 
-
     // logical
 
     /**
      * {@return an expression which is the logical (boolean) opposite of the input expression}
+     *
      * @param a the input expression (must not be {@code null})
      */
     default Expr logicalNot(Expr a) {
@@ -1695,7 +1702,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
         return selectExpr(CD_boolean, cond, other, bc -> bc.yield(Constant.of(false)));
     }
-
 
     // conditional
 
@@ -1783,13 +1789,12 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     default Expr newAnonymousClass(ClassDesc interface_, Consumer<AnonymousClassCreator> builder) {
         return newAnonymousClass(
-            ConstructorDesc.of(Object.class),
-            List.of(),
-            cc -> {
-                cc.implements_(interface_);
-                builder.accept(cc);
-            }
-        );
+                ConstructorDesc.of(Object.class),
+                List.of(),
+                cc -> {
+                    cc.implements_(interface_);
+                    builder.accept(cc);
+                });
     }
 
     /**
@@ -1857,7 +1862,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the primitive value (not {@code null})
      */
     Expr unbox(Expr a);
-
 
     // object
 
@@ -2114,7 +2118,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
      * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
      */
-    void ifInstanceOfElse(Expr obj, ClassDesc type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue, Consumer<BlockCreator> ifFalse);
+    void ifInstanceOfElse(Expr obj, ClassDesc type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue,
+            Consumer<BlockCreator> ifFalse);
 
     /**
      * A general {@code if} conditional.
@@ -2160,7 +2165,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default void ifNotNull(Expr obj, Consumer<BlockCreator> whenTrue) {
         if_(ne(obj, Constant.ofNull(obj.type())), whenTrue);
     }
-    
+
     /**
      * Construct a {@code switch} statement for {@code enum} constants.
      *
@@ -2185,10 +2190,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Construct a {@code switch} statement.
      * The type of the switch value must be of one of these supported types:
      * <ul>
-     *     <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
-     *     <li>{@code long}</li>
-     *     <li>{@code java.lang.String}</li>
-     *     <li>{@code java.lang.Class}</li>
+     * <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     * <li>{@code long}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.Class}</li>
      * </ul>
      * The type of the {@code switch} creator depends on the type of the value.
      * For {@code enum} switches, use {@link #switchEnum(Expr, Consumer)}.
@@ -2204,10 +2209,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Construct a {@code switch} statement.
      * The type of the switch value must be of one of these supported types:
      * <ul>
-     *     <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
-     *     <li>{@code long}</li>
-     *     <li>{@code java.lang.String}</li>
-     *     <li>{@code java.lang.Class}</li>
+     * <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     * <li>{@code long}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.Class}</li>
      * </ul>
      * The type of the {@code switch} creator depends on the type of the value.
      * For {@code enum} switches, use {@link #switchEnum(Expr, Consumer)}.
@@ -2232,9 +2237,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Resume the next iteration of an enclosing loop.
      * A block creator is a loop if it was created using one of:
      * <ul>
-     *     <li>{@link #loop(Consumer)}</li>
-     *     <li>{@link #while_(Consumer, Consumer)}</li>
-     *     <li>{@link #doWhile(Consumer, Consumer)}</li>
+     * <li>{@link #loop(Consumer)}</li>
+     * <li>{@link #while_(Consumer, Consumer)}</li>
+     * <li>{@link #doWhile(Consumer, Consumer)}</li>
      * </ul>
      * To repeat an iteration, see {@link #redo(BlockCreator)}.
      *
@@ -2380,7 +2385,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param body the creator for the body of the block (must not be {@code null})
      */
     void locked(Expr jucLock, Consumer<BlockCreator> body);
-
 
     // exiting
 
@@ -2573,6 +2577,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Object}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default ObjectOps withObject(Expr receiver) {
@@ -2581,6 +2586,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Class}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default ClassOps withClass(Expr receiver) {
@@ -2589,6 +2595,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link String}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default StringOps withString(Expr receiver) {
@@ -2597,6 +2604,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Collection}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
 
@@ -2606,6 +2614,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link List}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default ListOps withList(Expr receiver) {
@@ -2614,6 +2623,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Set}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default SetOps withSet(Expr receiver) {
@@ -2622,7 +2632,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Map}}
-     * 
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default MapOps withMap(Expr receiver) {
@@ -2631,6 +2641,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default IteratorOps withIterator(Expr receiver) {
@@ -2639,6 +2650,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Optional}}
+     *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
     default OptionalOps withOptional(Expr receiver) {
@@ -2754,6 +2766,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default StringBuilderOps withStringBuilder(Expr receiver) {
         return new StringBuilderOps(this, receiver);
     }
+
     /**
      * Generate a call to {@link Class#forName(String)} which uses the defining class loader of this class.
      *
@@ -2801,7 +2814,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr setOf(Expr... items) {
         return setOf(List.of(items));
     }
-    
+
     /**
      * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
      *
@@ -2821,7 +2834,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr mapOf(Expr... items) {
         return mapOf(List.of(items));
     }
-    
+
     /**
      * Generate a call to {@link Optional#of(Object)}.
      *
@@ -2903,20 +2916,20 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
     void assert_(Consumer<BlockCreator> assertion, String message);
-    
+
     /**
      * Read the value from a static field.
-     * 
+     *
      * @param desc the field descriptor (must not be {@code null})
      * @return the memory value (not {@code null})
      */
     default Expr getStaticField(FieldDesc desc) {
         return get(Expr.staticField(desc));
     }
-    
+
     /**
      * Write the value to a static field.
-     * 
+     *
      * @param desc the field descriptor (must not be {@code null})
      * @param value the value to write
      * @return the memory value (not {@code null})
@@ -2924,5 +2937,5 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default void setStaticField(FieldDesc desc, Expr value) {
         set(Expr.staticField(desc), value);
     }
-    
+
 }

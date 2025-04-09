@@ -159,7 +159,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public void instanceInitializer(final Consumer<BlockCreator> builder) {
-        if (! constructors.isEmpty()) {
+        if (!constructors.isEmpty()) {
             throw new IllegalStateException("Instance initializers may not be added once constructors exist");
         }
         if (postInits.isEmpty()) {
@@ -169,7 +169,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     void instancePreinitializer(final Consumer<BlockCreator> builder) {
-        if (! constructors.isEmpty()) {
+        if (!constructors.isEmpty()) {
             throw new IllegalStateException("Instance initializers may not be added once constructors exist");
         }
         if (preInits.isEmpty()) {
@@ -231,7 +231,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         zb.with(SignatureAttribute.of(signature()));
         addVisible(zb);
         addInvisible(zb);
-        if (! staticInits.isEmpty()) {
+        if (!staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {
                     BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void);
@@ -248,125 +248,106 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     abstract MethodDesc methodDesc(final String name, final MethodTypeDesc type);
 
     void buildLambdaBootstrap() {
-        if (! hasLambdaBootstrap) {
+        if (!hasLambdaBootstrap) {
             staticMethod(
-                "defineLambdaCallSite",
-                MethodTypeDesc.of(
-                    CD_CallSite,
-                    CD_MethodHandles_Lookup,
-                    CD_String,
-                    CD_MethodType
-                ),
-                smc -> {
-                    smc.withFlag(AccessFlag.PRIVATE);
-                    ParamVar lookup = smc.parameter("lookup", 0);
-                    ParamVar base64 = smc.parameter("base64", 1);
-                    ParamVar methodType = smc.parameter("methodType", 2);
-                    smc.body(b0 -> {
-                        var decoder = b0.define("decoder", b0.invokeStatic(MethodDesc.of(
-                            Base64.class,
-                            "getDecoder",
-                            Base64.Decoder.class
-                        )));
-                        var bytes = b0.define("bytes", b0.invokeVirtual(MethodDesc.of(
-                            Base64.Decoder.class,
-                            "decode",
-                            byte[].class,
-                            String.class
-                        ), decoder, base64));
-                        var definedLookup = b0.define("definedLookup", b0.invokeVirtual(MethodDesc.of(
-                                MethodHandles.Lookup.class,
-                                "defineHiddenClass",
-                                MethodHandles.Lookup.class,
-                                byte[].class,
-                                boolean.class,
-                                MethodHandles.Lookup.ClassOption[].class
-                            ),
-                            lookup,
-                            bytes,
-                            Constant.of(false),
-                            b0.newArray(MethodHandles.Lookup.ClassOption.class, Constant.of(MethodHandles.Lookup.ClassOption.NESTMATE))
-                        ));
-                        var definedClass = b0.define("definedClass", b0.invokeVirtual(
-                            MethodDesc.of(
-                                MethodHandles.Lookup.class,
-                                "lookupClass",
-                                Class.class
-                            ),
-                            definedLookup
-                        ));
-                        var ctorType = b0.define("ctorType", b0.invokeVirtual(
-                            MethodDesc.of(
-                                MethodType.class,
-                                "changeReturnType",
-                                MethodType.class,
-                                Class.class
-                            ),
-                            methodType,
-                            Constant.of(void.class)
-                        ));
-                        var ctorHandle = b0.define("ctorHandle", b0.invokeVirtual(
-                            MethodDesc.of(
-                                MethodHandles.Lookup.class,
-                                "findConstructor",
-                                MethodHandle.class,
-                                Class.class,
-                                MethodType.class
-                            ),
-                            definedLookup,
-                            definedClass,
-                            ctorType
-                        ));
-                        b0.ifElse(b0.eq(
-                            b0.invokeVirtual(
-                                MethodDesc.of(
-                                    MethodType.class,
-                                    "parameterCount",
-                                    int.class),
-                                methodType
-                            ), 0
-                        ), t1 -> {
-                            // no parameters, so it should be a singleton
-                            LocalVar instance = t1.define("instance", t1.invokeVirtual(
-                                MethodDesc.of(MethodHandle.class, "invoke", Object.class),
-                                ctorHandle
-                            ));
-                            LocalVar constHandle = t1.define("constHandle", t1.invokeStatic(
-                                MethodDesc.of(
-                                    MethodHandles.class,
-                                    "constant",
-                                    MethodHandle.class,
-                                    Class.class,
-                                    Object.class
-                                ),
-                                definedClass,
-                                instance
-                            ));
-                            t1.return_(t1.new_(ConstantCallSite.class, t1.invokeVirtual(
-                                MethodDesc.of(
-                                    MethodHandle.class,
-                                    "asType",
-                                    MethodHandle.class,
-                                    MethodType.class
-                                ),
-                                constHandle,
-                                methodType
-                            )));
-                        }, f1 -> {
-                            f1.return_(f1.new_(ConstantCallSite.class, f1.invokeVirtual(
-                                MethodDesc.of(
-                                    MethodHandle.class,
-                                    "asType",
-                                    MethodHandle.class,
-                                    MethodType.class
-                                ),
-                                ctorHandle,
-                                methodType
-                            )));
+                    "defineLambdaCallSite",
+                    MethodTypeDesc.of(
+                            CD_CallSite,
+                            CD_MethodHandles_Lookup,
+                            CD_String,
+                            CD_MethodType),
+                    smc -> {
+                        smc.withFlag(AccessFlag.PRIVATE);
+                        ParamVar lookup = smc.parameter("lookup", 0);
+                        ParamVar base64 = smc.parameter("base64", 1);
+                        ParamVar methodType = smc.parameter("methodType", 2);
+                        smc.body(b0 -> {
+                            var decoder = b0.define("decoder", b0.invokeStatic(MethodDesc.of(
+                                    Base64.class,
+                                    "getDecoder",
+                                    Base64.Decoder.class)));
+                            var bytes = b0.define("bytes", b0.invokeVirtual(MethodDesc.of(
+                                    Base64.Decoder.class,
+                                    "decode",
+                                    byte[].class,
+                                    String.class), decoder, base64));
+                            var definedLookup = b0.define("definedLookup", b0.invokeVirtual(MethodDesc.of(
+                                    MethodHandles.Lookup.class,
+                                    "defineHiddenClass",
+                                    MethodHandles.Lookup.class,
+                                    byte[].class,
+                                    boolean.class,
+                                    MethodHandles.Lookup.ClassOption[].class),
+                                    lookup,
+                                    bytes,
+                                    Constant.of(false),
+                                    b0.newArray(MethodHandles.Lookup.ClassOption.class,
+                                            Constant.of(MethodHandles.Lookup.ClassOption.NESTMATE))));
+                            var definedClass = b0.define("definedClass", b0.invokeVirtual(
+                                    MethodDesc.of(
+                                            MethodHandles.Lookup.class,
+                                            "lookupClass",
+                                            Class.class),
+                                    definedLookup));
+                            var ctorType = b0.define("ctorType", b0.invokeVirtual(
+                                    MethodDesc.of(
+                                            MethodType.class,
+                                            "changeReturnType",
+                                            MethodType.class,
+                                            Class.class),
+                                    methodType,
+                                    Constant.of(void.class)));
+                            var ctorHandle = b0.define("ctorHandle", b0.invokeVirtual(
+                                    MethodDesc.of(
+                                            MethodHandles.Lookup.class,
+                                            "findConstructor",
+                                            MethodHandle.class,
+                                            Class.class,
+                                            MethodType.class),
+                                    definedLookup,
+                                    definedClass,
+                                    ctorType));
+                            b0.ifElse(b0.eq(
+                                    b0.invokeVirtual(
+                                            MethodDesc.of(
+                                                    MethodType.class,
+                                                    "parameterCount",
+                                                    int.class),
+                                            methodType),
+                                    0), t1 -> {
+                                        // no parameters, so it should be a singleton
+                                        LocalVar instance = t1.define("instance", t1.invokeVirtual(
+                                                MethodDesc.of(MethodHandle.class, "invoke", Object.class),
+                                                ctorHandle));
+                                        LocalVar constHandle = t1.define("constHandle", t1.invokeStatic(
+                                                MethodDesc.of(
+                                                        MethodHandles.class,
+                                                        "constant",
+                                                        MethodHandle.class,
+                                                        Class.class,
+                                                        Object.class),
+                                                definedClass,
+                                                instance));
+                                        t1.return_(t1.new_(ConstantCallSite.class, t1.invokeVirtual(
+                                                MethodDesc.of(
+                                                        MethodHandle.class,
+                                                        "asType",
+                                                        MethodHandle.class,
+                                                        MethodType.class),
+                                                constHandle,
+                                                methodType)));
+                                    }, f1 -> {
+                                        f1.return_(f1.new_(ConstantCallSite.class, f1.invokeVirtual(
+                                                MethodDesc.of(
+                                                        MethodHandle.class,
+                                                        "asType",
+                                                        MethodHandle.class,
+                                                        MethodType.class),
+                                                ctorHandle,
+                                                methodType)));
+                                    });
                         });
                     });
-                }
-            );
             hasLambdaBootstrap = true;
         }
     }

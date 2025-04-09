@@ -19,6 +19,18 @@ import io.github.dmlloyd.classfile.ClassHierarchyResolver;
 import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.impl.Util;
 
+/**
+ * Can accept arbitrarily many classes, but note that all the helper methods
+ * only work on the <em>last</em> accepted class. Specifically, they are:
+ *
+ * <ul>
+ * <li>{@link #definedClass()}</li>
+ * <li>{@link #staticMethod(String, Class)}</li>
+ * <li>{@link #instanceMethod(String, Class)}</li>
+ * <li>{@link #constructor(Class)}</li>
+ * <li>{@link #noArgsConstructor(Class)}</li>
+ * </ul>
+ */
 public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
@@ -221,7 +233,8 @@ public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
                 return ClassHierarchyResolver.ClassHierarchyInfo.ofInterface();
             } else {
                 Class<?> superClass = loaded.getSuperclass();
-                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(superClass == null ? null : Util.classDesc(superClass));
+                return ClassHierarchyResolver.ClassHierarchyInfo.ofClass(
+                        superClass == null ? null : Util.classDesc(superClass));
             }
         }
     }

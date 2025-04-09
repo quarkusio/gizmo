@@ -53,8 +53,7 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                     case Volatile -> "getVolatile";
                     default -> throw new IllegalStateException();
                 }, MethodTypeDesc.of(
-                    type()
-                ));
+                        type()));
             }
 
             public String itemName() {
@@ -73,7 +72,7 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                 }
                 return node;
             }
-            
+
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 switch (mode) {
                     case AsDeclared -> {
@@ -87,9 +86,8 @@ public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFi
                             case Volatile -> "setVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            CD_void,
-                            type()
-                        ));
+                                CD_void,
+                                type()));
                     }
                 }
             }

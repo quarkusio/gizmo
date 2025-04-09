@@ -6,7 +6,8 @@ import java.util.function.BiFunction;
 final class IfRel extends If {
     final Item a, b;
 
-    IfRel(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final Item a, final Item b) {
+    IfRel(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse,
+            final Item a, final Item b) {
         super(type, kind, whenTrue, whenFalse);
         this.a = a;
         this.b = b;

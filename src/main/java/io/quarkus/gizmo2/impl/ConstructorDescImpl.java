@@ -34,7 +34,8 @@ public final class ConstructorDescImpl implements ConstructorDesc {
     }
 
     public boolean equals(final ConstructorDescImpl other) {
-        return this == other || other != null && hashCode == other.hashCode && owner.equals(other.owner) && type.equals(other.type);
+        return this == other
+                || other != null && hashCode == other.hashCode && owner.equals(other.owner) && type.equals(other.type);
     }
 
     public int hashCode() {

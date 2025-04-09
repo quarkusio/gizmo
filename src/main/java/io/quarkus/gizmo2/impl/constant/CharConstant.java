@@ -1,9 +1,9 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static java.lang.constant.ConstantDescs.CD_char;
+
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
-
-import static java.lang.constant.ConstantDescs.CD_char;
 
 public final class CharConstant extends IntBasedConstant {
     private final Character value;

@@ -35,7 +35,8 @@ public final class Util {
      */
     public static final ClassDesc[] NO_DESCS = new ClassDesc[0];
 
-    private Util() {}
+    private Util() {
+    }
 
     private static final ClassValue<ClassDesc> constantCache = new ClassValue<ClassDesc>() {
         protected ClassDesc computeValue(final Class<?> type) {
@@ -103,14 +104,15 @@ public final class Util {
         }
     }
 
-    private static final StackWalker SW = StackWalker.getInstance(Set.of(StackWalker.Option.RETAIN_CLASS_REFERENCE, StackWalker.Option.SHOW_HIDDEN_FRAMES, StackWalker.Option.SHOW_REFLECT_FRAMES));
+    private static final StackWalker SW = StackWalker.getInstance(Set.of(StackWalker.Option.RETAIN_CLASS_REFERENCE,
+            StackWalker.Option.SHOW_HIDDEN_FRAMES, StackWalker.Option.SHOW_REFLECT_FRAMES));
 
     public static String detailedStackTrace() {
         StringBuilder b = new StringBuilder(1000);
         SW.walk(stream -> {
             stream.forEachOrdered(
-                fr -> b.append("at ").append(fr.toStackTraceElement()).append(" bci=").append(fr.getByteCodeIndex()).append('\n')
-            );
+                    fr -> b.append("at ").append(fr.toStackTraceElement()).append(" bci=").append(fr.getByteCodeIndex())
+                            .append('\n'));
             return null;
         });
         return b.toString();
@@ -143,7 +145,7 @@ public final class Util {
      * @param <T> the value type
      */
     public static <T> List<T> listWith(List<T> original, T addend) {
-        assert ! (original instanceof ArrayList<?>);
+        assert !(original instanceof ArrayList<?>);
         // this is a no-op if nobody did anything wrong
         original = List.copyOf(original);
         return switch (original.size()) {
@@ -194,11 +196,12 @@ public final class Util {
         Method sam = null;
         for (Method method : type.getMethods()) {
             int mods = method.getModifiers();
-            if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && ! Modifier.isStatic(mods)) {
+            if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
                 if (sam == null) {
                     sam = method;
                 } else {
-                    throw new IllegalArgumentException("Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
+                    throw new IllegalArgumentException(
+                            "Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
                 }
             }
         }

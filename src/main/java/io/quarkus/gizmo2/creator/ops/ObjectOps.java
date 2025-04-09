@@ -32,8 +32,8 @@ public class ObjectOps {
      * Construct a new subclass instance.
      *
      * @param receiverType the type of the receiver (must not be {@code null})
-     * @param bc           the block creator (must not be {@code null})
-     * @param obj          the receiver object (must not be {@code null})
+     * @param bc the block creator (must not be {@code null})
+     * @param obj the receiver object (must not be {@code null})
      */
     protected ObjectOps(final Class<?> receiverType, final BlockCreator bc, final Expr obj) {
         Objects.requireNonNull(receiverType, "receiverType");
@@ -79,11 +79,12 @@ public class ObjectOps {
      * @param arg2 the third argument value (must not be {@code null})
      * @return the invocation result expression (not {@code null})
      */
-    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Class<?> arg2Type, Expr arg0, Expr arg1, Expr arg2) {
+    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Class<?> arg2Type,
+            Expr arg0, Expr arg1, Expr arg2) {
         MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(arg0Type, arg1Type, arg2Type));
-        return receiverType.isInterface() ?
-               bc.invokeInterface(md, obj, List.of(arg0, arg1, arg2)) :
-               bc.invokeVirtual(md, obj, List.of(arg0, arg1, arg2));
+        return receiverType.isInterface()
+                ? bc.invokeInterface(md, obj, List.of(arg0, arg1, arg2))
+                : bc.invokeVirtual(md, obj, List.of(arg0, arg1, arg2));
     }
 
     /**
@@ -97,11 +98,12 @@ public class ObjectOps {
      * @param arg1 the second argument value (must not be {@code null})
      * @return the invocation result expression (not {@code null})
      */
-    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Expr arg0, Expr arg1) {
+    protected Expr invokeInstance(Class<?> returnType, String name, Class<?> arg0Type, Class<?> arg1Type, Expr arg0,
+            Expr arg1) {
         MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(arg0Type, arg1Type));
-        return receiverType.isInterface() ?
-               bc.invokeInterface(md, obj, List.of(arg0, arg1)) :
-               bc.invokeVirtual(md, obj, List.of(arg0, arg1));
+        return receiverType.isInterface()
+                ? bc.invokeInterface(md, obj, List.of(arg0, arg1))
+                : bc.invokeVirtual(md, obj, List.of(arg0, arg1));
     }
 
     /**
@@ -115,9 +117,7 @@ public class ObjectOps {
      */
     protected Expr invokeInstance(Class<?> returnType, String name, Class<?> argType, Expr arg) {
         MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of(argType));
-        return receiverType.isInterface() ?
-               bc.invokeInterface(md, obj, List.of(arg)) :
-               bc.invokeVirtual(md, obj, List.of(arg));
+        return receiverType.isInterface() ? bc.invokeInterface(md, obj, List.of(arg)) : bc.invokeVirtual(md, obj, List.of(arg));
     }
 
     /**
@@ -129,9 +129,7 @@ public class ObjectOps {
      */
     protected Expr invokeInstance(Class<?> returnType, String name) {
         MethodDesc md = MethodDesc.of(receiverType, name, returnType, List.of());
-        return receiverType.isInterface() ?
-               bc.invokeInterface(md, obj, List.of()) :
-               bc.invokeVirtual(md, obj, List.of());
+        return receiverType.isInterface() ? bc.invokeInterface(md, obj, List.of()) : bc.invokeVirtual(md, obj, List.of());
     }
 
     /**

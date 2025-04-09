@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.function.IntSupplier;
 
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.TestClassMaker;
-import org.junit.jupiter.api.Test;
 
 public class OptionalOpsTest {
 

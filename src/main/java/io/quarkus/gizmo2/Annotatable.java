@@ -23,7 +23,7 @@ public sealed interface Annotatable permits MemberCreator, ParamCreator, TypeCre
     /**
      * Add an annotation.
      *
-     * @param retention  the retention policy for the annotation (must not be {@code null})
+     * @param retention the retention policy for the annotation (must not be {@code null})
      * @param annotation the annotation (must not be {@code null})
      */
     void withAnnotation(RetentionPolicy retention, io.github.dmlloyd.classfile.Annotation annotation);
@@ -31,8 +31,8 @@ public sealed interface Annotatable permits MemberCreator, ParamCreator, TypeCre
     /**
      * Add an annotation.
      *
-     * @param retention  the retention policy for the annotation (must not be {@code null})
-     * @param type  the annotation type (must not be {@code null})
+     * @param retention the retention policy for the annotation (must not be {@code null})
+     * @param type the annotation type (must not be {@code null})
      * @param elements the annotation elements (must not be {@code null})
      */
     default void withAnnotation(RetentionPolicy retention, ClassDesc type, List<AnnotationElement> elements) {

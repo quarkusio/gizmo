@@ -1,9 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.constant.ClassDesc;
+
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
-
-import java.lang.constant.ClassDesc;
 
 public class Preconditions {
     private Preconditions() {
@@ -11,13 +11,15 @@ public class Preconditions {
 
     public static void requireSameType(final Expr a, final Expr b) {
         if (!a.type().equals(b.type())) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
+            throw new IllegalArgumentException(
+                    "Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
         }
     }
 
     public static void requireSameTypeKind(final Expr a, final Expr b) {
         if (a.typeKind() != b.typeKind()) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
+            throw new IllegalArgumentException(
+                    "Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
         }
     }
 
@@ -29,7 +31,8 @@ public class Preconditions {
 
     public static void requireSameLoadableTypeKind(final Expr a, final Expr b) {
         if (a.typeKind().asLoadable() != b.typeKind().asLoadable()) {
-            throw new IllegalArgumentException("Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
+            throw new IllegalArgumentException(
+                    "Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
         }
     }
 

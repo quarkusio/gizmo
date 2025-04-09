@@ -6,7 +6,8 @@ import java.util.function.BiFunction;
 final class IfZero extends If {
     final Item a;
 
-    IfZero(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse, final Item a) {
+    IfZero(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse,
+            final Item a) {
         super(type, kind, whenTrue, whenFalse);
         this.a = a;
     }

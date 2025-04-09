@@ -6,5 +6,6 @@ import io.quarkus.gizmo2.impl.StaticMethodCreatorImpl;
 /**
  * A builder for static methods.
  */
-public sealed interface StaticMethodCreator extends MethodCreator, StaticExecutableCreator permits StaticMethodCreatorImpl, StaticInterfaceMethodCreatorImpl {
+public sealed interface StaticMethodCreator extends MethodCreator, StaticExecutableCreator
+        permits StaticMethodCreatorImpl, StaticInterfaceMethodCreatorImpl {
 }

@@ -14,7 +14,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 /**
  * A typed thing whose type is a simple type.
  */
-public sealed interface SimpleTyped extends Typed permits Expr, FieldDesc, BlockCreator, ClassCreator, FieldCreator, ParamCreator, SwitchCreator, TypeCreator {
+public sealed interface SimpleTyped extends Typed
+        permits Expr, FieldDesc, BlockCreator, ClassCreator, FieldCreator, ParamCreator, SwitchCreator, TypeCreator {
     /**
      * {@return the type of this entity (not {@code null})}
      */

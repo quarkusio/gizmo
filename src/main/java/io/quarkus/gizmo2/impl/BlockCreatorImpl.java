@@ -116,7 +116,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstantImpl.ofVoid(), outputType, parent.returnType);
     }
 
-    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent, final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
+    private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent,
+            final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
@@ -128,7 +129,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this.input = input;
         head = Node.newList(BlockHeader.INSTANCE, Yield.YIELD_VOID);
         tail = head.next();
-        if (! inputType.equals(CD_void)) {
+        if (!inputType.equals(CD_void)) {
             head.insertNext(new BlockExpr(inputType));
         }
         this.outputType = outputType;
@@ -186,7 +187,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             return super.pop(node);
         }
         Item tailItem = tail.item();
-        if (tailItem instanceof Yield yield && ! yield.value().isVoid()) {
+        if (tailItem instanceof Yield yield && !yield.value().isVoid()) {
             tail.set(Yield.YIELD_VOID);
             cleanStack(tail);
             return node.prev();
@@ -285,16 +286,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     private static final Map<ClassDesc, ClassDesc> unboxTypes = Map.of(
-        CD_Boolean, CD_boolean,
-        CD_Byte, CD_byte,
-        CD_Character, CD_char,
-        CD_Short, CD_short,
-        CD_Integer, CD_int,
-        CD_Long, CD_long,
-        CD_Float, CD_float,
-        CD_Double, CD_double,
-        CD_Void, CD_void
-    );
+            CD_Boolean, CD_boolean,
+            CD_Byte, CD_byte,
+            CD_Character, CD_char,
+            CD_Short, CD_short,
+            CD_Integer, CD_int,
+            CD_Long, CD_long,
+            CD_Float, CD_float,
+            CD_Double, CD_double,
+            CD_Void, CD_void);
 
     public Expr box(final Expr a) {
         if (unboxTypes.containsKey(a.type())) {
@@ -356,7 +356,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void redo(final SwitchCreator switch_, final Constant case_) {
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
-        if (! sci.contains(this)) {
+        if (!sci.contains(this)) {
             throw new IllegalArgumentException("The given switch statement does not enclose this block");
         }
         addItem(new RedoCase(switch_, case_));
@@ -394,7 +394,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new NewEmptyArray(componentType, (Item) size));
     }
 
-    private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values, int idx) {
+    private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values,
+            int idx) {
         Dup dup = (Dup) stores.get(idx).arrayExpr();
         Node prev = dup.insert(node);
         insertNewArrayNextStore(nea, stores, prev, values, idx);
@@ -591,7 +592,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
-            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb, ConstructorDesc.of(Object.class), captureExprs);
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb,
+                    ConstructorDesc.of(Object.class), captureExprs);
             if (sam instanceof InterfaceMethodDesc imd) {
                 // implement the interface too
                 tc.implements_(imd.owner());
@@ -612,27 +614,24 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         owner.buildLambdaBootstrap();
         String encoded = Base64.getEncoder().encodeToString(bytes);
         MethodTypeDesc ctorType = MethodTypeDesc.of(
-            samOwner,
-            captureExprs.stream().map(Expr::type).toArray(ClassDesc[]::new)
-        );
+                samOwner,
+                captureExprs.stream().map(Expr::type).toArray(ClassDesc[]::new));
         return invokeDynamic(DynamicCallSiteDesc.of(
-            MethodHandleDesc.ofMethod(
-                DirectMethodHandleDesc.Kind.STATIC,
-                ownerDesc,
-                "defineLambdaCallSite",
-                MethodTypeDesc.of(
-                    CD_CallSite,
-                    CD_MethodHandles_Lookup,
-                    CD_String,
-                    CD_MethodType
-                )
-            ),
-            encoded,
-            ctorType
-        ), captureExprs);
+                MethodHandleDesc.ofMethod(
+                        DirectMethodHandleDesc.Kind.STATIC,
+                        ownerDesc,
+                        "defineLambdaCallSite",
+                        MethodTypeDesc.of(
+                                CD_CallSite,
+                                CD_MethodHandles_Lookup,
+                                CD_String,
+                                CD_MethodType)),
+                encoded,
+                ctorType), captureExprs);
     }
 
-    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args, final Consumer<AnonymousClassCreator> builder) {
+    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args,
+            final Consumer<AnonymousClassCreator> builder) {
         ClassDesc ownerDesc = owner.type();
         int idx = ++anonClassCount;
         String ds = ownerDesc.descriptorString();
@@ -644,8 +643,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
             zb.with(NestHostAttribute.of(ownerDesc));
             zb.with(InnerClassesAttribute.of(
-                InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)
-            ));
+                    InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)));
             AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb, superCtor, captureExprs);
             tc.preAccept();
             builder.accept(tc);
@@ -660,7 +658,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         MethodModel ourCtor = methods.get(methods.size() - 1);
         owner.output().outputHandler().accept(desc, bytes);
         return new_(ConstructorDesc.of(desc, ourCtor.methodTypeSymbol()),
-            Stream.concat(args.stream(), captureExprs.stream()).toList());
+                Stream.concat(args.stream(), captureExprs.stream()).toList());
     }
 
     public Expr cast(final Expr a, final ClassDesc toType) {
@@ -689,11 +687,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
         checkActive();
-        New new_ =  new New(ctor.owner());
+        New new_ = new New(ctor.owner());
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
         // insert New & Dup *before* the arguments
-        for (int i = args.size() - 1; i >= 0; i --) {
+        for (int i = args.size() - 1; i >= 0; i--) {
             Item arg = (Item) args.get(i);
             if (arg.bound()) {
                 node = arg.verify(node);
@@ -861,9 +859,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             Expr val = yield.value();
             if (val.typeKind() != typeKind()) {
                 if (val.typeKind() == TypeKind.VOID) {
-                    throw new IllegalStateException("Block did not yield a value of type " + typeKind() + " (did you forget to call `yield(val)`?)");
+                    throw new IllegalStateException(
+                            "Block did not yield a value of type " + typeKind() + " (did you forget to call `yield(val)`?)");
                 } else {
-                    throw new IllegalStateException("Block yielded value of wrong type (expected a " + typeKind() + " but got " + val.type() + ")");
+                    throw new IllegalStateException(
+                            "Block yielded value of wrong type (expected a " + typeKind() + " but got " + val.type() + ")");
                 }
             }
         }
@@ -879,7 +879,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         doIf(instanceOf(obj, type), null, ifFalse);
     }
 
-    public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue, final Consumer<BlockCreator> ifFalse) {
+    public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue,
+            final Consumer<BlockCreator> ifFalse) {
         ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), ifFalse);
     }
 
@@ -931,8 +932,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         doIfInsn(CD_void, cond, wt, wf);
     }
-    
-    public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
+
+    public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue,
+            final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = new BlockCreatorImpl(this, type);
         BlockCreatorImpl wf = new BlockCreatorImpl(this, type);
         wt.accept(whenTrue);
@@ -970,7 +972,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void redo(final BlockCreator outer) {
-        if (! outer.contains(this)) {
+        if (!outer.contains(this)) {
             throw new IllegalStateException("Invalid block nesting");
         }
         addItem(new Redo(outer));
@@ -979,7 +981,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void loop(final Consumer<BlockCreator> body) {
         block(b0 -> {
-            ((BlockCreatorImpl)b0).loopAction = bb -> bb.redo(b0);
+            ((BlockCreatorImpl) b0).loopAction = bb -> bb.redo(b0);
             body.accept(b0);
             if (b0.active()) {
                 b0.redo();
@@ -1000,7 +1002,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public void doWhile(final Consumer<BlockCreator> body, final Consumer<BlockCreator> cond) {
         block(b0 -> {
             b0.block(b1 -> {
-                ((BlockCreatorImpl)b1).loopAction = bb -> bb.break_(b1);
+                ((BlockCreatorImpl) b1).loopAction = bb -> bb.break_(b1);
                 body.accept(b1);
             });
             if (b0.active()) {
@@ -1066,7 +1068,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             monitorEnter((Item) mv);
             try_(t1 -> {
                 t1.body(body);
-                t1.finally_(b2 -> ((BlockCreatorImpl)b2).monitorExit((Item) mv));
+                t1.finally_(b2 -> ((BlockCreatorImpl) b2).monitorExit((Item) mv));
             });
         });
     }
@@ -1122,7 +1124,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public Expr exprEquals(final Expr a, final Expr b) {
         return switch (a.typeKind()) {
             case REFERENCE -> switch (b.typeKind()) {
-                case REFERENCE -> invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
+                case REFERENCE ->
+                    invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
                 default -> exprEquals(a, box(b));
             };
             default -> switch (b.typeKind()) {
@@ -1218,7 +1221,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
     }
-    
+
     @Override
     public Expr optionalOf(Expr value) {
         return invokeStatic(MethodDesc.of(Optional.class, "of", Optional.class, Object.class), value);
@@ -1239,20 +1242,20 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void printf(final String format, final List<Expr> values) {
         invokeVirtual(
-            MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class), Expr.staticField(FieldDesc.of(System.class, "out")),
-            Constant.of(format),
-            newArray(CD_Object, values)
-        );
+                MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class),
+                Expr.staticField(FieldDesc.of(System.class, "out")),
+                Constant.of(format),
+                newArray(CD_Object, values));
     }
 
     public void assert_(final Consumer<BlockCreator> assertion, final String message) {
         if_(logicalAnd(
-            Constant.ofInvoke(
-                Constant.ofMethodHandle(InvokeKind.VIRTUAL, MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class)
-            )
-        ), assertion), __ -> {
-            throw_(AssertionError.class, message);
-        });
+                Constant.ofInvoke(
+                        Constant.ofMethodHandle(InvokeKind.VIRTUAL,
+                                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class))),
+                assertion), __ -> {
+                    throw_(AssertionError.class, message);
+                });
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -1288,7 +1291,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         Node node = item.insert(tail);
         item.forEachDependency(node, Item::insertIfUnbound);
-        if (! item.mayFallThrough()) {
+        if (!item.mayFallThrough()) {
             assert tail.item() instanceof Yield;
             tail.set(item);
             node.remove();
@@ -1307,7 +1310,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     private void checkActive() {
-        if (! active()) {
+        if (!active()) {
             throw new IllegalStateException("This block is not active");
         }
     }

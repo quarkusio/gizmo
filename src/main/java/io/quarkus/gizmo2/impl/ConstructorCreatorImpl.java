@@ -22,7 +22,8 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     private final List<Consumer<BlockCreator>> postInits;
     private ConstructorDesc desc;
 
-    ConstructorCreatorImpl(final TypeCreatorImpl owner, final List<Consumer<BlockCreator>> preInits, final List<Consumer<BlockCreator>> postInits) {
+    ConstructorCreatorImpl(final TypeCreatorImpl owner, final List<Consumer<BlockCreator>> preInits,
+            final List<Consumer<BlockCreator>> postInits) {
         super(owner, Set.of(), Set.of(PUBLIC, PRIVATE, PROTECTED, SYNTHETIC, BRIDGE, VARARGS));
         this.preInits = preInits;
         this.postInits = postInits;
@@ -37,7 +38,7 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     }
 
     public void withType(final MethodTypeDesc desc) {
-        if (! desc.returnType().equals(CD_void)) {
+        if (!desc.returnType().equals(CD_void)) {
             throw new IllegalArgumentException("Constructors must return void");
         }
         super.withType(desc);

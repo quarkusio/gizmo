@@ -3,11 +3,12 @@ package io.quarkus.gizmo2;
 import java.lang.constant.ClassDesc;
 import java.util.List;
 
-import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 public final class BasicTest {
 
@@ -70,9 +71,11 @@ public final class BasicTest {
                 ParamVar second = mc.parameter("second", String.class);
                 mc.returning(String.class);
                 mc.body(b0 -> {
-                    Expr concat1 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), first, List.of(ConstantImpl.of(" ")));
+                    Expr concat1 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), first,
+                            List.of(ConstantImpl.of(" ")));
                     LocalVar spaced = b0.define("spaced", concat1);
-                    Expr concat2 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), spaced, List.of(second));
+                    Expr concat2 = b0.invokeVirtual(MethodDesc.of(String.class, "concat", String.class, String.class), spaced,
+                            List.of(second));
 
                     b0.return_(concat2);
                 });
@@ -95,7 +98,8 @@ public final class BasicTest {
                 });
             });
         });
-        Assertions.assertEquals("hello world!", tcm.staticMethod("echoSecondArg", TwoParams.class).apply("ignore me!", "hello world!"));
+        Assertions.assertEquals("hello world!",
+                tcm.staticMethod("echoSecondArg", TwoParams.class).apply("ignore me!", "hello world!"));
     }
 
     @Test
@@ -113,8 +117,10 @@ public final class BasicTest {
                 });
             });
         });
-        Assertions.assertEquals("argument zero!", tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 0));
-        Assertions.assertEquals("argument one!", tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 1));
+        Assertions.assertEquals("argument zero!",
+                tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 0));
+        Assertions.assertEquals("argument one!",
+                tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 1));
     }
 
     @Test

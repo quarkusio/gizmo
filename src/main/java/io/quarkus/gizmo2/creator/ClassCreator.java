@@ -21,6 +21,7 @@ import io.quarkus.gizmo2.impl.Util;
 public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits AnonymousClassCreator, ClassCreatorImpl {
     /**
      * {@return the superclass}
+     *
      * @see #extends_(ClassDesc)
      */
     ClassDesc superClass();
@@ -87,7 +88,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * Add an instance method to the class having the given predefined type.
      *
      * @param name the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -101,7 +102,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add an instance method to the class having the same name and type as the given method.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -122,7 +123,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * Add an abstract instance method to the class having the given predefined type.
      *
      * @param name the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -136,7 +137,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add an abstract instance method to the class having the same name and type as the given method.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -156,8 +157,8 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add a native instance method to the class having the given predefined type.
      *
-     * @param name    the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -171,7 +172,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add a native instance method to the class having the same name and type as the given method.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -191,8 +192,8 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add a native static method to the class having the given predefined type.
      *
-     * @param name    the method name (must not be {@code null})
-     * @param type    the method type (must not be {@code null})
+     * @param name the method name (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -206,7 +207,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add a native static method to the class having the same name and type as the given method.
      *
-     * @param desc    the original method descriptor (must not be {@code null})
+     * @param desc the original method descriptor (must not be {@code null})
      * @param builder the method builder (must not be {@code null})
      * @return the built method's selector for invocation (not {@code null})
      */
@@ -226,7 +227,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * Add a constructor to the class having the given predefined type.
      * The type must have a {@code void} return type.
      *
-     * @param type    the method type (must not be {@code null})
+     * @param type the method type (must not be {@code null})
      * @param builder the constructor builder (must not be {@code null})
      * @return the built constructor's selector for invocation (must not be {@code null})
      */
@@ -240,7 +241,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
     /**
      * Add a constructor to the class having the same type as the given constructor.
      *
-     * @param desc    the original constructor descriptor (must not be {@code null})
+     * @param desc the original constructor descriptor (must not be {@code null})
      * @param builder the constructor builder (must not be {@code null})
      * @return the built constructor's selector for invocation (must not be {@code null})
      */

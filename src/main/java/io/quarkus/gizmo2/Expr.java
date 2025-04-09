@@ -22,12 +22,14 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
 
     /**
      * {@return an lvalue for an element of this array}
+     *
      * @param index the array index (must not be {@code null})
      */
     LValueExpr elem(Expr index);
 
     /**
      * {@return an lvalue for an element of this array}
+     *
      * @param index the array index (must not be {@code null})
      */
     default LValueExpr elem(Integer index) {
@@ -36,6 +38,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
 
     /**
      * {@return an lvalue for an element of this array}
+     *
      * @param index the array index
      */
     default LValueExpr elem(int index) {
@@ -49,12 +52,14 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
 
     /**
      * {@return an lvalue for a field of this object}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     InstanceFieldVar field(FieldDesc desc);
 
     /**
      * {@return an lvalue for a field of this object}
+     *
      * @param owner the descriptor of the owner of this field
      * @param name the name of the field
      * @param type the descriptor for the type of the field
@@ -65,6 +70,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
 
     /**
      * {@return an lvalue for a static field}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     static StaticFieldVar staticField(FieldDesc desc) {

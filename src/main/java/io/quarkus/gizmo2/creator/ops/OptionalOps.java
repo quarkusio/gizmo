@@ -12,7 +12,7 @@ public class OptionalOps extends ObjectOps {
 
     /**
      * Construct a new instance.
-     * 
+     *
      * @param bc the block creator to wrap (must not be {@code null})
      * @param obj the optional object (must not be {@code null})
      */

@@ -7,11 +7,15 @@ import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.creator.MethodCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator permits AbstractMethodCreatorImpl, DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, NativeMethodCreatorImpl, InterfaceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl, StaticMethodCreatorImpl, StaticInterfaceMethodCreatorImpl, StaticNativeMethodCreatorImpl {
+public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator
+        permits AbstractMethodCreatorImpl, DefaultMethodCreatorImpl, InstanceMethodCreatorImpl, NativeMethodCreatorImpl,
+        InterfaceMethodCreatorImpl, PrivateInterfaceMethodCreatorImpl, StaticMethodCreatorImpl,
+        StaticInterfaceMethodCreatorImpl, StaticNativeMethodCreatorImpl {
     final String name;
     private MethodDesc desc;
 
-    MethodCreatorImpl(final TypeCreatorImpl owner, final String name, final Set<AccessFlag> defaultFlags, Set<AccessFlag> allowedFlags) {
+    MethodCreatorImpl(final TypeCreatorImpl owner, final String name, final Set<AccessFlag> defaultFlags,
+            Set<AccessFlag> allowedFlags) {
         super(owner, defaultFlags, allowedFlags);
         this.name = name;
     }

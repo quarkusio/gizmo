@@ -1,5 +1,11 @@
 package io.quarkus.gizmo2.ops;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.function.Supplier;
+
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.Gizmo;
@@ -7,11 +13,6 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import org.junit.jupiter.api.Test;
-
-import java.util.function.Supplier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringBuilderOpsTest {
     @Test

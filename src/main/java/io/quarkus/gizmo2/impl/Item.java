@@ -50,7 +50,7 @@ public abstract non-sealed class Item implements Expr {
             }
             // we don't care about this one
             node = actual.pop(node);
-        };
+        }
         throw missing(toString());
     }
 
@@ -62,7 +62,7 @@ public abstract non-sealed class Item implements Expr {
      */
     public Node pop(Node node) {
         assert this == node.item();
-        if (! bound()) {
+        if (!bound()) {
             // remove our dependencies
             Node result = forEachDependency(node, Item::pop);
             if (result == null) {
@@ -110,7 +110,7 @@ public abstract non-sealed class Item implements Expr {
      * @return the node before the first dependency of this node (not {@code null})
      */
     protected Node insertIfUnbound(Node node) {
-        if (! bound()) {
+        if (!bound()) {
             return forEachDependency(node.insertNext(this), Item::insertIfUnbound);
         } else {
             return verify(node);
@@ -144,7 +144,7 @@ public abstract non-sealed class Item implements Expr {
      * Any intervening non-{@code void}-typed expressions are popped from the stack.
      *
      * @param node this item's node (not {@code null})
-     * @param op   the operation (not {@code null})
+     * @param op the operation (not {@code null})
      * @return the node previous to this one (not {@code null})
      */
     protected Node process(Node node, BiFunction<Item, Node, Node> op) {
@@ -161,7 +161,7 @@ public abstract non-sealed class Item implements Expr {
      * This can normally be done by nesting the method calls.
      *
      * @param node the node for this current item (not {@code null})
-     * @param op   the operation (not {@code null})
+     * @param op the operation (not {@code null})
      * @return the node previous to the first dependency (must not be {@code null})
      */
     protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
@@ -173,7 +173,9 @@ public abstract non-sealed class Item implements Expr {
     }
 
     static IllegalStateException missing(String itemToString) {
-        return new IllegalStateException("Item is not at its expected location (use a variable to store values which are used away from their definition site): " + itemToString);
+        return new IllegalStateException(
+                "Item is not at its expected location (use a variable to store values which are used away from their definition site): "
+                        + itemToString);
     }
 
     public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);
@@ -199,7 +201,7 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public LValueExpr elem(final Expr index) {
-        if (! type().isArray()) {
+        if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");
         }
         return new ArrayDeref(type().componentType(), index);
@@ -272,7 +274,7 @@ public abstract non-sealed class Item implements Expr {
         public FieldDesc desc() {
             return desc;
         }
-        
+
         @Override
         public ClassDesc type() {
             return desc.type();
@@ -302,9 +304,8 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "getVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            type(),
-                            Util.NO_DESCS
-                        ));
+                                type(),
+                                Util.NO_DESCS));
                     }
 
                     public String itemName() {
@@ -331,7 +332,8 @@ public abstract non-sealed class Item implements Expr {
                 };
                 default -> new Item() {
                     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
+                        return ConstantImpl.ofFieldVarHandle(desc)
+                                .process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -342,9 +344,8 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "setVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            desc().type(),
-                            Util.NO_DESCS
-                        ));
+                                desc().type(),
+                                Util.NO_DESCS));
                     }
 
                     public String itemName() {
@@ -373,7 +374,7 @@ public abstract non-sealed class Item implements Expr {
         }
 
         Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
-            if (! mode.validForReads()) {
+            if (!mode.validForReads()) {
                 throw new IllegalArgumentException("Invalid mode " + mode);
             }
             return switch (mode) {
@@ -384,7 +385,8 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofArrayVarHandle(Item.this.type()).process(Item.this.process(index.process(node.prev(), op), op), op);
+                        return ConstantImpl.ofArrayVarHandle(Item.this.type())
+                                .process(Item.this.process(index.process(node.prev(), op), op), op);
                     }
 
                     public ClassDesc type() {
@@ -398,10 +400,9 @@ public abstract non-sealed class Item implements Expr {
                             case Volatile -> "getVolatile";
                             default -> throw new IllegalStateException();
                         }, MethodTypeDesc.of(
-                            type(),
-                            Item.this.type(),
-                            CD_int
-                        ));
+                                type(),
+                                Item.this.type(),
+                                CD_int));
                     }
                 };
             };
@@ -416,15 +417,15 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofArrayVarHandle(Item.this.type()).process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
+                        return ConstantImpl.ofArrayVarHandle(Item.this.type())
+                                .process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                         cb.invokevirtual(CD_VarHandle, "setVolatile", MethodTypeDesc.of(
-                            type(),
-                            Item.this.type(),
-                            CD_int
-                        ));
+                                type(),
+                                Item.this.type(),
+                                CD_int));
                     }
                 };
             };

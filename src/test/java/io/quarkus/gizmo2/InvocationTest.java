@@ -1,17 +1,17 @@
 package io.quarkus.gizmo2;
 
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
-import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
-import io.quarkus.gizmo2.desc.MethodDesc;
-import org.junit.jupiter.api.Test;
+import static java.lang.constant.ConstantDescs.CD_String;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Supplier;
 
-import static java.lang.constant.ConstantDescs.CD_String;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class InvocationTest {
     @Test

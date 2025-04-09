@@ -38,7 +38,8 @@ final class Dup extends Item {
         switch (typeKind().slotSize()) {
             case 2 -> cb.dup2();
             case 1 -> cb.dup();
-            case 0 -> {}
+            case 0 -> {
+            }
             default -> throw new IllegalStateException();
         }
     }

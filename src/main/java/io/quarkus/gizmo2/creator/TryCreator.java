@@ -39,7 +39,8 @@ public sealed interface TryCreator extends BodyCreator permits TryCreatorImpl {
      * @param caughtName the name of the caught exception variable (must not be {@code null})
      * @param builder the builder for the catch block (must not be {@code null})
      */
-    void catch_(ClassDesc superType, Set<ClassDesc> types, String caughtName, BiConsumer<BlockCreator, ? super LocalVar> builder);
+    void catch_(ClassDesc superType, Set<ClassDesc> types, String caughtName,
+            BiConsumer<BlockCreator, ? super LocalVar> builder);
 
     /**
      * Add a catch clause which receives the thrown exception.

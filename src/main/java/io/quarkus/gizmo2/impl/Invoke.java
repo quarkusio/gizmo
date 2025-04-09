@@ -22,14 +22,16 @@ final class Invoke extends Item {
     private final boolean isInterface;
 
     Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<Expr> args) {
-        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, (Item) instance, Util.reinterpretCast(args));
+        this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, (Item) instance,
+                Util.reinterpretCast(args));
     }
 
     Invoke(final ConstructorDesc desc, Expr instance, List<Expr> args) {
         this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, (Item) instance, Util.reinterpretCast(args));
     }
 
-    private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode, final boolean isInterface, Item instance, final List<Item> args) {
+    private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode,
+            final boolean isInterface, Item instance, final List<Item> args) {
         this.owner = owner;
         this.name = name;
         this.type = type;
@@ -46,7 +48,7 @@ final class Invoke extends Item {
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
         node = node.prev();
         int size = args.size();
-        for (int i = size - 1; i >= 0; i --) {
+        for (int i = size - 1; i >= 0; i--) {
             node = args.get(i).process(node, op);
         }
         if (instance != null) {

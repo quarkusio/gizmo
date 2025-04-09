@@ -1,9 +1,9 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static java.lang.constant.ConstantDescs.CD_short;
+
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
-
-import static java.lang.constant.ConstantDescs.CD_short;
 
 public final class ShortConstant extends IntBasedConstant {
     private final Short value;

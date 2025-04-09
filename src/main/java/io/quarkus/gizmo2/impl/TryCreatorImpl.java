@@ -40,11 +40,13 @@ public final class TryCreatorImpl implements TryCreator {
         advanceToState(ST_CATCH);
     }
 
-    public void catch_(final Class<? extends Throwable> type, final String caughtName, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
+    public void catch_(final Class<? extends Throwable> type, final String caughtName,
+            final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         catch_(Util.classDesc(type), caughtName, builder);
     }
 
-    public void catch_(final Set<Class<? extends Throwable>> types, final String caughtName, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
+    public void catch_(final Set<Class<? extends Throwable>> types, final String caughtName,
+            final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         if (types.isEmpty()) {
             // skip
             return;
@@ -74,11 +76,13 @@ public final class TryCreatorImpl implements TryCreator {
         }
     }
 
-    public void catch_(final ClassDesc type, final String caughtName, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
+    public void catch_(final ClassDesc type, final String caughtName,
+            final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         catch_(type, Set.of(type), caughtName, builder);
     }
 
-    public void catch_(final ClassDesc superType, final Set<ClassDesc> types, final String caughtName, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
+    public void catch_(final ClassDesc superType, final Set<ClassDesc> types, final String caughtName,
+            final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         advanceToState(ST_CATCH);
         if (tryCatch == null) {
             tryCatch = new TryCatch(body);

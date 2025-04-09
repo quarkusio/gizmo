@@ -28,7 +28,8 @@ public interface AnnotationCreator<A extends Annotation> {
      * @return the constructed annotation (not {@code null})
      * @param <A> the annotation type
      */
-    static <A extends Annotation> io.github.dmlloyd.classfile.Annotation makeAnnotation(Class<A> type, Consumer<AnnotationCreator<A>> maker) {
+    static <A extends Annotation> io.github.dmlloyd.classfile.Annotation makeAnnotation(Class<A> type,
+            Consumer<AnnotationCreator<A>> maker) {
         var c = new AnnotationCreator<A>() {
             final List<AnnotationElement> elements = new ArrayList<>();
 
@@ -740,7 +741,8 @@ public interface AnnotationCreator<A extends Annotation> {
      * @param builders the builders for the nested annotations (must not be {@code null})
      * @param <S> the annotation type
      */
-    default <S extends Annotation> void withArray(String name, Class<S> annotationClass, List<Consumer<AnnotationCreator<S>>> builders) {
+    default <S extends Annotation> void withArray(String name, Class<S> annotationClass,
+            List<Consumer<AnnotationCreator<S>>> builders) {
         List<AnnotationValue> array = new ArrayList<>(builders.size());
         for (Consumer<AnnotationCreator<S>> builder : builders) {
             array.add(AnnotationValue.ofAnnotation(makeAnnotation(annotationClass, builder)));
@@ -756,7 +758,8 @@ public interface AnnotationCreator<A extends Annotation> {
      * @param <S> the annotation type
      */
     @SuppressWarnings("unchecked")
-    default <S extends Annotation> void withArray(AnnotationArrayProperty<A, S> prop, List<Consumer<AnnotationCreator<S>>> builders) {
+    default <S extends Annotation> void withArray(AnnotationArrayProperty<A, S> prop,
+            List<Consumer<AnnotationCreator<S>>> builders) {
         // the impl method is always an annotation element, which never takes any parameter,
         // so the signature starts with `()` and the rest is the descriptor of the desired annotation array
         String sig = Util.serializedLambda(prop).getImplMethodSignature();

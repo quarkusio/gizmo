@@ -26,6 +26,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given Constable}
+     *
      * @param constable the object to create a constant from (must not be {@code null})
      */
     static Constant of(Constable constable) {
@@ -34,6 +35,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given description}
+     *
      * @param constantDesc the object to create a constant from (must not be {@code null})
      */
     static Constant of(ConstantDesc constantDesc) {
@@ -42,6 +44,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given description}
+     *
      * @param dcd the object to create a constant from (must not be {@code null})
      */
     static Constant of(DynamicConstantDesc<?> dcd) {
@@ -50,6 +53,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a {@code null} constant with the given type}
+     *
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
     static Constant ofNull(ClassDesc type) {
@@ -58,6 +62,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a {@code null} constant with the given type}
+     *
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
     static Constant ofNull(Class<?> type) {
@@ -66,6 +71,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(ClassDesc value) {
@@ -74,6 +80,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Class<?> value) {
@@ -82,6 +89,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(VarHandle.VarHandleDesc value) {
@@ -90,6 +98,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Enum.EnumDesc<?> value) {
@@ -98,6 +107,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Byte value) {
@@ -106,6 +116,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(byte value) {
@@ -114,6 +125,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Short value) {
@@ -122,6 +134,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(short value) {
@@ -130,6 +143,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Character value) {
@@ -138,6 +152,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(char value) {
@@ -146,6 +161,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Integer value) {
@@ -154,6 +170,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(int value) {
@@ -162,6 +179,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Long value) {
@@ -170,6 +188,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(long value) {
@@ -178,6 +197,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Float value) {
@@ -186,6 +206,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(float value) {
@@ -194,6 +215,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(Double value) {
@@ -202,6 +224,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(double value) {
@@ -210,6 +233,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(Boolean value) {
@@ -218,6 +242,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      */
     static Constant of(boolean value) {
@@ -226,6 +251,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
@@ -235,6 +261,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
@@ -244,6 +271,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
@@ -253,6 +281,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
@@ -262,6 +291,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant for the given value}
+     *
      * @param value the value to create a constant from (must not be {@code null})
      */
     static Constant of(String value) {
@@ -277,6 +307,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a {@code VarHandle} constant for the given instance field}
+     *
      * @param desc the descriptor of the field (must not be {@code null})
      */
     static Constant ofFieldVarHandle(FieldDesc desc) {
@@ -285,6 +316,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a {@code VarHandle} constant for the given static field}
+     *
      * @param desc the descriptor of the field (must not be {@code null})
      */
     static Constant ofStaticFieldVarHandle(FieldDesc desc) {
@@ -293,6 +325,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a constant with the value of the given {@code static final} field}
+     *
      * @param desc the descriptor of the field (must not be {@code null})
      */
     static Constant ofStaticFinalField(FieldDesc desc) {
@@ -301,6 +334,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a {@code VarHandle} constant for the given array type}
+     *
      * @param arrayType the array type (must not be {@code null})
      */
     static Constant ofArrayVarHandle(ClassDesc arrayType) {
@@ -333,6 +367,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle constant from the given descriptor}
+     *
      * @param desc the method handle descriptor (must not be {@code null})
      */
     static Constant of(MethodHandleDesc desc) {
@@ -341,6 +376,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle constant from the given information}
+     *
      * @param kind the invocation kind (must not be {@code null})
      * @param desc the method's descriptor (must not be {@code null})
      */
@@ -350,6 +386,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle constant from the given constructor descriptor}
+     *
      * @param desc the constructor descriptor (must not be {@code null})
      */
     static Constant ofConstructorMethodHandle(ConstructorDesc desc) {
@@ -358,6 +395,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle for an instance field setter}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     static Constant ofFieldSetterMethodHandle(FieldDesc desc) {
@@ -366,6 +404,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle for an instance field getter}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     static Constant ofFieldGetterMethodHandle(FieldDesc desc) {
@@ -374,6 +413,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle for a static field setter}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     static Constant ofStaticFieldSetterMethodHandle(FieldDesc desc) {
@@ -382,6 +422,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method handle for a static field getter}
+     *
      * @param desc the field descriptor (must not be {@code null})
      */
     static Constant ofStaticFieldGetterMethodHandle(FieldDesc desc) {
@@ -390,6 +431,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
 
     /**
      * {@return a method type constant from the given descriptor}
+     *
      * @param desc the method type descriptor (must not be {@code null})
      */
     static Constant of(MethodTypeDesc desc) {

@@ -15,6 +15,7 @@ public sealed interface Gizmo extends ClassOutput permits GizmoImpl {
     /**
      * {@return the current instance}
      * The current instance corresponds to the instance that is currently being used to create a class.
+     *
      * @throws IllegalStateException if there is no current instance
      */
     static Gizmo current() {
@@ -23,6 +24,7 @@ public sealed interface Gizmo extends ClassOutput permits GizmoImpl {
 
     /**
      * {@return a new Gizmo which outputs to the given handler by default}
+     *
      * @param outputHandler the output handler (must not be {@code null})
      */
     static Gizmo create(BiConsumer<ClassDesc, byte[]> outputHandler) {
@@ -31,16 +33,18 @@ public sealed interface Gizmo extends ClassOutput permits GizmoImpl {
 
     /**
      * {@return a class output using the given handler}
+     *
      * @param outputHandler the output handler (must not be {@code null})
      */
     ClassOutput classOutput(BiConsumer<ClassDesc, byte[]> outputHandler);
 
     /**
      * {@return a class file writer for the given path}
+     *
      * @param basePath the path into which class files should be stored (must not be {@code null})
      */
     static BiConsumer<ClassDesc, byte[]> fileWriter(Path basePath) {
-        if (! Files.isDirectory(basePath)) {
+        if (!Files.isDirectory(basePath)) {
             throw new IllegalArgumentException("Path does not exist or is not an accessible directory: " + basePath);
         }
         return (classDesc, bytes) -> {

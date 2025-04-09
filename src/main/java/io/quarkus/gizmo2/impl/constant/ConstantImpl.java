@@ -19,8 +19,8 @@ import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.GizmoImpl;
+import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.Util;
 
 public abstract non-sealed class ConstantImpl extends Item implements Constant {
@@ -109,7 +109,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
             // "wrong spelling" of invoke constant
             return ofInvoke(of(dcd.bootstrapMethod()), dcd.bootstrapArgsList().stream().map(Constant::of).toList());
         } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_EXPLICIT_CAST)
-                   && dcd.constantName().equals(ConstantDescs.DEFAULT_NAME)) {
+                && dcd.constantName().equals(ConstantDescs.DEFAULT_NAME)) {
             // "wrong spelling" of primitive constant
             if (dcd.constantType().equals(ConstantDescs.CD_byte)) {
                 return of(((Integer) dcd.bootstrapArgs()[0]).byteValue());
@@ -158,7 +158,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ArrayVarHandleConstant ofArrayVarHandle(ClassDesc arrayType) {
-        if (! arrayType.isArray()) {
+        if (!arrayType.isArray()) {
             throw new IllegalArgumentException("Array var handles can only be created for array types");
         }
         return GizmoImpl.current().arrayVarHandleConstant(arrayType);
@@ -167,8 +167,10 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     public static ConstantImpl of(VarHandle.VarHandleDesc value) {
         List<ConstantDesc> args = value.bootstrapArgsList();
         return switch (value.bootstrapMethod().methodName()) {
-            case "fieldVarHandle" -> ofFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), value.constantName(), value.varType()));
-            case "staticFieldVarHandle" -> ofStaticFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), value.constantName(), value.varType()));
+            case "fieldVarHandle" ->
+                ofFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), value.constantName(), value.varType()));
+            case "staticFieldVarHandle" ->
+                ofStaticFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), value.constantName(), value.varType()));
             case "getStaticFinal" -> switch (args.size()) {
                 case 0 -> ofStaticFinalField(FieldDesc.of(value.varType(), value.constantName(), value.varType()));
                 case 1 -> ofStaticFinalField(FieldDesc.of((ClassDesc) args.get(0), value.constantName(), value.varType()));

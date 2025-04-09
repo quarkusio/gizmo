@@ -1,13 +1,13 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
-
-import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
 
 final class BinOp extends Item {
     private final Item a;
@@ -20,7 +20,7 @@ final class BinOp extends Item {
         this.a = (Item) a;
         this.b = (Item) b;
         this.kind = kind;
-        if (! kind.isValidFor(typeKind())) {
+        if (!kind.isValidFor(typeKind())) {
             throw new IllegalArgumentException("Operation is not valid for type kind of " + typeKind());
         }
     }
