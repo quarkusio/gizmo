@@ -2,9 +2,11 @@ package io.quarkus.gizmo2;
 
 import static java.lang.constant.ConstantDescs.CD_String;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -355,5 +357,126 @@ public class InvocationTest {
             });
         });
         assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+    }
+
+    // ---
+
+    @Test
+    public void wrongNumberOfArguments() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.WrongNumberOfArguments", cc -> {
+            MethodDesc returnString = cc.staticMethod("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.body(bc -> {
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnString);
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnString, Constant.of("input1"), Constant.of("input2"));
+                    });
+                    bc.return_();
+                });
+            });
+        });
+    }
+
+    @Test
+    public void wrongArgumentTypes() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.WrongArgumentTypes", cc -> {
+            MethodDesc returnString = cc.staticMethod("returnString", mc -> {
+                ParamVar input = mc.parameter("input", String.class);
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                });
+            });
+
+            MethodDesc returnLong = cc.staticMethod("returnLong", mc -> {
+                ParamVar input = mc.parameter("input", long.class);
+                mc.returning(long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.add(input, Constant.of(1L)));
+                });
+            });
+
+            MethodDesc returnDouble = cc.staticMethod("returnDouble", mc -> {
+                ParamVar input = mc.parameter("input", double.class);
+                mc.returning(double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.add(input, Constant.of(1.0)));
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.body(bc -> {
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnString, Constant.of(1));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnString, Constant.of(1L));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnString, Constant.of(1.0));
+                    });
+
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnLong, Constant.of(1));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnLong, Constant.of(1.0));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnLong, Constant.of(""));
+                    });
+
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Constant.of(1));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Constant.of(1L));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Constant.of(1.0F));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Constant.of(""));
+                    });
+                    bc.return_();
+                });
+            });
+        });
+    }
+
+    @Test
+    public void differentButCorrectArgumentTypes() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.DifferentButCorrectArgumentTypes", cc -> {
+            MethodDesc returnInt = cc.staticMethod("returnInt", mc -> {
+                ParamVar input = mc.parameter("input", int.class);
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.add(input, Constant.of(1)));
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.invokeStatic(returnInt, Constant.of('a')));
+                });
+            });
+        });
+        assertEquals('b', tcm.staticMethod("invoke", IntSupplier.class).getAsInt());
     }
 }

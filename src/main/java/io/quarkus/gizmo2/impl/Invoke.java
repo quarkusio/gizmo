@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
+import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
@@ -32,6 +33,21 @@ final class Invoke extends Item {
 
     private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode,
             final boolean isInterface, Item instance, final List<Item> args) {
+        if (type.parameterCount() != args.size()) {
+            String paramsStr = type.parameterCount() == 1 ? "1 parameter" : type.parameterCount() + " parameters";
+            String argsStr = args.size() == 1 ? "1 argument was" : args.size() + " arguments were";
+            throw new IllegalArgumentException("Method " + owner.displayName() + "." + name + "() takes "
+                    + paramsStr + ", but " + argsStr + " passed");
+        }
+        for (int i = 0; i < type.parameterCount(); i++) {
+            ClassDesc parameterType = type.parameterType(i);
+            ClassDesc argumentType = args.get(i).type();
+            if (TypeKind.from(parameterType).asLoadable() != TypeKind.from(argumentType).asLoadable()) {
+                throw new IllegalArgumentException("Parameter " + i + " of method " + owner.displayName() + "." + name
+                        + "() is of type '" + parameterType.displayName() + "', but given argument is '"
+                        + argumentType.displayName() + "'");
+            }
+        }
         this.owner = owner;
         this.name = name;
         this.type = type;
