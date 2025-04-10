@@ -65,12 +65,11 @@ public class ThrowableOps extends ObjectOps {
     }
 
     /**
-     * Generate a call to {@link Throwable#addSuppressed()}.
+     * Generate a call to {@link Throwable#addSuppressed(Throwable)}.
      *
-     * @return the expression of the result (not {@code null})
+     * @param exception the expression of the exception to add (must not be {@code null})
      */
     public void addSuppressed(Expr exception) {
         invokeInstance(void.class, "addSuppressed", Throwable.class, exception);
     }
-
 }

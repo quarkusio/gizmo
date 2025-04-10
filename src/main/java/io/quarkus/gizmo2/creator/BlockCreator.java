@@ -2661,7 +2661,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Throwable}}
      *
-     * @param receiver the instance to invoke upon (must not be {@code null})
+     * @param throwable the instance to invoke upon (must not be {@code null})
      */
     default ThrowableOps withThrowable(Expr throwable) {
         return new ThrowableOps(this, throwable);
@@ -2933,7 +2933,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      *
      * @param desc the field descriptor (must not be {@code null})
      * @param value the value to write
-     * @return the memory value (not {@code null})
      */
     default void setStaticField(FieldDesc desc, Expr value) {
         set(Expr.staticField(desc), value);
