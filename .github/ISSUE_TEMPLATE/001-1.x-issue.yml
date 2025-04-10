@@ -1,0 +1,8 @@
+name: Gizmo 1.x Issue
+description: An issue which applies to a 1.x version of Gizmo.
+labels: ["1.x"]
+title: "[1.x] "
+body:
+  - type: textarea
+    attributes:
+      description: Please describe the issue below.
