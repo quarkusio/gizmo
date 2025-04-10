@@ -20,8 +20,8 @@ mvn clean install
 
 ## Release
 
-```bash
-mvn release:prepare release:perform -Prelease
-```
+To release a new version of Gizmo, follow these steps:
+
+https://github.com/smallrye/smallrye/wiki/Release-Process#releasing
 
 The staging repository is automatically closed. The sync with Maven Central should take ~30 minutes.
