@@ -33,7 +33,7 @@ public class MapOps extends ObjectOps {
     /**
      * Generate a call to {@link Map#get(Object)}.
      *
-     * @param key
+     * @param key the mapping key (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr get(Expr key) {
@@ -43,8 +43,8 @@ public class MapOps extends ObjectOps {
     /**
      * Generate a call to {@link Map#put(Object, Object)}.
      *
-     * @param key
-     * @param value
+     * @param key the mapping key (must not be {@code null})
+     * @param value the mapping value (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr put(Expr key, Expr value) {
@@ -54,7 +54,7 @@ public class MapOps extends ObjectOps {
     /**
      * Generate a call to {@link Map#remove(Object)}.
      *
-     * @param key
+     * @param key the mapping key to remove (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
     public Expr remove(Expr key) {
@@ -90,11 +90,8 @@ public class MapOps extends ObjectOps {
 
     /**
      * Generate a call to {@link Map#clear()}.
-     *
-     * @return the expression of the result (not {@code null})
      */
     public void clear() {
         invokeInstance(void.class, "clear");
     }
-
 }
