@@ -5,4 +5,7 @@ title: "[1.x] "
 body:
   - type: textarea
     attributes:
-      description: Please describe the issue below.
+      required: true
+      label: "Issue description"
+      description: "Please describe the issue below."
+      value: "## Describe the issue here"
