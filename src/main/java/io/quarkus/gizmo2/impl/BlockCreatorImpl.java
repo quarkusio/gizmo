@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
@@ -270,49 +271,45 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         set(var, rem(var, arg));
     }
 
-    private ClassDesc boxType(TypeKind typeKind) {
-        return switch (typeKind) {
-            case BOOLEAN -> CD_Boolean;
-            case BYTE -> CD_Byte;
-            case CHAR -> CD_Character;
-            case SHORT -> CD_Short;
-            case INT -> CD_Integer;
-            case LONG -> CD_Long;
-            case FLOAT -> CD_Float;
-            case DOUBLE -> CD_Double;
-            case VOID -> CD_Void;
-            default -> throw new IllegalArgumentException("No box type for " + typeKind);
-        };
-    }
+    private static final Map<ClassDesc, ClassDesc> boxTypes = Map.of(
+            CD_boolean, CD_Boolean,
+            CD_byte, CD_Byte,
+            CD_char, CD_Character,
+            CD_short, CD_Short,
+            CD_int, CD_Integer,
+            CD_long, CD_Long,
+            CD_float, CD_Float,
+            CD_double, CD_Double,
+            CD_void, CD_Void);
 
-    private static final Map<ClassDesc, ClassDesc> unboxTypes = Map.of(
-            CD_Boolean, CD_boolean,
-            CD_Byte, CD_byte,
-            CD_Character, CD_char,
-            CD_Short, CD_short,
-            CD_Integer, CD_int,
-            CD_Long, CD_long,
-            CD_Float, CD_float,
-            CD_Double, CD_double,
-            CD_Void, CD_void);
+    private static final Map<ClassDesc, ClassDesc> unboxTypes = Map.copyOf(Util.reverseMap(boxTypes));
 
     public Expr box(final Expr a) {
         if (unboxTypes.containsKey(a.type())) {
             return a;
         }
-        TypeKind typeKind = a.typeKind();
-        ClassDesc boxType = boxType(typeKind);
-        return invokeStatic(ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, typeKind.upperBound())), a);
+        ClassDesc unboxType = a.type();
+        ClassDesc boxType = boxTypes.get(unboxType);
+        if (boxType == null) {
+            throw new IllegalArgumentException("No box type for " + unboxType.displayName());
+        }
+        if (boxType.equals(CD_Void)) {
+            throw new IllegalArgumentException("Cannot box void");
+        }
+        return invokeStatic(ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, unboxType)), a);
     }
 
     public Expr unbox(final Expr a) {
-        if (a.typeKind().getDeclaringClass().isPrimitive()) {
+        if (boxTypes.containsKey(a.type())) {
             return a;
         }
         ClassDesc boxType = a.type();
         ClassDesc unboxType = unboxTypes.get(boxType);
         if (unboxType == null) {
             throw new IllegalArgumentException("No unbox type for " + boxType.displayName());
+        }
+        if (unboxType.equals(CD_void)) {
+            throw new IllegalArgumentException("Cannot unbox void");
         }
         return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(unboxType)) {
             case BOOLEAN -> "booleanValue";
@@ -323,7 +320,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case LONG -> "longValue";
             case FLOAT -> "floatValue";
             case DOUBLE -> "doubleValue";
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(TypeKind.from(unboxType));
         }, MethodTypeDesc.of(unboxType, Util.NO_DESCS)), a);
     }
 
@@ -661,16 +658,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
                 return addItem(new PrimitiveCast(a, toType));
-            } else if (toType.equals(boxType(a.typeKind()))) {
+            } else if (boxTypes.containsKey(a.type()) && toType.equals(boxTypes.get(a.type()))) {
                 return box(a);
             } else {
                 throw new IllegalArgumentException("Cannot cast primitive value to object type");
             }
         } else {
-            if (toType.isPrimitive()) {
-                throw new IllegalArgumentException("Cannot cast object value to primitive type");
-            } else if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
+            if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
                 return unbox(a);
+            } else if (toType.isPrimitive()) {
+                throw new IllegalArgumentException("Cannot cast object value to primitive type");
             } else {
                 return addItem(new CheckCast(a, toType));
             }
