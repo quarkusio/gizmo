@@ -24,11 +24,8 @@ mvn clean install
 
 ## Release
 
-```bash
-# Bump version and create the tag
-mvn release:prepare -Prelease
-# Build the tag and push to OSSRH
-mvn release:perform -Prelease
-```
+To release a new version, follow these steps:
+
+https://github.com/smallrye/smallrye/wiki/Release-Process#releasing
 
 The staging repository is automatically closed. The sync with Maven Central should take ~30 minutes.
