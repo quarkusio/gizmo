@@ -49,4 +49,8 @@ public final class ConstructorDescImpl implements ConstructorDesc {
         b.append(type.descriptorString());
         return b.append(']');
     }
+
+    public String toString() {
+        return toString(new StringBuilder()).toString();
+    }
 }
