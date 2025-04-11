@@ -43,4 +43,8 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
     public int hashCode() {
         return hashCode;
     }
+
+    public String toString() {
+        return toString(new StringBuilder()).toString();
+    }
 }
