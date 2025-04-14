@@ -8,8 +8,8 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
@@ -26,19 +26,19 @@ import io.quarkus.gizmo2.impl.Util;
 public sealed interface TypeCreator extends Annotatable, SimpleTyped permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
+     * If not called, the generated class has the version of Java 17.
      *
      * @param version the run time version (must not be {@code null})
      */
-    default void withVersion(Runtime.Version version) {
-        withVersion(ClassFileFormatVersion.valueOf(version));
-    }
+    void withVersion(Runtime.Version version);
 
     /**
      * Set the class file version.
+     * If not called, the generated class has the version of Java 17.
      *
      * @param version the class file version (must not be {@code null})
      */
-    void withVersion(ClassFileFormatVersion version);
+    void withVersion(ClassVersion version);
 
     /**
      * Add a type parameter.
