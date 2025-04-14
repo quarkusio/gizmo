@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
@@ -26,6 +27,7 @@ import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
+import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
@@ -83,8 +85,18 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return output;
     }
 
-    public void withVersion(final ClassFileFormatVersion version) {
-        this.version = Objects.requireNonNull(version, "version");
+    @Override
+    public void withVersion(final Runtime.Version version) {
+        checkNotNullParam("version", version);
+        this.version = ClassFileFormatVersion.valueOf(version);
+    }
+
+    public void withVersion(final ClassVersion version) {
+        checkNotNullParam("version", version);
+        this.version = switch (version) {
+            case V17 -> ClassFileFormatVersion.RELEASE_17;
+            case V21 -> ClassFileFormatVersion.RELEASE_21;
+        };
     }
 
     public void withTypeParam(final Signature.TypeParam param) {

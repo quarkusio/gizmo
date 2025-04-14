@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -354,7 +355,7 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationCreation", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(Deprecated.class, ac -> {
+                mc.withAnnotation(ClassDesc.of(Deprecated.class.getName()), RetentionPolicy.RUNTIME, ac -> {
                     ac.with("since", "1.0");
                     ac.with("forRemoval", true);
                 });

@@ -1,6 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
+import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -9,6 +13,7 @@ import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.creator.AnnotationCreator;
 
 public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
@@ -31,9 +36,32 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         return list;
     }
 
-    public void withAnnotation(final RetentionPolicy retention, final Annotation annotation) {
+    @Override
+    public <A extends java.lang.annotation.Annotation> void withAnnotation(Class<A> annotationClass,
+            Consumer<AnnotationCreator<A>> builder) {
+        checkNotNullParam("annotationClass", annotationClass);
+        checkNotNullParam("builder", builder);
+
+        Retention retention = annotationClass.getAnnotation(Retention.class);
+        RetentionPolicy retentionPolicy = retention == null ? RetentionPolicy.RUNTIME : retention.value();
+        Annotation annotation = AnnotationCreatorImpl.makeAnnotation(annotationClass, builder);
         // ignore SOURCE for now (though we could record it for posterity, maybe put it in a custom attribute)
-        switch (retention) {
+        switch (retentionPolicy) {
+            case CLASS -> invisible().add(annotation);
+            case RUNTIME -> visible().add(annotation);
+        }
+    }
+
+    @Override
+    public void withAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
+            Consumer<AnnotationCreator<java.lang.annotation.Annotation>> builder) {
+        checkNotNullParam("annotationClass", annotationClass);
+        checkNotNullParam("retentionPolicy", retentionPolicy);
+        checkNotNullParam("builder", builder);
+
+        Annotation annotation = AnnotationCreatorImpl.makeAnnotation(annotationClass, builder);
+        // ignore SOURCE for now (though we could record it for posterity, maybe put it in a custom attribute)
+        switch (retentionPolicy) {
             case CLASS -> invisible().add(annotation);
             case RUNTIME -> visible().add(annotation);
         }
