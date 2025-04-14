@@ -49,7 +49,7 @@ class TryBlockImpl extends BytecodeCreatorImpl implements TryBlock {
         // this is everything between top & bottom labels
         super.writeOperations(visitor);
         // this is outside of the "try"
-        if (getTop().getOffset() != getBottom().getOffset()) {
+        if (!operations.isEmpty()) {
             // only generate catch blocks if the try body is non-empty
             final Label foot = new Label();
             visitor.visitJumpInsn(Opcodes.GOTO, foot);
