@@ -3,40 +3,46 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
+import io.github.dmlloyd.classfile.AnnotationElement;
+import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import io.quarkus.gizmo2.Annotatable;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
+import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
-    List<Annotation> invisible = List.of();
-    List<Annotation> visible = List.of();
+    Map<ClassDesc, Annotation> invisible = Map.of();
+    Map<ClassDesc, Annotation> visible = Map.of();
 
-    private List<Annotation> visible() {
-        List<Annotation> list = visible;
-        if (list.isEmpty()) {
-            list = visible = new ArrayList<>(4);
+    private Map<ClassDesc, Annotation> visible() {
+        Map<ClassDesc, Annotation> map = visible;
+        if (map.isEmpty()) {
+            map = visible = new LinkedHashMap<>(4);
         }
-        return list;
+        return map;
     }
 
-    private List<Annotation> invisible() {
-        List<Annotation> list = invisible;
-        if (list.isEmpty()) {
-            list = invisible = new ArrayList<>(4);
+    private Map<ClassDesc, Annotation> invisible() {
+        Map<ClassDesc, Annotation> map = invisible;
+        if (map.isEmpty()) {
+            map = invisible = new LinkedHashMap<>(4);
         }
-        return list;
+        return map;
     }
 
     abstract ElementType annotationTargetType();
@@ -56,13 +62,52 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
             }
         }
         Retention retention = annotationClass.getAnnotation(Retention.class);
-        RetentionPolicy retentionPolicy = retention == null ? RetentionPolicy.RUNTIME : retention.value();
         Annotation annotation = AnnotationCreatorImpl.makeAnnotation(annotationClass, builder);
-        // ignore SOURCE for now (though we could record it for posterity, maybe put it in a custom attribute)
-        switch (retentionPolicy) {
-            case CLASS -> invisible().add(annotation);
-            case RUNTIME -> visible().add(annotation);
+        RetentionPolicy retentionPolicy = retention == null ? RetentionPolicy.RUNTIME : retention.value();
+        if (retentionPolicy == RetentionPolicy.SOURCE) {
+            // just exit without adding
+            return;
         }
+        Repeatable repeatable = annotationClass.getAnnotation(Repeatable.class);
+        if (repeatable != null) {
+            // special process: if it is not the first to be added, then add it to the existing list
+            Map<ClassDesc, Annotation> map = getAnnotationMap(retentionPolicy);
+            ClassDesc repeatableType = Util.classDesc(repeatable.value());
+            if (map.containsKey(annotation.classSymbol())) {
+                // pull out the singleton and replace it with the wrapped type
+                Annotation old = map.remove(annotation.classSymbol());
+                map.put(repeatableType, Annotation.of(repeatableType, List.of(
+                        AnnotationElement.of("value", AnnotationValue.ofArray(
+                                AnnotationValue.ofAnnotation(old),
+                                AnnotationValue.ofAnnotation(annotation))))));
+            } else if (map.containsKey(repeatableType)) {
+                // pull out the old list and add the new annotation to it
+                Annotation old = map.get(repeatableType);
+                AnnotationValue.OfArray value = old.elements().stream().filter(ae -> ae.name().equalsString("value"))
+                        .map(AnnotationElement::value)
+                        .map(AnnotationValue.OfArray.class::cast).findFirst().orElseThrow();
+                Annotation replacement = Annotation.of(repeatableType, List.of(
+                        AnnotationElement.of("value", AnnotationValue.ofArray(
+                                Stream.concat(
+                                        value.values().stream(),
+                                        Stream.of(AnnotationValue.ofAnnotation(annotation))).toList()))));
+                map.replace(repeatableType, old, replacement);
+            } else {
+                // add singly
+                registerAnnotation(retentionPolicy, annotation);
+            }
+        } else {
+            // register singly
+            registerAnnotation(retentionPolicy, annotation);
+        }
+    }
+
+    private Map<ClassDesc, Annotation> getAnnotationMap(final RetentionPolicy retentionPolicy) {
+        return switch (retentionPolicy) {
+            case SOURCE -> throw Assert.impossibleSwitchCase(retentionPolicy);
+            case CLASS -> invisible();
+            case RUNTIME -> visible();
+        };
     }
 
     @Override
@@ -73,22 +118,29 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         checkNotNullParam("builder", builder);
 
         Annotation annotation = AnnotationCreatorImpl.makeAnnotation(annotationClass, builder);
-        // ignore SOURCE for now (though we could record it for posterity, maybe put it in a custom attribute)
-        switch (retentionPolicy) {
-            case CLASS -> invisible().add(annotation);
-            case RUNTIME -> visible().add(annotation);
+        if (retentionPolicy == RetentionPolicy.SOURCE) {
+            // just exit without adding
+            return;
+        }
+        registerAnnotation(retentionPolicy, annotation);
+    }
+
+    private void registerAnnotation(final RetentionPolicy retentionPolicy, final Annotation annotation) {
+        Annotation existing = getAnnotationMap(retentionPolicy).putIfAbsent(annotation.classSymbol(), annotation);
+        if (existing != null) {
+            throw new IllegalArgumentException("Duplicate annotation %s".formatted(annotation.className().stringValue()));
         }
     }
 
     void addInvisible(Consumer<? super RuntimeInvisibleAnnotationsAttribute> consumer) {
         if (!invisible.isEmpty()) {
-            consumer.accept(RuntimeInvisibleAnnotationsAttribute.of(visible));
+            consumer.accept(RuntimeInvisibleAnnotationsAttribute.of(List.copyOf(invisible.values())));
         }
     }
 
     void addVisible(Consumer<? super RuntimeVisibleAnnotationsAttribute> consumer) {
         if (!visible.isEmpty()) {
-            consumer.accept(RuntimeVisibleAnnotationsAttribute.of(visible));
+            consumer.accept(RuntimeVisibleAnnotationsAttribute.of(List.copyOf(visible.values())));
         }
     }
 }
