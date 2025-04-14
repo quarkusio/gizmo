@@ -6,7 +6,7 @@ import io.quarkus.gizmo2.impl.LocalVarImpl;
 /**
  * A local variable.
  */
-public sealed interface LocalVar extends Var, LValueExpr permits LocalVarImpl {
+public sealed interface LocalVar extends Var permits LocalVarImpl {
     /**
      * {@return the block that owns this local variable}
      */

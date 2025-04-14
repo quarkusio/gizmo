@@ -5,6 +5,6 @@ import io.quarkus.gizmo2.impl.LValueExprImpl;
 /**
  * An expression that can be the target of an assignment.
  */
-public sealed interface LValueExpr extends Expr permits FieldVar, LocalVar, ParamVar, LValueExprImpl {
+public sealed interface LValueExpr extends Expr permits Var, LValueExprImpl {
 
 }
