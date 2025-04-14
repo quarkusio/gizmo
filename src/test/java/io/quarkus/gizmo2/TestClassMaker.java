@@ -31,13 +31,13 @@ import io.quarkus.gizmo2.impl.Util;
  * <li>{@link #noArgsConstructor(Class)}</li>
  * </ul>
  */
-public class TestClassMaker implements BiConsumer<ClassDesc, byte[]> {
+public class TestClassMaker implements ClassOutput {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
     private final TestClassLoader cl = new TestClassLoader();
     private ClassDesc desc;
 
-    public void accept(final ClassDesc classDesc, final byte[] bytes) {
+    public void write(final ClassDesc classDesc, final byte[] bytes) {
         if (System.getProperty("printClass") != null) {
             System.out.println(ClassFile.of().parse(bytes).toDebugString());
         }

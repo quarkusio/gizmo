@@ -3,8 +3,8 @@ package io.quarkus.gizmo2;
 import java.lang.constant.ClassDesc;
 
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Item;
+import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 
 /**
  * An expression.
@@ -74,6 +74,6 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
      * @param desc the field descriptor (must not be {@code null})
      */
     static StaticFieldVar staticField(FieldDesc desc) {
-        return GizmoImpl.current().staticField(desc);
+        return new StaticFieldVarImpl(desc);
     }
 }

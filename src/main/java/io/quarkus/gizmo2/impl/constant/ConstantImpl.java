@@ -19,7 +19,6 @@ import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-import io.quarkus.gizmo2.impl.GizmoImpl;
 import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.Util;
 
@@ -31,7 +30,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static StringConstant of(final String value) {
-        return GizmoImpl.current().stringConstant(value);
+        return new StringConstant(value);
     }
 
     public static ConstantImpl of(Constable constable) {
@@ -119,10 +118,10 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
                 return of((char) ((Integer) dcd.bootstrapArgs()[0]).intValue());
             } else {
                 // primitive constants of other types don't reach here
-                return GizmoImpl.current().dynamicConstant(dcd);
+                return new DynamicConstant(dcd);
             }
         } else {
-            return GizmoImpl.current().dynamicConstant(dcd);
+            return new DynamicConstant(dcd);
         }
     }
 
@@ -130,7 +129,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         if (type.isPrimitive()) {
             throw new IllegalArgumentException("Type is not a reference type: " + type);
         }
-        return GizmoImpl.current().nullConstant(type);
+        return new NullConstant(type);
     }
 
     public static NullConstant ofNull(Class<?> type) {
@@ -138,7 +137,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ClassConstant of(ClassDesc value) {
-        return GizmoImpl.current().classConstant(value);
+        return new ClassConstant(value);
     }
 
     public static ClassConstant of(Class<?> value) {
@@ -146,22 +145,22 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static FieldVarHandleConstant ofFieldVarHandle(FieldDesc desc) {
-        return GizmoImpl.current().fieldVarHandleConstant(desc);
+        return new FieldVarHandleConstant(desc);
     }
 
     public static StaticFieldVarHandleConstant ofStaticFieldVarHandle(FieldDesc desc) {
-        return GizmoImpl.current().staticFieldVarHandleConstant(desc);
+        return new StaticFieldVarHandleConstant(desc);
     }
 
     public static StaticFinalFieldConstant ofStaticFinalField(FieldDesc desc) {
-        return GizmoImpl.current().staticFinalFieldConstant(desc);
+        return new StaticFinalFieldConstant(desc);
     }
 
     public static ArrayVarHandleConstant ofArrayVarHandle(ClassDesc arrayType) {
         if (!arrayType.isArray()) {
             throw new IllegalArgumentException("Array var handles can only be created for array types");
         }
-        return GizmoImpl.current().arrayVarHandleConstant(arrayType);
+        return new ArrayVarHandleConstant(arrayType);
     }
 
     public static ConstantImpl of(VarHandle.VarHandleDesc value) {
@@ -181,11 +180,11 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static EnumConstant of(Enum.EnumDesc<?> value) {
-        return GizmoImpl.current().enumConstant(value);
+        return new EnumConstant(value);
     }
 
     public static ByteConstant of(Byte value) {
-        return GizmoImpl.current().byteConstant(value);
+        return new ByteConstant(value);
     }
 
     public static ByteConstant of(byte value) {
@@ -193,7 +192,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ShortConstant of(Short value) {
-        return GizmoImpl.current().shortConstant(value);
+        return new ShortConstant(value);
     }
 
     public static ShortConstant of(short value) {
@@ -201,7 +200,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static CharConstant of(Character value) {
-        return GizmoImpl.current().charConstant(value);
+        return new CharConstant(value);
     }
 
     public static CharConstant of(char value) {
@@ -209,7 +208,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static IntConstant of(Integer value) {
-        return GizmoImpl.current().intConstant(value);
+        return new IntConstant(value);
     }
 
     public static IntConstant of(int value) {
@@ -217,7 +216,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static LongConstant of(Long value) {
-        return GizmoImpl.current().longConstant(value);
+        return new LongConstant(value);
     }
 
     public static LongConstant of(long value) {
@@ -229,7 +228,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static FloatConstant of(float value) {
-        return GizmoImpl.current().floatConstant(value);
+        return new FloatConstant(value);
     }
 
     public static DoubleConstant of(Double value) {
@@ -237,7 +236,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static DoubleConstant of(double value) {
-        return GizmoImpl.current().doubleConstant(value);
+        return new DoubleConstant(value);
     }
 
     public static BooleanConstant of(Boolean value) {

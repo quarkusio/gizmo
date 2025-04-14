@@ -16,7 +16,7 @@ import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 public final class StaticFieldVarImpl extends LValueExprImpl implements StaticFieldVar {
     private final FieldDesc desc;
 
-    StaticFieldVarImpl(FieldDesc desc) {
+    public StaticFieldVarImpl(FieldDesc desc) {
         this.desc = desc;
     }
 
