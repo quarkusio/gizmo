@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.List;
@@ -63,5 +64,9 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
 
     public ClassDesc type() {
         return type;
+    }
+
+    ElementType annotationTargetType() {
+        return ElementType.PARAMETER;
     }
 }

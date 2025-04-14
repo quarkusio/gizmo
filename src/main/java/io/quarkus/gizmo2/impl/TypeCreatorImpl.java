@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.*;
 
+import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
@@ -400,5 +401,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     @Override
     public List<ConstructorDesc> constructors() {
         return List.copyOf(constructors);
+    }
+
+    ElementType annotationTargetType() {
+        return ElementType.TYPE;
     }
 }

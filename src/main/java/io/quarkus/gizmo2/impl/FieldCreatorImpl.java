@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.CD_int;
 import static java.lang.constant.ConstantDescs.CD_void;
 
+import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
 import java.util.Set;
@@ -120,5 +121,9 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
 
     public ClassDesc type() {
         return type;
+    }
+
+    ElementType annotationTargetType() {
+        return ElementType.FIELD;
     }
 }

@@ -1,7 +1,6 @@
 package io.quarkus.gizmo2;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -287,6 +286,19 @@ public class AnnotationTest {
         MyAnnotation ann = param.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
         assertEquals("annotationOnInterfaceMethodParameter", ann.value());
+    }
+
+    @Test
+    public void annotationOnWrongThing() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.AnnotationOnWrongThing", cc -> {
+            cc.field("wrongPlace", fc -> {
+                assertThrows(IllegalArgumentException.class, () -> {
+                    fc.withAnnotation(SafeVarargs.class);
+                });
+            });
+        });
     }
 
     // ---
