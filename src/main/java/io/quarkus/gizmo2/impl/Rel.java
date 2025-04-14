@@ -9,8 +9,8 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.TypeKind;
 
 final class Rel extends Item {
     private final Item a;

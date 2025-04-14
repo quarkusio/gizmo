@@ -52,7 +52,7 @@ public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.storeLocal(typeKind(), slot);
+                cb.storeLocal(Util.actualKindOf(typeKind()), slot);
             }
         };
     }
@@ -66,7 +66,7 @@ public final class ParamVarImpl extends LValueExprImpl implements ParamVar {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.loadLocal(typeKind(), slot);
+        cb.loadLocal(Util.actualKindOf(typeKind()), slot);
     }
 
     public String name() {

@@ -440,7 +440,7 @@ public abstract non-sealed class Item implements Expr {
         }
 
         public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-            cb.arrayLoad(typeKind());
+            cb.arrayLoad(Util.actualKindOf(typeKind()));
         }
     }
 }

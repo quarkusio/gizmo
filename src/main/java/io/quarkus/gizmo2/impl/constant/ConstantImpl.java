@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Objects;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.InvokeKind;
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;

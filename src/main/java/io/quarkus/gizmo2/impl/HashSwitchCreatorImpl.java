@@ -56,7 +56,7 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstantImpl> extends Swit
                 .mapToObj(i -> SwitchCase.of(hashes[i], caseLabels[i]))
                 .toList();
 
-        TypeKind tk = switchVal.typeKind();
+        TypeKind tk = Util.actualKindOf(switchVal.typeKind());
         // todo: improved alloc scheme
         int idx = cb.allocateLocal(tk);
         doDup(cb);
