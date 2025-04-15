@@ -8,6 +8,7 @@ import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNTHETIC;
 import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.VARARGS;
 import static java.lang.constant.ConstantDescs.CD_void;
 
+import java.lang.annotation.ElementType;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 import java.util.Set;
@@ -65,5 +66,9 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     void clearType() {
         desc = null;
         super.clearType();
+    }
+
+    ElementType annotationTargetType() {
+        return ElementType.CONSTRUCTOR;
     }
 }

@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.util.Set;
 
@@ -39,5 +40,9 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
 
     public String name() {
         return name;
+    }
+
+    ElementType annotationTargetType() {
+        return ElementType.METHOD;
     }
 }
