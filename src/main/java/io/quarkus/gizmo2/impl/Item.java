@@ -10,10 +10,10 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
-import io.quarkus.gizmo2.LValueExpr;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
@@ -200,7 +200,7 @@ public abstract non-sealed class Item implements Expr {
         return b.append(itemName()).append('@').append(Integer.toHexString(hashCode()));
     }
 
-    public LValueExpr elem(final Expr index) {
+    public Assignable elem(final Expr index) {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");
         }
@@ -256,7 +256,7 @@ public abstract non-sealed class Item implements Expr {
         };
     }
 
-    public final class FieldDeref extends LValueExprImpl implements InstanceFieldVar {
+    public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
         private final FieldDesc desc;
 
         private FieldDeref(final FieldDesc desc) {
@@ -284,7 +284,7 @@ public abstract non-sealed class Item implements Expr {
             return Item.this.itemName() + "." + desc.name();
         }
 
-        Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
+        Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
             return switch (mode) {
                 case AsDeclared -> asBound();
                 default -> new Item() {
@@ -315,7 +315,7 @@ public abstract non-sealed class Item implements Expr {
             };
         }
 
-        Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
+        Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
             return switch (mode) {
                 case AsDeclared -> new Item() {
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -360,7 +360,7 @@ public abstract non-sealed class Item implements Expr {
         }
     }
 
-    final class ArrayDeref extends LValueExprImpl {
+    final class ArrayDeref extends AssignableImpl {
         private final ClassDesc componentType;
         private final Item index;
 
@@ -373,7 +373,7 @@ public abstract non-sealed class Item implements Expr {
             return Item.this.process(index.process(node.prev(), op), op);
         }
 
-        Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
+        Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
             if (!mode.validForReads()) {
                 throw new IllegalArgumentException("Invalid mode " + mode);
             }
@@ -408,7 +408,7 @@ public abstract non-sealed class Item implements Expr {
             };
         }
 
-        Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
+        Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
             return switch (mode) {
                 case AsDeclared, Plain -> new ArrayStore(Item.this, index, value, componentType);
                 default -> new Item() {

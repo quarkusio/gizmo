@@ -16,11 +16,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.Var;
@@ -172,20 +172,20 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Read a value from memory with the given atomicity mode.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param mode the atomicity mode for the access (must not be {@code null})
      * @return the memory value (not {@code null})
      */
-    Expr get(LValueExpr var, AccessMode mode);
+    Expr get(Assignable var, MemoryOrder mode);
 
     /**
-     * Read a value from memory using the declared atomicity mode for the lvalue.
+     * Read a value from memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @return the memory value (not {@code null})
      */
-    default Expr get(LValueExpr var) {
-        return get(var, AccessMode.AsDeclared);
+    default Expr get(Assignable var) {
+        return get(var, MemoryOrder.AsDeclared);
     }
 
     // writing memory
@@ -193,79 +193,79 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Write a value to memory with the given atomicity mode.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      * @param mode the atomicity mode for the access (must not be {@code null})
      */
-    void set(LValueExpr var, Expr value, AccessMode mode);
+    void set(Assignable var, Expr value, MemoryOrder mode);
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(LValueExpr var, Expr value) {
-        set(var, value, AccessMode.AsDeclared);
+    default void set(Assignable var, Expr value) {
+        set(var, value, MemoryOrder.AsDeclared);
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(LValueExpr var, Constant value) {
+    default void set(Assignable var, Constant value) {
         set(var, (Expr) value);
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(LValueExpr var, ConstantDesc value) {
+    default void set(Assignable var, ConstantDesc value) {
         set(var, Constant.of(value));
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(LValueExpr var, Constable value) {
+    default void set(Assignable var, Constable value) {
         set(var, Constant.of(value));
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(LValueExpr var, String value) {
+    default void set(Assignable var, String value) {
         set(var, Constant.of(value));
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write
      */
-    default void set(LValueExpr var, int value) {
+    default void set(Assignable var, int value) {
         set(var, Constant.of(value));
     }
 
     /**
-     * Write a value to memory using the declared atomicity mode for the lvalue.
+     * Write a value to memory using the declared atomicity mode for the assignable.
      *
-     * @param var the lvalue (must not be {@code null})
+     * @param var the assignable (must not be {@code null})
      * @param value the value to write
      */
-    default void set(LValueExpr var, long value) {
+    default void set(Assignable var, long value) {
         set(var, Constant.of(value));
     }
 
@@ -276,7 +276,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var1 the first variable (must not be {@code null})
      * @param var2 the second variable (must not be {@code null})
      */
-    default void swap(LValueExpr var1, LValueExpr var2) {
+    default void swap(Assignable var1, Assignable var2) {
         Expr get1 = get(var1);
         set(var1, get(var2));
         set(var2, get1);
@@ -291,7 +291,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var2 the second variable (must not be {@code null})
      * @param var3 the third variable (must not be {@code null})
      */
-    default void rotate(LValueExpr var1, LValueExpr var2, LValueExpr var3) {
+    default void rotate(Assignable var1, Assignable var2, Assignable var3) {
         Expr get1 = get(var1);
         set(var1, get(var3));
         set(var3, get(var2));
@@ -308,7 +308,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var3 the third variable (must not be {@code null})
      * @param var4 the fourth variable (must not be {@code null})
      */
-    default void rotate(LValueExpr var1, LValueExpr var2, LValueExpr var3, LValueExpr var4) {
+    default void rotate(Assignable var1, Assignable var2, Assignable var3, Assignable var4) {
         Expr get1 = get(var1);
         set(var1, get(var4));
         set(var4, get(var3));
@@ -325,7 +325,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to increase by (must not be {@code null})
      */
-    void inc(LValueExpr var, Constant amount);
+    void inc(Assignable var, Constant amount);
 
     /**
      * Increment some variable by a constant amount.
@@ -334,7 +334,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to increase by
      */
-    default void inc(LValueExpr var, int amount) {
+    default void inc(Assignable var, int amount) {
         inc(var, Constant.of(amount, var.typeKind()));
     }
 
@@ -344,7 +344,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      *
      * @param var the variable to modify (must not be {@code null})
      */
-    default void inc(LValueExpr var) {
+    default void inc(Assignable var) {
         inc(var, 1);
     }
 
@@ -355,7 +355,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to decrease by (must not be {@code null})
      */
-    void dec(LValueExpr var, Constant amount);
+    void dec(Assignable var, Constant amount);
 
     /**
      * Decrement some variable by a constant amount.
@@ -364,7 +364,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to decrease by
      */
-    default void dec(LValueExpr var, int amount) {
+    default void dec(Assignable var, int amount) {
         dec(var, Constant.of(amount, var.typeKind()));
     }
 
@@ -374,7 +374,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      *
      * @param var the variable to modify (must not be {@code null})
      */
-    default void dec(LValueExpr var) {
+    default void dec(Assignable var) {
         dec(var, 1);
     }
 
@@ -1587,7 +1587,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void addAssign(LValueExpr var, Expr arg);
+    void addAssign(Assignable var, Expr arg);
 
     /**
      * Subtract the argument from the variable value and assign it back.
@@ -1595,7 +1595,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void subAssign(LValueExpr var, Expr arg);
+    void subAssign(Assignable var, Expr arg);
 
     /**
      * Multiply the argument with the variable value and assign it back.
@@ -1603,7 +1603,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void mulAssign(LValueExpr var, Expr arg);
+    void mulAssign(Assignable var, Expr arg);
 
     /**
      * Divide the argument with the variable value and assign it back.
@@ -1611,7 +1611,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void divAssign(LValueExpr var, Expr arg);
+    void divAssign(Assignable var, Expr arg);
 
     /**
      * Divide the argument with the variable value and assign the remainder back.
@@ -1619,7 +1619,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void remAssign(LValueExpr var, Expr arg);
+    void remAssign(Assignable var, Expr arg);
 
     // bitwise-assign
 
@@ -1629,7 +1629,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void andAssign(LValueExpr var, Expr arg);
+    void andAssign(Assignable var, Expr arg);
 
     /**
      * Bitwise-OR the argument with the variable value and assign it back.
@@ -1637,7 +1637,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void orAssign(LValueExpr var, Expr arg);
+    void orAssign(Assignable var, Expr arg);
 
     /**
      * Bitwise-XOR (exclusive OR) the argument with the variable value and assign it back.
@@ -1645,7 +1645,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void xorAssign(LValueExpr var, Expr arg);
+    void xorAssign(Assignable var, Expr arg);
 
     /**
      * Bitwise-left-shift the argument with the variable value and assign it back.
@@ -1653,7 +1653,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void shlAssign(LValueExpr var, Expr arg);
+    void shlAssign(Assignable var, Expr arg);
 
     /**
      * Arithmetically bitwise-right-shift the argument with the variable value and assign it back.
@@ -1661,7 +1661,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void shrAssign(LValueExpr var, Expr arg);
+    void shrAssign(Assignable var, Expr arg);
 
     /**
      * Logically bitwise-right-shift the argument with the variable value and assign it back.
@@ -1669,7 +1669,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable (must not be {@code null})
      * @param arg the argument value (must not be {@code null})
      */
-    void ushrAssign(LValueExpr var, Expr arg);
+    void ushrAssign(Assignable var, Expr arg);
 
     // logical
 

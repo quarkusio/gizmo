@@ -1,9 +1,9 @@
 package io.quarkus.gizmo2;
 
 /**
- * The possible variable/memory access modes.
+ * The possible memory order modes.
  */
-public enum AccessMode {
+public enum MemoryOrder {
     /**
      * Use the declared mode of the variable.
      * For fields, this could be {@link #Plain} or {@link #Volatile}.
@@ -12,7 +12,7 @@ public enum AccessMode {
     AsDeclared(true, true),
     /**
      * Access using "plain" semantics.
-     * All lvalues support this type of access.
+     * All assignables support this type of access.
      */
     Plain(true, true),
     /**
@@ -35,7 +35,7 @@ public enum AccessMode {
 
     private final boolean reads, writes;
 
-    AccessMode(final boolean reads, final boolean writes) {
+    MemoryOrder(final boolean reads, final boolean writes) {
         this.reads = reads;
         this.writes = writes;
     }
