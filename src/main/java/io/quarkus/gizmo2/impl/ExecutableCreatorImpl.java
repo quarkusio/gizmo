@@ -4,6 +4,7 @@ import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
@@ -18,6 +19,7 @@ import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
+import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
 import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
 import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
@@ -27,6 +29,7 @@ import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
+import io.smallrye.common.constraint.Assert;
 
 public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {
@@ -52,6 +55,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     ParamVarImpl[] params = NO_PARAMS;
     int nextParam;
     int state = ST_INITIAL;
+    List<ClassDesc> throws_ = List.of();
 
     // `defaultFlags` are also flags that cannot be removed
     // `allowedFlags` must contain all `defaultFlags`
@@ -157,6 +161,10 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         mb.withFlags(flags);
         addVisible(mb);
         addInvisible(mb);
+        List<ClassDesc> throws_ = this.throws_;
+        if (!throws_.isEmpty()) {
+            mb.with(ExceptionsAttribute.of(throws_.stream().map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
+        }
         // lock parameters
         int arraySize = params.length;
         int parameterCount = type().parameterCount();
@@ -274,6 +282,18 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         }
         nextParam = position + 1;
         return pv;
+    }
+
+    public void throws_(final ClassDesc throwableType) {
+        Assert.checkNotNullParam("throwableType", throwableType);
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Exception throws may no longer be established");
+        }
+        if (throws_ instanceof ArrayList<ClassDesc> al) {
+            al.add(throwableType);
+        } else {
+            throws_ = Util.listWith(throws_, throwableType);
+        }
     }
 
     void clearType() {

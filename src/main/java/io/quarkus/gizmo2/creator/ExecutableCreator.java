@@ -187,4 +187,10 @@ public sealed interface ExecutableCreator extends MethodTyped
     default ParamVar parameter(String name, int position, Class<?> type) {
         return parameter(name, position, Util.classDesc(type));
     }
+
+    void throws_(ClassDesc throwableType);
+
+    default void throws_(Class<? extends Throwable> throwableType) {
+        throws_(Util.classDesc(throwableType));
+    }
 }
