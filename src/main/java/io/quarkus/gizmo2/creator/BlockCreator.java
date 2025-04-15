@@ -2099,6 +2099,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the type to check for (must not be {@code null})
      * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
      */
+    default void ifInstanceOf(Expr obj, Class<?> type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue) {
+        ifInstanceOf(obj, Util.classDesc(type), ifTrue);
+    }
+
+    /**
+     * If the given object is an instance of the given type, then execute the block with the narrowed object.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
+     */
     void ifInstanceOf(Expr obj, ClassDesc type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue);
 
     /**
@@ -2108,7 +2119,32 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the type to check for (must not be {@code null})
      * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
      */
+    default void ifNotInstanceOf(Expr obj, Class<?> type, Consumer<BlockCreator> ifFalse) {
+        ifNotInstanceOf(obj, Util.classDesc(type), ifFalse);
+    }
+
+    /**
+     * If the given object is <em>not</em> an instance of the given type, then execute the given block.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
+     */
     void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse);
+
+    /**
+     * If the given object is an instance of the given type, then execute the first block with the narrowed object,
+     * otherwise execute the other block.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to check for (must not be {@code null})
+     * @param ifTrue the builder for a block to run if the type was successfully narrowed (must not be {@code null})
+     * @param ifFalse the builder for a block to run if the type did not match (must not be {@code null})
+     */
+    default void ifInstanceOfElse(Expr obj, Class<?> type, BiConsumer<BlockCreator, ? super LocalVar> ifTrue,
+            Consumer<BlockCreator> ifFalse) {
+        ifInstanceOfElse(obj, Util.classDesc(type), ifTrue, ifFalse);
+    }
 
     /**
      * If the given object is an instance of the given type, then execute the first block with the narrowed object,
