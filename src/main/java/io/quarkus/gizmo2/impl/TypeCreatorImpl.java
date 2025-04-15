@@ -381,22 +381,22 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     @Override
     public List<FieldDesc> staticFields() {
-        return fields.entrySet().stream().filter(e -> e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
+        return fields.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<FieldDesc> instanceFields() {
-        return fields.entrySet().stream().filter(e -> !e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
+        return fields.entrySet().stream().filter(e -> !e.getValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<MethodDesc> staticMethods() {
-        return methods.entrySet().stream().filter(e -> e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
+        return methods.entrySet().stream().filter(Map.Entry::getValue).map(Map.Entry::getKey).toList();
     }
 
     @Override
     public List<MethodDesc> instanceMethods() {
-        return methods.entrySet().stream().filter(e -> !e.getValue().booleanValue()).map(Map.Entry::getKey).toList();
+        return methods.entrySet().stream().filter(e -> !e.getValue()).map(Map.Entry::getKey).toList();
     }
 
     @Override

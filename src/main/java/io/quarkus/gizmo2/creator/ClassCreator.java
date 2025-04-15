@@ -328,7 +328,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * <li>At the end, the result is returned.</li>
      * </ol>
      * <p>
-     * is thrown. If one of the fields doesn't belong to this class, an exception is thrown.
+     * If one of the fields doesn't belong to this class, an exception is thrown.
      *
      * @param fields fields to consider in the {@code equals} and {@code hashCode} methods (must not be {@code null})
      */
