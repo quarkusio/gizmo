@@ -264,9 +264,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                     bc.accept(b0 -> {
                         for (Consumer<BlockCreator> init : staticInits) {
                             b0.block(init);
-                            b0.writeCode(cb, b0);
                         }
                     });
+                    bc.writeCode(cb, bc);
                     cb.return_();
                 });
             });

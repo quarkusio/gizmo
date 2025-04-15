@@ -805,7 +805,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         block.accept(nested);
         state = ST_ACTIVE;
         // inline it
-        if (block.tail.item() instanceof Yield yield) {
+        if (block.tail.item() instanceof Yield yield && yield.value().isVoid()) {
             // block should be safe to inline
             Node node = block.head.next();
             while (node.item() != yield) {
