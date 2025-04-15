@@ -649,7 +649,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassModel cm = cf.parse(bytes);
         List<MethodModel> methods = cm.methods();
         MethodModel ourCtor = methods.get(methods.size() - 1);
-        owner.output().outputHandler().accept(desc, bytes);
+        owner.output().write(desc, bytes);
         return new_(ConstructorDesc.of(desc, ourCtor.methodTypeSymbol()),
                 Stream.concat(args.stream(), captureExprs.stream()).toList());
     }

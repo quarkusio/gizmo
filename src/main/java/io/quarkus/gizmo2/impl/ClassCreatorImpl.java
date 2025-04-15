@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -19,9 +20,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
-    public ClassCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb) {
-        super(type, output, zb, AccessFlag.SYNTHETIC.mask()
-                | AccessFlag.PUBLIC.mask());
+    public ClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+        super(type, output, zb, AccessFlag.SYNTHETIC.mask() | AccessFlag.PUBLIC.mask());
     }
 
     public void withFlag(final AccessFlag flag) {

@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -28,7 +29,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
     private final ArrayList<Expr> superArgs;
     private final ThisExpr this_;
 
-    AnonymousClassCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb,
+    AnonymousClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
             final ConstructorDesc superCtor, final ArrayList<Expr> captureExprs) {
         super(type, output, zb);
         this.superCtor = superCtor;

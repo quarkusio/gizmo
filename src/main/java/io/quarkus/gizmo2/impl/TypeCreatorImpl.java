@@ -28,6 +28,7 @@ import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
+import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
@@ -48,7 +49,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         permits ClassCreatorImpl, InterfaceCreatorImpl {
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
-    private final ClassOutputImpl output;
+    private final ClassOutput output;
     private final ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
     private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
@@ -74,7 +75,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     final Map<MethodDesc, Boolean> methods = new LinkedHashMap<>();
     final Set<ConstructorDesc> constructors = new LinkedHashSet<>();
 
-    TypeCreatorImpl(final ClassDesc type, final ClassOutputImpl output, final ClassBuilder zb, final int flags) {
+    TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb, final int flags) {
         this.type = type;
         this_ = new ThisExpr(type);
         this.output = output;
@@ -82,7 +83,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         this.flags = flags;
     }
 
-    public ClassOutputImpl output() {
+    public ClassOutput output() {
         return output;
     }
 

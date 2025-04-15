@@ -1,83 +1,72 @@
 package io.quarkus.gizmo2;
 
-import java.io.IOException;
 import java.lang.constant.ClassDesc;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
+import io.quarkus.gizmo2.creator.ClassCreator;
+import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.impl.GizmoImpl;
 
 /**
  * A simplified class file writer.
  */
-public sealed interface Gizmo extends ClassOutput permits GizmoImpl {
-    /**
-     * {@return the current instance}
-     * The current instance corresponds to the instance that is currently being used to create a class.
-     *
-     * @throws IllegalStateException if there is no current instance
-     */
-    static Gizmo current() {
-        return GizmoImpl.current();
-    }
+public sealed interface Gizmo permits GizmoImpl {
 
     /**
      * {@return a new Gizmo which outputs to the given handler by default}
      *
      * @param outputHandler the output handler (must not be {@code null})
      */
-    static Gizmo create(BiConsumer<ClassDesc, byte[]> outputHandler) {
+    static Gizmo create(ClassOutput outputHandler) {
         return new GizmoImpl(outputHandler);
     }
 
     /**
-     * {@return a class output using the given handler}
+     * {@return a Gizmo instance which uses the given output handler}
      *
      * @param outputHandler the output handler (must not be {@code null})
      */
-    ClassOutput classOutput(BiConsumer<ClassDesc, byte[]> outputHandler);
+    Gizmo withOutput(ClassOutput outputHandler);
 
     /**
-     * {@return a class file writer for the given path}
+     * Add a new class.
      *
-     * @param basePath the path into which class files should be stored (must not be {@code null})
+     * @param name the fully qualified (dot-separated) binary class name (must not be {@code null})
+     * @param builder the builder for the class (must not be {@code null})
+     * @return the descriptor of the created class (not {@code null})
      */
-    static BiConsumer<ClassDesc, byte[]> fileWriter(Path basePath) {
-        if (!Files.isDirectory(basePath)) {
-            throw new IllegalArgumentException("Path does not exist or is not an accessible directory: " + basePath);
-        }
-        return (classDesc, bytes) -> {
-            if (classDesc.isClassOrInterface()) {
-                String ds = classDesc.descriptorString();
-                String pathName = ds.substring(1, ds.length() - 1) + ".class";
-                Path path = basePath;
-                int idx = pathName.indexOf('/');
-                if (idx == -1) {
-                    path = path.resolve(pathName);
-                } else {
-                    path = path.resolve(pathName.substring(0, idx));
-                    int start;
-                    for (;;) {
-                        start = idx + 1;
-                        idx = pathName.indexOf('/', start);
-                        if (idx == -1) {
-                            path = path.resolve(pathName.substring(start));
-                            break;
-                        } else {
-                            path = path.resolve(pathName.substring(start, idx));
-                        }
-                    }
-                }
-                try {
-                    Files.createDirectories(path.getParent());
-                    Files.write(path, bytes);
-                } catch (IOException e) {
-                    throw new IllegalArgumentException("Failed to write class", e);
-                }
-            } else {
-                throw new IllegalStateException("Invalid class " + classDesc);
-            }
-        };
+    default ClassDesc class_(String name, Consumer<ClassCreator> builder) {
+        return class_(ClassDesc.of(name), builder);
     }
+
+    /**
+     * Add a new class.
+     *
+     * @param desc the class descriptor (must not be {@code null})
+     * @param builder the builder for the class (must not be {@code null})
+     * @return the descriptor given for {@code desc}
+     */
+    ClassDesc class_(ClassDesc desc, Consumer<ClassCreator> builder);
+
+    /**
+     * Add a new interface.
+     *
+     * @param name the fully qualified (dot-separated) binary class name
+     * @param builder the builder for the interface (must not be {@code null})
+     * @return the descriptor of the created interface (not {@code null})
+     */
+    default ClassDesc interface_(String name, Consumer<InterfaceCreator> builder) {
+        return interface_(ClassDesc.of(name), builder);
+    }
+
+    /**
+     * Add a new interface.
+     *
+     * @param desc the class descriptor (must not be {@code null})
+     * @param builder the builder for the class (must not be {@code null})
+     * @return the descriptor given for {@code desc}
+     */
+    ClassDesc interface_(ClassDesc desc, Consumer<InterfaceCreator> builder);
+
+    // todo: enum, record, @interface
 }
