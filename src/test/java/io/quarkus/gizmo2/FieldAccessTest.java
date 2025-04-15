@@ -67,7 +67,7 @@ public class FieldAccessTest {
                 //    if (input == null) {
                 //       Alpha.bravo = "NULL";
                 //    }
-                //    return Alpha.bravo.length();
+                //    return Alpha.bravo;
                 // }
                 mc.returning(Object.class);
                 ParamVar input = mc.parameter("input", Object.class);
@@ -177,5 +177,58 @@ public class FieldAccessTest {
             });
         });
         assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void testStaticInitializedField() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        String className = "io.quarkus.gizmo2.StaticInitializedFieldTest";
+        g.class_(className, cc -> {
+            // create a static field and initialize it to a non-constant value
+            StaticFieldVar fieldVar = cc.staticField("field", fc -> {
+                fc.final_();
+                fc.withType(String.class);
+                fc.withInitializer(bc -> {
+                    bc.yield(bc.withString(Constant.of("Hello")).concat(Constant.of(" world")));
+                });
+            });
+            // a test method to verify the result
+            cc.staticMethod("test", mc -> {
+                mc.returning(boolean.class);
+                mc.public_();
+                mc.body(bc -> {
+                    bc.return_(bc.exprEquals(fieldVar, Constant.of("Hello world")));
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void testStaticInitializedFieldToInstanceOfItsClass() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        String className = "io.quarkus.gizmo2.StaticInitializedFieldToInstanceOfItsClassTest";
+        g.class_(className, cc -> {
+            // create a static field and initialize it to a non-constant value
+            StaticFieldVar fieldVar = cc.staticField("field", fc -> {
+                fc.final_();
+                fc.withType(cc.type());
+                fc.withInitializer(bc -> {
+                    bc.yield(bc.new_(cc.type()));
+                });
+            });
+            cc.defaultConstructor();
+            // a test method to verify the result
+            cc.staticMethod("test", mc -> {
+                mc.returning(Object.class);
+                mc.public_();
+                mc.body(bc -> {
+                    bc.return_(fieldVar);
+                });
+            });
+        });
+        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
     }
 }

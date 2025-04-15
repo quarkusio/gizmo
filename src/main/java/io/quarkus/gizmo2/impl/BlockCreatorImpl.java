@@ -796,7 +796,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         block.accept(nested);
         state = ST_ACTIVE;
         addItem(block);
-        return;
     }
 
     public Expr blockExpr(final ClassDesc type, final Consumer<BlockCreator> nested) {
