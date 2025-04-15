@@ -4,9 +4,9 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.impl.constant.IntBasedConstant;
@@ -73,11 +73,11 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         };
     }
 
-    Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
+    Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
         return asBound();
     }
 
-    Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
+    Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return new Item() {
             public String itemName() {
                 return "LocalVar$Set";

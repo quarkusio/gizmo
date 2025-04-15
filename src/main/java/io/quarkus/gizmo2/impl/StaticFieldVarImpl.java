@@ -8,7 +8,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
@@ -32,8 +32,8 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         return false;
     }
 
-    Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
-        if (mode == AccessMode.AsDeclared) {
+    Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
+        if (mode == MemoryOrder.AsDeclared) {
             return asBound();
         }
         return new Item() {
@@ -62,10 +62,10 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         };
     }
 
-    Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
+    Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return new Item() {
             protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                if (mode != AccessMode.AsDeclared) {
+                if (mode != MemoryOrder.AsDeclared) {
                     node = ConstantImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
                 } else {
                     node = value.process(node.prev(), op);

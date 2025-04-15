@@ -16,11 +16,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.Var;
@@ -176,7 +176,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param mode the atomicity mode for the access (must not be {@code null})
      * @return the memory value (not {@code null})
      */
-    Expr get(Assignable var, AccessMode mode);
+    Expr get(Assignable var, MemoryOrder mode);
 
     /**
      * Read a value from memory using the declared atomicity mode for the assignable.
@@ -185,7 +185,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the memory value (not {@code null})
      */
     default Expr get(Assignable var) {
-        return get(var, AccessMode.AsDeclared);
+        return get(var, MemoryOrder.AsDeclared);
     }
 
     // writing memory
@@ -197,7 +197,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write (must not be {@code null})
      * @param mode the atomicity mode for the access (must not be {@code null})
      */
-    void set(Assignable var, Expr value, AccessMode mode);
+    void set(Assignable var, Expr value, MemoryOrder mode);
 
     /**
      * Write a value to memory using the declared atomicity mode for the assignable.
@@ -206,7 +206,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write (must not be {@code null})
      */
     default void set(Assignable var, Expr value) {
-        set(var, value, AccessMode.AsDeclared);
+        set(var, value, MemoryOrder.AsDeclared);
     }
 
     /**

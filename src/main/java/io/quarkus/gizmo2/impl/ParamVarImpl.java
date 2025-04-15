@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.ParamVar;
 
 public final class ParamVarImpl extends AssignableImpl implements ParamVar {
@@ -41,11 +41,11 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
         return index;
     }
 
-    Item emitGet(final BlockCreatorImpl block, final AccessMode mode) {
+    Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
         return asBound();
     }
 
-    Item emitSet(final BlockCreatorImpl block, final Item value, final AccessMode mode) {
+    Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return new Item() {
             protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
                 return value.process(node.prev(), op);

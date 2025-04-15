@@ -37,12 +37,12 @@ import io.github.dmlloyd.classfile.Opcode;
 import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
 import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
 import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
-import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.AnonymousClassCreator;
@@ -211,11 +211,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return lv;
     }
 
-    public Expr get(final Assignable var, final AccessMode mode) {
+    public Expr get(final Assignable var, final MemoryOrder mode) {
         return addItem(((AssignableImpl) var).emitGet(this, mode));
     }
 
-    public void set(final Assignable var, final Expr value, final AccessMode mode) {
+    public void set(final Assignable var, final Expr value, final MemoryOrder mode) {
         addItem(((AssignableImpl) var).emitSet(this, (Item) value, mode));
     }
 
