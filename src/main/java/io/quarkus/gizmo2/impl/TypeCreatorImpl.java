@@ -267,6 +267,8 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                             b0.block(init);
                         }
                     });
+                    bc.writeCode(cb, bc);
+                    cb.return_();
                 });
             });
         }

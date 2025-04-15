@@ -31,7 +31,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {
             this.initial = initial;
         } else {
-            initializer = (bc -> bc.setStaticField(desc(), initial));
+            initializer = bc -> bc.setStaticField(desc(), initial);
         }
     }
 
