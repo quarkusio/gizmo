@@ -29,6 +29,6 @@ final class PrimitiveCast extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.conversion(a.typeKind(), TypeKind.from(toType));
+        cb.conversion(Util.actualKindOf(a.typeKind()), TypeKind.from(toType));
     }
 }

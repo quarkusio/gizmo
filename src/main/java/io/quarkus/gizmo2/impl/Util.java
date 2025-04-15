@@ -1,20 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_Object;
-import static java.lang.constant.ConstantDescs.CD_boolean;
-import static java.lang.constant.ConstantDescs.CD_byte;
-import static java.lang.constant.ConstantDescs.CD_char;
-import static java.lang.constant.ConstantDescs.CD_double;
-import static java.lang.constant.ConstantDescs.CD_float;
-import static java.lang.constant.ConstantDescs.CD_int;
-import static java.lang.constant.ConstantDescs.CD_long;
-import static java.lang.constant.ConstantDescs.CD_short;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.io.Serializable;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
@@ -28,6 +20,7 @@ import java.util.Set;
 import java.util.function.IntPredicate;
 
 import io.github.dmlloyd.classfile.Signature;
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import sun.reflect.ReflectionFactory;
 
@@ -80,6 +73,29 @@ public final class Util {
             return ConstantDescs.CD_Object;
         } else {
             throw new IllegalArgumentException("Unknown signature type: " + sig);
+        }
+    }
+
+    private static final MethodHandle actualKind;
+
+    static {
+        try {
+            actualKind = MethodHandles.privateLookupIn(TypeKind.class, MethodHandles.lookup()).findGetter(TypeKind.class,
+                    "actualKind", io.github.dmlloyd.classfile.TypeKind.class);
+        } catch (NoSuchFieldException e) {
+            throw new NoSuchFieldError(e.getMessage());
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        }
+    }
+
+    public static io.github.dmlloyd.classfile.TypeKind actualKindOf(TypeKind kind) {
+        try {
+            return (io.github.dmlloyd.classfile.TypeKind) actualKind.invokeExact(kind);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new UndeclaredThrowableException(t);
         }
     }
 

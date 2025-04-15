@@ -4,10 +4,10 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.impl.constant.IntBasedConstant;
 
@@ -46,7 +46,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         checkSlot();
         // write the reference to the var
-        cb.loadLocal(typeKind(), slot);
+        cb.loadLocal(Util.actualKindOf(typeKind()), slot);
     }
 
     private void checkSlot() {
@@ -62,7 +62,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                int slot = cb.allocateLocal(LocalVarImpl.this.typeKind());
+                int slot = cb.allocateLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()));
                 // we reserve the slot for the full remainder of the block to avoid control-flow analysis
                 cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
                 if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
@@ -89,7 +89,7 @@ public final class LocalVarImpl extends LValueExprImpl implements LocalVar {
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 checkSlot();
-                cb.storeLocal(LocalVarImpl.this.typeKind(), slot);
+                cb.storeLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()), slot);
             }
         };
     }

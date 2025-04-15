@@ -9,7 +9,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;

@@ -2,7 +2,6 @@ package io.quarkus.gizmo2;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.FieldCreator;

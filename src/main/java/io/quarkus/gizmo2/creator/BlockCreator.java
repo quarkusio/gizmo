@@ -16,13 +16,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.AccessMode;
 import io.quarkus.gizmo2.Constant;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LValueExpr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.ops.ClassOps;
 import io.quarkus.gizmo2.creator.ops.CollectionOps;

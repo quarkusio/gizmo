@@ -6,8 +6,8 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.TypeKind;
 
 final class BinOp extends Item {
     private final Item a;
