@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.Item;
 /**
  * An expression.
  */
-public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, This, Item {
+public sealed interface Expr extends SimpleTyped permits Constant, Assignable, This, Item {
     /**
      * {@return the expression type (not {@code null})}
      */
@@ -21,27 +21,27 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
     boolean bound();
 
     /**
-     * {@return an lvalue for an element of this array}
+     * {@return an assignable for an element of this array}
      *
      * @param index the array index (must not be {@code null})
      */
-    LValueExpr elem(Expr index);
+    Assignable elem(Expr index);
 
     /**
-     * {@return an lvalue for an element of this array}
+     * {@return an assignable for an element of this array}
      *
      * @param index the array index (must not be {@code null})
      */
-    default LValueExpr elem(Integer index) {
+    default Assignable elem(Integer index) {
         return elem(Constant.of(index));
     }
 
     /**
-     * {@return an lvalue for an element of this array}
+     * {@return an assignable for an element of this array}
      *
      * @param index the array index
      */
-    default LValueExpr elem(int index) {
+    default Assignable elem(int index) {
         return elem(Constant.of(index));
     }
 
@@ -51,14 +51,14 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
     Expr length();
 
     /**
-     * {@return an lvalue for a field of this object}
+     * {@return an assignable for a field of this object}
      *
      * @param desc the field descriptor (must not be {@code null})
      */
     InstanceFieldVar field(FieldDesc desc);
 
     /**
-     * {@return an lvalue for a field of this object}
+     * {@return an assignable for a field of this object}
      *
      * @param owner the descriptor of the owner of this field
      * @param name the name of the field
@@ -69,7 +69,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, LValueExpr, T
     }
 
     /**
-     * {@return an lvalue for a static field}
+     * {@return an assignable for a static field}
      *
      * @param desc the field descriptor (must not be {@code null})
      */

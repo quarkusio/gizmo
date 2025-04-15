@@ -1,11 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
 import io.quarkus.gizmo2.AccessMode;
+import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Constant;
-import io.quarkus.gizmo2.LValueExpr;
 
-public non-sealed abstract class LValueExprImpl extends Item implements LValueExpr {
-    LValueExprImpl() {
+public non-sealed abstract class AssignableImpl extends Item implements Assignable {
+    AssignableImpl() {
     }
 
     abstract Item emitGet(final BlockCreatorImpl block, final AccessMode mode);
