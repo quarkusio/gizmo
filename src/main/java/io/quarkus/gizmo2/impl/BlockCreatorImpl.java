@@ -1056,9 +1056,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void synchronized_(final Expr monitor, final Consumer<BlockCreator> body) {
         block(monitor, (b0, mon) -> {
-            LocalVar mv = define("$$monitor" + depth, mon);
-            monitorEnter((Item) mv);
-            try_(t1 -> {
+            LocalVar mv = b0.define("$$monitor" + depth, mon);
+            ((BlockCreatorImpl) b0).monitorEnter((Item) mv);
+            b0.try_(t1 -> {
                 t1.body(body);
                 t1.finally_(b2 -> ((BlockCreatorImpl) b2).monitorExit((Item) mv));
             });
@@ -1067,9 +1067,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void locked(final Expr jucLock, final Consumer<BlockCreator> body) {
         block(jucLock, (b0, lock) -> {
-            LocalVar lv = define("$$lock" + depth, lock);
-            invokeInterface(MethodDesc.of(Lock.class, "lock", void.class), lv);
-            try_(t1 -> {
+            LocalVar lv = b0.define("$$lock" + depth, lock);
+            b0.invokeInterface(MethodDesc.of(Lock.class, "lock", void.class), lv);
+            b0.try_(t1 -> {
                 t1.body(body);
                 t1.finally_(b2 -> b2.invokeInterface(MethodDesc.of(Lock.class, "unlock", void.class), lv));
             });
