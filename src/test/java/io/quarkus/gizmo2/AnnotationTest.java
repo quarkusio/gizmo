@@ -2,8 +2,11 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -301,7 +304,47 @@ public class AnnotationTest {
         });
     }
 
+    @Test
+    public void repeatableAnnotation() throws NoSuchFieldException {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.RepeatableAnnotation", cc -> {
+            cc.field("notAnnotated", fc -> {
+            });
+            cc.field("single", fc -> {
+                fc.withAnnotation(RepeatableInner.class);
+            });
+            cc.field("multi", fc -> {
+                fc.withAnnotation(RepeatableInner.class);
+                fc.withAnnotation(RepeatableInner.class);
+                fc.withAnnotation(RepeatableInner.class);
+            });
+        });
+        Field notAnnotated = tcm.definedClass().getDeclaredField("notAnnotated");
+        Field single = tcm.definedClass().getDeclaredField("single");
+        Field multi = tcm.definedClass().getDeclaredField("multi");
+        assertNull(notAnnotated.getAnnotation(RepeatableInner.class));
+        assertNull(notAnnotated.getAnnotation(RepeatableOuter.class));
+        assertNotNull(single.getAnnotation(RepeatableInner.class));
+        assertNull(single.getAnnotation(RepeatableOuter.class));
+        assertNull(multi.getAnnotation(RepeatableInner.class));
+        assertNotNull(multi.getAnnotation(RepeatableOuter.class));
+        assertEquals(3, multi.getAnnotation(RepeatableOuter.class).value().length);
+    }
+
     // ---
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Repeatable(value = RepeatableOuter.class)
+    @interface RepeatableInner {
+    }
+
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface RepeatableOuter {
+        RepeatableInner[] value();
+    }
 
     enum MyEnum {
         FOO,
