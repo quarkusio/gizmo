@@ -2536,7 +2536,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the exception type (must not be {@code null})
      */
     default void throw_(ClassDesc type) {
-        throw_(new_(type, List.of()));
+        throw_(new_(type));
     }
 
     /**
@@ -2546,7 +2546,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message (must not be {@code null})
      */
     default void throw_(ClassDesc type, String message) {
-        throw_(new_(type, List.of(Constant.of(message))));
+        throw_(new_(type, Constant.of(message)));
+    }
+
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message (must not be {@code null})
+     */
+    default void throw_(ClassDesc type, Expr message) {
+        throw_(new_(type, message));
     }
 
     /**
@@ -2562,9 +2572,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Throw a new exception of the given type with a message.
      *
      * @param type the exception type (must not be {@code null})
-     * @param message the message (must not be {@code null})
+     * @param message the message
      */
     default void throw_(Class<? extends Throwable> type, String message) {
+        if (message == null) {
+            throw_(type);
+        } else {
+            throw_(Util.classDesc(type), message);
+        }
+    }
+
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message
+     */
+    default void throw_(Class<? extends Throwable> type, Expr message) {
         if (message == null) {
             throw_(type);
         } else {
