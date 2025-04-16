@@ -53,6 +53,13 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
     }
 
     /**
+     * {@return the number of parameters}
+     */
+    default int parameterCount() {
+        return type().parameterCount();
+    }
+
+    /**
      * {@return the type of the parameter with the given index}
      *
      * @param idx the parameter index
