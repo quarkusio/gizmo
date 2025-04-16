@@ -381,7 +381,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // arrays
 
     /**
-     * Create a new, empty array of the given type.
+     * Create a new, empty array of the given type with given size.
      *
      * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
@@ -390,7 +390,18 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr newEmptyArray(ClassDesc componentType, Expr size);
 
     /**
-     * Create a new, empty array of the given type.
+     * Create a new, empty array of the given type with given size.
+     *
+     * @param componentType the component type (must not be {@code null})
+     * @param size the size of the array
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newEmptyArray(ClassDesc componentType, int size) {
+        return newEmptyArray(componentType, Constant.of(size));
+    }
+
+    /**
+     * Create a new, empty array of the given type with given size.
      *
      * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
@@ -398,6 +409,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     default Expr newEmptyArray(Class<?> componentType, Expr size) {
         return newEmptyArray(Util.classDesc(componentType), size);
+    }
+
+    /**
+     * Create a new, empty array of the given type with given size.
+     *
+     * @param componentType the component type (must not be {@code null})
+     * @param size the size of the array
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newEmptyArray(Class<?> componentType, int size) {
+        return newEmptyArray(Util.classDesc(componentType), Constant.of(size));
     }
 
     /**
