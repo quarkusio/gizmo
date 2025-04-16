@@ -20,8 +20,8 @@ import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
- * Can accept arbitrarily many classes, but note that all the helper methods
- * only work on the <em>last</em> accepted class. Specifically, they are:
+ * Can accept arbitrarily many classes, but note that the following helper methods
+ * only operate on the <em>last</em> accepted class:
  *
  * <ul>
  * <li>{@link #definedClass()}</li>
@@ -30,6 +30,9 @@ import io.quarkus.gizmo2.impl.Util;
  * <li>{@link #constructor(Class)}</li>
  * <li>{@link #noArgsConstructor(Class)}</li>
  * </ul>
+ *
+ * Call {@link #forClass(ClassDesc)} to obtain a helper object that contains the same
+ * methods, except they operate on the given class.
  */
 public class TestClassMaker implements ClassOutput {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -44,7 +47,7 @@ public class TestClassMaker implements ClassOutput {
         if (System.getProperty("dumpClass") != null) {
             try {
                 Path path = Paths.get(classDesc.displayName() + ".class");
-                System.out.println("Dump class to: " + path.toAbsolutePath().toString());
+                System.out.println("Dump class to: " + path.toAbsolutePath());
                 Files.write(path, bytes);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -54,100 +57,134 @@ public class TestClassMaker implements ClassOutput {
         desc = classDesc;
     }
 
+    public TestClassOps forClass(ClassDesc desc) {
+        return new TestClassOps(cl, desc);
+    }
+
     public Class<?> definedClass() {
-        try {
-            return cl.loadClass(desc);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Class was not defined");
-        }
+        return forClass(desc).get();
     }
 
     public <T> T staticMethod(String name, Class<T> asType) {
-        Method sam = findSAMSimple(asType);
-        MethodType mt = MethodType.methodType(sam.getReturnType(), sam.getParameterTypes());
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findStatic(definedClass(), name, mt));
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
+        return forClass(desc).staticMethod(name, asType);
     }
 
     public <T> T instanceMethod(String name, Class<T> asType) {
-        Method sam = findSAMSimple(asType);
-        Class<?>[] parameterTypes = sam.getParameterTypes();
-        MethodType mt = MethodType.methodType(sam.getReturnType(), parameterTypes);
-        Method target = null;
-        for (Method candidate : definedClass().getDeclaredMethods()) {
-            int modifiers = candidate.getModifiers();
-            if (Modifier.isStatic(modifiers)) {
-                continue;
-            }
-            if (candidate.getName().equals(name)) {
-                if (target != null) {
-                    throw new IllegalArgumentException("Multiple methods called " + name + " exist on " + definedClass());
-                }
-                target = candidate;
-            }
-        }
-        if (target == null) {
-            throw new IllegalAccessError("No method called " + name + " was found on " + definedClass());
-        }
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.unreflect(target).asType(mt));
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
+        return forClass(desc).instanceMethod(name, asType);
     }
 
     public <T> T constructor(Class<T> asType) {
-        Method sam = findSAMSimple(asType);
-        MethodType mt = MethodType.methodType(void.class, sam.getParameterTypes());
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
-            return MethodHandleProxies.asInterfaceInstance(asType, lookup.findConstructor(definedClass(), mt));
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        }
+        return forClass(desc).constructor(asType);
     }
 
     public <T> T noArgsConstructor(Class<T> asType) {
-        try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(definedClass(), TestClassMaker.lookup);
-            return asType.cast(lookup.findConstructor(definedClass(), MethodType.methodType(void.class)).invoke());
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        } catch (Throwable e) {
-            throw new IllegalStateException(e);
-        }
+        return forClass(desc).noArgsConstructor(asType);
     }
 
-    private static Method findSAMSimple(Class<?> type) {
-        if (!type.isInterface()) {
-            throw new IllegalArgumentException("Not an interface");
+    public static class TestClassOps {
+        private final TestClassLoader cl;
+        private final ClassDesc desc;
+
+        TestClassOps(TestClassLoader cl, ClassDesc desc) {
+            this.cl = cl;
+            this.desc = desc;
         }
-        // don't try too hard
-        Method sam = null;
-        for (Method method : type.getDeclaredMethods()) {
-            if (Modifier.isAbstract(method.getModifiers())) {
-                if (sam == null) {
-                    sam = method;
-                } else {
-                    throw new IllegalArgumentException("Multiple abstract methods found");
-                }
+
+        public Class<?> get() {
+            try {
+                return cl.loadClass(desc);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("Class was not defined");
             }
         }
-        if (sam == null) {
-            throw new IllegalArgumentException("No obvious SAM found");
+
+        public <T> T staticMethod(String name, Class<T> asType) {
+            Method sam = findSAMSimple(asType);
+            MethodType mt = MethodType.methodType(sam.getReturnType(), sam.getParameterTypes());
+            try {
+                MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(get(), TestClassMaker.lookup);
+                return MethodHandleProxies.asInterfaceInstance(asType, lookup.findStatic(get(), name, mt));
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(e.getMessage());
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessError(e.getMessage());
+            }
         }
-        return sam;
+
+        public <T> T instanceMethod(String name, Class<T> asType) {
+            Method sam = findSAMSimple(asType);
+            Class<?>[] parameterTypes = sam.getParameterTypes();
+            MethodType mt = MethodType.methodType(sam.getReturnType(), parameterTypes);
+            Method target = null;
+            for (Method candidate : get().getDeclaredMethods()) {
+                int modifiers = candidate.getModifiers();
+                if (Modifier.isStatic(modifiers)) {
+                    continue;
+                }
+                if (candidate.getName().equals(name)) {
+                    if (target != null) {
+                        throw new IllegalArgumentException("Multiple methods called " + name + " exist on " + get());
+                    }
+                    target = candidate;
+                }
+            }
+            if (target == null) {
+                throw new IllegalAccessError("No method called " + name + " was found on " + get());
+            }
+            try {
+                MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(get(), TestClassMaker.lookup);
+                return MethodHandleProxies.asInterfaceInstance(asType, lookup.unreflect(target).asType(mt));
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessError(e.getMessage());
+            }
+        }
+
+        public <T> T constructor(Class<T> asType) {
+            Method sam = findSAMSimple(asType);
+            MethodType mt = MethodType.methodType(void.class, sam.getParameterTypes());
+            try {
+                MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(get(), TestClassMaker.lookup);
+                return MethodHandleProxies.asInterfaceInstance(asType, lookup.findConstructor(get(), mt));
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(e.getMessage());
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessError(e.getMessage());
+            }
+        }
+
+        public <T> T noArgsConstructor(Class<T> asType) {
+            try {
+                MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(get(), TestClassMaker.lookup);
+                return asType.cast(lookup.findConstructor(get(), MethodType.methodType(void.class)).invoke());
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(e.getMessage());
+            } catch (IllegalAccessException e) {
+                throw new IllegalAccessError(e.getMessage());
+            } catch (Throwable e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private static Method findSAMSimple(Class<?> type) {
+            if (!type.isInterface()) {
+                throw new IllegalArgumentException("Not an interface");
+            }
+            // don't try too hard
+            Method sam = null;
+            for (Method method : type.getDeclaredMethods()) {
+                if (Modifier.isAbstract(method.getModifiers())) {
+                    if (sam == null) {
+                        sam = method;
+                    } else {
+                        throw new IllegalArgumentException("Multiple abstract methods found");
+                    }
+                }
+            }
+            if (sam == null) {
+                throw new IllegalArgumentException("No obvious SAM found");
+            }
+            return sam;
+        }
     }
 
     private static class TestClassLoader extends ClassLoader implements BiConsumer<ClassDesc, byte[]> {
