@@ -18,6 +18,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 public abstract non-sealed class Item implements Expr {
+    private final String creationSite = Util.trackCreationSite();
 
     public String itemName() {
         return getClass().getSimpleName();
@@ -51,7 +52,7 @@ public abstract non-sealed class Item implements Expr {
             // we don't care about this one
             node = actual.pop(node);
         }
-        throw missing(toString());
+        throw missing();
     }
 
     /**
@@ -166,16 +167,21 @@ public abstract non-sealed class Item implements Expr {
      */
     protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
         if (node == null) {
-            throw missing(toString());
+            throw missing();
         }
         // no dependencies
         return node.prev();
     }
 
-    static IllegalStateException missing(String itemToString) {
-        return new IllegalStateException(
-                "Item is not at its expected location (use a variable to store values which are used away from their definition site): "
-                        + itemToString);
+    private IllegalStateException missing() {
+        if (creationSite == null) {
+            return new IllegalStateException("Item " + this + " is not at its expected location (declare a LocalVar"
+                    + " to store values which are used away from their creation site)\nTo track Item creation sites"
+                    + " and get an improved exception message, add the system property `gizmo.trackCreations`");
+        } else {
+            return new IllegalStateException("Item " + this + " created at " + creationSite + " is not at its expected"
+                    + " location (declare a LocalVar to store values which are used away from their creation site)");
+        }
     }
 
     public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);
