@@ -1705,52 +1705,52 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Perform a short-circuiting logical-OR operation.
+     * Perform a short-circuiting logical-OR operation (the {@code ||} operator).
      *
      * @param cond the condition to evaluate (must not be {@code null})
      * @param other the expression to evaluate if {@code cond} is {@code false}
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalOr(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, bc -> bc.yield(Const.of(true)), other);
+        return cond(CD_boolean, cond, bc -> bc.yield(Const.of(true)), other);
     }
 
     /**
-     * Perform a short-circuiting logical-AND operation.
+     * Perform a short-circuiting logical-AND operation (the {@code &&} operator).
      *
      * @param cond the condition to evaluate (must not be {@code null})
      * @param other the expression to evaluate if {@code cond} is {@code true}
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, other, bc -> bc.yield(Const.of(false)));
+        return cond(CD_boolean, cond, other, bc -> bc.yield(Const.of(false)));
     }
 
     // conditional
 
     /**
-     * Evaluate a conditional (select) expression.
+     * Evaluate a conditional expression (the {@code ?:} operator).
      *
      * @param type the result type (must not be {@code null})
      * @param cond the boolean condition to evaluate (must not be {@code null})
      * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
-     * @return the resultant value (must not be {@code null})
+     * @return the result value (must not be {@code null})
      */
-    default Expr selectExpr(Class<?> type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse) {
-        return selectExpr(Util.classDesc(type), cond, ifTrue, ifFalse);
+    default Expr cond(Class<?> type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse) {
+        return cond(Util.classDesc(type), cond, ifTrue, ifFalse);
     }
 
     /**
-     * Evaluate a conditional (select) expression.
+     * Evaluate a conditional expression (the {@code ?:} operator).
      *
      * @param type the result type (must not be {@code null})
      * @param cond the boolean condition to evaluate (must not be {@code null})
      * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
-     * @return the resultant value (must not be {@code null})
+     * @return the result value (must not be {@code null})
      */
-    Expr selectExpr(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
+    Expr cond(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
 
     // lambda
 

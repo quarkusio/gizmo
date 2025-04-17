@@ -65,10 +65,10 @@ public class ConditionalsTest {
     }
 
     @Test
-    public void testSelectExpr() {
+    public void testCond() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.SelectExpr", cc -> {
+        g.class_("io.quarkus.gizmo2.Cond", cc -> {
             cc.staticMethod("test", mc -> {
                 // static boolean test(String val) {
                 //    int len = val.length();
@@ -79,7 +79,7 @@ public class ConditionalsTest {
                 mc.body(b0 -> {
                     var len = b0.define("len",
                             b0.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
-                    Expr result = b0.selectExpr(boolean.class, b0.ne(len, 5),
+                    Expr result = b0.cond(boolean.class, b0.ne(len, 5),
                             b1 -> b1.yield(Const.of(false)),
                             b1 -> b1.yield(Const.of(true)));
                     b0.return_(result);
