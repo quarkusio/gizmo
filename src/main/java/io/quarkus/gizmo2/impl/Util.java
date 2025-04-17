@@ -30,6 +30,9 @@ public final class Util {
      */
     public static final ClassDesc[] NO_DESCS = new ClassDesc[0];
 
+    // set system property means enabled, even with an empty value, except if the value is `false`
+    private static final boolean trackCreations = !"false".equals(System.getProperty("gizmo.trackCreations", "false"));
+
     private Util() {
     }
 
@@ -134,6 +137,18 @@ public final class Util {
             return null;
         });
         return b.toString();
+    }
+
+    public static String trackCreationSite() {
+        return trackCreations ? callerOutsideGizmo() : null;
+    }
+
+    private static String callerOutsideGizmo() {
+        return SW.walk(stream -> stream
+                .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2"))
+                .findFirst()
+                .map(it -> it.getClassName() + "." + it.getMethodName() + "():" + it.getLineNumber())
+                .orElseThrow(IllegalStateException::new));
     }
 
     // TODO: move to using smallrye-common-search

@@ -381,7 +381,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // arrays
 
     /**
-     * Create a new, empty array of the given type.
+     * Create a new, empty array of the given type with given size.
      *
      * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
@@ -390,7 +390,18 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr newEmptyArray(ClassDesc componentType, Expr size);
 
     /**
-     * Create a new, empty array of the given type.
+     * Create a new, empty array of the given type with given size.
+     *
+     * @param componentType the component type (must not be {@code null})
+     * @param size the size of the array
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newEmptyArray(ClassDesc componentType, int size) {
+        return newEmptyArray(componentType, Constant.of(size));
+    }
+
+    /**
+     * Create a new, empty array of the given type with given size.
      *
      * @param componentType the component type (must not be {@code null})
      * @param size the size of the array (must not be {@code null})
@@ -398,6 +409,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     default Expr newEmptyArray(Class<?> componentType, Expr size) {
         return newEmptyArray(Util.classDesc(componentType), size);
+    }
+
+    /**
+     * Create a new, empty array of the given type with given size.
+     *
+     * @param componentType the component type (must not be {@code null})
+     * @param size the size of the array
+     * @return the expression for the new array (not {@code null})
+     */
+    default Expr newEmptyArray(Class<?> componentType, int size) {
+        return newEmptyArray(Util.classDesc(componentType), Constant.of(size));
     }
 
     /**
@@ -2514,7 +2536,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the exception type (must not be {@code null})
      */
     default void throw_(ClassDesc type) {
-        throw_(new_(type, List.of()));
+        throw_(new_(type));
     }
 
     /**
@@ -2524,7 +2546,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message (must not be {@code null})
      */
     default void throw_(ClassDesc type, String message) {
-        throw_(new_(type, List.of(Constant.of(message))));
+        throw_(new_(type, Constant.of(message)));
+    }
+
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message (must not be {@code null})
+     */
+    default void throw_(ClassDesc type, Expr message) {
+        throw_(new_(type, message));
     }
 
     /**
@@ -2540,9 +2572,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Throw a new exception of the given type with a message.
      *
      * @param type the exception type (must not be {@code null})
-     * @param message the message (must not be {@code null})
+     * @param message the message
      */
     default void throw_(Class<? extends Throwable> type, String message) {
+        if (message == null) {
+            throw_(type);
+        } else {
+            throw_(Util.classDesc(type), message);
+        }
+    }
+
+    /**
+     * Throw a new exception of the given type with a message.
+     *
+     * @param type the exception type (must not be {@code null})
+     * @param message the message
+     */
+    default void throw_(Class<? extends Throwable> type, Expr message) {
         if (message == null) {
             throw_(type);
         } else {

@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 
@@ -12,6 +13,9 @@ public final class ConstructorDescImpl implements ConstructorDesc {
     private final int hashCode;
 
     public ConstructorDescImpl(final ClassDesc owner, final MethodTypeDesc type) {
+        if (!ConstantDescs.CD_void.equals(type.returnType())) {
+            throw new IllegalArgumentException("Constructor descriptor must have a return type of void");
+        }
         this.owner = owner;
         this.type = type;
         hashCode = Objects.hash(owner, "<init>", type);
