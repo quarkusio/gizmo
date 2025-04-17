@@ -46,7 +46,7 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     }
 
     /**
-     * {@return the length of the array represented by this expression}
+     * {@return the length of this array}
      */
     Expr length();
 
@@ -60,9 +60,9 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     /**
      * {@return an assignable for a field of this object}
      *
-     * @param owner the descriptor of the owner of this field
-     * @param name the name of the field
-     * @param type the descriptor for the type of the field
+     * @param owner the descriptor of the owner of this field (must not be {@code null})
+     * @param name the name of the field (must not be {@code null})
+     * @param type the descriptor for the type of the field (must not be {@code null})
      */
     default InstanceFieldVar field(ClassDesc owner, String name, ClassDesc type) {
         return field(FieldDesc.of(owner, name, type));
