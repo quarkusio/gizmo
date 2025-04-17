@@ -3,8 +3,8 @@ package io.quarkus.gizmo2.impl;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 
-abstract class Goto extends Item {
-    Goto() {
+abstract class Jump extends Item {
+    Jump() {
     }
 
     public boolean mayFallThrough() {

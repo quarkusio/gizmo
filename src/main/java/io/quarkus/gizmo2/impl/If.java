@@ -62,13 +62,13 @@ abstract class If extends Item {
             if (whenFalse != null) {
                 // if-else
                 Node falseTail = whenFalse.tail();
-                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
-                    // just steal the goto target
-                    op(kind).accept(cb, goto_.target(block));
+                if (trueTail.item() instanceof Jump jump && trueTail.prev().item() instanceof BlockHeader) {
+                    // just steal the jump target
+                    op(kind).accept(cb, jump.target(block));
                     whenFalse.writeCode(cb, block);
-                } else if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
-                    // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target(block));
+                } else if (falseTail.item() instanceof Jump jump && falseTail.prev().item() instanceof BlockHeader) {
+                    // just steal the jump target
+                    op(kind.invert()).accept(cb, jump.target(block));
                     whenTrue.writeCode(cb, block);
                 } else {
                     op(kind).accept(cb, whenTrue.startLabel());
@@ -80,9 +80,9 @@ abstract class If extends Item {
                 }
             } else {
                 // if
-                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
-                    // just steal the goto target
-                    op(kind).accept(cb, goto_.target(block));
+                if (trueTail.item() instanceof Jump jump && trueTail.prev().item() instanceof BlockHeader) {
+                    // just steal the jump target
+                    op(kind).accept(cb, jump.target(block));
                 } else {
                     op(kind.invert()).accept(cb, whenTrue.endLabel());
                     whenTrue.writeCode(cb, block);
@@ -92,9 +92,9 @@ abstract class If extends Item {
             if (whenFalse != null) {
                 // if not
                 Node falseTail = whenFalse.tail();
-                if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
-                    // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target(block));
+                if (falseTail.item() instanceof Jump jump && falseTail.prev().item() instanceof BlockHeader) {
+                    // just steal the jump target
+                    op(kind.invert()).accept(cb, jump.target(block));
                 } else {
                     op(kind).accept(cb, whenFalse.endLabel());
                     whenFalse.writeCode(cb, block);

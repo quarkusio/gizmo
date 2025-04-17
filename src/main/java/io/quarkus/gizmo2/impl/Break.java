@@ -6,7 +6,7 @@ import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
-final class Break extends Goto {
+final class Break extends Jump {
     private final BlockCreatorImpl outer;
 
     public Break(final BlockCreator outer) {
