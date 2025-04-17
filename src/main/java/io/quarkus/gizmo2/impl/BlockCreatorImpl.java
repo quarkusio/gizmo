@@ -757,7 +757,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 LocalVar idx = b0.define("$$idx" + depth, Const.of(0));
                 b0.block(b1 -> {
                     b1.if_(b1.lt(idx, length), b2 -> {
-                        LocalVar val = b2.define("$$val" + depth, items.elem(idx));
+                        LocalVar val = b2.define("$$val" + depth, items.at(idx));
                         builder.accept(b2, val);
                         if (b2.active()) {
                             b2.inc(idx);

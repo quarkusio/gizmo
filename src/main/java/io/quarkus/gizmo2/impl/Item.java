@@ -206,7 +206,7 @@ public abstract non-sealed class Item implements Expr {
         return b.append(itemName()).append('@').append(Integer.toHexString(hashCode()));
     }
 
-    public Assignable elem(final Expr index) {
+    public Assignable at(final Expr index) {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array");
         }

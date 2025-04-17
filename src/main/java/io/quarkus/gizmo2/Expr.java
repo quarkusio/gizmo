@@ -25,15 +25,15 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      *
      * @param index the array index (must not be {@code null})
      */
-    Assignable elem(Expr index);
+    Assignable at(Expr index);
 
     /**
      * {@return an assignable for an element of this array}
      *
      * @param index the array index (must not be {@code null})
      */
-    default Assignable elem(Integer index) {
-        return elem(Const.of(index));
+    default Assignable at(Integer index) {
+        return at(Const.of(index));
     }
 
     /**
@@ -41,8 +41,8 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      *
      * @param index the array index
      */
-    default Assignable elem(int index) {
-        return elem(Const.of(index));
+    default Assignable at(int index) {
+        return at(Const.of(index));
     }
 
     /**
