@@ -801,7 +801,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, CD_void);
         block.accept(nested);
         addItem(block);
-        return;
     }
 
     public void block(final Consumer<BlockCreator> nested) {
@@ -836,13 +835,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             addItem(block);
             return block;
         }
-    }
-
-    Expr blockExpr(final Expr arg, final ClassDesc type, final BiConsumer<BlockCreator, Expr> nested) {
-        BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, type);
-        addItem(block);
-        block.accept(nested);
-        return block;
     }
 
     public void accept(final BiConsumer<? super BlockCreatorImpl, Expr> handler) {
