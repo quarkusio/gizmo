@@ -944,7 +944,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         doIfInsn(CD_void, cond, wt, wf);
     }
 
-    public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue,
+    public Expr cond(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue,
             final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = new BlockCreatorImpl(this, ConstImpl.ofVoid(), type);
         BlockCreatorImpl wf = new BlockCreatorImpl(this, ConstImpl.ofVoid(), type);
