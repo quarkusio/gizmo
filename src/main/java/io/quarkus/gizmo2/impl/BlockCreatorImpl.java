@@ -105,8 +105,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this(parent, ConstantImpl.ofVoid(), CD_void);
     }
 
-    BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc headerType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, headerType, ConstantImpl.ofVoid(), CD_void, parent.returnType);
+    BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType) {
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstantImpl.ofVoid(), CD_void, parent.returnType);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final Item input, final ClassDesc outputType) {
@@ -927,8 +927,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr selectExpr(final ClassDesc type, final Expr cond, final Consumer<BlockCreator> whenTrue,
             final Consumer<BlockCreator> whenFalse) {
-        BlockCreatorImpl wt = new BlockCreatorImpl(this, type);
-        BlockCreatorImpl wf = new BlockCreatorImpl(this, type);
+        BlockCreatorImpl wt = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
+        BlockCreatorImpl wf = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
         wt.accept(whenTrue);
         wf.accept(whenFalse);
         return doIfInsn(type, cond, wt, wf);
