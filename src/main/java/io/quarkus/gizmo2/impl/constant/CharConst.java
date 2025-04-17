@@ -5,10 +5,10 @@ import static java.lang.constant.ConstantDescs.CD_char;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
-public final class CharConstant extends IntBasedConstant {
+public final class CharConst extends IntBasedConst {
     private final Character value;
 
-    public CharConstant(Character value) {
+    public CharConst(Character value) {
         super(CD_char);
         this.value = value;
     }
@@ -18,11 +18,11 @@ public final class CharConstant extends IntBasedConstant {
         return value.charValue();
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof CharConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof CharConst other && equals(other);
     }
 
-    public boolean equals(final CharConstant other) {
+    public boolean equals(final CharConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 

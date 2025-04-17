@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.ThrowableOps;
@@ -25,10 +25,10 @@ public class ThrowableOpsTest {
                 //    throw e;
                 // }
                 mc.body(bc -> {
-                    var e = bc.define("e", bc.new_(IllegalStateException.class, Constant.of("foo")));
+                    var e = bc.define("e", bc.new_(IllegalStateException.class, Const.of("foo")));
                     ThrowableOps throwableOps = bc.withThrowable(e);
-                    throwableOps.addSuppressed(bc.new_(NullPointerException.class, Constant.of("npe")));
-                    throwableOps.addSuppressed(bc.new_(IllegalArgumentException.class, Constant.of("iae")));
+                    throwableOps.addSuppressed(bc.new_(NullPointerException.class, Const.of("npe")));
+                    throwableOps.addSuppressed(bc.new_(IllegalArgumentException.class, Const.of("iae")));
                     bc.throw_(e);
                 });
             });

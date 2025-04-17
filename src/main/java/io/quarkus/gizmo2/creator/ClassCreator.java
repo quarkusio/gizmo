@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -68,7 +68,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      * @param initial the field's initial value (must not be {@code null})
      * @return the field variable (not {@code null})
      */
-    default FieldDesc field(String name, Constant initial) {
+    default FieldDesc field(String name, Const initial) {
         return field(name, ifc -> {
             ifc.withType(initial.type());
             ifc.withInitial(initial);

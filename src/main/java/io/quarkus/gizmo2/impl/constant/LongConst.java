@@ -7,15 +7,15 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class LongConstant extends ConstantImpl {
+public final class LongConst extends ConstImpl {
     private final Long value;
 
-    public LongConstant(Long value) {
+    public LongConst(Long value) {
         super(ConstantDescs.CD_long);
         this.value = value;
     }
 
-    public LongConstant(final ConstantDesc constantDesc) {
+    public LongConst(final ConstantDesc constantDesc) {
         this((Long) constantDesc);
     }
 
@@ -92,11 +92,11 @@ public final class LongConstant extends ConstantImpl {
         return value.longValue() != 0;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof LongConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof LongConst other && equals(other);
     }
 
-    public boolean equals(final LongConstant other) {
+    public boolean equals(final LongConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 

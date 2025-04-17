@@ -4,7 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -12,14 +12,14 @@ import io.smallrye.common.constraint.Assert;
 
 public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements InstanceFieldCreator {
 
-    private Constant initial;
+    private Const initial;
     private Consumer<BlockCreator> initializer;
 
     public InstanceFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name) {
         super(owner, name, tc, Set.of());
     }
 
-    public void withInitial(final Constant initial) {
+    public void withInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
         this.initial = initial;

@@ -11,15 +11,15 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.CaseCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
-import io.quarkus.gizmo2.impl.constant.VoidConstant;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.quarkus.gizmo2.impl.constant.VoidConst;
 
-public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends Item implements SwitchCreator
+public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item implements SwitchCreator
         permits HashSwitchCreatorImpl, PerfectHashSwitchCreatorImpl {
 
     static final double TABLESWITCH_DENSITY = 0.9;
@@ -113,7 +113,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
         if (default_ != null) {
             throw new IllegalStateException("Default case was already added");
         }
-        default_ = new BlockCreatorImpl(enclosing, VoidConstant.INSTANCE, type());
+        default_ = new BlockCreatorImpl(enclosing, VoidConst.INSTANCE, type());
         body.accept(default_);
         if (default_.mayFallThrough()) {
             fallThrough = true;
@@ -132,7 +132,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
         cases.add(cci);
     }
 
-    CaseCreatorImpl findCase(final Constant val) {
+    CaseCreatorImpl findCase(final Const val) {
         return constantType.isInstance(val) ? casesByConstant.get(constantType.cast(val)) : null;
     }
 
@@ -159,10 +159,10 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstantImpl> extends I
         int state = ST_INITIAL;
 
         CaseCreatorImpl(BlockCreatorImpl parent, ClassDesc outputType) {
-            body = new BlockCreatorImpl(parent, ConstantImpl.ofVoid(), outputType);
+            body = new BlockCreatorImpl(parent, ConstImpl.ofVoid(), outputType);
         }
 
-        public void of(final Constant val) {
+        public void of(final Const val) {
             C castVal = constantType.cast(val);
             if (state > ST_CASE_VALS) {
                 throw new IllegalStateException("No more case values may be added");

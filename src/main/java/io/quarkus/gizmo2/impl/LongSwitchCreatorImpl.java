@@ -8,27 +8,27 @@ import java.lang.constant.MethodTypeDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.LongConstant;
+import io.quarkus.gizmo2.impl.constant.LongConst;
 
 /**
  * A switch over {@code long} values.
  */
-public final class LongSwitchCreatorImpl extends HashSwitchCreatorImpl<LongConstant> {
+public final class LongSwitchCreatorImpl extends HashSwitchCreatorImpl<LongConst> {
     LongSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type) {
-        super(enclosing, switchVal, type, LongConstant.class);
+        super(enclosing, switchVal, type, LongConst.class);
     }
 
-    boolean staticEquals(final LongConstant a, final LongConstant b) {
+    boolean staticEquals(final LongConst a, final LongConst b) {
         return a.longValue() == b.longValue();
     }
 
-    void equaller(final CodeBuilder cb, final LongConstant value, final Label ifEq) {
+    void equaller(final CodeBuilder cb, final LongConst value, final Label ifEq) {
         value.writeCode(cb, enclosing);
         cb.lcmp();
         cb.ifeq(ifEq);
     }
 
-    int staticHash(final LongConstant val) {
+    int staticHash(final LongConst val) {
         return val.hashCode();
     }
 

@@ -12,12 +12,12 @@ import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.instruction.SwitchCase;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 /**
  * A hashing switch implementation.
  */
-abstract sealed class HashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C>
+abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchCreatorImpl<C>
         permits ClassSwitchCreatorImpl, EnumSwitchCreatorImpl, LongSwitchCreatorImpl, StringSwitchCreatorImpl {
     HashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
             final Class<C> constantType) {

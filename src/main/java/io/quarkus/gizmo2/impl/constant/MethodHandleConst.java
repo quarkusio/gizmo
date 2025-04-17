@@ -11,10 +11,10 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public final class MethodHandleConstant extends ConstantImpl {
+public final class MethodHandleConst extends ConstImpl {
     private final MethodHandleDesc desc;
 
-    MethodHandleConstant(final InvokeKind kind, final MethodDesc desc) {
+    MethodHandleConst(final InvokeKind kind, final MethodDesc desc) {
         this(MethodHandleDesc.ofMethod(switch (kind) {
             case STATIC -> desc instanceof InterfaceMethodDesc
                     ? DirectMethodHandleDesc.Kind.INTERFACE_STATIC
@@ -29,11 +29,11 @@ public final class MethodHandleConstant extends ConstantImpl {
         }, desc.owner(), desc.name(), desc.type()));
     }
 
-    MethodHandleConstant(final ConstructorDesc desc) {
+    MethodHandleConst(final ConstructorDesc desc) {
         this(MethodHandleDesc.ofConstructor(desc.owner(), desc.type().parameterArray()));
     }
 
-    MethodHandleConstant(final FieldDesc desc, final boolean static_, final boolean getter) {
+    MethodHandleConst(final FieldDesc desc, final boolean static_, final boolean getter) {
         this(MethodHandleDesc.ofField(
                 static_ ? getter ? DirectMethodHandleDesc.Kind.STATIC_GETTER : DirectMethodHandleDesc.Kind.STATIC_SETTER
                         : getter ? DirectMethodHandleDesc.Kind.GETTER : DirectMethodHandleDesc.Kind.SETTER,
@@ -42,7 +42,7 @@ public final class MethodHandleConstant extends ConstantImpl {
                 desc.type()));
     }
 
-    MethodHandleConstant(MethodHandleDesc desc) {
+    MethodHandleConst(MethodHandleDesc desc) {
         super(ConstantDescs.CD_MethodHandle);
         this.desc = desc;
     }
@@ -51,8 +51,8 @@ public final class MethodHandleConstant extends ConstantImpl {
         return true;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof MethodHandleConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof MethodHandleConst other && equals(other);
     }
 
     public int hashCode() {

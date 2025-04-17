@@ -103,7 +103,7 @@ public class AccessFlagsTest {
             cc.staticField("charlie", fc -> {
                 fc.protected_();
                 fc.withType(String.class);
-                fc.withInitial(Constant.of("oops"));
+                fc.withInitial(Const.of("oops"));
             });
             cc.field("delta", fc -> {
                 fc.private_();

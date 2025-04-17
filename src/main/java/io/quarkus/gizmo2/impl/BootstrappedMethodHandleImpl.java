@@ -10,7 +10,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
@@ -23,10 +23,10 @@ public final class BootstrappedMethodHandleImpl extends Item {
     private final ClassDesc owner;
     private final MethodDesc bootstrapMethodDesc;
     private final MethodTypeDesc methodHandleType;
-    private final List<Constant> bootstrapArguments;
+    private final List<Const> bootstrapArguments;
 
     public BootstrappedMethodHandleImpl(final ClassDesc owner, final MethodDesc bootstrapMethodDesc,
-            final MethodTypeDesc methodHandleType, final List<Constant> bootstrapArguments) {
+            final MethodTypeDesc methodHandleType, final List<Const> bootstrapArguments) {
         this.owner = owner;
         this.bootstrapMethodDesc = bootstrapMethodDesc;
         this.methodHandleType = methodHandleType;
@@ -47,7 +47,7 @@ public final class BootstrappedMethodHandleImpl extends Item {
                         bootstrapMethodDesc.type()),
                 "_",
                 methodHandleType,
-                bootstrapArguments.stream().map(Constant::desc).toArray(ConstantDesc[]::new)));
+                bootstrapArguments.stream().map(Const::desc).toArray(ConstantDesc[]::new)));
         // now extract the method handle from the call site
         cb.invokevirtual(
                 ConstantDescs.CD_MethodHandle,

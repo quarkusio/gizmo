@@ -5,19 +5,19 @@ import java.lang.invoke.VarHandle;
 
 import io.quarkus.gizmo2.impl.Util;
 
-public final class ArrayVarHandleConstant extends VarHandleConstant {
+public final class ArrayVarHandleConst extends VarHandleConst {
     private final ClassDesc arrayType;
 
-    public ArrayVarHandleConstant(final ClassDesc arrayType) {
+    public ArrayVarHandleConst(final ClassDesc arrayType) {
         super(VarHandle.VarHandleDesc.ofArray(arrayType));
         this.arrayType = arrayType;
     }
 
-    public boolean equals(final VarHandleConstant obj) {
-        return obj instanceof ArrayVarHandleConstant other && equals(other);
+    public boolean equals(final VarHandleConst obj) {
+        return obj instanceof ArrayVarHandleConst other && equals(other);
     }
 
-    public boolean equals(final ArrayVarHandleConstant other) {
+    public boolean equals(final ArrayVarHandleConst other) {
         return this == other || other != null && arrayType.equals(other.arrayType);
     }
 

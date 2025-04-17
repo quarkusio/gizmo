@@ -4,24 +4,24 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
-public final class DynamicConstant extends ConstantImpl {
+public final class DynamicConst extends ConstImpl {
 
     private final DynamicConstantDesc<?> desc;
 
-    public DynamicConstant(final DynamicConstantDesc<?> desc) {
+    public DynamicConst(final DynamicConstantDesc<?> desc) {
         super(desc.constantType());
         this.desc = desc;
     }
 
-    public DynamicConstant(final ConstantDesc constantDesc) {
+    public DynamicConst(final ConstantDesc constantDesc) {
         this((DynamicConstantDesc<?>) constantDesc);
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof DynamicConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof DynamicConst other && equals(other);
     }
 
-    public boolean equals(final DynamicConstant other) {
+    public boolean equals(final DynamicConst other) {
         return this == other || other != null && desc.equals(other.desc);
     }
 

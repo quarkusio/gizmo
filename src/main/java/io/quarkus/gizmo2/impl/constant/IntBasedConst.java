@@ -5,8 +5,8 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public abstract class IntBasedConstant extends ConstantImpl {
-    IntBasedConstant(ClassDesc type) {
+public abstract class IntBasedConst extends ConstImpl {
+    IntBasedConst(ClassDesc type) {
         super(type);
     }
 

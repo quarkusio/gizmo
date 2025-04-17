@@ -3,15 +3,15 @@ package io.quarkus.gizmo2.impl;
 import java.util.Objects;
 
 import io.github.dmlloyd.classfile.Label;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 
 class RedoCase extends Goto {
     private final SwitchCreator switch_;
-    private final Constant case_;
+    private final Const case_;
 
-    public RedoCase(final SwitchCreator switch_, final Constant case_) {
+    public RedoCase(final SwitchCreator switch_, final Const case_) {
         this.switch_ = switch_;
         this.case_ = case_;
     }
@@ -26,7 +26,7 @@ class RedoCase extends Goto {
         }
     }
 
-    private static BlockCreatorImpl findBlock(final SwitchCreatorImpl<?> sci, final Constant case_) {
+    private static BlockCreatorImpl findBlock(final SwitchCreatorImpl<?> sci, final Const case_) {
         SwitchCreatorImpl<?>.CaseCreatorImpl matched = sci.findCase(case_);
         if (matched == null) {
             return sci.default_;
@@ -36,9 +36,9 @@ class RedoCase extends Goto {
 
     static class RedoCaseKey extends TryFinally.CleanupKey {
         private final SwitchCreatorImpl<?> switch_;
-        private final Constant case_;
+        private final Const case_;
 
-        RedoCaseKey(final SwitchCreatorImpl<?> switch_, final Constant case_) {
+        RedoCaseKey(final SwitchCreatorImpl<?> switch_, final Const case_) {
             this.switch_ = switch_;
             this.case_ = case_;
         }
