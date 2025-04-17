@@ -8,26 +8,26 @@ import java.lang.constant.MethodTypeDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.EnumConstant;
+import io.quarkus.gizmo2.impl.constant.EnumConst;
 
 /**
  * A switch over {@code enum} values.
  */
-public final class EnumSwitchCreatorImpl extends HashSwitchCreatorImpl<EnumConstant> {
+public final class EnumSwitchCreatorImpl extends HashSwitchCreatorImpl<EnumConst> {
     EnumSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type) {
-        super(enclosing, switchVal, type, EnumConstant.class);
+        super(enclosing, switchVal, type, EnumConst.class);
     }
 
-    boolean staticEquals(final EnumConstant a, final EnumConstant b) {
+    boolean staticEquals(final EnumConst a, final EnumConst b) {
         return a.equals(b);
     }
 
-    void equaller(final CodeBuilder cb, final EnumConstant value, final Label ifEq) {
+    void equaller(final CodeBuilder cb, final EnumConst value, final Label ifEq) {
         value.writeCode(cb, enclosing);
         cb.if_acmpeq(ifEq);
     }
 
-    int staticHash(final EnumConstant val) {
+    int staticHash(final EnumConst val) {
         return val.name().hashCode();
     }
 

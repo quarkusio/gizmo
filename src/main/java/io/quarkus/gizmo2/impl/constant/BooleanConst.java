@@ -7,10 +7,10 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class BooleanConstant extends ConstantImpl {
+public final class BooleanConst extends ConstImpl {
     private final boolean value;
 
-    private BooleanConstant(final boolean value) {
+    private BooleanConst(final boolean value) {
         super(ConstantDescs.CD_boolean);
         this.value = value;
     }
@@ -23,8 +23,8 @@ public final class BooleanConstant extends ConstantImpl {
         }
     }
 
-    public static final BooleanConstant FALSE = new BooleanConstant(false);
-    public static final BooleanConstant TRUE = new BooleanConstant(true);
+    public static final BooleanConst FALSE = new BooleanConst(false);
+    public static final BooleanConst TRUE = new BooleanConst(true);
 
     public DynamicConstantDesc<Boolean> desc() {
         return value ? ConstantDescs.TRUE : ConstantDescs.FALSE;
@@ -42,7 +42,7 @@ public final class BooleanConstant extends ConstantImpl {
         return value;
     }
 
-    public boolean equals(final ConstantImpl other) {
+    public boolean equals(final ConstImpl other) {
         return this == other;
     }
 

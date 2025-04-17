@@ -4,16 +4,16 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
-public final class StringConstant extends ConstantImpl {
+public final class StringConst extends ConstImpl {
 
     private final String value;
 
-    public StringConstant(String value) {
+    public StringConst(String value) {
         super(ConstantDescs.CD_String);
         this.value = value;
     }
 
-    public StringConstant(final ConstantDesc constantDesc) {
+    public StringConst(final ConstantDesc constantDesc) {
         this((String) constantDesc);
     }
 
@@ -29,11 +29,11 @@ public final class StringConstant extends ConstantImpl {
         return true;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof StringConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof StringConst other && equals(other);
     }
 
-    public boolean equals(final StringConstant other) {
+    public boolean equals(final StringConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 

@@ -6,7 +6,7 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.IntConstant;
+import io.quarkus.gizmo2.impl.constant.IntConst;
 
 final class NewEmptyArray extends Item {
     private final ClassDesc arrayType;
@@ -26,7 +26,7 @@ final class NewEmptyArray extends Item {
     }
 
     public Expr length() {
-        return size instanceof IntConstant ? size : super.length();
+        return size instanceof IntConst ? size : super.length();
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

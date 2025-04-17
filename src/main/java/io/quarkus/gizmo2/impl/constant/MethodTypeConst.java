@@ -5,10 +5,10 @@ import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Optional;
 
-public final class MethodTypeConstant extends ConstantImpl {
+public final class MethodTypeConst extends ConstImpl {
     private final MethodTypeDesc desc;
 
-    MethodTypeConstant(final MethodTypeDesc desc) {
+    MethodTypeConst(final MethodTypeDesc desc) {
         super(ConstantDescs.CD_MethodType);
         this.desc = desc;
     }
@@ -17,11 +17,11 @@ public final class MethodTypeConstant extends ConstantImpl {
         return true;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof MethodTypeConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof MethodTypeConst other && equals(other);
     }
 
-    public boolean equals(final MethodTypeConstant other) {
+    public boolean equals(final MethodTypeConst other) {
         return this == other || other != null && desc.equals(other.desc);
     }
 

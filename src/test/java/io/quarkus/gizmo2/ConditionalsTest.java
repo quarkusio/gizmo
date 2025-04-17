@@ -80,8 +80,8 @@ public class ConditionalsTest {
                     var len = b0.define("len",
                             b0.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
                     Expr result = b0.selectExpr(boolean.class, b0.ne(len, 5),
-                            b1 -> b1.yield(Constant.of(false)),
-                            b1 -> b1.yield(Constant.of(true)));
+                            b1 -> b1.yield(Const.of(false)),
+                            b1 -> b1.yield(Const.of(true)));
                     b0.return_(result);
                 });
             });

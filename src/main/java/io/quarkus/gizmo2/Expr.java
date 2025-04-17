@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 /**
  * An expression.
  */
-public sealed interface Expr extends SimpleTyped permits Constant, Assignable, This, Item {
+public sealed interface Expr extends SimpleTyped permits Const, Assignable, This, Item {
     /**
      * {@return the expression type (not {@code null})}
      */
@@ -33,7 +33,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, Assignable, T
      * @param index the array index (must not be {@code null})
      */
     default Assignable elem(Integer index) {
-        return elem(Constant.of(index));
+        return elem(Const.of(index));
     }
 
     /**
@@ -42,7 +42,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, Assignable, T
      * @param index the array index
      */
     default Assignable elem(int index) {
-        return elem(Constant.of(index));
+        return elem(Const.of(index));
     }
 
     /**

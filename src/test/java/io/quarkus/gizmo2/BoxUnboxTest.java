@@ -18,7 +18,7 @@ public class BoxUnboxTest {
                 mc.returning(Object.class);
                 mc.body(bc -> {
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.box(Constant.ofVoid());
+                        bc.box(Const.ofVoid());
                     });
                     bc.returnNull();
                 });
@@ -45,14 +45,14 @@ public class BoxUnboxTest {
                 // }
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var boolVal = bc.box(Constant.of(true));
-                    var byteVal = bc.box(Constant.of((byte) 123));
-                    var shortVal = bc.box(Constant.of((short) 456));
-                    var charVal = bc.box(Constant.of('a'));
-                    var intVal = bc.box(Constant.of(65536));
-                    var longVal = bc.box(Constant.of(Long.MAX_VALUE));
-                    var floatVal = bc.box(Constant.of(1.1F));
-                    var doubleVal = bc.box(Constant.of(1.2));
+                    var boolVal = bc.box(Const.of(true));
+                    var byteVal = bc.box(Const.of((byte) 123));
+                    var shortVal = bc.box(Const.of((short) 456));
+                    var charVal = bc.box(Const.of('a'));
+                    var intVal = bc.box(Const.of(65536));
+                    var longVal = bc.box(Const.of(Long.MAX_VALUE));
+                    var floatVal = bc.box(Const.of(1.1F));
+                    var doubleVal = bc.box(Const.of(1.2));
                     bc.return_(bc.listOf(boolVal, byteVal, shortVal, charVal, intVal, longVal, floatVal, doubleVal));
                 });
             });
@@ -88,14 +88,14 @@ public class BoxUnboxTest {
                 // }
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var boolVal = bc.box(bc.box(bc.box(Constant.of(true))));
-                    var byteVal = bc.box(bc.box(bc.box(Constant.of((byte) 123))));
-                    var shortVal = bc.box(bc.box(bc.box(Constant.of((short) 456))));
-                    var charVal = bc.box(bc.box(Constant.of('a')));
-                    var intVal = bc.box(bc.box(Constant.of(65536)));
-                    var longVal = bc.box(bc.box(Constant.of(Long.MAX_VALUE)));
-                    var floatVal = bc.box(bc.box(Constant.of(1.1F)));
-                    var doubleVal = bc.box(bc.box(Constant.of(1.2)));
+                    var boolVal = bc.box(bc.box(bc.box(Const.of(true))));
+                    var byteVal = bc.box(bc.box(bc.box(Const.of((byte) 123))));
+                    var shortVal = bc.box(bc.box(bc.box(Const.of((short) 456))));
+                    var charVal = bc.box(bc.box(Const.of('a')));
+                    var intVal = bc.box(bc.box(Const.of(65536)));
+                    var longVal = bc.box(bc.box(Const.of(Long.MAX_VALUE)));
+                    var floatVal = bc.box(bc.box(Const.of(1.1F)));
+                    var doubleVal = bc.box(bc.box(Const.of(1.2)));
                     bc.return_(bc.listOf(boolVal, byteVal, shortVal, charVal, intVal, longVal, floatVal, doubleVal));
                 });
             });
@@ -131,14 +131,14 @@ public class BoxUnboxTest {
                 // }
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var boolVal = bc.cast(Constant.of(true), Boolean.class);
-                    var byteVal = bc.cast(Constant.of((byte) 123), Byte.class);
-                    var shortVal = bc.cast(Constant.of((short) 456), Short.class);
-                    var charVal = bc.cast(Constant.of('a'), Character.class);
-                    var intVal = bc.cast(Constant.of(65536), Integer.class);
-                    var longVal = bc.cast(Constant.of(Long.MAX_VALUE), Long.class);
-                    var floatVal = bc.cast(Constant.of(1.1F), Float.class);
-                    var doubleVal = bc.cast(Constant.of(1.2), Double.class);
+                    var boolVal = bc.cast(Const.of(true), Boolean.class);
+                    var byteVal = bc.cast(Const.of((byte) 123), Byte.class);
+                    var shortVal = bc.cast(Const.of((short) 456), Short.class);
+                    var charVal = bc.cast(Const.of('a'), Character.class);
+                    var intVal = bc.cast(Const.of(65536), Integer.class);
+                    var longVal = bc.cast(Const.of(Long.MAX_VALUE), Long.class);
+                    var floatVal = bc.cast(Const.of(1.1F), Float.class);
+                    var doubleVal = bc.cast(Const.of(1.2), Double.class);
                     bc.return_(bc.listOf(boolVal, byteVal, shortVal, charVal, intVal, longVal, floatVal, doubleVal));
                 });
             });
@@ -164,7 +164,7 @@ public class BoxUnboxTest {
                 mc.returning(Object.class);
                 mc.body(bc -> {
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.unbox(Constant.ofNull(Void.class));
+                        bc.unbox(Const.ofNull(Void.class));
                     });
                     bc.returnNull();
                 });
@@ -221,9 +221,9 @@ public class BoxUnboxTest {
                     var fu = bc.define("fv", bc.unbox(f));
                     var du = bc.define("dv", bc.unbox(d));
                     bc.ifNot(bc.unbox(bool), fail -> fail.return_(1));
-                    bc.if_(bc.ne(bc.unbox(b), Constant.of((byte) 123)), fail -> fail.return_(2));
-                    bc.if_(bc.ne(bc.unbox(s), Constant.of((short) 456)), fail -> fail.return_(3));
-                    bc.if_(bc.ne(bc.unbox(c), Constant.of('a')), fail -> fail.return_(4));
+                    bc.if_(bc.ne(bc.unbox(b), Const.of((byte) 123)), fail -> fail.return_(2));
+                    bc.if_(bc.ne(bc.unbox(s), Const.of((short) 456)), fail -> fail.return_(3));
+                    bc.if_(bc.ne(bc.unbox(c), Const.of('a')), fail -> fail.return_(4));
                     bc.if_(bc.ne(bc.unbox(i), 10), fail -> fail.return_(5));
                     bc.if_(bc.ne(lu, 100L), fail -> fail.return_(6));
                     bc.if_(bc.ne(fu, 1.2F), fail -> fail.return_(7));
@@ -285,9 +285,9 @@ public class BoxUnboxTest {
                     var fu = bc.define("fv", bc.unbox(bc.unbox(f)));
                     var du = bc.define("dv", bc.unbox(bc.unbox(d)));
                     bc.ifNot(bc.unbox(bc.unbox(bool)), fail -> fail.return_(1));
-                    bc.if_(bc.ne(bc.unbox(bc.unbox(b)), Constant.of((byte) 123)), fail -> fail.return_(2));
-                    bc.if_(bc.ne(bc.unbox(bc.unbox(s)), Constant.of((short) 456)), fail -> fail.return_(3));
-                    bc.if_(bc.ne(bc.unbox(bc.unbox(c)), Constant.of('a')), fail -> fail.return_(4));
+                    bc.if_(bc.ne(bc.unbox(bc.unbox(b)), Const.of((byte) 123)), fail -> fail.return_(2));
+                    bc.if_(bc.ne(bc.unbox(bc.unbox(s)), Const.of((short) 456)), fail -> fail.return_(3));
+                    bc.if_(bc.ne(bc.unbox(bc.unbox(c)), Const.of('a')), fail -> fail.return_(4));
                     bc.if_(bc.ne(bc.unbox(bc.unbox(i)), 10), fail -> fail.return_(5));
                     bc.if_(bc.ne(lu, 100L), fail -> fail.return_(6));
                     bc.if_(bc.ne(fu, 1.2F), fail -> fail.return_(7));
@@ -349,9 +349,9 @@ public class BoxUnboxTest {
                     var fu = bc.define("fv", bc.cast(f, float.class));
                     var du = bc.define("dv", bc.cast(d, double.class));
                     bc.ifNot(bc.cast(bool, boolean.class), fail -> fail.return_(1));
-                    bc.if_(bc.ne(bc.cast(b, byte.class), Constant.of((byte) 123)), fail -> fail.return_(2));
-                    bc.if_(bc.ne(bc.cast(s, short.class), Constant.of((short) 456)), fail -> fail.return_(3));
-                    bc.if_(bc.ne(bc.cast(c, char.class), Constant.of('a')), fail -> fail.return_(4));
+                    bc.if_(bc.ne(bc.cast(b, byte.class), Const.of((byte) 123)), fail -> fail.return_(2));
+                    bc.if_(bc.ne(bc.cast(s, short.class), Const.of((short) 456)), fail -> fail.return_(3));
+                    bc.if_(bc.ne(bc.cast(c, char.class), Const.of('a')), fail -> fail.return_(4));
                     bc.if_(bc.ne(bc.cast(i, int.class), 10), fail -> fail.return_(5));
                     bc.if_(bc.ne(lu, 100L), fail -> fail.return_(6));
                     bc.if_(bc.ne(fu, 1.2F), fail -> fail.return_(7));

@@ -8,9 +8,9 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.instruction.SwitchCase;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
-sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstantImpl> extends SwitchCreatorImpl<C>
+sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstImpl> extends SwitchCreatorImpl<C>
         permits EnumOrdinalSwitchCreatorImpl, IntSwitchCreatorImpl {
 
     PerfectHashSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,

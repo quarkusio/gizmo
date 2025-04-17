@@ -7,11 +7,11 @@ import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.Util;
 
-public final class ClassConstant extends ConstantImpl {
+public final class ClassConst extends ConstImpl {
 
     private final ClassDesc value;
 
-    public ClassConstant(ClassDesc value) {
+    public ClassConst(ClassDesc value) {
         super(ConstantDescs.CD_Class);
         this.value = value;
     }
@@ -20,7 +20,7 @@ public final class ClassConstant extends ConstantImpl {
         return true;
     }
 
-    public ClassConstant(final ConstantDesc constantDesc) {
+    public ClassConst(final ConstantDesc constantDesc) {
         this((ClassDesc) constantDesc);
     }
 
@@ -32,11 +32,11 @@ public final class ClassConstant extends ConstantImpl {
         return Optional.of(desc());
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof ClassConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof ClassConst other && equals(other);
     }
 
-    public boolean equals(final ClassConstant other) {
+    public boolean equals(final ClassConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 

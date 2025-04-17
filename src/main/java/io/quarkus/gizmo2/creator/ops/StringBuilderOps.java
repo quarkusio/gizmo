@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator.ops;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
@@ -46,7 +46,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @param capacity the capacity of the newly created {@link StringBuilder}
      */
     public StringBuilderOps(final BlockCreator bc, final int capacity) {
-        super(StringBuilder.class, bc, bc.new_(StringBuilder.class, Constant.of(capacity)));
+        super(StringBuilder.class, bc, bc.new_(StringBuilder.class, Const.of(capacity)));
     }
 
     /**
@@ -78,7 +78,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @return this instance
      */
     public StringBuilderOps append(final char constant) {
-        return append(Constant.of(constant));
+        return append(Const.of(constant));
     }
 
     /**
@@ -88,7 +88,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @return this instance
      */
     public StringBuilderOps append(final String constant) {
-        return append(Constant.of(constant));
+        return append(Const.of(constant));
     }
 
     @Override

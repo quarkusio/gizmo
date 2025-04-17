@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.Util;
 
-public abstract class VarHandleConstant extends ConstantImpl {
+public abstract class VarHandleConst extends ConstImpl {
     final VarHandle.VarHandleDesc desc;
 
-    VarHandleConstant(final VarHandle.VarHandleDesc desc) {
+    VarHandleConst(final VarHandle.VarHandleDesc desc) {
         super(Util.classDesc(VarHandle.class));
         this.desc = desc;
     }
@@ -18,11 +18,11 @@ public abstract class VarHandleConstant extends ConstantImpl {
         return true;
     }
 
-    public final boolean equals(final ConstantImpl obj) {
-        return obj instanceof VarHandleConstant other && equals(other);
+    public final boolean equals(final ConstImpl obj) {
+        return obj instanceof VarHandleConst other && equals(other);
     }
 
-    public abstract boolean equals(final VarHandleConstant obj);
+    public abstract boolean equals(final VarHandleConst obj);
 
     public ConstantDesc desc() {
         return desc;

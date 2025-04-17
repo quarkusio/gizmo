@@ -1,15 +1,15 @@
 package io.quarkus.gizmo2.impl.constant;
 
-import static java.lang.constant.ConstantDescs.CD_byte;
+import static java.lang.constant.ConstantDescs.CD_short;
 
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
-public final class ByteConstant extends IntBasedConstant {
-    private final Byte value;
+public final class ShortConst extends IntBasedConst {
+    private final Short value;
 
-    public ByteConstant(Byte value) {
-        super(CD_byte);
+    public ShortConst(Short value) {
+        super(CD_short);
         this.value = value;
     }
 
@@ -18,11 +18,11 @@ public final class ByteConstant extends IntBasedConstant {
         return value.intValue();
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof ByteConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof ShortConst other && equals(other);
     }
 
-    public boolean equals(final ByteConstant other) {
+    public boolean equals(final ShortConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 
@@ -30,11 +30,11 @@ public final class ByteConstant extends IntBasedConstant {
         return value.hashCode();
     }
 
-    public DynamicConstantDesc<Byte> desc() {
+    public DynamicConstantDesc<Short> desc() {
         return describeConstable().orElseThrow();
     }
 
-    public Optional<DynamicConstantDesc<Byte>> describeConstable() {
+    public Optional<DynamicConstantDesc<Short>> describeConstable() {
         return value.describeConstable();
     }
 }

@@ -13,7 +13,7 @@ import java.lang.invoke.VarHandle;
 import java.util.List;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -23,20 +23,20 @@ import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.Util;
 
-public abstract non-sealed class ConstantImpl extends Item implements Constant {
+public abstract non-sealed class ConstImpl extends Item implements Const {
     private final ClassDesc type;
 
-    ConstantImpl(final ClassDesc type) {
+    ConstImpl(final ClassDesc type) {
         this.type = type;
     }
 
-    public static StringConstant of(final String value) {
-        return new StringConstant(value);
+    public static StringConst of(final String value) {
+        return new StringConst(value);
     }
 
-    public static ConstantImpl of(Constable constable) {
+    public static ConstImpl of(Constable constable) {
         checkNotNullParam("constable", constable);
-        if (constable instanceof ConstantImpl con) {
+        if (constable instanceof ConstImpl con) {
             return con;
         } else if (constable instanceof Boolean val) {
             return of(val);
@@ -51,7 +51,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         }
     }
 
-    public static ConstantImpl of(ConstantDesc constantDesc) {
+    public static ConstImpl of(ConstantDesc constantDesc) {
         checkNotNullParam("constantDesc", constantDesc);
         if (constantDesc instanceof Integer val) {
             return of(val);
@@ -76,7 +76,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         }
     }
 
-    public static ConstantImpl of(DynamicConstantDesc<?> dcd) {
+    public static ConstImpl of(DynamicConstantDesc<?> dcd) {
         if (dcd instanceof Enum.EnumDesc<?> desc) {
             return of(desc);
         } else if (dcd instanceof VarHandle.VarHandleDesc desc) {
@@ -107,7 +107,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
             return ofFieldVarHandle(FieldDesc.of((ClassDesc) args.get(0), dcd.constantName(), (ClassDesc) args.get(1)));
         } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_INVOKE)) {
             // "wrong spelling" of invoke constant
-            return ofInvoke(of(dcd.bootstrapMethod()), dcd.bootstrapArgsList().stream().map(Constant::of).toList());
+            return ofInvoke(of(dcd.bootstrapMethod()), dcd.bootstrapArgsList().stream().map(Const::of).toList());
         } else if (dcd.bootstrapMethod().equals(ConstantDescs.BSM_EXPLICIT_CAST)
                 && dcd.constantName().equals(ConstantDescs.DEFAULT_NAME)) {
             // "wrong spelling" of primitive constant
@@ -119,52 +119,52 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
                 return of((char) ((Integer) dcd.bootstrapArgs()[0]).intValue());
             } else {
                 // primitive constants of other types don't reach here
-                return new DynamicConstant(dcd);
+                return new DynamicConst(dcd);
             }
         } else {
-            return new DynamicConstant(dcd);
+            return new DynamicConst(dcd);
         }
     }
 
-    public static NullConstant ofNull(ClassDesc type) {
+    public static NullConst ofNull(ClassDesc type) {
         if (type.isPrimitive()) {
             throw new IllegalArgumentException("Type is not a reference type: " + type);
         }
-        return new NullConstant(type);
+        return new NullConst(type);
     }
 
-    public static NullConstant ofNull(Class<?> type) {
+    public static NullConst ofNull(Class<?> type) {
         return ofNull(Util.classDesc(type));
     }
 
-    public static ClassConstant of(ClassDesc value) {
-        return new ClassConstant(value);
+    public static ClassConst of(ClassDesc value) {
+        return new ClassConst(value);
     }
 
-    public static ClassConstant of(Class<?> value) {
+    public static ClassConst of(Class<?> value) {
         return of(Util.classDesc(value));
     }
 
-    public static FieldVarHandleConstant ofFieldVarHandle(FieldDesc desc) {
-        return new FieldVarHandleConstant(desc);
+    public static FieldVarHandleConst ofFieldVarHandle(FieldDesc desc) {
+        return new FieldVarHandleConst(desc);
     }
 
-    public static StaticFieldVarHandleConstant ofStaticFieldVarHandle(FieldDesc desc) {
-        return new StaticFieldVarHandleConstant(desc);
+    public static StaticFieldVarHandleConst ofStaticFieldVarHandle(FieldDesc desc) {
+        return new StaticFieldVarHandleConst(desc);
     }
 
-    public static StaticFinalFieldConstant ofStaticFinalField(FieldDesc desc) {
-        return new StaticFinalFieldConstant(desc);
+    public static StaticFinalFieldConst ofStaticFinalField(FieldDesc desc) {
+        return new StaticFinalFieldConst(desc);
     }
 
-    public static ArrayVarHandleConstant ofArrayVarHandle(ClassDesc arrayType) {
+    public static ArrayVarHandleConst ofArrayVarHandle(ClassDesc arrayType) {
         if (!arrayType.isArray()) {
             throw new IllegalArgumentException("Array var handles can only be created for array types");
         }
-        return new ArrayVarHandleConstant(arrayType);
+        return new ArrayVarHandleConst(arrayType);
     }
 
-    public static ConstantImpl of(VarHandle.VarHandleDesc value) {
+    public static ConstImpl of(VarHandle.VarHandleDesc value) {
         List<ConstantDesc> args = value.bootstrapArgsList();
         return switch (value.bootstrapMethod().methodName()) {
             case "fieldVarHandle" ->
@@ -180,79 +180,79 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         };
     }
 
-    public static EnumConstant of(Enum.EnumDesc<?> value) {
-        return new EnumConstant(value);
+    public static EnumConst of(Enum.EnumDesc<?> value) {
+        return new EnumConst(value);
     }
 
-    public static ByteConstant of(Byte value) {
-        return new ByteConstant(value);
+    public static ByteConst of(Byte value) {
+        return new ByteConst(value);
     }
 
-    public static ByteConstant of(byte value) {
+    public static ByteConst of(byte value) {
         return of(Byte.valueOf(value));
     }
 
-    public static ShortConstant of(Short value) {
-        return new ShortConstant(value);
+    public static ShortConst of(Short value) {
+        return new ShortConst(value);
     }
 
-    public static ShortConstant of(short value) {
+    public static ShortConst of(short value) {
         return of(Short.valueOf(value));
     }
 
-    public static CharConstant of(Character value) {
-        return new CharConstant(value);
+    public static CharConst of(Character value) {
+        return new CharConst(value);
     }
 
-    public static CharConstant of(char value) {
+    public static CharConst of(char value) {
         return of(Character.valueOf(value));
     }
 
-    public static IntConstant of(Integer value) {
-        return new IntConstant(value);
+    public static IntConst of(Integer value) {
+        return new IntConst(value);
     }
 
-    public static IntConstant of(int value) {
+    public static IntConst of(int value) {
         return of(Integer.valueOf(value));
     }
 
-    public static LongConstant of(Long value) {
-        return new LongConstant(value);
+    public static LongConst of(Long value) {
+        return new LongConst(value);
     }
 
-    public static LongConstant of(long value) {
+    public static LongConst of(long value) {
         return of(Long.valueOf(value));
     }
 
-    public static FloatConstant of(Float value) {
+    public static FloatConst of(Float value) {
         return of(value.floatValue());
     }
 
-    public static FloatConstant of(float value) {
-        return new FloatConstant(value);
+    public static FloatConst of(float value) {
+        return new FloatConst(value);
     }
 
-    public static DoubleConstant of(Double value) {
+    public static DoubleConst of(Double value) {
         return of(value.doubleValue());
     }
 
-    public static DoubleConstant of(double value) {
-        return new DoubleConstant(value);
+    public static DoubleConst of(double value) {
+        return new DoubleConst(value);
     }
 
-    public static BooleanConstant of(Boolean value) {
-        return value.booleanValue() ? BooleanConstant.TRUE : BooleanConstant.FALSE;
+    public static BooleanConst of(Boolean value) {
+        return value.booleanValue() ? BooleanConst.TRUE : BooleanConst.FALSE;
     }
 
-    public static BooleanConstant of(boolean value) {
-        return value ? BooleanConstant.TRUE : BooleanConstant.FALSE;
+    public static BooleanConst of(boolean value) {
+        return value ? BooleanConst.TRUE : BooleanConst.FALSE;
     }
 
-    public static VoidConstant ofVoid() {
-        return VoidConstant.INSTANCE;
+    public static VoidConst ofVoid() {
+        return VoidConst.INSTANCE;
     }
 
-    public static ConstantImpl of(int value, TypeKind typeKind) {
+    public static ConstImpl of(int value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
             case BOOLEAN -> of(value != 0);
             case INT -> of(value);
@@ -263,7 +263,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         };
     }
 
-    public static ConstantImpl of(long value, TypeKind typeKind) {
+    public static ConstImpl of(long value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
             case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
@@ -274,7 +274,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         };
     }
 
-    public static ConstantImpl of(float value, TypeKind typeKind) {
+    public static ConstImpl of(float value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
             case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
@@ -285,7 +285,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
         };
     }
 
-    public static ConstantImpl of(double value, TypeKind typeKind) {
+    public static ConstImpl of(double value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
             case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
@@ -297,41 +297,41 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static InvokeConstant ofInvoke(Constant handle, List<Constant> args) {
+    public static InvokeConst ofInvoke(Const handle, List<Const> args) {
         // we could theoretically use a stream to cast the list properly, but instead let's cheat and save some CPU
-        return new InvokeConstant((MethodHandleConstant) handle, (List<ConstantImpl>) (List) args);
+        return new InvokeConst((MethodHandleConst) handle, (List<ConstImpl>) (List) args);
     }
 
-    public static MethodHandleConstant of(MethodHandleDesc desc) {
-        return new MethodHandleConstant(desc);
+    public static MethodHandleConst of(MethodHandleDesc desc) {
+        return new MethodHandleConst(desc);
     }
 
-    public static MethodHandleConstant ofMethodHandle(InvokeKind kind, MethodDesc desc) {
-        return new MethodHandleConstant(kind, desc);
+    public static MethodHandleConst ofMethodHandle(InvokeKind kind, MethodDesc desc) {
+        return new MethodHandleConst(kind, desc);
     }
 
-    public static MethodHandleConstant ofConstructorMethodHandle(ConstructorDesc desc) {
-        return new MethodHandleConstant(desc);
+    public static MethodHandleConst ofConstructorMethodHandle(ConstructorDesc desc) {
+        return new MethodHandleConst(desc);
     }
 
-    public static MethodHandleConstant ofFieldSetterMethodHandle(FieldDesc desc) {
-        return new MethodHandleConstant(desc, false, false);
+    public static MethodHandleConst ofFieldSetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConst(desc, false, false);
     }
 
-    public static MethodHandleConstant ofFieldGetterMethodHandle(FieldDesc desc) {
-        return new MethodHandleConstant(desc, false, true);
+    public static MethodHandleConst ofFieldGetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConst(desc, false, true);
     }
 
-    public static MethodHandleConstant ofStaticFieldSetterMethodHandle(FieldDesc desc) {
-        return new MethodHandleConstant(desc, true, false);
+    public static MethodHandleConst ofStaticFieldSetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConst(desc, true, false);
     }
 
-    public static MethodHandleConstant ofStaticFieldGetterMethodHandle(FieldDesc desc) {
-        return new MethodHandleConstant(desc, true, true);
+    public static MethodHandleConst ofStaticFieldGetterMethodHandle(FieldDesc desc) {
+        return new MethodHandleConst(desc, true, true);
     }
 
-    public static MethodTypeConstant of(MethodTypeDesc desc) {
-        return new MethodTypeConstant(desc);
+    public static MethodTypeConst of(MethodTypeDesc desc) {
+        return new MethodTypeConst(desc);
     }
 
     public ClassDesc type() {
@@ -351,10 +351,10 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public final boolean equals(final Object obj) {
-        return obj instanceof ConstantImpl other && equals(other);
+        return obj instanceof ConstImpl other && equals(other);
     }
 
-    public abstract boolean equals(ConstantImpl other);
+    public abstract boolean equals(ConstImpl other);
 
     public abstract int hashCode();
 

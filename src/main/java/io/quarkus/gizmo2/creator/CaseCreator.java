@@ -4,7 +4,7 @@ import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.impl.SwitchCreatorImpl;
 
 /**
@@ -17,7 +17,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      *
      * @param val the case value to add (must not be {@code null})
      */
-    void of(Constant val);
+    void of(Const val);
 
     /**
      * Add a constant for this case.
@@ -25,7 +25,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      * @param val the case value to add (must not be {@code null})
      */
     default void of(Constable val) {
-        of(Constant.of(val));
+        of(Const.of(val));
     }
 
     /**
@@ -34,7 +34,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      * @param val the case value to add (must not be {@code null})
      */
     default void of(ConstantDesc val) {
-        of(Constant.of(val));
+        of(Const.of(val));
     }
 
     /**
@@ -43,7 +43,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      * @param val the case value to add (must not be {@code null})
      */
     default void of(String val) {
-        of(Constant.of(val));
+        of(Const.of(val));
     }
 
     /**
@@ -52,7 +52,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      * @param val the case value to add (must not be {@code null})
      */
     default void of(int val) {
-        of(Constant.of(val));
+        of(Const.of(val));
     }
 
     /**
@@ -61,7 +61,7 @@ public sealed interface CaseCreator extends BodyCreator permits SwitchCreatorImp
      * @param val the case value to add (must not be {@code null})
      */
     default void of(long val) {
-        of(Constant.of(val));
+        of(Const.of(val));
     }
 
     void body(Consumer<BlockCreator> builder);

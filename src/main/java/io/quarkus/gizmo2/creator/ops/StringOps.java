@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator.ops;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
@@ -53,7 +53,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr substring(int start) {
-        return substring(Constant.of(start));
+        return substring(Const.of(start));
     }
 
     /**
@@ -75,7 +75,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr substring(int start, int end) {
-        return substring(Constant.of(start), Constant.of(end));
+        return substring(Const.of(start), Const.of(end));
     }
 
     /**
@@ -95,7 +95,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr charAt(int index) {
-        return charAt(Constant.of(index));
+        return charAt(Const.of(index));
     }
 
     /**
@@ -115,7 +115,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr codePointAt(int index) {
-        return codePointAt(Constant.of(index));
+        return codePointAt(Const.of(index));
     }
 
     /**
@@ -139,7 +139,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr indexOf(int ch) {
-        return indexOf(Constant.of(ch));
+        return indexOf(Const.of(ch));
     }
 
     /**
@@ -149,7 +149,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr indexOf(String str) {
-        return indexOf(Constant.of(str));
+        return indexOf(Const.of(str));
     }
 
     /**
@@ -173,7 +173,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr lastIndexOf(int ch) {
-        return lastIndexOf(Constant.of(ch));
+        return lastIndexOf(Const.of(ch));
     }
 
     /**
@@ -183,7 +183,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr lastIndexOf(String str) {
-        return lastIndexOf(Constant.of(str));
+        return lastIndexOf(Const.of(str));
     }
 
     /**

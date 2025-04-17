@@ -56,7 +56,7 @@ public class LoopTest {
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);
                         loop.invokeVirtual(append, ret, loop.cast(item, String.class));
                         // if(item.equals("bar")) break;
-                        loop.if_(loop.exprEquals(item, Constant.of("bar")), isEqual -> {
+                        loop.if_(loop.exprEquals(item, Const.of("bar")), isEqual -> {
                             isEqual.break_(loop);
                         });
                     });
@@ -89,7 +89,7 @@ public class LoopTest {
                 mc.body(bc -> {
                     var ret = bc.define("ret", bc.new_(StringBuilder.class));
                     bc.forEach(p, (loop, item) -> {
-                        loop.if_(loop.exprEquals(item, Constant.of("bar")), isEqual -> {
+                        loop.if_(loop.exprEquals(item, Const.of("bar")), isEqual -> {
                             isEqual.continue_(loop);
                         });
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);
@@ -116,8 +116,8 @@ public class LoopTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var i = bc.define("i", Constant.of(0));
-                    var sum = bc.define("sum", Constant.of(0));
+                    var i = bc.define("i", Const.of(0));
+                    var sum = bc.define("sum", Const.of(0));
                     bc.doWhile(loop -> {
                         loop.inc(i);
                         loop.set(sum, loop.add(sum, i));
@@ -146,11 +146,11 @@ public class LoopTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var i = bc.define("i", Constant.of(0));
-                    var sum = bc.define("sum", Constant.of(0));
+                    var i = bc.define("i", Const.of(0));
+                    var sum = bc.define("sum", Const.of(0));
                     bc.doWhile(loop -> {
                         loop.inc(i);
-                        loop.if_(loop.eq(loop.rem(i, 2), Constant.of(0)), isEven -> {
+                        loop.if_(loop.eq(loop.rem(i, 2), Const.of(0)), isEven -> {
                             isEven.continue_(loop);
                         });
                         loop.set(sum, loop.add(sum, i));
@@ -177,8 +177,8 @@ public class LoopTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var i = bc.define("i", Constant.of(0));
-                    var sum = bc.define("sum", Constant.of(0));
+                    var i = bc.define("i", Const.of(0));
+                    var sum = bc.define("sum", Const.of(0));
                     bc.while_(cond -> cond.yield(cond.lt(i, 10)), loop -> {
                         loop.inc(i);
                         loop.set(sum, loop.add(sum, i));
@@ -207,11 +207,11 @@ public class LoopTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var i = bc.define("i", Constant.of(0));
-                    var sum = bc.define("sum", Constant.of(0));
+                    var i = bc.define("i", Const.of(0));
+                    var sum = bc.define("sum", Const.of(0));
                     bc.while_(cond -> cond.yield(cond.lt(i, 10)), loop -> {
                         loop.inc(i);
-                        loop.if_(loop.eq(loop.rem(i, 2), Constant.of(0)), isEven -> {
+                        loop.if_(loop.eq(loop.rem(i, 2), Const.of(0)), isEven -> {
                             isEven.continue_(loop);
                         });
                         loop.set(sum, loop.add(sum, i));

@@ -10,11 +10,11 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
-public final class NullConstant extends ConstantImpl {
+public final class NullConst extends ConstImpl {
 
     private final DynamicConstantDesc<Object> desc = DynamicConstantDesc.of(ConstantDescs.BSM_NULL_CONSTANT, "_", type());
 
-    public NullConstant(final ClassDesc type) {
+    public NullConst(final ClassDesc type) {
         super(type);
     }
 
@@ -34,11 +34,11 @@ public final class NullConstant extends ConstantImpl {
         return Optional.of(desc());
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof NullConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof NullConst other && equals(other);
     }
 
-    public boolean equals(final NullConstant other) {
+    public boolean equals(final NullConst other) {
         return this == other || other != null && type().equals(other.type());
     }
 

@@ -15,7 +15,7 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public abstract non-sealed class Item implements Expr {
     private final String creationSite = Util.trackCaller();
@@ -299,7 +299,7 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(node.prev(), op), op);
+                        return ConstImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(node.prev(), op), op);
                     }
 
                     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -338,7 +338,7 @@ public abstract non-sealed class Item implements Expr {
                 };
                 default -> new Item() {
                     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofFieldVarHandle(desc)
+                        return ConstImpl.ofFieldVarHandle(desc)
                                 .process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
                     }
 
@@ -391,7 +391,7 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofArrayVarHandle(Item.this.type())
+                        return ConstImpl.ofArrayVarHandle(Item.this.type())
                                 .process(Item.this.process(index.process(node.prev(), op), op), op);
                     }
 
@@ -423,7 +423,7 @@ public abstract non-sealed class Item implements Expr {
                     }
 
                     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstantImpl.ofArrayVarHandle(Item.this.type())
+                        return ConstImpl.ofArrayVarHandle(Item.this.type())
                                 .process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
                     }
 

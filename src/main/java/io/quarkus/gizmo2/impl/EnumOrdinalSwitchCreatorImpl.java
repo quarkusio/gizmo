@@ -10,23 +10,23 @@ import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.impl.constant.EnumConstant;
+import io.quarkus.gizmo2.impl.constant.EnumConst;
 
 /**
  * A switch over a single {@code enum} type by ordinal value.
  * Such switches are incompatible across modules in the event that the set of {@code enum} constants
  * changes.
  */
-public final class EnumOrdinalSwitchCreatorImpl extends PerfectHashSwitchCreatorImpl<EnumConstant> {
-    final List<EnumConstant> constants;
+public final class EnumOrdinalSwitchCreatorImpl extends PerfectHashSwitchCreatorImpl<EnumConst> {
+    final List<EnumConst> constants;
 
     EnumOrdinalSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
             final Class<? extends Enum<?>> enumClass) {
-        super(enclosing, switchVal, type, EnumConstant.class);
-        constants = Stream.of(enumClass.getEnumConstants()).map(EnumConstant::of).map(EnumConstant.class::cast).toList();
+        super(enclosing, switchVal, type, EnumConst.class);
+        constants = Stream.of(enumClass.getEnumConstants()).map(EnumConst::of).map(EnumConst.class::cast).toList();
     }
 
-    int staticHash(final EnumConstant val) {
+    int staticHash(final EnumConst val) {
         int idx = constants.indexOf(val);
         if (idx == -1) {
             throw new NoSuchElementException("No known enum constant " + val);
