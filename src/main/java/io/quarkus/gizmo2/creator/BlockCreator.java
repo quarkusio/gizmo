@@ -188,6 +188,16 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return get(var, MemoryOrder.AsDeclared);
     }
 
+    /**
+     * Read the value from a static field.
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @return the memory value (not {@code null})
+     */
+    default Expr getStaticField(FieldDesc desc) {
+        return get(Expr.staticField(desc));
+    }
+
     // writing memory
 
     /**
@@ -267,6 +277,16 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     default void set(Assignable var, long value) {
         set(var, Const.of(value));
+    }
+
+    /**
+     * Write the value to a static field.
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     */
+    default void setStaticField(FieldDesc desc, Expr value) {
+        set(Expr.staticField(desc), value);
     }
 
     /**
@@ -2129,7 +2149,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void block(Consumer<BlockCreator> nested);
 
     /**
-     * Create a block expression.
+     * Create a block expression of given {@code type}. The block must {@link #yield(Expr)} its result.
      *
      * @param type the output type (must not be {@code null})
      * @param nested the builder for the block body (must not be {@code null})
@@ -2454,7 +2474,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void autoClose(Expr resource, BiConsumer<BlockCreator, ? super LocalVar> body);
 
     /**
-     * Enter a {@code synchronized} block.
+     * Create a {@code synchronized} block. When the given {@code body} is executed,
+     * the monitor of given {@code monitor} is locked.
      *
      * @param monitor the expression of the object whose monitor is to be locked (must not be {@code null})
      * @param body the creator for the body of the block (must not be {@code null})
@@ -2462,14 +2483,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void synchronized_(Expr monitor, Consumer<BlockCreator> body);
 
     /**
-     * Enter a block which locks a {@link Lock}.
+     * Create a block which holds a {@link Lock}. When the given {@code body} is executed,
+     * the given {@code lock} is held.
      *
      * @param jucLock the expression of the lock object to be locked (must not be {@code null})
      * @param body the creator for the body of the block (must not be {@code null})
      */
     void locked(Expr jucLock, Consumer<BlockCreator> body);
 
-    // exiting
+    // returning normally
 
     /**
      * Return from the current method.
@@ -2545,7 +2567,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     void returnNull();
 
-    //xxx more returns
+    // throwing
 
     /**
      * Throw the given exception object.
@@ -3023,25 +3045,5 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
     void assert_(Consumer<BlockCreator> assertion, String message);
-
-    /**
-     * Read the value from a static field.
-     *
-     * @param desc the field descriptor (must not be {@code null})
-     * @return the memory value (not {@code null})
-     */
-    default Expr getStaticField(FieldDesc desc) {
-        return get(Expr.staticField(desc));
-    }
-
-    /**
-     * Write the value to a static field.
-     *
-     * @param desc the field descriptor (must not be {@code null})
-     * @param value the value to write
-     */
-    default void setStaticField(FieldDesc desc, Expr value) {
-        set(Expr.staticField(desc), value);
-    }
 
 }
