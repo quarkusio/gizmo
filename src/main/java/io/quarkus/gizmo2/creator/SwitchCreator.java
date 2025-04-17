@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.SwitchCreatorImpl;
 /**
  * A creator for a {@code switch} statement.
  * The individual switch cases do not fall through.
- * To simulate fall-through behavior, use {@link BlockCreator#redo(SwitchCreator, Const)}
+ * To simulate fall-through behavior, use {@link BlockCreator#gotoCase(SwitchCreator, Const)}
  * or one of its variants at the end of each case.
  */
 public sealed interface SwitchCreator extends SimpleTyped permits SwitchCreatorImpl {

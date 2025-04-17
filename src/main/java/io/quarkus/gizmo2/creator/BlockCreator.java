@@ -2307,9 +2307,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr switch_(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
 
     /**
-     * Exit an enclosing block.
-     * Blocks have a non-{@code void} {@linkplain #type() type}
-     * not be the target of a {@code break}.
+     * Exit the given enclosing block.
+     * Blocks that have a non-{@code void} {@linkplain #type() type}
+     * may not be the target of a {@code break}.
      *
      * @param outer the block to break (must not be {@code null})
      */
@@ -2322,8 +2322,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * <li>{@link #loop(Consumer)}</li>
      * <li>{@link #while_(Consumer, Consumer)}</li>
      * <li>{@link #doWhile(Consumer, Consumer)}</li>
+     * <li>{@link #forEach(Expr, BiConsumer)}</li>
      * </ul>
-     * To repeat an iteration, see {@link #redo(BlockCreator)}.
+     * To repeat an iteration, see {@link #goto_(BlockCreator)}.
      *
      * @param loop the loop to continue (must not be {@code null})
      * @throws IllegalArgumentException if the given block creator does not correspond to a loop
@@ -2331,85 +2332,85 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void continue_(BlockCreator loop);
 
     /**
-     * Restart an enclosing block.
+     * Jump to the start of the given enclosing block.
      * Blocks which are part of an expression-accepting operation may
-     * not be the target of a {@code redo}.
+     * not be the target of {@code goto_}.
      *
      * @param outer the block to restart (must not be {@code null})
      */
-    void redo(BlockCreator outer);
+    void goto_(BlockCreator outer);
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to the start of this block.
+     */
+    default void gotoStart() {
+        goto_(this);
+    }
+
+    /**
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    void redo(SwitchCreator switch_, Const case_);
+    void gotoCase(SwitchCreator switch_, Const case_);
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, int case_) {
-        redo(switch_, Const.of(case_));
+    default void gotoCase(SwitchCreator switch_, int case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, String case_) {
-        redo(switch_, Const.of(case_));
+    default void gotoCase(SwitchCreator switch_, String case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, Enum<?> case_) {
-        redo(switch_, Const.of(case_));
+    default void gotoCase(SwitchCreator switch_, Enum<?> case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, Class<?> case_) {
-        redo(switch_, Const.of(case_));
+    default void gotoCase(SwitchCreator switch_, Class<?> case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to the default case in an enclosing {@code switch}.
+     * Jump to the default case in the given enclosing {@code switch}.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      */
-    void redoDefault(SwitchCreator switch_);
-
-    /**
-     * Restart this block from the top.
-     */
-    default void redo() {
-        redo(this);
-    }
+    void gotoDefault(SwitchCreator switch_);
 
     /**
      * Enter a loop.

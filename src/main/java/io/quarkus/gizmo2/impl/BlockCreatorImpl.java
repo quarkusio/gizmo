@@ -355,16 +355,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return sci;
     }
 
-    public void redo(final SwitchCreator switch_, final Const case_) {
+    public void gotoCase(final SwitchCreator switch_, final Const case_) {
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
         if (!sci.contains(this)) {
             throw new IllegalArgumentException("The given switch statement does not enclose this block");
         }
-        addItem(new RedoCase(switch_, case_));
+        addItem(new GotoCase(switch_, case_));
     }
 
-    public void redoDefault(final SwitchCreator switch_) {
-        addItem(new RedoDefault(switch_));
+    public void gotoDefault(final SwitchCreator switch_) {
+        addItem(new GotoDefault(switch_));
     }
 
     public Expr iterate(final Expr items) {
@@ -776,7 +776,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                         builder.accept(b2, val);
                         if (b2.active()) {
                             b2.inc(idx);
-                            b2.redo();
+                            b2.gotoStart();
                         }
                     });
                 });
@@ -786,10 +786,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 b0.block(b1 -> {
                     b1.if_(b1.withIterator(itr).hasNext(), b2 -> {
                         LocalVar val = b2.define("$$val" + depth, b2.withIterator(itr).next());
-                        ((BlockCreatorImpl) b2).loopAction = bb -> bb.redo(b1);
+                        ((BlockCreatorImpl) b2).loopAction = bb -> bb.goto_(b1);
                         builder.accept(b2, val);
                         if (b2.active()) {
-                            b2.redo(b1);
+                            b2.goto_(b1);
                         }
                     });
                 });
@@ -982,30 +982,30 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         action.accept(this);
     }
 
-    public void redo(final BlockCreator outer) {
+    public void goto_(final BlockCreator outer) {
         if (!outer.contains(this)) {
             throw new IllegalStateException("Invalid block nesting");
         }
-        addItem(new Redo(outer));
+        addItem(new GotoStart(outer));
         markDone();
     }
 
     public void loop(final Consumer<BlockCreator> body) {
         block(b0 -> {
-            ((BlockCreatorImpl) b0).loopAction = bb -> bb.redo(b0);
+            ((BlockCreatorImpl) b0).loopAction = bb -> bb.goto_(b0);
             body.accept(b0);
             if (b0.active()) {
-                b0.redo();
+                b0.gotoStart();
             }
         });
     }
 
     public void while_(final Consumer<BlockCreator> cond, final Consumer<BlockCreator> body) {
         block(b0 -> b0.if_(b0.blockExpr(CD_boolean, cond), b1 -> {
-            ((BlockCreatorImpl) b1).loopAction = bb -> bb.redo(b0);
+            ((BlockCreatorImpl) b1).loopAction = bb -> bb.goto_(b0);
             body.accept(b1);
             if (b1.active()) {
-                b1.redo(b0);
+                b1.goto_(b0);
             }
         }));
     }
@@ -1017,7 +1017,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 body.accept(b1);
             });
             if (b0.active()) {
-                b0.if_(b0.blockExpr(CD_boolean, cond), b1 -> b1.redo(b0));
+                b0.if_(b0.blockExpr(CD_boolean, cond), b1 -> b1.goto_(b0));
             }
         });
     }

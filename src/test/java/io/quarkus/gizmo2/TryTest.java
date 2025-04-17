@@ -216,7 +216,7 @@ public final class TryTest {
                             try2.body(b3 -> {
                                 b3.if_(b3.eq(b3.rem(i, 4), 0), t4 -> {
                                     t4.inc(i);
-                                    t4.redo(b1);
+                                    t4.goto_(b1);
                                 });
                             });
                             try2.finally_(b3 -> {
