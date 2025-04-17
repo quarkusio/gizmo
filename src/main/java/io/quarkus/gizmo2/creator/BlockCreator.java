@@ -1871,6 +1871,30 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
+     * Cast an object value to the given type without a type check.
+     * If the cast is invalid, then class validation will fail.
+     *
+     * @param a the value to cast (must not be {@code null})
+     * @param toType the type to cast to (must not be {@code null})
+     * @return the cast value (not {@code null})
+     * @see #cast(Expr, ClassDesc)
+     */
+    Expr unsafeCast(Expr a, ClassDesc toType);
+
+    /**
+     * Cast an object value to the given type without a type check.
+     * If the cast is invalid, then class validation will fail.
+     *
+     * @param a the value to cast (must not be {@code null})
+     * @param toType the type to cast to (must not be {@code null})
+     * @return the cast value (not {@code null})
+     * @see #cast(Expr, Class)
+     */
+    default Expr unsafeCast(Expr a, Class<?> toType) {
+        return unsafeCast(a, Util.classDesc(toType));
+    }
+
+    /**
      * Box the given primitive value into its corresponding box type.
      *
      * @param a the primitive value (must not be {@code null})

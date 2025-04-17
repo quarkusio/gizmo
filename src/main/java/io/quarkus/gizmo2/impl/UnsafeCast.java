@@ -5,18 +5,18 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class CheckCast extends Cast {
+final class UnsafeCast extends Cast {
 
-    CheckCast(final Expr a, final ClassDesc toType) {
+    UnsafeCast(final Expr a, final ClassDesc toType) {
         super(a, toType);
     }
 
     public boolean bound() {
         // has side effects
-        return true;
+        return a.bound();
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.checkcast(toType);
+        // nothing
     }
 }
