@@ -42,7 +42,7 @@ public class InvocationTest {
             cc.staticMethod("invoke", mc -> {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
-                    bc.return_(bc.invokeStatic(returnString, Constant.of("input")));
+                    bc.return_(bc.invokeStatic(returnString, Const.of("input")));
                 });
             });
         });
@@ -78,7 +78,7 @@ public class InvocationTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
-                    bc.return_(bc.invokeVirtual(returnString, instance, Constant.of("input")));
+                    bc.return_(bc.invokeVirtual(returnString, instance, Const.of("input")));
                 });
             });
         });
@@ -137,7 +137,7 @@ public class InvocationTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
-                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Constant.of("input")));
+                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Const.of("input")));
                 });
             });
         });
@@ -190,7 +190,7 @@ public class InvocationTest {
                     Expr instance = bc.new_(cc.type());
                     MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeInterface(desc, instance, Constant.of("input")));
+                    bc.return_(bc.invokeInterface(desc, instance, Const.of("input")));
                 });
             });
         });
@@ -230,7 +230,7 @@ public class InvocationTest {
                 mc.body(bc -> {
                     MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeStatic(desc, Constant.of("input")));
+                    bc.return_(bc.invokeStatic(desc, Const.of("input")));
                 });
             });
         });
@@ -287,7 +287,7 @@ public class InvocationTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
-                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Constant.of("input")));
+                    bc.return_(bc.invokeVirtual(returnStringCaller, instance, Const.of("input")));
                 });
             });
         });
@@ -352,7 +352,7 @@ public class InvocationTest {
                     Expr instance = bc.new_(cc.type());
                     MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnStringCaller",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeInterface(desc, instance, Constant.of("input")));
+                    bc.return_(bc.invokeInterface(desc, instance, Const.of("input")));
                 });
             });
         });
@@ -380,7 +380,7 @@ public class InvocationTest {
                         bc.invokeStatic(returnString);
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Constant.of("input1"), Constant.of("input2"));
+                        bc.invokeStatic(returnString, Const.of("input1"), Const.of("input2"));
                     });
                     bc.return_();
                 });
@@ -405,7 +405,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", long.class);
                 mc.returning(long.class);
                 mc.body(bc -> {
-                    bc.return_(bc.add(input, Constant.of(1L)));
+                    bc.return_(bc.add(input, Const.of(1L)));
                 });
             });
 
@@ -413,43 +413,43 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", double.class);
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    bc.return_(bc.add(input, Constant.of(1.0)));
+                    bc.return_(bc.add(input, Const.of(1.0)));
                 });
             });
 
             cc.staticMethod("invoke", mc -> {
                 mc.body(bc -> {
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Constant.of(1));
+                        bc.invokeStatic(returnString, Const.of(1));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Constant.of(1L));
+                        bc.invokeStatic(returnString, Const.of(1L));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Constant.of(1.0));
-                    });
-
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Constant.of(1));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Constant.of(1.0));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Constant.of(""));
+                        bc.invokeStatic(returnString, Const.of(1.0));
                     });
 
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Constant.of(1));
+                        bc.invokeStatic(returnLong, Const.of(1));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Constant.of(1L));
+                        bc.invokeStatic(returnLong, Const.of(1.0));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Constant.of(1.0F));
+                        bc.invokeStatic(returnLong, Const.of(""));
+                    });
+
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Const.of(1));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Constant.of(""));
+                        bc.invokeStatic(returnDouble, Const.of(1L));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Const.of(1.0F));
+                    });
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        bc.invokeStatic(returnDouble, Const.of(""));
                     });
                     bc.return_();
                 });
@@ -466,14 +466,14 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", int.class);
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    bc.return_(bc.add(input, Constant.of(1)));
+                    bc.return_(bc.add(input, Const.of(1)));
                 });
             });
 
             cc.staticMethod("invoke", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    bc.return_(bc.invokeStatic(returnInt, Constant.of('a')));
+                    bc.return_(bc.invokeStatic(returnInt, Const.of('a')));
                 });
             });
         });

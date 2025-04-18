@@ -7,11 +7,11 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
-public final class EnumConstant extends ConstantImpl {
+public final class EnumConst extends ConstImpl {
     private final Enum.EnumDesc<?> desc;
     private final int hashCode;
 
-    public EnumConstant(final Enum.EnumDesc<?> desc) {
+    public EnumConst(final Enum.EnumDesc<?> desc) {
         super(desc.constantType());
         this.desc = desc;
         this.hashCode = Objects.hash(desc.constantName(), desc.constantType());
@@ -32,11 +32,11 @@ public final class EnumConstant extends ConstantImpl {
         return true;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof EnumConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof EnumConst other && equals(other);
     }
 
-    public boolean equals(final EnumConstant other) {
+    public boolean equals(final EnumConst other) {
         return this == other || other != null && name().equals(other.name()) && type().equals(other.type());
     }
 

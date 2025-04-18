@@ -8,7 +8,7 @@ import java.util.function.IntSupplier;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.MapOps;
@@ -53,15 +53,15 @@ public class MapOpsTest {
                 mc.body(bc -> {
                     var map = bc.define("map", bc.new_(HashMap.class));
                     MapOps mapOps = bc.withMap(map);
-                    mapOps.put(Constant.of("foo"), Constant.of("bar"));
-                    mapOps.put(Constant.of("alpha"), Constant.of("bravo"));
+                    mapOps.put(Const.of("foo"), Const.of("bar"));
+                    mapOps.put(Const.of("alpha"), Const.of("bravo"));
                     var size = mapOps.size();
                     bc.if_(bc.ne(size, 2), fail -> fail.return_(1));
                     bc.if_(mapOps.isEmpty(), fail -> fail.return_(2));
-                    bc.ifNot(mapOps.containsKey(Constant.of("foo")), fail -> fail.return_(3));
-                    bc.ifNot(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
+                    bc.ifNot(mapOps.containsKey(Const.of("foo")), fail -> fail.return_(3));
+                    bc.ifNot(bc.exprEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
                             fail -> fail.return_(4));
-                    bc.ifNot(bc.exprEquals(mapOps.remove(Constant.of("alpha")), Constant.of("bravo")),
+                    bc.ifNot(bc.exprEquals(mapOps.remove(Const.of("alpha")), Const.of("bravo")),
                             fail -> fail.return_(5));
                     bc.if_(bc.ne(mapOps.size(), 1), fail -> fail.return_(6));
                     mapOps.clear();
@@ -88,10 +88,10 @@ public class MapOpsTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    assertThrows(IllegalArgumentException.class, () -> bc.mapOf(Constant.of("foo")));
-                    var map = bc.define("map", bc.mapOf(Constant.of("foo"), Constant.of("bar")));
+                    assertThrows(IllegalArgumentException.class, () -> bc.mapOf(Const.of("foo")));
+                    var map = bc.define("map", bc.mapOf(Const.of("foo"), Const.of("bar")));
                     MapOps mapOps = bc.withMap(map);
-                    bc.ifNot(bc.exprEquals(mapOps.get(Constant.of("foo")), Constant.of("bar")),
+                    bc.ifNot(bc.exprEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
                             fail -> fail.return_(-1));
                     bc.return_(mapOps.size());
                 });

@@ -5,7 +5,7 @@ import static io.smallrye.common.constraint.Assert.*;
 import java.lang.constant.ClassDesc;
 import java.util.List;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -90,7 +90,7 @@ public class EqualsHashCodeToStringGenerator {
                     return;
                 }
 
-                LocalVar result = b0.define("result", Constant.of(1));
+                LocalVar result = b0.define("result", Const.of(1));
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
                         throw new IllegalArgumentException(
@@ -99,7 +99,7 @@ public class EqualsHashCodeToStringGenerator {
 
                     Expr value = b0.get(cc.this_().field(field));
                     Expr hash = field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value);
-                    b0.set(result, b0.add(b0.mul(Constant.of(31), result), hash));
+                    b0.set(result, b0.add(b0.mul(Const.of(31), result), hash));
                 }
 
                 b0.return_(result);

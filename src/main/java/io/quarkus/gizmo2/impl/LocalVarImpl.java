@@ -4,12 +4,12 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.impl.constant.IntBasedConstant;
+import io.quarkus.gizmo2.impl.constant.IntBasedConst;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
@@ -94,7 +94,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         };
     }
 
-    void emitInc(final BlockCreatorImpl block, final Constant amount) {
+    void emitInc(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
             block.addItem(new Item() {
                 public String itemName() {
@@ -102,7 +102,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.iinc(slot, ((IntBasedConstant) amount).intValue());
+                    cb.iinc(slot, ((IntBasedConst) amount).intValue());
                 }
             });
         } else {
@@ -110,7 +110,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         }
     }
 
-    void emitDec(final BlockCreatorImpl block, final Constant amount) {
+    void emitDec(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
             block.addItem(new Item() {
                 public String itemName() {
@@ -118,7 +118,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.iinc(slot, -((IntBasedConstant) amount).intValue());
+                    cb.iinc(slot, -((IntBasedConst) amount).intValue());
                 }
             });
         } else {

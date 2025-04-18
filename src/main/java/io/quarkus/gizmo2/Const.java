@@ -12,12 +12,12 @@ import java.util.List;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 /**
  * An expression which wraps a {@link ConstantDesc}.
  */
-public sealed interface Constant extends Expr, Constable permits ConstantImpl {
+public sealed interface Const extends Expr, Constable permits ConstImpl {
     /**
      * {@return the description of the constant}
      */
@@ -28,8 +28,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param constable the object to create a constant from (must not be {@code null})
      */
-    static Constant of(Constable constable) {
-        return ConstantImpl.of(constable);
+    static Const of(Constable constable) {
+        return ConstImpl.of(constable);
     }
 
     /**
@@ -37,8 +37,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param constantDesc the object to create a constant from (must not be {@code null})
      */
-    static Constant of(ConstantDesc constantDesc) {
-        return ConstantImpl.of(constantDesc);
+    static Const of(ConstantDesc constantDesc) {
+        return ConstImpl.of(constantDesc);
     }
 
     /**
@@ -46,8 +46,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param dcd the object to create a constant from (must not be {@code null})
      */
-    static Constant of(DynamicConstantDesc<?> dcd) {
-        return ConstantImpl.of(dcd);
+    static Const of(DynamicConstantDesc<?> dcd) {
+        return ConstImpl.of(dcd);
     }
 
     /**
@@ -55,8 +55,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
-    static Constant ofNull(ClassDesc type) {
-        return ConstantImpl.ofNull(type);
+    static Const ofNull(ClassDesc type) {
+        return ConstImpl.ofNull(type);
     }
 
     /**
@@ -64,8 +64,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param type the type of the null constant (used for inference of type) (must not be {@code null})
      */
-    static Constant ofNull(Class<?> type) {
-        return ConstantImpl.ofNull(type);
+    static Const ofNull(Class<?> type) {
+        return ConstImpl.ofNull(type);
     }
 
     /**
@@ -73,8 +73,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(ClassDesc value) {
-        return ConstantImpl.of(value);
+    static Const of(ClassDesc value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -82,8 +82,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Class<?> value) {
-        return ConstantImpl.of(value);
+    static Const of(Class<?> value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -91,8 +91,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(VarHandle.VarHandleDesc value) {
-        return ConstantImpl.of(value);
+    static Const of(VarHandle.VarHandleDesc value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -100,8 +100,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Enum.EnumDesc<?> value) {
-        return ConstantImpl.of(value);
+    static Const of(Enum.EnumDesc<?> value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -109,8 +109,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Byte value) {
-        return ConstantImpl.of(value);
+    static Const of(Byte value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -118,8 +118,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(byte value) {
-        return ConstantImpl.of(value);
+    static Const of(byte value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -127,8 +127,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Short value) {
-        return ConstantImpl.of(value);
+    static Const of(Short value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -136,8 +136,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(short value) {
-        return ConstantImpl.of(value);
+    static Const of(short value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -145,8 +145,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Character value) {
-        return ConstantImpl.of(value);
+    static Const of(Character value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -154,8 +154,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(char value) {
-        return ConstantImpl.of(value);
+    static Const of(char value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -163,8 +163,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Integer value) {
-        return ConstantImpl.of(value);
+    static Const of(Integer value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -172,8 +172,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(int value) {
-        return ConstantImpl.of(value);
+    static Const of(int value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -181,8 +181,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Long value) {
-        return ConstantImpl.of(value);
+    static Const of(Long value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -190,8 +190,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(long value) {
-        return ConstantImpl.of(value);
+    static Const of(long value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -199,8 +199,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Float value) {
-        return ConstantImpl.of(value);
+    static Const of(Float value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -208,8 +208,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(float value) {
-        return ConstantImpl.of(value);
+    static Const of(float value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -217,8 +217,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(Double value) {
-        return ConstantImpl.of(value);
+    static Const of(Double value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -226,8 +226,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(double value) {
-        return ConstantImpl.of(value);
+    static Const of(double value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -235,8 +235,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(Boolean value) {
-        return ConstantImpl.of(value);
+    static Const of(Boolean value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -244,8 +244,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from
      */
-    static Constant of(boolean value) {
-        return ConstantImpl.of(value);
+    static Const of(boolean value) {
+        return ConstImpl.of(value);
     }
 
     /**
@@ -254,8 +254,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
-    static Constant of(int value, TypeKind typeKind) {
-        return ConstantImpl.of(value, typeKind);
+    static Const of(int value, TypeKind typeKind) {
+        return ConstImpl.of(value, typeKind);
     }
 
     /**
@@ -264,8 +264,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
-    static Constant of(long value, TypeKind typeKind) {
-        return ConstantImpl.of(value, typeKind);
+    static Const of(long value, TypeKind typeKind) {
+        return ConstImpl.of(value, typeKind);
     }
 
     /**
@@ -274,8 +274,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
-    static Constant of(float value, TypeKind typeKind) {
-        return ConstantImpl.of(value, typeKind);
+    static Const of(float value, TypeKind typeKind) {
+        return ConstImpl.of(value, typeKind);
     }
 
     /**
@@ -284,8 +284,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param value the value to create a constant from
      * @param typeKind the (numeric) kind of value to use for inference (must not be {@code null})
      */
-    static Constant of(double value, TypeKind typeKind) {
-        return ConstantImpl.of(value, typeKind);
+    static Const of(double value, TypeKind typeKind) {
+        return ConstImpl.of(value, typeKind);
     }
 
     /**
@@ -293,15 +293,15 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param value the value to create a constant from (must not be {@code null})
      */
-    static Constant of(String value) {
-        return ConstantImpl.of(value);
+    static Const of(String value) {
+        return ConstImpl.of(value);
     }
 
     /**
      * {@return the {@code void} constant}
      */
-    static Constant ofVoid() {
-        return ConstantImpl.ofVoid();
+    static Const ofVoid() {
+        return ConstImpl.ofVoid();
     }
 
     /**
@@ -309,8 +309,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the descriptor of the field (must not be {@code null})
      */
-    static Constant ofFieldVarHandle(FieldDesc desc) {
-        return ConstantImpl.ofFieldVarHandle(desc);
+    static Const ofFieldVarHandle(FieldDesc desc) {
+        return ConstImpl.ofFieldVarHandle(desc);
     }
 
     /**
@@ -318,8 +318,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the descriptor of the field (must not be {@code null})
      */
-    static Constant ofStaticFieldVarHandle(FieldDesc desc) {
-        return ConstantImpl.ofStaticFieldVarHandle(desc);
+    static Const ofStaticFieldVarHandle(FieldDesc desc) {
+        return ConstImpl.ofStaticFieldVarHandle(desc);
     }
 
     /**
@@ -327,8 +327,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the descriptor of the field (must not be {@code null})
      */
-    static Constant ofStaticFinalField(FieldDesc desc) {
-        return ConstantImpl.ofStaticFinalField(desc);
+    static Const ofStaticFinalField(FieldDesc desc) {
+        return ConstImpl.ofStaticFinalField(desc);
     }
 
     /**
@@ -336,8 +336,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param arrayType the array type (must not be {@code null})
      */
-    static Constant ofArrayVarHandle(ClassDesc arrayType) {
-        return ConstantImpl.ofArrayVarHandle(arrayType);
+    static Const ofArrayVarHandle(ClassDesc arrayType) {
+        return ConstImpl.ofArrayVarHandle(arrayType);
     }
 
     /**
@@ -348,8 +348,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param methodHandle the method handle to invoke (must not be {@code null})
      * @param args the list of arguments (must not be {@code null})
      */
-    static Constant ofInvoke(Constant methodHandle, List<Constant> args) {
-        return ConstantImpl.ofInvoke(methodHandle, args);
+    static Const ofInvoke(Const methodHandle, List<Const> args) {
+        return ConstImpl.ofInvoke(methodHandle, args);
     }
 
     /**
@@ -360,8 +360,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param methodHandle the method handle to invoke (must not be {@code null})
      * @param args the list of arguments (must not be {@code null})
      */
-    static Constant ofInvoke(Constant methodHandle, Constant... args) {
-        return ConstantImpl.ofInvoke(methodHandle, List.of(args));
+    static Const ofInvoke(Const methodHandle, Const... args) {
+        return ConstImpl.ofInvoke(methodHandle, List.of(args));
     }
 
     /**
@@ -369,8 +369,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the method handle descriptor (must not be {@code null})
      */
-    static Constant of(MethodHandleDesc desc) {
-        return ConstantImpl.of(desc);
+    static Const of(MethodHandleDesc desc) {
+        return ConstImpl.of(desc);
     }
 
     /**
@@ -379,8 +379,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      * @param kind the invocation kind (must not be {@code null})
      * @param desc the method's descriptor (must not be {@code null})
      */
-    static Constant ofMethodHandle(InvokeKind kind, MethodDesc desc) {
-        return ConstantImpl.ofMethodHandle(kind, desc);
+    static Const ofMethodHandle(InvokeKind kind, MethodDesc desc) {
+        return ConstImpl.ofMethodHandle(kind, desc);
     }
 
     /**
@@ -388,8 +388,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the constructor descriptor (must not be {@code null})
      */
-    static Constant ofConstructorMethodHandle(ConstructorDesc desc) {
-        return ConstantImpl.ofConstructorMethodHandle(desc);
+    static Const ofConstructorMethodHandle(ConstructorDesc desc) {
+        return ConstImpl.ofConstructorMethodHandle(desc);
     }
 
     /**
@@ -397,8 +397,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    static Constant ofFieldSetterMethodHandle(FieldDesc desc) {
-        return ConstantImpl.ofFieldSetterMethodHandle(desc);
+    static Const ofFieldSetterMethodHandle(FieldDesc desc) {
+        return ConstImpl.ofFieldSetterMethodHandle(desc);
     }
 
     /**
@@ -406,8 +406,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    static Constant ofFieldGetterMethodHandle(FieldDesc desc) {
-        return ConstantImpl.ofFieldGetterMethodHandle(desc);
+    static Const ofFieldGetterMethodHandle(FieldDesc desc) {
+        return ConstImpl.ofFieldGetterMethodHandle(desc);
     }
 
     /**
@@ -415,8 +415,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    static Constant ofStaticFieldSetterMethodHandle(FieldDesc desc) {
-        return ConstantImpl.ofStaticFieldSetterMethodHandle(desc);
+    static Const ofStaticFieldSetterMethodHandle(FieldDesc desc) {
+        return ConstImpl.ofStaticFieldSetterMethodHandle(desc);
     }
 
     /**
@@ -424,8 +424,8 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    static Constant ofStaticFieldGetterMethodHandle(FieldDesc desc) {
-        return ConstantImpl.ofStaticFieldGetterMethodHandle(desc);
+    static Const ofStaticFieldGetterMethodHandle(FieldDesc desc) {
+        return ConstImpl.ofStaticFieldGetterMethodHandle(desc);
     }
 
     /**
@@ -433,7 +433,7 @@ public sealed interface Constant extends Expr, Constable permits ConstantImpl {
      *
      * @param desc the method type descriptor (must not be {@code null})
      */
-    static Constant of(MethodTypeDesc desc) {
-        return ConstantImpl.of(desc);
+    static Const of(MethodTypeDesc desc) {
+        return ConstImpl.of(desc);
     }
 }

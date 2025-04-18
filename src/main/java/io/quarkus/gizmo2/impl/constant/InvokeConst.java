@@ -7,21 +7,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-public final class InvokeConstant extends ConstantImpl {
-    private final MethodHandleConstant handleConstant;
-    private final List<ConstantImpl> args;
+public final class InvokeConst extends ConstImpl {
+    private final MethodHandleConst handleConstant;
+    private final List<ConstImpl> args;
 
-    InvokeConstant(final MethodHandleConstant handleConstant, final List<ConstantImpl> args) {
+    InvokeConst(final MethodHandleConst handleConstant, final List<ConstImpl> args) {
         super(handleConstant.desc().invocationType().returnType());
         this.handleConstant = handleConstant;
         this.args = args;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof InvokeConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof InvokeConst other && equals(other);
     }
 
-    public boolean equals(final InvokeConstant other) {
+    public boolean equals(final InvokeConst other) {
         return this == other || other != null && handleConstant.equals(other.handleConstant) && args.equals(other.args);
     }
 
@@ -32,7 +32,7 @@ public final class InvokeConstant extends ConstantImpl {
     public ConstantDesc desc() {
         return DynamicConstantDesc.of(
                 ConstantDescs.BSM_INVOKE,
-                args.stream().map(ConstantImpl::describeConstable).map(Optional::orElseThrow).toArray(ConstantDesc[]::new));
+                args.stream().map(ConstImpl::describeConstable).map(Optional::orElseThrow).toArray(ConstantDesc[]::new));
     }
 
     public Optional<? extends ConstantDesc> describeConstable() {
@@ -42,7 +42,7 @@ public final class InvokeConstant extends ConstantImpl {
     public StringBuilder toShortString(final StringBuilder b) {
         b.append("Invoke[");
         handleConstant.toShortString(b).append("](");
-        Iterator<ConstantImpl> iterator = args.iterator();
+        Iterator<ConstImpl> iterator = args.iterator();
         if (iterator.hasNext()) {
             handleConstant.toShortString(b);
             while (iterator.hasNext()) {

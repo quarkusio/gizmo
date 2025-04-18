@@ -69,7 +69,7 @@ public class LambdaTest {
                         });
                     });
                     b0.invokeInterface(MethodDesc.of(Consumer.class, "accept", void.class, Object.class), consumer,
-                            b0.box(Constant.of(10)));
+                            b0.box(Const.of(10)));
                     var retVal = b0.invokeVirtual(MethodDesc.of(AtomicInteger.class, "get", int.class), ret);
                     b0.return_(retVal);
                 });

@@ -6,7 +6,7 @@ import java.util.function.IntSupplier;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.TestClassMaker;
 
@@ -44,15 +44,15 @@ public class OptionalOpsTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    var foo = bc.define("foo", bc.optionalOf(Constant.of("foo")));
-                    var bar = bc.define("bar", bc.optionalOfNullable(Constant.of("bar")));
-                    var baz = bc.define("baz", bc.optionalOfNullable(Constant.ofNull(String.class)));
+                    var foo = bc.define("foo", bc.optionalOf(Const.of("foo")));
+                    var bar = bc.define("bar", bc.optionalOfNullable(Const.of("bar")));
+                    var baz = bc.define("baz", bc.optionalOfNullable(Const.ofNull(String.class)));
                     bc.if_(bc.withOptional(foo).isEmpty(), fail -> fail.return_(1));
                     bc.ifNot(bc.withOptional(foo).isPresent(), fail -> fail.return_(2));
-                    bc.ifNot(bc.exprEquals(Constant.of("foo"), bc.withOptional(foo).get()), fail -> fail.return_(3));
+                    bc.ifNot(bc.exprEquals(Const.of("foo"), bc.withOptional(foo).get()), fail -> fail.return_(3));
                     bc.if_(bc.withOptional(bar).isEmpty(), fail -> fail.return_(4));
                     bc.if_(bc.withOptional(baz).isPresent(), fail -> fail.return_(5));
-                    var qux = Constant.of("qux");
+                    var qux = Const.of("qux");
                     bc.ifNot(bc.exprEquals(qux, bc.withOptional(baz).orElse(qux)), fail -> fail.return_(6));
                     bc.return_(0);
                 });

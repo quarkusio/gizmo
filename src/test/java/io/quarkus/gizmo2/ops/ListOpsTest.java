@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.TestClassMaker;
@@ -36,7 +36,7 @@ public class ListOpsTest {
                     ListOps listOps = bc.withList(list);
                     var size = bc.define("size", listOps.size());
                     bc.if_(bc.gt(size, 1), gt1 -> {
-                        gt1.return_(gt1.withList(list).get(gt1.sub(size, Constant.of(1))));
+                        gt1.return_(gt1.withList(list).get(gt1.sub(size, Const.of(1))));
                     });
                     bc.return_(listOps.get(0));
                 });

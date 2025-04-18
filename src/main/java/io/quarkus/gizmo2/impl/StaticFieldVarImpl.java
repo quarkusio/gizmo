@@ -11,7 +11,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.impl.constant.ConstantImpl;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public final class StaticFieldVarImpl extends AssignableImpl implements StaticFieldVar {
     private final FieldDesc desc;
@@ -42,7 +42,7 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
             }
 
             protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return ConstantImpl.ofFieldVarHandle(desc).forEachDependency(node.prev(), op);
+                return ConstImpl.ofFieldVarHandle(desc).forEachDependency(node.prev(), op);
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -66,7 +66,7 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         return new Item() {
             protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                 if (mode != MemoryOrder.AsDeclared) {
-                    node = ConstantImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
+                    node = ConstImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
                 } else {
                     node = value.process(node.prev(), op);
                 }
