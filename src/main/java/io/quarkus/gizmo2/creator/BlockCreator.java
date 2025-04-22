@@ -1879,7 +1879,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the cast value (not {@code null})
      * @see #cast(Expr, ClassDesc)
      */
-    Expr unsafeCast(Expr a, ClassDesc toType);
+    Expr uncheckedCast(Expr a, ClassDesc toType);
 
     /**
      * Cast an object value to the given type without a type check.
@@ -1890,8 +1890,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the cast value (not {@code null})
      * @see #cast(Expr, Class)
      */
-    default Expr unsafeCast(Expr a, Class<?> toType) {
-        return unsafeCast(a, Util.classDesc(toType));
+    default Expr uncheckedCast(Expr a, Class<?> toType) {
+        return uncheckedCast(a, Util.classDesc(toType));
     }
 
     /**
