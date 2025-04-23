@@ -4,7 +4,6 @@ import static java.lang.constant.ConstantDescs.*;
 
 import java.io.Serializable;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -13,11 +12,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.TypeKind;
@@ -52,31 +50,6 @@ public final class Util {
 
     public static ClassDesc classDesc(Class<?> clazz) {
         return constantCache.get(clazz);
-    }
-
-    public static ClassDesc classDesc(Signature sig) {
-        if (sig instanceof Signature.ArrayTypeSig ats) {
-            return classDesc(ats.componentSignature()).arrayType();
-        } else if (sig instanceof Signature.ClassTypeSig cts) {
-            return cts.classDesc();
-        } else if (sig instanceof Signature.BaseTypeSig bts) {
-            return switch (bts.baseType()) {
-                case 'B' -> CD_byte;
-                case 'C' -> CD_char;
-                case 'D' -> CD_double;
-                case 'F' -> CD_float;
-                case 'I' -> CD_int;
-                case 'J' -> CD_long;
-                case 'S' -> CD_short;
-                case 'V' -> CD_void;
-                case 'Z' -> CD_boolean;
-                default -> throw new IllegalStateException();
-            };
-        } else if (sig instanceof Signature.TypeVarSig) {
-            return ConstantDescs.CD_Object;
-        } else {
-            throw new IllegalArgumentException("Unknown signature type: " + sig);
-        }
     }
 
     private static final MethodHandle actualKind;
@@ -151,22 +124,6 @@ public final class Util {
                 .orElseThrow(IllegalStateException::new));
     }
 
-    // TODO: move to using smallrye-common-search
-    public static int binarySearch(int from, int to, IntPredicate test) {
-        int low = from;
-        int high = to - 1;
-
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            if (test.test(mid)) {
-                low = mid + 1;
-            } else {
-                high = mid - 1;
-            }
-        }
-        return low;
-    }
-
     /**
      * Append a value to an immutable list without unneeded allocations.
      * If the list length is greater than some threshold, return an {@code ArrayList}
@@ -200,9 +157,9 @@ public final class Util {
     }
 
     public static <K, V> Map<V, K> reverseMap(Map<K, V> original) {
-        Map<V, K> result = new HashMap<>();
-        original.forEach((k, v) -> result.put(v, k));
-        return result;
+        return original.entrySet().stream().collect(Collectors.toUnmodifiableMap(
+                Map.Entry::getValue,
+                Map.Entry::getKey));
     }
 
     public static ClassDesc erased(Signature sig) {
@@ -230,23 +187,29 @@ public final class Util {
         }
     }
 
-    public static MethodDesc findSam(final Class<?> type) {
-        // this is a slow and expensive operation, but there seems to be no way around it.
-        Method sam = null;
-        for (Method method : type.getMethods()) {
-            int mods = method.getModifiers();
-            if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
-                if (sam == null) {
-                    sam = method;
-                } else {
-                    throw new IllegalArgumentException(
-                            "Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
+    private static final ClassValue<MethodDesc> samCache = new ClassValue<MethodDesc>() {
+        protected MethodDesc computeValue(final Class<?> type) {
+            // this is a slow and expensive operation, but there seems to be no way around it.
+            Method sam = null;
+            for (Method method : type.getMethods()) {
+                int mods = method.getModifiers();
+                if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
+                    if (sam == null) {
+                        sam = method;
+                    } else {
+                        throw new IllegalArgumentException(
+                                "Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
+                    }
                 }
             }
+            if (sam == null) {
+                throw new IllegalArgumentException("No SAM found on " + type);
+            }
+            return MethodDesc.of(sam.getDeclaringClass(), sam.getName(), sam.getReturnType(), sam.getParameterTypes());
         }
-        if (sam == null) {
-            throw new IllegalArgumentException("No SAM found on " + type);
-        }
-        return MethodDesc.of(sam.getDeclaringClass(), sam.getName(), sam.getReturnType(), sam.getParameterTypes());
+    };
+
+    public static MethodDesc findSam(final Class<?> type) {
+        return samCache.get(type);
     }
 }

@@ -282,7 +282,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             CD_double, CD_Double,
             CD_void, CD_Void);
 
-    private static final Map<ClassDesc, ClassDesc> unboxTypes = Map.copyOf(Util.reverseMap(boxTypes));
+    private static final Map<ClassDesc, ClassDesc> unboxTypes = Util.reverseMap(boxTypes);
 
     public Expr box(final Expr a) {
         if (unboxTypes.containsKey(a.type())) {
