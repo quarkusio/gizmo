@@ -6,6 +6,9 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicCallSiteDesc;
+import java.lang.constant.MethodTypeDesc;
+import java.lang.invoke.VarHandle;
+import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -35,10 +38,13 @@ import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.creator.ops.ThrowableOps;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.Item;
+import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
@@ -396,6 +402,392 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     default void dec(Assignable var) {
         dec(var, 1);
+    }
+
+    // atomic
+
+    private Expr compareAndSet(Assignable var, Expr expected, Expr update, String name) {
+        final Const varHandle;
+        final List<Expr> args;
+        final MethodTypeDesc typeDesc;
+        if (var instanceof StaticFieldVarImpl sfv) {
+            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
+            args = List.of(expected, update);
+            typeDesc = MethodTypeDesc.of(CD_boolean, var.type(), var.type());
+        } else if (var instanceof Item.FieldDeref fd) {
+            varHandle = Const.ofFieldVarHandle(fd.desc());
+            args = List.of(fd.instance(), expected, update);
+            typeDesc = MethodTypeDesc.of(CD_boolean, fd.instance().type(), var.type(), var.type());
+        } else if (var instanceof Item.ArrayDeref ad) {
+            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
+            args = List.of(ad.array(), ad.index(), expected, update);
+            typeDesc = MethodTypeDesc.of(CD_boolean, ad.array().type(), CD_int, var.type(), var.type());
+        } else {
+            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
+        }
+        return invokeVirtual(ClassMethodDesc.of(
+                CD_VarHandle,
+                name,
+                typeDesc), varHandle, args);
+    }
+
+    /**
+     * Atomically sets the value of {@code var} to {@code update} if its current value
+     * is equal to {@code expected}.
+     *
+     * @param var the variable to update (must not be {@code null})
+     * @param expected the expected comparison value (must not be {@code null})
+     * @param update the new value to set (must not be {@code null})
+     * @return a {@code boolean}-typed expression that is {@code true} if the update succeeded or {@code false} if it did not
+     */
+    default Expr compareAndSet(Assignable var, Expr expected, Expr update) {
+        return compareAndSet(var, expected, update, "compareAndSet");
+    }
+
+    /**
+     * Atomically sets the value of {@code var} to {@code update} if its current value
+     * is equal to {@code expected}.
+     * The comparison is "weak", meaning that it may fail sporadically.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Plain}</li>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the variable to update (must not be {@code null})
+     * @param expected the expected comparison value (must not be {@code null})
+     * @param update the new value to set (must not be {@code null})
+     * @param order the memory order which is used for the operation (must not be {@code null})
+     * @return a {@code boolean}-typed expression that is {@code true} if the update succeeded or {@code false} if it did not
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr weakCompareAndSet(Assignable var, Expr expected, Expr update, MemoryOrder order) {
+        return compareAndSet(var, expected, update,
+                switch (order) {
+                    case Volatile -> "weakCompareAndSet";
+                    case Acquire -> "weakCompareAndSetAcquire";
+                    case Release -> "weakCompareAndSetRelease";
+                    case Plain -> "weakCompareAndSetPlain";
+                    default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+                });
+    }
+
+    /**
+     * Atomically sets the value of {@code var} to {@code update} if its current value
+     * is equal to {@code expected}, using {@code volatile} memory ordering.
+     * The comparison is "weak", meaning that it may fail sporadically.
+     *
+     * @param var the variable to update (must not be {@code null})
+     * @param expected the expected comparison value (must not be {@code null})
+     * @param update the new value to set (must not be {@code null})
+     * @return a {@code boolean}-typed expression that is {@code true} if the update succeeded or {@code false} if it did not
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr weakCompareAndSet(Assignable var, Expr expected, Expr update) {
+        return weakCompareAndSet(var, expected, update, MemoryOrder.Volatile);
+    }
+
+    default Expr compareAndExchange(Assignable var, Expr expected, Expr update, MemoryOrder order) {
+        final Const varHandle;
+        final List<Expr> args;
+        final MethodTypeDesc typeDesc;
+        if (var instanceof StaticFieldVarImpl sfv) {
+            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
+            args = List.of(expected, update);
+            typeDesc = MethodTypeDesc.of(var.type(), var.type(), var.type());
+        } else if (var instanceof Item.FieldDeref fd) {
+            varHandle = Const.ofFieldVarHandle(fd.desc());
+            args = List.of(fd.instance(), expected, update);
+            typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type(), var.type());
+        } else if (var instanceof Item.ArrayDeref ad) {
+            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
+            args = List.of(ad.array(), ad.index(), expected, update);
+            typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type(), var.type());
+        } else {
+            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
+        }
+        return invokeVirtual(ClassMethodDesc.of(
+                CD_VarHandle,
+                switch (order) {
+                    case Volatile -> "compareAndExchange";
+                    case Acquire -> "compareAndExchangeAcquire";
+                    case Release -> "compareAndExchangeRelease";
+                    default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+                },
+                typeDesc), varHandle, args);
+    }
+
+    default Expr compareAndExchange(Assignable var, Expr expected, Expr update) {
+        return compareAndExchange(var, expected, update, MemoryOrder.Volatile);
+    }
+
+    private Expr getAndXxx(Assignable var, Expr arg, String name) {
+        final Const varHandle;
+        final List<Expr> args;
+        final MethodTypeDesc typeDesc;
+        if (var instanceof StaticFieldVarImpl sfv) {
+            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
+            args = List.of(arg);
+            typeDesc = MethodTypeDesc.of(var.type(), var.type());
+        } else if (var instanceof Item.FieldDeref fd) {
+            varHandle = Const.ofFieldVarHandle(fd.desc());
+            args = List.of(fd.instance(), arg);
+            typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type());
+        } else if (var instanceof Item.ArrayDeref ad) {
+            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
+            args = List.of(ad.array(), ad.index(), arg);
+            typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type());
+        } else {
+            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
+        }
+        return invokeVirtual(ClassMethodDesc.of(
+                CD_VarHandle,
+                name,
+                typeDesc), varHandle, args);
+    }
+
+    /**
+     * Atomically get and set the value of the target assignable expression.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param newValue the value to store (must not be {@code null})
+     * @param order the memory order (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr getAndSet(Assignable var, Expr newValue, MemoryOrder order) {
+        return getAndXxx(var, newValue, switch (order) {
+            case Volatile -> "getAndSet";
+            case Acquire -> "getAndSetAcquire";
+            case Release -> "getAndSetRelease";
+            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+        });
+    }
+
+    /**
+     * Atomically get and set the value of the target assignable expression
+     * using {@code volatile} semantics.
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param newValue the value to store (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr getAndSet(Assignable var, Expr newValue) {
+        return getAndSet(var, newValue, MemoryOrder.Volatile);
+    }
+
+    /**
+     * Atomically get, add, and store the value of the target assignable expression.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param amount the value to add to the target (must not be {@code null})
+     * @param order the memory order (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr getAndAdd(Assignable var, Expr amount, MemoryOrder order) {
+        return getAndXxx(var, amount, switch (order) {
+            case Volatile -> "getAndAdd";
+            case Acquire -> "getAndAddAcquire";
+            case Release -> "getAndAddRelease";
+            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+        });
+    }
+
+    /**
+     * Atomically get, add, and store the value of the target assignable expression
+     * using {@code volatile} semantics.
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param amount the value to add to the target (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr getAndAdd(Assignable var, Expr amount) {
+        return getAndAdd(var, amount, MemoryOrder.Volatile);
+    }
+
+    /**
+     * Atomically get, bitwise-or, and store the value of the target assignable expression.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-or with the target (must not be {@code null})
+     * @param order the memory order (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr getAndBitwiseOr(Assignable var, Expr other, MemoryOrder order) {
+        return getAndXxx(var, other, switch (order) {
+            case Volatile -> "getAndBitwiseOr";
+            case Acquire -> "getAndBitwiseOrAcquire";
+            case Release -> "getAndBitwiseOrRelease";
+            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+        });
+    }
+
+    /**
+     * Atomically get, bitwise-or, and store the value of the target assignable expression
+     * with {@code volatile} semantics.
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-or with the target (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr getAndBitwiseOr(Assignable var, Expr other) {
+        return getAndBitwiseOr(var, other, MemoryOrder.Volatile);
+    }
+
+    /**
+     * Atomically get, bitwise-and, and store the value of the target assignable expression.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-and with the target (must not be {@code null})
+     * @param order the memory order (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr getAndBitwiseAnd(Assignable var, Expr other, MemoryOrder order) {
+        return getAndXxx(var, other, switch (order) {
+            case Volatile -> "getAndBitwiseAnd";
+            case Acquire -> "getAndBitwiseAndAcquire";
+            case Release -> "getAndBitwiseAndRelease";
+            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+        });
+    }
+
+    /**
+     * Atomically get, bitwise-and, and store the value of the target assignable expression
+     * with {@code volatile} semantics.
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-and with the target (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr getAndBitwiseAnd(Assignable var, Expr other) {
+        return getAndBitwiseAnd(var, other, MemoryOrder.Volatile);
+    }
+
+    /**
+     * Atomically get, bitwise-xor, and store the value of the target assignable expression.
+     * The given memory order is used, and must be one of:
+     * <ul>
+     * <li>{@link MemoryOrder#Acquire}</li>
+     * <li>{@link MemoryOrder#Release}</li>
+     * <li>{@link MemoryOrder#Volatile}</li>
+     * </ul>
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-xor with the target (must not be {@code null})
+     * @param order the memory order (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
+     *         or if {@code order} is not one of the allowed values
+     */
+    default Expr getAndBitwiseXor(Assignable var, Expr other, MemoryOrder order) {
+        return getAndXxx(var, other, switch (order) {
+            case Volatile -> "getAndBitwiseXor";
+            case Acquire -> "getAndBitwiseXorAcquire";
+            case Release -> "getAndBitwiseXorRelease";
+            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
+        });
+    }
+
+    /**
+     * Atomically get, bitwise-xor, and store the value of the target assignable expression
+     * with {@code volatile} semantics.
+     *
+     * @param var the target assignable expression (must not be {@code null})
+     * @param other the value to bitwise-xor with the target (must not be {@code null})
+     * @return the previous value of the target expression (not {@code null})
+     * @throws IllegalArgumentException if the target variable cannot be accessed atomically
+     */
+    default Expr getAndBitwiseXor(Assignable var, Expr other) {
+        return getAndBitwiseXor(var, other, MemoryOrder.Volatile);
+    }
+
+    // fences
+
+    /**
+     * Emit a {@linkplain VarHandle#fullFence() full fence}.
+     */
+    default void fullFence() {
+        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "fullFence", MethodTypeDesc.of(CD_void)));
+    }
+
+    /**
+     * Emit an {@linkplain VarHandle#acquireFence() acquire fence}.
+     */
+    default void acquireFence() {
+        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "acquireFence", MethodTypeDesc.of(CD_void)));
+    }
+
+    /**
+     * Emit a {@linkplain VarHandle#releaseFence() release fence}.
+     */
+    default void releaseFence() {
+        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "release", MethodTypeDesc.of(CD_void)));
+    }
+
+    /**
+     * Emit a {@linkplain VarHandle#loadLoadFence() <em>LoadLoad</em> fence}.
+     */
+    default void loadLoadFence() {
+        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "loadLoadFence", MethodTypeDesc.of(CD_void)));
+    }
+
+    /**
+     * Emit a {@linkplain VarHandle#loadLoadFence() <em>StoreStore</em> fence}.
+     */
+    default void storeStoreFence() {
+        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "storeStoreFence", MethodTypeDesc.of(CD_void)));
+    }
+
+    /**
+     * Emit a {@linkplain Reference#reachabilityFence(Object) reachability fence} for the given object
+     * expression.
+     *
+     * @param obj the object expression (must not be {@code null})
+     * @throws IllegalArgumentException if the expression is not a reference type
+     */
+    default void reachabilityFence(Expr obj) {
+        if (obj.typeKind() != TypeKind.REFERENCE) {
+            throw new IllegalArgumentException("Reachability fence can only be emitted for reference types");
+        }
+        invokeStatic(MethodDesc.of(Reference.class, "reachabilityFence", MethodTypeDesc.of(CD_void, CD_Object)), obj);
     }
 
     // arrays
