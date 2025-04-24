@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
@@ -9,7 +11,6 @@ import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
 import java.util.List;
-import java.util.Objects;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Constant;
@@ -34,7 +35,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ConstantImpl of(Constable constable) {
-        Objects.requireNonNull(constable, "constable");
+        checkNotNullParam("constable", constable);
         if (constable instanceof ConstantImpl con) {
             return con;
         } else if (constable instanceof Boolean val) {
@@ -51,7 +52,7 @@ public abstract non-sealed class ConstantImpl extends Item implements Constant {
     }
 
     public static ConstantImpl of(ConstantDesc constantDesc) {
-        Objects.requireNonNull(constantDesc, "constantDesc");
+        checkNotNullParam("constantDesc", constantDesc);
         if (constantDesc instanceof Integer val) {
             return of(val);
         } else if (constantDesc instanceof Long val) {

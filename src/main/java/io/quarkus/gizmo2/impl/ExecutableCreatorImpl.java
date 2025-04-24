@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.constant.ClassDesc;
@@ -8,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -29,7 +29,6 @@ import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
-import io.smallrye.common.constraint.Assert;
 
 public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {
@@ -144,7 +143,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     void returning(final ClassDesc type) {
-        Objects.requireNonNull(type, "type");
+        checkNotNullParam("type", type);
         if (state >= ST_BODY) {
             throw new IllegalStateException("Return type may no longer be changed");
         }
@@ -285,7 +284,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     public void throws_(final ClassDesc throwableType) {
-        Assert.checkNotNullParam("throwableType", throwableType);
+        checkNotNullParam("throwableType", throwableType);
         if (state >= ST_BODY) {
             throw new IllegalStateException("Exception throws may no longer be established");
         }

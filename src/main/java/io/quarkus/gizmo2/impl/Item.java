@@ -1,12 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_VarHandle;
 import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -238,7 +238,8 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public InstanceFieldVar field(final FieldDesc desc) {
-        return new FieldDeref(Objects.requireNonNull(desc, "desc"));
+        checkNotNullParam("desc", desc);
+        return new FieldDeref(desc);
     }
 
     Item asBound() {

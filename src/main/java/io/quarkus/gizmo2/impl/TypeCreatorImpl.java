@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -102,7 +101,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public void withTypeParam(final Signature.TypeParam param) {
-        Objects.requireNonNull(param, "param");
+        checkNotNullParam("param", param);
         if (typeParams.isEmpty()) {
             typeParams = new ArrayList<>(4);
         }
@@ -202,7 +201,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public MethodDesc staticMethod(final String name, final Consumer<StaticMethodCreator> builder) {
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("builder", builder);
         MethodDesc desc;
         boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
         if (isInterface) {
@@ -221,8 +220,8 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public StaticFieldVar staticField(final String name, final Consumer<StaticFieldCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
         var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
         fc.accept(builder);
