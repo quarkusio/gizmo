@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.Objects;
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.util.function.BiFunction;
 
 /**
@@ -25,8 +26,10 @@ public final class Node {
      * @return the head node in the new list (not {@code null})
      */
     public static Node newList(Item head, Item tail) {
-        Node a = new Node(null, null, Objects.requireNonNull(head, "head"));
-        Node b = new Node(null, null, Objects.requireNonNull(tail, "tail"));
+        checkNotNullParam("head", head);
+        checkNotNullParam("tail", tail);
+        Node a = new Node(null, null, head);
+        Node b = new Node(null, null, tail);
         a.next = b;
         b.prev = a;
         return a;

@@ -1,8 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
@@ -35,8 +36,8 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
     }
 
     public MethodDesc defaultMethod(final String name, final Consumer<InstanceMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new DefaultMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -47,8 +48,8 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
     }
 
     public MethodDesc privateMethod(final String name, final Consumer<InstanceMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new PrivateInterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -59,8 +60,8 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
     }
 
     public MethodDesc method(final String name, final Consumer<AbstractMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new InterfaceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();

@@ -29,7 +29,9 @@ public final class Util {
     public static final ClassDesc[] NO_DESCS = new ClassDesc[0];
 
     // set system property means enabled, even with an empty value, except if the value is `false`
-    private static final boolean trackCreations = !"false".equals(System.getProperty("gizmo.trackCreations", "false"));
+    private static final boolean trackingEnabled = !"false".equals(System.getProperty("gizmo.enableTracking", "false"));
+
+    public static final String trackingMessage = "\nTo track callers and get an improved exception message, add the system property `gizmo.enableTracking`";
 
     private Util() {
     }
@@ -112,13 +114,13 @@ public final class Util {
         return b.toString();
     }
 
-    public static String trackCreationSite() {
-        return trackCreations ? callerOutsideGizmo() : null;
+    public static String trackCaller() {
+        return trackingEnabled ? callerOutsideGizmo() : null;
     }
 
     private static String callerOutsideGizmo() {
         return SW.walk(stream -> stream
-                .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2"))
+                .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2") || it.getClassName().endsWith("Test"))
                 .findFirst()
                 .map(it -> it.getClassName() + "." + it.getMethodName() + "():" + it.getLineNumber())
                 .orElseThrow(IllegalStateException::new));

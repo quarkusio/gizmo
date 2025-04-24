@@ -1,8 +1,9 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.lang.constant.ClassDesc;
 import java.util.List;
-import java.util.Objects;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -36,9 +37,9 @@ public class ObjectOps {
      * @param obj the receiver object (must not be {@code null})
      */
     protected ObjectOps(final Class<?> receiverType, final BlockCreator bc, final Expr obj) {
-        Objects.requireNonNull(receiverType, "receiverType");
-        Objects.requireNonNull(bc, "bc");
-        Objects.requireNonNull(obj, "obj");
+        checkNotNullParam("receiverType", receiverType);
+        checkNotNullParam("bc", bc);
+        checkNotNullParam("obj", obj);
         this.receiverType = receiverType;
         receiverTypeDesc = Util.classDesc(receiverType);
         this.bc = bc;

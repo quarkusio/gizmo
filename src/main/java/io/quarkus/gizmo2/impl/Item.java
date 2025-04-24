@@ -1,12 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_VarHandle;
 import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -18,7 +18,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstantImpl;
 
 public abstract non-sealed class Item implements Expr {
-    private final String creationSite = Util.trackCreationSite();
+    private final String creationSite = Util.trackCaller();
 
     public String itemName() {
         return getClass().getSimpleName();
@@ -176,8 +176,7 @@ public abstract non-sealed class Item implements Expr {
     private IllegalStateException missing() {
         if (creationSite == null) {
             return new IllegalStateException("Item " + this + " is not at its expected location (declare a LocalVar"
-                    + " to store values which are used away from their creation site)\nTo track Item creation sites"
-                    + " and get an improved exception message, add the system property `gizmo.trackCreations`");
+                    + " to store values which are used away from their creation site)" + Util.trackingMessage);
         } else {
             return new IllegalStateException("Item " + this + " created at " + creationSite + " is not at its expected"
                     + " location (declare a LocalVar to store values which are used away from their creation site)");
@@ -239,7 +238,8 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public InstanceFieldVar field(final FieldDesc desc) {
-        return new FieldDeref(Objects.requireNonNull(desc, "desc"));
+        checkNotNullParam("desc", desc);
+        return new FieldDeref(desc);
     }
 
     Item asBound() {

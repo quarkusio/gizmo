@@ -1,10 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
@@ -41,7 +42,7 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
     }
 
     public void withType(final ClassDesc type) {
-        Objects.requireNonNull(type, "type");
+        checkNotNullParam("type", type);
         if (type.equals(ConstantDescs.CD_void)) {
             throw new IllegalArgumentException("Bad type for parameter: " + type);
         }

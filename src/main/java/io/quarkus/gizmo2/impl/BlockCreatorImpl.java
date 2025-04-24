@@ -94,6 +94,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final ClassDesc returnType;
     private Consumer<BlockCreator> loopAction;
 
+    private String nestSite;
+    private String finishSite;
+
     private int anonClassCount;
     private List<Consumer<BlockCreator>> postInits;
 
@@ -199,6 +202,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private void markDone() {
         state = ST_DONE;
+        finishSite = Util.trackCaller();
     }
 
     public boolean isContainedBy(final BlockCreator other) {
@@ -421,7 +425,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr newArray(final ClassDesc componentType, final List<Expr> values) {
+    public Expr newArray(final ClassDesc componentType, final List<? extends Expr> values) {
         checkActive();
         // build the object graph
         int size = values.size();
@@ -623,7 +627,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 ctorType), captureExprs);
     }
 
-    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args,
+    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<? extends Expr> args,
             final Consumer<AnonymousClassCreator> builder) {
         ClassDesc ownerDesc = owner.type();
         int idx = ++anonClassCount;
@@ -689,7 +693,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new InstanceOf(obj, type));
     }
 
-    public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
+    public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
         New new_ = new New(ctor.owner());
         Dup dup_ = new Dup(new_);
@@ -709,19 +713,19 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return new_;
     }
 
-    public Expr invokeStatic(final MethodDesc method, final List<Expr> args) {
+    public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args));
     }
 
-    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
+    public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<? extends Expr> args) {
         Invoke invoke = new Invoke(ctor, instance, args);
         addItem(invoke);
         if (instance instanceof ThisExpr) {
@@ -733,11 +737,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invoke;
     }
 
-    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
     }
 
-    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<Expr> args) {
+    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {
         return addItem(new Item() {
             protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                 node = node.prev();
@@ -804,8 +808,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this);
         state = ST_NESTED;
+        nestSite = Util.trackCaller();
         block.accept(nested);
         state = ST_ACTIVE;
+        nestSite = null;
         addItem(block);
     }
 
@@ -813,8 +819,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
         state = ST_NESTED;
+        nestSite = Util.trackCaller();
         block.accept(nested);
         state = ST_ACTIVE;
+        nestSite = null;
         // inline it
         if (block.tail.item() instanceof Yield yield && yield.value().isVoid()) {
             // block should be safe to inline
@@ -1193,7 +1201,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 
-    public Expr listOf(final List<Expr> items) {
+    public Expr listOf(final List<? extends Expr> items) {
         int size = items.size();
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), items);
@@ -1202,7 +1210,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr setOf(final List<Expr> items) {
+    public Expr setOf(final List<? extends Expr> items) {
         int size = items.size();
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
@@ -1212,7 +1220,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     @Override
-    public Expr mapOf(List<Expr> items) {
+    public Expr mapOf(List<? extends Expr> items) {
         items = List.copyOf(items);
         int size = items.size();
         if (size % 2 != 0) {
@@ -1243,7 +1251,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         });
     }
 
-    public void printf(final String format, final List<Expr> values) {
+    public void printf(final String format, final List<? extends Expr> values) {
         invokeVirtual(
                 MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class),
                 Expr.staticField(FieldDesc.of(System.class, "out")),
@@ -1252,13 +1260,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void assert_(final Consumer<BlockCreator> assertion, final String message) {
-        if_(logicalAnd(
-                Constant.ofInvoke(
-                        Constant.ofMethodHandle(InvokeKind.VIRTUAL,
-                                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class))),
-                assertion), __ -> {
-                    throw_(AssertionError.class, message);
-                });
+        if_(logicalAnd(Constant.ofInvoke(Constant.ofMethodHandle(InvokeKind.VIRTUAL,
+                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class))), assertion),
+                __ -> throw_(AssertionError.class, message));
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -1313,6 +1317,23 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     private void checkActive() {
+        if (state == ST_DONE) {
+            if (finishSite == null) {
+                throw new IllegalStateException("This block has already been finished" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("This block has already been finished at " + finishSite);
+            }
+        }
+        if (state == ST_NESTED) {
+            if (nestSite == null) {
+                throw new IllegalStateException("This block is currently not active,"
+                        + " because a nested block is being created" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("This block is currently not active,"
+                        + " because a nested block is being created, starting at " + nestSite);
+            }
+        }
+        // leaving this just for future-proofing
         if (!active()) {
             throw new IllegalStateException("This block is not active");
         }

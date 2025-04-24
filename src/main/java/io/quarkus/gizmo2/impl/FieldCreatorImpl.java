@@ -1,11 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_int;
 import static java.lang.constant.ConstantDescs.CD_void;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
-import java.util.Objects;
 import java.util.Set;
 
 import io.github.dmlloyd.classfile.Signature;
@@ -47,13 +47,13 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
     }
 
     public void withTypeSignature(final Signature type) {
-        Objects.requireNonNull(type, "type");
+        checkNotNullParam("type", type);
         withType(Util.erased(type));
         genericType = type;
     }
 
     public void withType(final ClassDesc type) {
-        this.type = Objects.requireNonNull(type, "type");
+        this.type = checkNotNullParam("type", type);
         if (type.equals(CD_void)) {
             throw new IllegalArgumentException("Fields cannot have void type");
         }

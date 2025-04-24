@@ -1,8 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
@@ -48,8 +49,8 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public FieldDesc field(final String name, final Consumer<InstanceFieldCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var fc = new InstanceFieldCreatorImpl(this, type(), name);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
@@ -60,8 +61,8 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public MethodDesc method(final String name, final Consumer<InstanceMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new InstanceMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -72,8 +73,8 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public MethodDesc abstractMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new AbstractMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -84,8 +85,8 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public MethodDesc nativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new NativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -96,8 +97,8 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public MethodDesc staticNativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        Objects.requireNonNull(name, "name");
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("name", name);
+        checkNotNullParam("builder", builder);
         var mc = new StaticNativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
@@ -108,7 +109,7 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     }
 
     public ConstructorDesc constructor(final Consumer<ConstructorCreator> builder) {
-        Objects.requireNonNull(builder, "builder");
+        checkNotNullParam("builder", builder);
         var mc = new ConstructorCreatorImpl(this, preInits, postInits);
         mc.accept(builder);
         ConstructorDesc desc = mc.desc();

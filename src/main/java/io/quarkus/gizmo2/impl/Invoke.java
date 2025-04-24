@@ -22,12 +22,12 @@ final class Invoke extends Item {
     private final Opcode opcode;
     private final boolean isInterface;
 
-    Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<Expr> args) {
+    Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<? extends Expr> args) {
         this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, (Item) instance,
                 Util.reinterpretCast(args));
     }
 
-    Invoke(final ConstructorDesc desc, Expr instance, List<Expr> args) {
+    Invoke(final ConstructorDesc desc, Expr instance, List<? extends Expr> args) {
         this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, (Item) instance, Util.reinterpretCast(args));
     }
 
