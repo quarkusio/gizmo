@@ -425,7 +425,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr newArray(final ClassDesc componentType, final List<Expr> values) {
+    public Expr newArray(final ClassDesc componentType, final List<? extends Expr> values) {
         checkActive();
         // build the object graph
         int size = values.size();
@@ -627,7 +627,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 ctorType), captureExprs);
     }
 
-    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<Expr> args,
+    public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<? extends Expr> args,
             final Consumer<AnonymousClassCreator> builder) {
         ClassDesc ownerDesc = owner.type();
         int idx = ++anonClassCount;
@@ -693,7 +693,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new InstanceOf(obj, type));
     }
 
-    public Expr new_(final ConstructorDesc ctor, final List<Expr> args) {
+    public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
         New new_ = new New(ctor.owner());
         Dup dup_ = new Dup(new_);
@@ -713,19 +713,19 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return new_;
     }
 
-    public Expr invokeStatic(final MethodDesc method, final List<Expr> args) {
+    public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args));
     }
 
-    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
     }
 
-    public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<Expr> args) {
+    public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<? extends Expr> args) {
         Invoke invoke = new Invoke(ctor, instance, args);
         addItem(invoke);
         if (instance instanceof ThisExpr) {
@@ -737,11 +737,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invoke;
     }
 
-    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<Expr> args) {
+    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
     }
 
-    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<Expr> args) {
+    public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {
         return addItem(new Item() {
             protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                 node = node.prev();
@@ -1201,7 +1201,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 
-    public Expr listOf(final List<Expr> items) {
+    public Expr listOf(final List<? extends Expr> items) {
         int size = items.size();
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), items);
@@ -1210,7 +1210,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr setOf(final List<Expr> items) {
+    public Expr setOf(final List<? extends Expr> items) {
         int size = items.size();
         if (size <= 10) {
             return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
@@ -1220,7 +1220,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     @Override
-    public Expr mapOf(List<Expr> items) {
+    public Expr mapOf(List<? extends Expr> items) {
         items = List.copyOf(items);
         int size = items.size();
         if (size % 2 != 0) {
@@ -1251,7 +1251,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         });
     }
 
-    public void printf(final String format, final List<Expr> values) {
+    public void printf(final String format, final List<? extends Expr> values) {
         invokeVirtual(
                 MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class),
                 Expr.staticField(FieldDesc.of(System.class, "out")),

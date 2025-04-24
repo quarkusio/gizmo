@@ -429,7 +429,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    Expr newArray(ClassDesc componentType, List<Expr> values);
+    Expr newArray(ClassDesc componentType, List<? extends Expr> values);
 
     /**
      * Create a new array with the given type, initialized with the given values.
@@ -449,7 +449,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    default Expr newArray(Class<?> componentType, List<Expr> values) {
+    default Expr newArray(Class<?> componentType, List<? extends Expr> values) {
         return newArray(Util.classDesc(componentType), values);
     }
 
@@ -1799,7 +1799,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param builder the builder for the anonymous class (must not be {@code null})
      * @return the anonymous class instance (not {@code null})
      */
-    Expr newAnonymousClass(ConstructorDesc superCtor, List<Expr> args, Consumer<AnonymousClassCreator> builder);
+    Expr newAnonymousClass(ConstructorDesc superCtor, List<? extends Expr> args, Consumer<AnonymousClassCreator> builder);
 
     /**
      * Create a new anonymous class instance
@@ -1939,7 +1939,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
-    Expr new_(ConstructorDesc ctor, List<Expr> args);
+    Expr new_(ConstructorDesc ctor, List<? extends Expr> args);
 
     /**
      * Construct a new instance.
@@ -1959,7 +1959,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
-    default Expr new_(ClassDesc type, List<Expr> args) {
+    default Expr new_(ClassDesc type, List<? extends Expr> args) {
         return new_(ConstructorDesc.of(type, args.stream().map(Expr::type).toList()), args);
     }
 
@@ -1981,7 +1981,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
-    default Expr new_(Class<?> type, List<Expr> args) {
+    default Expr new_(Class<?> type, List<? extends Expr> args) {
         return new_(Util.classDesc(type), args);
     }
 
@@ -2005,7 +2005,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeStatic(MethodDesc method, List<Expr> args);
+    Expr invokeStatic(MethodDesc method, List<? extends Expr> args);
 
     /**
      * Invoke a static method.
@@ -2026,7 +2026,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeVirtual(MethodDesc method, Expr instance, List<Expr> args);
+    Expr invokeVirtual(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke a virtual method.
@@ -2048,7 +2048,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeSpecial(MethodDesc method, Expr instance, List<Expr> args);
+    Expr invokeSpecial(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke a method using "special" semantics.
@@ -2070,7 +2070,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the constructor call result (not {@code null}, usually {@link Constant#ofVoid()})
      */
-    Expr invokeSpecial(ConstructorDesc ctor, Expr instance, List<Expr> args);
+    Expr invokeSpecial(ConstructorDesc ctor, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke a constructor using "special" semantics.
@@ -2092,7 +2092,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeInterface(MethodDesc method, Expr instance, List<Expr> args);
+    Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke an interface method.
@@ -2106,7 +2106,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return invokeInterface(method, instance, List.of(args));
     }
 
-    Expr invokeDynamic(DynamicCallSiteDesc callSiteDesc, List<Expr> args);
+    Expr invokeDynamic(DynamicCallSiteDesc callSiteDesc, List<? extends Expr> args);
 
     default Expr invokeDynamic(DynamicCallSiteDesc callSiteDesc, Expr... args) {
         return invokeDynamic(callSiteDesc, List.of(args));
@@ -2898,7 +2898,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the list expression (not {@code null})
      * @see #withList(Expr)
      */
-    Expr listOf(List<Expr> items);
+    Expr listOf(List<? extends Expr> items);
 
     /**
      * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
@@ -2918,7 +2918,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the list expression (not {@code null})
      * @see #withSet(Expr)
      */
-    Expr setOf(List<Expr> items);
+    Expr setOf(List<? extends Expr> items);
 
     /**
      * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
@@ -2938,7 +2938,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return map expression (not {@code null})
      * @see BlockCreator#withMap(Expr)
      */
-    Expr mapOf(List<Expr> items);
+    Expr mapOf(List<? extends Expr> items);
 
     /**
      * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
@@ -3004,7 +3004,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param format the format string (must not be {@code null})
      * @param values the value expression(s) (must not be {@code null})
      */
-    void printf(String format, List<Expr> values);
+    void printf(String format, List<? extends Expr> values);
 
     /**
      * Insert a {@code printf} statement.
