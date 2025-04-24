@@ -36,7 +36,7 @@ public final class CastTest {
                 smc.returning(Object.class);
                 ParamVar input = smc.parameter("input", String.class);
                 smc.body(b0 -> {
-                    b0.return_(b0.unsafeCast(input, Object.class));
+                    b0.return_(b0.uncheckedCast(input, Object.class));
                 });
             });
         });

@@ -678,7 +678,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr unsafeCast(final Expr a, final ClassDesc toType) {
+    public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
         if (a.type().isPrimitive()) {
             throw new IllegalArgumentException("Only object types may be unsafely cast");
         }
