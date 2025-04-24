@@ -28,6 +28,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
     public void withInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
+        withType(initial.type());
         if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {
             this.initial = initial;
         } else {
