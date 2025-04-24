@@ -1802,8 +1802,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr newAnonymousClass(ConstructorDesc superCtor, List<? extends Expr> args, Consumer<AnonymousClassCreator> builder);
 
     /**
-     * Create a new anonymous class instance
-     * which implements an interface.
+     * Create a new anonymous class instance which implements the given interface.
      * The type of the returned instance is the anonymous class type.
      *
      * @param interface_ the interface to implement (must not be {@code null})
@@ -1821,11 +1820,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Create a new anonymous class instance
-     * which implements a single class or interface.
+     * Create a new anonymous class instance which extends the given class or implements the given interface.
+     * If the given supertype is a class, it has to have a zero-parameter constructor.
      * The type of the returned instance is the anonymous class type.
      *
-     * @param supertype the supertype to implement (must not be {@code null})
+     * @param supertype the supertype to extend or implement (must not be {@code null})
      * @param builder the builder for the anonymous class (must not be {@code null})
      * @return the anonymous class instance (not {@code null})
      */

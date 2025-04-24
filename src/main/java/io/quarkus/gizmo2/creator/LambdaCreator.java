@@ -4,11 +4,12 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.impl.LambdaCreatorImpl;
 
 /**
  * A creator for a lambda instance.
  */
-public sealed interface LambdaCreator extends BodyCreator, CapturingCreator permits io.quarkus.gizmo2.impl.LambdaCreatorImpl {
+public sealed interface LambdaCreator extends BodyCreator, CapturingCreator permits LambdaCreatorImpl {
     /**
      * {@return the descriptor of the lambda functional interface}
      */
