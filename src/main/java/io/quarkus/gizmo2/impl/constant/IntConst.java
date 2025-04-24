@@ -4,15 +4,15 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
-public final class IntConstant extends IntBasedConstant {
+public final class IntConst extends IntBasedConst {
     private final Integer value;
 
-    public IntConstant(Integer value) {
+    public IntConst(Integer value) {
         super(ConstantDescs.CD_int);
         this.value = value;
     }
 
-    public IntConstant(final ConstantDesc constantDesc) {
+    public IntConst(final ConstantDesc constantDesc) {
         this((Integer) constantDesc);
     }
 
@@ -20,11 +20,11 @@ public final class IntConstant extends IntBasedConstant {
         return value.intValue();
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof IntConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof IntConst other && equals(other);
     }
 
-    public boolean equals(final IntConstant other) {
+    public boolean equals(final IntConst other) {
         return this == other || other != null && value.equals(other.value);
     }
 

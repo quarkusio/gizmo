@@ -7,14 +7,14 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class VoidConstant extends ConstantImpl {
-    public static final VoidConstant INSTANCE = new VoidConstant();
+public final class VoidConst extends ConstImpl {
+    public static final VoidConst INSTANCE = new VoidConst();
 
-    private VoidConstant() {
+    private VoidConst() {
         super(ConstantDescs.CD_void);
     }
 
-    public boolean equals(final ConstantImpl other) {
+    public boolean equals(final ConstImpl other) {
         return other == this;
     }
 

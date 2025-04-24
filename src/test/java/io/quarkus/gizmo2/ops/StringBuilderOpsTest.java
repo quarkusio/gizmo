@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.LocalVar;
@@ -33,20 +33,20 @@ public class StringBuilderOpsTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     StringBuilderOps strBuilder = bc.withNewStringBuilder();
-                    strBuilder.append(Constant.of(true));
-                    strBuilder.append(Constant.of((byte) 1));
-                    strBuilder.append(Constant.of((short) 2));
-                    strBuilder.append(Constant.of(3));
-                    strBuilder.append(Constant.of(4L));
-                    strBuilder.append(Constant.of(5.0F));
-                    strBuilder.append(Constant.of(6.0));
-                    strBuilder.append(Constant.of('a'));
-                    Expr charArray = bc.newArray(char.class, Constant.of('b'), Constant.of('c'));
+                    strBuilder.append(Const.of(true));
+                    strBuilder.append(Const.of((byte) 1));
+                    strBuilder.append(Const.of((short) 2));
+                    strBuilder.append(Const.of(3));
+                    strBuilder.append(Const.of(4L));
+                    strBuilder.append(Const.of(5.0F));
+                    strBuilder.append(Const.of(6.0));
+                    strBuilder.append(Const.of('a'));
+                    Expr charArray = bc.newArray(char.class, Const.of('b'), Const.of('c'));
                     strBuilder.append(charArray);
-                    strBuilder.append(Constant.of("def"));
+                    strBuilder.append(Const.of("def"));
                     strBuilder.append(bc.invokeStatic(charSeq));
                     strBuilder.append(bc.new_(MyObject.class));
-                    strBuilder.append(Constant.ofNull(Object.class));
+                    strBuilder.append(Const.ofNull(Object.class));
                     strBuilder.append("...");
                     strBuilder.append('!');
                     bc.return_(strBuilder.objToString());

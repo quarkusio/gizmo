@@ -15,22 +15,22 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 
-public final class StaticFinalFieldConstant extends ConstantImpl {
+public final class StaticFinalFieldConst extends ConstImpl {
     private static final DirectMethodHandleDesc BSM_GET_STATIC_FINAL2 = ConstantDescs.ofConstantBootstrap(CD_ConstantBootstraps,
             "getStaticFinal", CD_Object, CD_Class, CD_Class);
 
     private final FieldDesc fieldDesc;
 
-    public StaticFinalFieldConstant(final FieldDesc fieldDesc) {
+    public StaticFinalFieldConst(final FieldDesc fieldDesc) {
         super(fieldDesc.type());
         this.fieldDesc = fieldDesc;
     }
 
-    public boolean equals(final ConstantImpl obj) {
-        return obj instanceof StaticFinalFieldConstant other && equals(other);
+    public boolean equals(final ConstImpl obj) {
+        return obj instanceof StaticFinalFieldConst other && equals(other);
     }
 
-    public boolean equals(final StaticFinalFieldConstant other) {
+    public boolean equals(final StaticFinalFieldConst other) {
         return this == other || other != null && fieldDesc.equals(other.fieldDesc);
     }
 

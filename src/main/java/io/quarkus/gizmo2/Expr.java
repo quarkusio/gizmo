@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 /**
  * An expression.
  */
-public sealed interface Expr extends SimpleTyped permits Constant, Assignable, This, Item {
+public sealed interface Expr extends SimpleTyped permits Const, Assignable, This, Item {
     /**
      * {@return the expression type (not {@code null})}
      */
@@ -33,7 +33,7 @@ public sealed interface Expr extends SimpleTyped permits Constant, Assignable, T
      * @param index the array index (must not be {@code null})
      */
     default Assignable elem(Integer index) {
-        return elem(Constant.of(index));
+        return elem(Const.of(index));
     }
 
     /**
@@ -42,11 +42,11 @@ public sealed interface Expr extends SimpleTyped permits Constant, Assignable, T
      * @param index the array index
      */
     default Assignable elem(int index) {
-        return elem(Constant.of(index));
+        return elem(Const.of(index));
     }
 
     /**
-     * {@return the length of the array represented by this expression}
+     * {@return the length of this array}
      */
     Expr length();
 
@@ -60,9 +60,9 @@ public sealed interface Expr extends SimpleTyped permits Constant, Assignable, T
     /**
      * {@return an assignable for a field of this object}
      *
-     * @param owner the descriptor of the owner of this field
-     * @param name the name of the field
-     * @param type the descriptor for the type of the field
+     * @param owner the descriptor of the owner of this field (must not be {@code null})
+     * @param name the name of the field (must not be {@code null})
+     * @param type the descriptor for the type of the field (must not be {@code null})
      */
     default InstanceFieldVar field(ClassDesc owner, String name, ClassDesc type) {
         return field(FieldDesc.of(owner, name, type));

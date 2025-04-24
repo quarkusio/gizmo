@@ -29,7 +29,7 @@ public class FieldAccessTest {
                 con.body(bc -> {
                     bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
                     var bravo = cc.this_().field(bravoDesc);
-                    bc.set(bravo, Constant.of("charlie"));
+                    bc.set(bravo, Const.of("charlie"));
                     bc.return_();
                 });
             });
@@ -56,7 +56,7 @@ public class FieldAccessTest {
         g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             var bravo = cc.staticField("bravo", fc -> {
                 fc.withType(String.class);
-                fc.withInitial(Constant.of("charlie"));
+                fc.withInitial(Const.of("charlie"));
             });
             cc.defaultConstructor();
             cc.staticMethod("test", mc -> {
@@ -74,11 +74,11 @@ public class FieldAccessTest {
                 mc.body(bc -> {
                     bc.ifNotNull(input, bc1 -> {
                         var b = bc1.get(bravo);
-                        var newVal = bc1.withString(b).concat(Constant.of("s"));
+                        var newVal = bc1.withString(b).concat(Const.of("s"));
                         bc1.set(bravo, newVal);
                     });
                     bc.ifNull(input, bc1 -> {
-                        bc1.setStaticField(bravo.desc(), Constant.of("NULL"));
+                        bc1.setStaticField(bravo.desc(), Const.of("NULL"));
                     });
                     bc.return_(bc.getStaticField(bravo.desc()));
                 });
@@ -94,7 +94,7 @@ public class FieldAccessTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.Alpha", cc -> {
-            var bravo = cc.constantField("BRAVO", Constant.of("charlie"));
+            var bravo = cc.constantField("BRAVO", Const.of("charlie"));
             cc.defaultConstructor();
             cc.method("test", mc -> {
                 // int test() {
@@ -137,7 +137,7 @@ public class FieldAccessTest {
                 smc.public_();
                 smc.body(b0 -> {
                     Expr instance = b0.new_(ClassDesc.of(className));
-                    b0.return_(b0.exprEquals(instance.field(field1), Constant.of("Hello world")));
+                    b0.return_(b0.exprEquals(instance.field(field1), Const.of("Hello world")));
                 });
             });
         });
@@ -155,7 +155,7 @@ public class FieldAccessTest {
                 ifc.withType(String.class);
                 ifc.final_();
                 ifc.withInitializer(b0 -> {
-                    b0.yield(b0.withString(Constant.of("Hello")).concat(Constant.of(" world")));
+                    b0.yield(b0.withString(Const.of("Hello")).concat(Const.of(" world")));
                 });
             });
             // create a constructor that does not explicitly initialize the field
@@ -172,7 +172,7 @@ public class FieldAccessTest {
                 smc.public_();
                 smc.body(b0 -> {
                     Expr instance = b0.new_(ClassDesc.of(className));
-                    b0.return_(b0.exprEquals(instance.field(field1), Constant.of("Hello world")));
+                    b0.return_(b0.exprEquals(instance.field(field1), Const.of("Hello world")));
                 });
             });
         });
@@ -190,7 +190,7 @@ public class FieldAccessTest {
                 fc.final_();
                 fc.withType(String.class);
                 fc.withInitializer(bc -> {
-                    bc.yield(bc.withString(Constant.of("Hello")).concat(Constant.of(" world")));
+                    bc.yield(bc.withString(Const.of("Hello")).concat(Const.of(" world")));
                 });
             });
             // a test method to verify the result
@@ -198,7 +198,7 @@ public class FieldAccessTest {
                 mc.returning(boolean.class);
                 mc.public_();
                 mc.body(bc -> {
-                    bc.return_(bc.exprEquals(fieldVar, Constant.of("Hello world")));
+                    bc.return_(bc.exprEquals(fieldVar, Const.of("Hello world")));
                 });
             });
         });

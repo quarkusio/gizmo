@@ -10,14 +10,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.smallrye.common.constraint.Assert;
 
 public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator {
-    private Constant initial;
+    private Const initial;
     private Consumer<BlockCreator> initializer;
 
     public StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name,
@@ -25,7 +25,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         super(owner, name, tc, isInterface ? Set.of(PUBLIC, STATIC, FINAL) : Set.of(STATIC));
     }
 
-    public void withInitial(final Constant initial) {
+    public void withInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
         if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {

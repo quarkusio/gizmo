@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator.ops;
 
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
@@ -62,7 +62,7 @@ public final class ClassOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr asSubclass(Class<?> clazz) {
-        return asSubclass(Constant.of(clazz));
+        return asSubclass(Const.of(clazz));
     }
 
     /**

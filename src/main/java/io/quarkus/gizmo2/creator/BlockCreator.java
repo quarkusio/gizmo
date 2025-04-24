@@ -17,7 +17,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Assignable;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -69,7 +69,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if this block's type is primitive or {@code void}
      */
     default void yieldNull() {
-        this.yield(Constant.ofNull(type()));
+        this.yield(Const.ofNull(type()));
     }
 
     // general state
@@ -188,6 +188,16 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return get(var, MemoryOrder.AsDeclared);
     }
 
+    /**
+     * Read the value from a static field.
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @return the memory value (not {@code null})
+     */
+    default Expr getStaticField(FieldDesc desc) {
+        return get(Expr.staticField(desc));
+    }
+
     // writing memory
 
     /**
@@ -215,7 +225,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the assignable (must not be {@code null})
      * @param value the value to write (must not be {@code null})
      */
-    default void set(Assignable var, Constant value) {
+    default void set(Assignable var, Const value) {
         set(var, (Expr) value);
     }
 
@@ -226,7 +236,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write (must not be {@code null})
      */
     default void set(Assignable var, ConstantDesc value) {
-        set(var, Constant.of(value));
+        set(var, Const.of(value));
     }
 
     /**
@@ -236,7 +246,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write (must not be {@code null})
      */
     default void set(Assignable var, Constable value) {
-        set(var, Constant.of(value));
+        set(var, Const.of(value));
     }
 
     /**
@@ -246,7 +256,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write (must not be {@code null})
      */
     default void set(Assignable var, String value) {
-        set(var, Constant.of(value));
+        set(var, Const.of(value));
     }
 
     /**
@@ -256,7 +266,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write
      */
     default void set(Assignable var, int value) {
-        set(var, Constant.of(value));
+        set(var, Const.of(value));
     }
 
     /**
@@ -266,7 +276,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the value to write
      */
     default void set(Assignable var, long value) {
-        set(var, Constant.of(value));
+        set(var, Const.of(value));
+    }
+
+    /**
+     * Write the value to a static field.
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @param value the value to write (must not be {@code null})
+     */
+    default void setStaticField(FieldDesc desc, Expr value) {
+        set(Expr.staticField(desc), value);
     }
 
     /**
@@ -325,7 +345,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to increase by (must not be {@code null})
      */
-    void inc(Assignable var, Constant amount);
+    void inc(Assignable var, Const amount);
 
     /**
      * Increment some variable by a constant amount.
@@ -335,7 +355,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param amount the constant amount to increase by
      */
     default void inc(Assignable var, int amount) {
-        inc(var, Constant.of(amount, var.typeKind()));
+        inc(var, Const.of(amount, var.typeKind()));
     }
 
     /**
@@ -355,7 +375,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param var the variable to modify (must not be {@code null})
      * @param amount the constant amount to decrease by (must not be {@code null})
      */
-    void dec(Assignable var, Constant amount);
+    void dec(Assignable var, Const amount);
 
     /**
      * Decrement some variable by a constant amount.
@@ -365,7 +385,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param amount the constant amount to decrease by
      */
     default void dec(Assignable var, int amount) {
-        dec(var, Constant.of(amount, var.typeKind()));
+        dec(var, Const.of(amount, var.typeKind()));
     }
 
     /**
@@ -397,7 +417,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the expression for the new array (not {@code null})
      */
     default Expr newEmptyArray(ClassDesc componentType, int size) {
-        return newEmptyArray(componentType, Constant.of(size));
+        return newEmptyArray(componentType, Const.of(size));
     }
 
     /**
@@ -419,7 +439,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the expression for the new array (not {@code null})
      */
     default Expr newEmptyArray(Class<?> componentType, int size) {
-        return newEmptyArray(Util.classDesc(componentType), Constant.of(size));
+        return newEmptyArray(Util.classDesc(componentType), Const.of(size));
     }
 
     /**
@@ -491,7 +511,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr eq(Expr a, int b) {
-        return eq(a, Constant.of(b, a.typeKind()));
+        return eq(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -505,7 +525,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr eq(Expr a, long b) {
-        return eq(a, Constant.of(b, a.typeKind()));
+        return eq(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -519,7 +539,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr eq(Expr a, float b) {
-        return eq(a, Constant.of(b, a.typeKind()));
+        return eq(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -533,7 +553,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr eq(Expr a, double b) {
-        return eq(a, Constant.of(b, a.typeKind()));
+        return eq(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -561,7 +581,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ne(Expr a, int b) {
-        return ne(a, Constant.of(b, a.typeKind()));
+        return ne(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -575,7 +595,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ne(Expr a, long b) {
-        return ne(a, Constant.of(b, a.typeKind()));
+        return ne(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -589,7 +609,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ne(Expr a, float b) {
-        return ne(a, Constant.of(b, a.typeKind()));
+        return ne(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -603,7 +623,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ne(Expr a, double b) {
-        return ne(a, Constant.of(b, a.typeKind()));
+        return ne(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -630,7 +650,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr lt(Expr a, int b) {
-        return lt(a, Constant.of(b, a.typeKind()));
+        return lt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -644,7 +664,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr lt(Expr a, long b) {
-        return lt(a, Constant.of(b, a.typeKind()));
+        return lt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -658,7 +678,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr lt(Expr a, float b) {
-        return lt(a, Constant.of(b, a.typeKind()));
+        return lt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -672,7 +692,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr lt(Expr a, double b) {
-        return lt(a, Constant.of(b, a.typeKind()));
+        return lt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -699,7 +719,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr gt(Expr a, int b) {
-        return gt(a, Constant.of(b, a.typeKind()));
+        return gt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -713,7 +733,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr gt(Expr a, long b) {
-        return gt(a, Constant.of(b, a.typeKind()));
+        return gt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -727,7 +747,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr gt(Expr a, float b) {
-        return gt(a, Constant.of(b, a.typeKind()));
+        return gt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -741,7 +761,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr gt(Expr a, double b) {
-        return gt(a, Constant.of(b, a.typeKind()));
+        return gt(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -768,7 +788,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr le(Expr a, int b) {
-        return le(a, Constant.of(b, a.typeKind()));
+        return le(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -782,7 +802,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr le(Expr a, long b) {
-        return le(a, Constant.of(b, a.typeKind()));
+        return le(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -796,7 +816,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr le(Expr a, float b) {
-        return le(a, Constant.of(b, a.typeKind()));
+        return le(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -810,7 +830,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr le(Expr a, double b) {
-        return le(a, Constant.of(b, a.typeKind()));
+        return le(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -837,7 +857,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ge(Expr a, int b) {
-        return ge(a, Constant.of(b, a.typeKind()));
+        return ge(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -851,7 +871,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ge(Expr a, long b) {
-        return ge(a, Constant.of(b, a.typeKind()));
+        return ge(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -865,7 +885,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ge(Expr a, float b) {
-        return ge(a, Constant.of(b, a.typeKind()));
+        return ge(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -879,7 +899,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the boolean result expression
      */
     default Expr ge(Expr a, double b) {
-        return ge(a, Constant.of(b, a.typeKind()));
+        return ge(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -952,7 +972,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr and(Expr a, int b) {
-        return and(a, Constant.of(b, a.typeKind()));
+        return and(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -964,7 +984,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr and(Expr a, long b) {
-        return and(a, Constant.of(b, a.typeKind()));
+        return and(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -987,7 +1007,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr or(Expr a, int b) {
-        return or(a, Constant.of(b, a.typeKind()));
+        return or(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -999,7 +1019,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr or(Expr a, long b) {
-        return or(a, Constant.of(b, a.typeKind()));
+        return or(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1022,7 +1042,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr xor(Expr a, int b) {
-        return xor(a, Constant.of(b, a.typeKind()));
+        return xor(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1034,7 +1054,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr xor(Expr a, long b) {
-        return xor(a, Constant.of(b, a.typeKind()));
+        return xor(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1066,7 +1086,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr shl(Expr a, int b) {
-        return shl(a, Constant.of(b, a.typeKind()));
+        return shl(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1078,7 +1098,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr shl(Expr a, long b) {
-        return shl(a, Constant.of(b, a.typeKind()));
+        return shl(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1101,7 +1121,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr shr(Expr a, int b) {
-        return shr(a, Constant.of(b, a.typeKind()));
+        return shr(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1113,7 +1133,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr shr(Expr a, long b) {
-        return shr(a, Constant.of(b, a.typeKind()));
+        return shr(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1136,7 +1156,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr ushr(Expr a, int b) {
-        return ushr(a, Constant.of(b, a.typeKind()));
+        return ushr(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1148,7 +1168,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr ushr(Expr a, long b) {
-        return ushr(a, Constant.of(b, a.typeKind()));
+        return ushr(a, Const.of(b, a.typeKind()));
     }
 
     // arithmetic
@@ -1173,7 +1193,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr add(Expr a, int b) {
-        return add(a, Constant.of(b, a.typeKind()));
+        return add(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1185,7 +1205,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr add(Expr a, long b) {
-        return add(a, Constant.of(b, a.typeKind()));
+        return add(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1197,7 +1217,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr add(Expr a, float b) {
-        return add(a, Constant.of(b, a.typeKind()));
+        return add(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1209,7 +1229,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr add(Expr a, double b) {
-        return add(a, Constant.of(b, a.typeKind()));
+        return add(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1232,7 +1252,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(Expr a, int b) {
-        return sub(a, Constant.of(b, a.typeKind()));
+        return sub(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1244,7 +1264,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(Expr a, long b) {
-        return sub(a, Constant.of(b, a.typeKind()));
+        return sub(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1256,7 +1276,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(Expr a, float b) {
-        return sub(a, Constant.of(b, a.typeKind()));
+        return sub(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1268,7 +1288,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(Expr a, double b) {
-        return sub(a, Constant.of(b, a.typeKind()));
+        return sub(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1280,7 +1300,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(int a, Expr b) {
-        return sub(Constant.of(a, b.typeKind()), b);
+        return sub(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1292,7 +1312,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(long a, Expr b) {
-        return sub(Constant.of(a, b.typeKind()), b);
+        return sub(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1304,7 +1324,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(float a, Expr b) {
-        return sub(Constant.of(a, b.typeKind()), b);
+        return sub(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1316,7 +1336,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr sub(double a, Expr b) {
-        return sub(Constant.of(a, b.typeKind()), b);
+        return sub(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1339,7 +1359,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr mul(Expr a, int b) {
-        return mul(a, Constant.of(b, a.typeKind()));
+        return mul(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1351,7 +1371,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr mul(Expr a, long b) {
-        return mul(a, Constant.of(b, a.typeKind()));
+        return mul(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1363,7 +1383,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr mul(Expr a, float b) {
-        return mul(a, Constant.of(b, a.typeKind()));
+        return mul(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1375,7 +1395,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr mul(Expr a, double b) {
-        return mul(a, Constant.of(b, a.typeKind()));
+        return mul(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1398,7 +1418,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(Expr a, int b) {
-        return div(a, Constant.of(b, a.typeKind()));
+        return div(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1410,7 +1430,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(Expr a, long b) {
-        return div(a, Constant.of(b, a.typeKind()));
+        return div(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1422,7 +1442,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(Expr a, float b) {
-        return div(a, Constant.of(b, a.typeKind()));
+        return div(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1434,7 +1454,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(Expr a, double b) {
-        return div(a, Constant.of(b, a.typeKind()));
+        return div(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1446,7 +1466,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(int a, Expr b) {
-        return div(Constant.of(a, b.typeKind()), b);
+        return div(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1458,7 +1478,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(long a, Expr b) {
-        return div(Constant.of(a, b.typeKind()), b);
+        return div(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1470,7 +1490,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(float a, Expr b) {
-        return div(Constant.of(a, b.typeKind()), b);
+        return div(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1482,7 +1502,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr div(double a, Expr b) {
-        return div(Constant.of(a, b.typeKind()), b);
+        return div(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1505,7 +1525,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(Expr a, int b) {
-        return rem(a, Constant.of(b, a.typeKind()));
+        return rem(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1517,7 +1537,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(Expr a, long b) {
-        return rem(a, Constant.of(b, a.typeKind()));
+        return rem(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1529,7 +1549,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(Expr a, float b) {
-        return rem(a, Constant.of(b, a.typeKind()));
+        return rem(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1541,7 +1561,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(Expr a, double b) {
-        return rem(a, Constant.of(b, a.typeKind()));
+        return rem(a, Const.of(b, a.typeKind()));
     }
 
     /**
@@ -1553,7 +1573,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(int a, Expr b) {
-        return rem(Constant.of(a, b.typeKind()), b);
+        return rem(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1565,7 +1585,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(long a, Expr b) {
-        return rem(Constant.of(a, b.typeKind()), b);
+        return rem(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1577,7 +1597,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(float a, Expr b) {
-        return rem(Constant.of(a, b.typeKind()), b);
+        return rem(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1589,7 +1609,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the operation result (not {@code null})
      */
     default Expr rem(double a, Expr b) {
-        return rem(Constant.of(a, b.typeKind()), b);
+        return rem(Const.of(a, b.typeKind()), b);
     }
 
     /**
@@ -1701,56 +1721,56 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param a the input expression (must not be {@code null})
      */
     default Expr logicalNot(Expr a) {
-        return a.typeKind() == TypeKind.BOOLEAN ? xor(a, Constant.of(1)) : eq(a, Constant.of(0, a.typeKind()));
+        return a.typeKind() == TypeKind.BOOLEAN ? xor(a, Const.of(1)) : eq(a, Const.of(0, a.typeKind()));
     }
 
     /**
-     * Perform a short-circuiting logical-OR operation.
+     * Perform a short-circuiting logical-OR operation (the {@code ||} operator).
      *
      * @param cond the condition to evaluate (must not be {@code null})
      * @param other the expression to evaluate if {@code cond} is {@code false}
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalOr(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, bc -> bc.yield(Constant.of(true)), other);
+        return cond(CD_boolean, cond, bc -> bc.yield(Const.of(true)), other);
     }
 
     /**
-     * Perform a short-circuiting logical-AND operation.
+     * Perform a short-circuiting logical-AND operation (the {@code &&} operator).
      *
      * @param cond the condition to evaluate (must not be {@code null})
      * @param other the expression to evaluate if {@code cond} is {@code true}
      * @return the boolean result of the operation (not {@code null})
      */
     default Expr logicalAnd(Expr cond, Consumer<BlockCreator> other) {
-        return selectExpr(CD_boolean, cond, other, bc -> bc.yield(Constant.of(false)));
+        return cond(CD_boolean, cond, other, bc -> bc.yield(Const.of(false)));
     }
 
     // conditional
 
     /**
-     * Evaluate a conditional (select) expression.
+     * Evaluate a conditional expression (the {@code ?:} operator).
      *
      * @param type the result type (must not be {@code null})
      * @param cond the boolean condition to evaluate (must not be {@code null})
      * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
-     * @return the resultant value (must not be {@code null})
+     * @return the result value (must not be {@code null})
      */
-    default Expr selectExpr(Class<?> type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse) {
-        return selectExpr(Util.classDesc(type), cond, ifTrue, ifFalse);
+    default Expr cond(Class<?> type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse) {
+        return cond(Util.classDesc(type), cond, ifTrue, ifFalse);
     }
 
     /**
-     * Evaluate a conditional (select) expression.
+     * Evaluate a conditional expression (the {@code ?:} operator).
      *
      * @param type the result type (must not be {@code null})
      * @param cond the boolean condition to evaluate (must not be {@code null})
      * @param ifTrue the expression to yield if the value was {@code true} (must not be {@code null})
      * @param ifFalse the expression to yield if the value was {@code false} (must not be {@code null})
-     * @return the resultant value (must not be {@code null})
+     * @return the result value (must not be {@code null})
      */
-    Expr selectExpr(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
+    Expr cond(ClassDesc type, Expr cond, Consumer<BlockCreator> ifTrue, Consumer<BlockCreator> ifFalse);
 
     // lambda
 
@@ -2067,7 +2087,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param ctor the constructor to call (must not be {@code null})
      * @param instance the invocation target (must not be {@code null})
      * @param args the arguments to pass to the constructor (must not be {@code null})
-     * @return the constructor call result (not {@code null}, usually {@link Constant#ofVoid()})
+     * @return the constructor call result (not {@code null}, usually {@link Const#ofVoid()})
      */
     Expr invokeSpecial(ConstructorDesc ctor, Expr instance, List<? extends Expr> args);
 
@@ -2077,7 +2097,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param ctor the constructor to call (must not be {@code null})
      * @param instance the invocation target (must not be {@code null})
      * @param args the arguments to pass to the constructor (must not be {@code null})
-     * @return the constructor call result (not {@code null}, usually {@link Constant#ofVoid()})
+     * @return the constructor call result (not {@code null}, usually {@link Const#ofVoid()})
      */
     default Expr invokeSpecial(ConstructorDesc ctor, Expr instance, Expr... args) {
         return invokeSpecial(ctor, instance, List.of(args));
@@ -2129,7 +2149,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void block(Consumer<BlockCreator> nested);
 
     /**
-     * Create a block expression.
+     * Create a block expression of given {@code type}. The block must {@link #yield(Expr)} its result.
      *
      * @param type the output type (must not be {@code null})
      * @param nested the builder for the block body (must not be {@code null})
@@ -2235,7 +2255,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param whenTrue the builder for a block to execute if the object reference is null (must not be {@code null})
      */
     default void ifNull(Expr obj, Consumer<BlockCreator> whenTrue) {
-        if_(eq(obj, Constant.ofNull(obj.type())), whenTrue);
+        if_(eq(obj, Const.ofNull(obj.type())), whenTrue);
     }
 
     /**
@@ -2245,7 +2265,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param whenTrue the builder for a block to execute if the object reference is not null (must not be {@code null})
      */
     default void ifNotNull(Expr obj, Consumer<BlockCreator> whenTrue) {
-        if_(ne(obj, Constant.ofNull(obj.type())), whenTrue);
+        if_(ne(obj, Const.ofNull(obj.type())), whenTrue);
     }
 
     /**
@@ -2307,9 +2327,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr switch_(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
 
     /**
-     * Exit an enclosing block.
-     * Blocks have a non-{@code void} {@linkplain #type() type}
-     * not be the target of a {@code break}.
+     * Exit the given enclosing block.
+     * Blocks that have a non-{@code void} {@linkplain #type() type}
+     * may not be the target of a {@code break}.
      *
      * @param outer the block to break (must not be {@code null})
      */
@@ -2322,8 +2342,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * <li>{@link #loop(Consumer)}</li>
      * <li>{@link #while_(Consumer, Consumer)}</li>
      * <li>{@link #doWhile(Consumer, Consumer)}</li>
+     * <li>{@link #forEach(Expr, BiConsumer)}</li>
      * </ul>
-     * To repeat an iteration, see {@link #redo(BlockCreator)}.
+     * To repeat an iteration, see {@link #goto_(BlockCreator)}.
      *
      * @param loop the loop to continue (must not be {@code null})
      * @throws IllegalArgumentException if the given block creator does not correspond to a loop
@@ -2331,85 +2352,85 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void continue_(BlockCreator loop);
 
     /**
-     * Restart an enclosing block.
+     * Jump to the start of the given enclosing block.
      * Blocks which are part of an expression-accepting operation may
-     * not be the target of a {@code redo}.
+     * not be the target of {@code goto_}.
      *
      * @param outer the block to restart (must not be {@code null})
      */
-    void redo(BlockCreator outer);
+    void goto_(BlockCreator outer);
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to the start of this block.
+     */
+    default void gotoStart() {
+        goto_(this);
+    }
+
+    /**
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    void redo(SwitchCreator switch_, Constant case_);
+    void gotoCase(SwitchCreator switch_, Const case_);
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, int case_) {
-        redo(switch_, Constant.of(case_));
+    default void gotoCase(SwitchCreator switch_, int case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, String case_) {
-        redo(switch_, Constant.of(case_));
+    default void gotoCase(SwitchCreator switch_, String case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, Enum<?> case_) {
-        redo(switch_, Constant.of(case_));
+    default void gotoCase(SwitchCreator switch_, Enum<?> case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to a specific case in an enclosing {@code switch}.
+     * Jump to a specific case in the given enclosing {@code switch}.
      * If the case is not represented in the {@code switch}, then
-     * it will be as if {@link #redoDefault(SwitchCreator)} was called instead.
+     * it will be as if {@link #gotoDefault(SwitchCreator)} was called instead.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      * @param case_ the constant representing the case to go to (must not be {@code null})
      */
-    default void redo(SwitchCreator switch_, Class<?> case_) {
-        redo(switch_, Constant.of(case_));
+    default void gotoCase(SwitchCreator switch_, Class<?> case_) {
+        gotoCase(switch_, Const.of(case_));
     }
 
     /**
-     * Jump to the default case in an enclosing {@code switch}.
+     * Jump to the default case in the given enclosing {@code switch}.
      *
      * @param switch_ the enclosing {@code switch} (must not be {@code null})
      */
-    void redoDefault(SwitchCreator switch_);
-
-    /**
-     * Restart this block from the top.
-     */
-    default void redo() {
-        redo(this);
-    }
+    void gotoDefault(SwitchCreator switch_);
 
     /**
      * Enter a loop.
@@ -2453,7 +2474,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void autoClose(Expr resource, BiConsumer<BlockCreator, ? super LocalVar> body);
 
     /**
-     * Enter a {@code synchronized} block.
+     * Create a {@code synchronized} block. When the given {@code body} is executed,
+     * the monitor of given {@code monitor} is locked.
      *
      * @param monitor the expression of the object whose monitor is to be locked (must not be {@code null})
      * @param body the creator for the body of the block (must not be {@code null})
@@ -2461,14 +2483,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void synchronized_(Expr monitor, Consumer<BlockCreator> body);
 
     /**
-     * Enter a block which locks a {@link Lock}.
+     * Create a block which holds a {@link Lock}. When the given {@code body} is executed,
+     * the given {@code lock} is held.
      *
      * @param jucLock the expression of the lock object to be locked (must not be {@code null})
      * @param body the creator for the body of the block (must not be {@code null})
      */
     void locked(Expr jucLock, Consumer<BlockCreator> body);
 
-    // exiting
+    // returning normally
 
     /**
      * Return from the current method.
@@ -2488,7 +2511,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the return value (must not be {@code null})
      */
     default void return_(String val) {
-        return_(Constant.of(val));
+        return_(Const.of(val));
     }
 
     /**
@@ -2497,7 +2520,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the return value (must not be {@code null})
      */
     default void return_(Class<?> val) {
-        return_(Constant.of(val));
+        return_(Const.of(val));
     }
 
     /**
@@ -2506,7 +2529,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the return value
      */
     default void return_(boolean val) {
-        return_(Constant.of(val));
+        return_(Const.of(val));
     }
 
     /**
@@ -2515,7 +2538,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param val the return value
      */
     default void return_(int val) {
-        return_(Constant.of(val));
+        return_(Const.of(val));
     }
 
     /**
@@ -2536,7 +2559,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Return {@code 0} from the current method.
      */
     default void returnIntZero() {
-        return_(Constant.of(0));
+        return_(Const.of(0));
     }
 
     /**
@@ -2544,7 +2567,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      */
     void returnNull();
 
-    //xxx more returns
+    // throwing
 
     /**
      * Throw the given exception object.
@@ -2569,7 +2592,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message (must not be {@code null})
      */
     default void throw_(ClassDesc type, String message) {
-        throw_(new_(type, Constant.of(message)));
+        throw_(new_(type, Const.of(message)));
     }
 
     /**
@@ -3022,25 +3045,5 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
     void assert_(Consumer<BlockCreator> assertion, String message);
-
-    /**
-     * Read the value from a static field.
-     *
-     * @param desc the field descriptor (must not be {@code null})
-     * @return the memory value (not {@code null})
-     */
-    default Expr getStaticField(FieldDesc desc) {
-        return get(Expr.staticField(desc));
-    }
-
-    /**
-     * Write the value to a static field.
-     *
-     * @param desc the field descriptor (must not be {@code null})
-     * @param value the value to write
-     */
-    default void setStaticField(FieldDesc desc, Expr value) {
-        set(Expr.staticField(desc), value);
-    }
 
 }

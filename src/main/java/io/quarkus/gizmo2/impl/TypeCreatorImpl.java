@@ -29,7 +29,7 @@ import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -308,9 +308,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                     MethodHandles.Lookup.ClassOption[].class),
                                     lookup,
                                     bytes,
-                                    Constant.of(false),
+                                    Const.of(false),
                                     b0.newArray(MethodHandles.Lookup.ClassOption.class,
-                                            Constant.of(MethodHandles.Lookup.ClassOption.NESTMATE))));
+                                            Const.of(MethodHandles.Lookup.ClassOption.NESTMATE))));
                             var definedClass = b0.define("definedClass", b0.invokeVirtual(
                                     MethodDesc.of(
                                             MethodHandles.Lookup.class,
@@ -324,7 +324,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                             MethodType.class,
                                             Class.class),
                                     methodType,
-                                    Constant.of(void.class)));
+                                    Const.of(void.class)));
                             var ctorHandle = b0.define("ctorHandle", b0.invokeVirtual(
                                     MethodDesc.of(
                                             MethodHandles.Lookup.class,

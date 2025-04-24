@@ -27,23 +27,23 @@ public final class SwitchTest {
                     b0.return_(b0.switch_(CD_char, cp, sc -> {
                         sc.case_(cc -> {
                             cc.of('a');
-                            cc.body(b1 -> b1.yield(Constant.of('i')));
+                            cc.body(b1 -> b1.yield(Const.of('i')));
                         });
                         sc.case_(cc -> {
                             cc.of('e');
-                            cc.body(b1 -> b1.yield(Constant.of('o')));
+                            cc.body(b1 -> b1.yield(Const.of('o')));
                         });
                         sc.case_(cc -> {
                             cc.of('i');
-                            cc.body(b1 -> b1.yield(Constant.of('u')));
+                            cc.body(b1 -> b1.yield(Const.of('u')));
                         });
                         sc.case_(cc -> {
                             cc.of('o');
-                            cc.body(b1 -> b1.yield(Constant.of('a')));
+                            cc.body(b1 -> b1.yield(Const.of('a')));
                         });
                         sc.case_(cc -> {
                             cc.of('u');
-                            cc.body(b1 -> b1.yield(Constant.of('e')));
+                            cc.body(b1 -> b1.yield(Const.of('e')));
                         });
                         sc.default_(b1 -> b1.yield(cp));
                     }));
@@ -68,23 +68,23 @@ public final class SwitchTest {
                     b0.return_(b0.switch_(CD_int, cp, sc -> {
                         sc.case_(cc -> {
                             cc.of('a');
-                            cc.body(b1 -> b1.yield(Constant.of((int) 'i')));
+                            cc.body(b1 -> b1.yield(Const.of((int) 'i')));
                         });
                         sc.case_(cc -> {
                             cc.of('e');
-                            cc.body(b1 -> b1.yield(Constant.of((int) 'o')));
+                            cc.body(b1 -> b1.yield(Const.of((int) 'o')));
                         });
                         sc.case_(cc -> {
                             cc.of('i');
-                            cc.body(b1 -> b1.yield(Constant.of((int) 'u')));
+                            cc.body(b1 -> b1.yield(Const.of((int) 'u')));
                         });
                         sc.case_(cc -> {
                             cc.of('o');
-                            cc.body(b1 -> b1.yield(Constant.of((int) 'a')));
+                            cc.body(b1 -> b1.yield(Const.of((int) 'a')));
                         });
                         sc.case_(cc -> {
                             cc.of('u');
-                            cc.body(b1 -> b1.yield(Constant.of((int) 'e')));
+                            cc.body(b1 -> b1.yield(Const.of((int) 'e')));
                         });
                         sc.default_(b1 -> b1.yield(cp));
                     }));
@@ -109,15 +109,15 @@ public final class SwitchTest {
                     b0.return_(b0.switch_(CD_String, clazz, sc -> {
                         sc.case_(cc -> {
                             cc.of(String.class);
-                            cc.body(b1 -> b1.yield(Constant.of("It's String!")));
+                            cc.body(b1 -> b1.yield(Const.of("It's String!")));
                         });
                         sc.case_(cc -> {
                             cc.of(Integer.class);
                             cc.of(int.class);
-                            cc.body(b1 -> b1.yield(Constant.of("Some kinda integer!")));
+                            cc.body(b1 -> b1.yield(Const.of("Some kinda integer!")));
                         });
                         sc.default_(b1 -> {
-                            b1.yield(Constant.of("Gosh, I dunno"));
+                            b1.yield(Const.of("Gosh, I dunno"));
                         });
                     }));
                 });
@@ -148,11 +148,11 @@ public final class SwitchTest {
                 ParamVar name = mc.parameter("name", String.class);
                 mc.body(b0 -> {
                     b0.return_(b0.switch_(CD_int, name, sc -> {
-                        sc.caseOf("zero", b1 -> b1.yield(Constant.of(0)));
-                        sc.caseOf("one", b1 -> b1.yield(Constant.of(1)));
-                        sc.caseOf("two", b1 -> b1.yield(Constant.of(2)));
-                        sc.caseOf("three", b1 -> b1.yield(Constant.of(3)));
-                        sc.default_(b1 -> b1.yield(Constant.of(-1)));
+                        sc.caseOf("zero", b1 -> b1.yield(Const.of(0)));
+                        sc.caseOf("one", b1 -> b1.yield(Const.of(1)));
+                        sc.caseOf("two", b1 -> b1.yield(Const.of(2)));
+                        sc.caseOf("three", b1 -> b1.yield(Const.of(3)));
+                        sc.default_(b1 -> b1.yield(Const.of(-1)));
                     }));
                 });
             });

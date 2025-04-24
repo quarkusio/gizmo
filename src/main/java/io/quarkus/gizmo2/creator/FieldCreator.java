@@ -6,7 +6,7 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
-import io.quarkus.gizmo2.Constant;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.FieldCreatorImpl;
@@ -52,7 +52,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      *
      * @param initial the initial value (must not be {@code null})
      */
-    void withInitial(Constant initial);
+    void withInitial(Const initial);
 
     /**
      * Provide an initial constant value for this field.
@@ -60,7 +60,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(int initial) {
-        withInitial(Constant.of(initial));
+        withInitial(Const.of(initial));
     }
 
     /**
@@ -69,7 +69,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(long initial) {
-        withInitial(Constant.of(initial));
+        withInitial(Const.of(initial));
     }
 
     /**
@@ -78,7 +78,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(float initial) {
-        withInitial(Constant.of(initial));
+        withInitial(Const.of(initial));
     }
 
     /**
@@ -87,7 +87,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(double initial) {
-        withInitial(Constant.of(initial));
+        withInitial(Const.of(initial));
     }
 
     /**
@@ -96,7 +96,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(String initial) {
-        withInitial(initial == null ? Constant.ofNull(CD_String) : Constant.of(initial));
+        withInitial(initial == null ? Const.ofNull(CD_String) : Const.of(initial));
     }
 
     /**
@@ -105,7 +105,7 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param initial the initial value
      */
     default void withInitial(Class<?> initial) {
-        withInitial(initial == null ? Constant.ofNull(CD_Class) : Constant.of(initial));
+        withInitial(initial == null ? Const.ofNull(CD_Class) : Const.of(initial));
     }
 
     /**

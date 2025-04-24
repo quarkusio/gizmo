@@ -97,7 +97,7 @@ public final class TryTest {
                 smc.body(b0 -> {
                     b0.try_(try0 -> {
                         try0.body(b1 -> {
-                            b1.div(123, Constant.of(0));
+                            b1.div(123, Const.of(0));
                             b1.returnFalse();
                         });
                         try0.catch_(ArithmeticException.class, "e", (b1, e) -> {
@@ -112,7 +112,7 @@ public final class TryTest {
                 smc.body(b0 -> {
                     b0.try_(try0 -> {
                         try0.body(b1 -> {
-                            b1.div(123, Constant.of(0));
+                            b1.div(123, Const.of(0));
                             b1.returnFalse();
                         });
                         // this one should take precedence because it comes first
@@ -131,7 +131,7 @@ public final class TryTest {
                 smc.body(b0 -> {
                     b0.try_(try0 -> {
                         try0.body(b1 -> {
-                            b1.div(123, Constant.of(0));
+                            b1.div(123, Const.of(0));
                             b1.returnFalse();
                         });
                         try0.catch_(Throwable.class, "e", (b1, e) -> {
@@ -167,8 +167,8 @@ public final class TryTest {
                 smc.body(b0 -> {
                     LocalVar gotIt = b0.declare("gotIt", boolean.class);
                     b0.try_(try0 -> {
-                        try0.body(b1 -> b1.set(gotIt, Constant.of(false)));
-                        try0.finally_(b1 -> b1.set(gotIt, Constant.of(true)));
+                        try0.body(b1 -> b1.set(gotIt, Const.of(false)));
+                        try0.finally_(b1 -> b1.set(gotIt, Const.of(true)));
                     });
                     b0.return_(gotIt);
                 });
@@ -187,8 +187,8 @@ public final class TryTest {
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Constant.of(1));
-                    LocalVar ran = b0.define("ran", Constant.of(false));
+                    LocalVar i = b0.define("i", Const.of(1));
+                    LocalVar ran = b0.define("ran", Const.of(false));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
@@ -197,7 +197,7 @@ public final class TryTest {
                                 });
                             });
                             try2.finally_(b3 -> {
-                                b3.set(ran, Constant.of(true));
+                                b3.set(ran, Const.of(true));
                             });
                         });
                         b1.inc(i);
@@ -209,18 +209,18 @@ public final class TryTest {
             cc.staticMethod("test1", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Constant.of(1));
-                    LocalVar ran = b0.define("ran", Constant.of(false));
+                    LocalVar i = b0.define("i", Const.of(1));
+                    LocalVar ran = b0.define("ran", Const.of(false));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
                                 b3.if_(b3.eq(b3.rem(i, 4), 0), t4 -> {
                                     t4.inc(i);
-                                    t4.redo(b1);
+                                    t4.goto_(b1);
                                 });
                             });
                             try2.finally_(b3 -> {
-                                b3.set(ran, Constant.of(true));
+                                b3.set(ran, Const.of(true));
                             });
                         });
                         b1.inc(i);
@@ -234,14 +234,14 @@ public final class TryTest {
             });
             MethodDesc test2 = cc.staticMethod("test2body", smc -> {
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Constant.of(1));
+                    LocalVar i = b0.define("i", Const.of(1));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
                                 b3.if_(b3.eq(b3.rem(i, 4), 0), BlockCreator::return_);
                             });
                             try2.finally_(b3 -> {
-                                b3.set(ran, Constant.of(true));
+                                b3.set(ran, Const.of(true));
                             });
                         });
                         b1.inc(i);
@@ -270,25 +270,25 @@ public final class TryTest {
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar ranCatch = b0.define("ranCatch", Constant.of(false));
-                    LocalVar ranFinally = b0.define("ranFinally", Constant.of(false));
+                    LocalVar ranCatch = b0.define("ranCatch", Const.of(false));
+                    LocalVar ranFinally = b0.define("ranFinally", Const.of(false));
                     // use line numbers to make debugging stack traces more readable
                     b0.line(1);
                     b0.try_(try1 -> {
                         try1.body(b2 -> {
                             b2.line(2);
-                            b2.rem(Constant.of(1), 0);
+                            b2.rem(Const.of(1), 0);
                             b2.line(3);
                         });
                         try1.catch_(ArithmeticException.class, "e", (b2, e) -> {
                             b2.line(4);
-                            b2.set(ranCatch, Constant.of(true));
+                            b2.set(ranCatch, Const.of(true));
                             b2.line(5);
                             // fall out (drop exception)
                         });
                         try1.finally_(b2 -> {
                             b2.line(6);
-                            b2.set(ranFinally, Constant.of(true));
+                            b2.set(ranFinally, Const.of(true));
                             b2.line(7);
                         });
                     });
@@ -300,7 +300,7 @@ public final class TryTest {
             cc.staticMethod("test1", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar ran = b0.define("ran", Constant.of(false));
+                    LocalVar ran = b0.define("ran", Const.of(false));
                     b0.try_(try1 -> {
                         try1.body(b2 -> {
                             b2.try_(try3 -> {
@@ -311,7 +311,7 @@ public final class TryTest {
                             });
                         });
                         try1.catch_(IllegalStateException.class, "e", (b2, e) -> {
-                            b2.set(ran, Constant.of(true));
+                            b2.set(ran, Const.of(true));
                             // fall thru
                         });
                     });
