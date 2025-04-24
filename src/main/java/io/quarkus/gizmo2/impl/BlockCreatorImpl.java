@@ -94,6 +94,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final ClassDesc returnType;
     private Consumer<BlockCreator> loopAction;
 
+    private String nestSite;
+    private String finishSite;
+
     private int anonClassCount;
     private List<Consumer<BlockCreator>> postInits;
 
@@ -199,6 +202,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private void markDone() {
         state = ST_DONE;
+        finishSite = Util.trackCaller();
     }
 
     public boolean isContainedBy(final BlockCreator other) {
@@ -804,8 +808,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this);
         state = ST_NESTED;
+        nestSite = Util.trackCaller();
         block.accept(nested);
         state = ST_ACTIVE;
+        nestSite = null;
         addItem(block);
     }
 
@@ -813,8 +819,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this, ConstantImpl.ofVoid(), type);
         state = ST_NESTED;
+        nestSite = Util.trackCaller();
         block.accept(nested);
         state = ST_ACTIVE;
+        nestSite = null;
         // inline it
         if (block.tail.item() instanceof Yield yield && yield.value().isVoid()) {
             // block should be safe to inline
@@ -1313,6 +1321,23 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     private void checkActive() {
+        if (state == ST_DONE) {
+            if (finishSite == null) {
+                throw new IllegalStateException("This block has already been finished" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("This block has already been finished at " + finishSite);
+            }
+        }
+        if (state == ST_NESTED) {
+            if (nestSite == null) {
+                throw new IllegalStateException("This block is currently not active,"
+                        + " because a nested block is being created" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("This block is currently not active,"
+                        + " because a nested block is being created, starting at " + nestSite);
+            }
+        }
+        // leaving this just for future-proofing
         if (!active()) {
             throw new IllegalStateException("This block is not active");
         }
