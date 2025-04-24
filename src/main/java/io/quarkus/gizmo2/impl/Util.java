@@ -215,4 +215,17 @@ public final class Util {
     public static MethodDesc findSam(final Class<?> type) {
         return samCache.get(type);
     }
+
+    public static String internalName(final ClassDesc desc) {
+        if (desc.isClassOrInterface()) {
+            String ds = desc.descriptorString();
+            return ds.substring(1, ds.length() - 1);
+        } else {
+            return desc.descriptorString();
+        }
+    }
+
+    public static String binaryName(final ClassDesc desc) {
+        return internalName(desc).replace('/', '.');
+    }
 }

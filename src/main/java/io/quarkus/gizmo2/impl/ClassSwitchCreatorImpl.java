@@ -34,8 +34,7 @@ public final class ClassSwitchCreatorImpl extends HashSwitchCreatorImpl<ClassCon
         } else if (desc.isPrimitive()) {
             return desc.displayName().hashCode();
         } else {
-            String ds = desc.descriptorString();
-            return ds.substring(1, ds.length() - 1).replace('/', '.').hashCode();
+            return Util.binaryName(desc).hashCode();
         }
     }
 

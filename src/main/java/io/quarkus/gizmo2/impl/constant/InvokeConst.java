@@ -6,6 +6,7 @@ import java.lang.constant.DynamicConstantDesc;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public final class InvokeConst extends ConstImpl {
     private final MethodHandleConst handleConstant;
@@ -32,7 +33,10 @@ public final class InvokeConst extends ConstImpl {
     public ConstantDesc desc() {
         return DynamicConstantDesc.of(
                 ConstantDescs.BSM_INVOKE,
-                args.stream().map(ConstImpl::describeConstable).map(Optional::orElseThrow).toArray(ConstantDesc[]::new));
+                Stream.concat(
+                        Stream.of(handleConstant.desc()),
+                        args.stream().map(ConstImpl::describeConstable).map(Optional::orElseThrow))
+                        .toArray(ConstantDesc[]::new));
     }
 
     public Optional<? extends ConstantDesc> describeConstable() {

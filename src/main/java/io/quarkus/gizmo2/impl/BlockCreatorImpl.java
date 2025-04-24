@@ -1026,24 +1026,38 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void autoClose(final Expr resource, final BiConsumer<BlockCreator, ? super LocalVar> body) {
-        block(resource, (b0, opened) -> {
-            LocalVar rsrc = b0.define("$$resource" + depth, opened);
-            b0.try_(t1 -> {
-                t1.body(b2 -> body.accept(b2, rsrc));
-                t1.catch_(CD_Throwable, "e2", (b2, e2) -> {
-                    b2.try_(t3 -> {
-                        t3.body(b4 -> {
-                            b4.close(rsrc);
-                        });
-                        t3.catch_(CD_Throwable, "e4", (b4, e4) -> {
-                            b4.withThrowable(e2).addSuppressed(e4);
-                        });
-                    });
-                    b2.throw_(e2);
+        if (resource instanceof LocalVar lv) {
+            autoClose(lv, b0 -> {
+                body.accept(b0, lv);
+            });
+        } else {
+            block(resource, (b0, opened) -> {
+                LocalVar rsrc = b0.define("$$resource" + depth, opened);
+                autoClose(rsrc, b1 -> {
+                    body.accept(b1, rsrc);
                 });
             });
-            b0.close(rsrc);
+        }
+    }
+
+    public void autoClose(final LocalVar resource, final Consumer<BlockCreator> body) {
+        try_(t1 -> {
+            t1.body(body);
+            t1.catch_(CD_Throwable, "e2", (b2, e2) -> {
+                b2.try_(t3 -> {
+                    t3.body(b4 -> {
+                        b4.close(resource);
+                    });
+                    t3.catch_(CD_Throwable, "e4", (b4, e4) -> {
+                        b4.withThrowable(e2).addSuppressed(e4);
+                    });
+                });
+                b2.throw_(e2);
+            });
         });
+        if (active()) {
+            close(resource);
+        }
     }
 
     void monitorEnter(final Item monitor) {
@@ -1228,6 +1242,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         } else {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
+    }
+
+    public Expr mapEntry(final Expr key, final Expr value) {
+        return invokeStatic(MethodDesc.of(Map.class, "entry", Map.Entry.class, Object.class, Object.class), key, value);
     }
 
     @Override

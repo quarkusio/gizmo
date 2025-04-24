@@ -878,6 +878,14 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     // relational ops
 
+    default Expr isNull(Expr input) {
+        return eq(input, Const.ofNull(input.type()));
+    }
+
+    default Expr isNotNull(Expr input) {
+        return ne(input, Const.ofNull(input.type()));
+    }
+
     /**
      * The equality operator.
      * The arguments must be of the same {@linkplain TypeKind type kind}.
@@ -2866,6 +2874,14 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     void autoClose(Expr resource, BiConsumer<BlockCreator, ? super LocalVar> body);
 
     /**
+     * Open a resource and run the given body with the resource, automatically closing it at the end.
+     *
+     * @param resource the resource to automatically close (must not be {@code null})
+     * @param body the creator for the body of the resource operation (must not be {@code null})
+     */
+    void autoClose(LocalVar resource, Consumer<BlockCreator> body);
+
+    /**
      * Create a {@code synchronized} block. When the given {@code body} is executed,
      * the monitor of given {@code monitor} is locked.
      *
@@ -3366,6 +3382,15 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
+     * Generate a call to {@link Map#entry(Object, Object)}.
+     *
+     * @param key the key for the new entry (must not be {@code null})
+     * @param value the value for the new entry (must not be {@code null})
+     * @return the new map entry (not {@code null})
+     */
+    Expr mapEntry(Expr key, Expr value);
+
+    /**
      * Generate a call to {@link Optional#of(Object)}.
      *
      * @param value the expression to pass in to the call (must not be {@code null})
@@ -3437,5 +3462,4 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param message the message to print if the assertion fails (must not be {@code null})
      */
     void assert_(Consumer<BlockCreator> assertion, String message);
-
 }

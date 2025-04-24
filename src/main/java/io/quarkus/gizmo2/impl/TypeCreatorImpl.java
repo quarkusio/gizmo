@@ -1,11 +1,17 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.CharConversionException;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
+import java.lang.constant.DynamicConstantDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
@@ -17,8 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.ClassSignature;
@@ -39,13 +47,44 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator
         permits ClassCreatorImpl, InterfaceCreatorImpl {
+
+    private static final ClassDesc CD_InputStream = Util.classDesc(InputStream.class);
+    private static final ClassDesc CD_StringBuilder = Util.classDesc(StringBuilder.class);
+    private static final ClassDesc CD_ArrayList = Util.classDesc(ArrayList.class);
+    private static final ClassDesc CD_Map_Entry = Util.classDesc(Map.Entry.class);
+    private static final ClassMethodDesc MD_InputStream_read = ClassMethodDesc.of(
+            CD_InputStream,
+            "read",
+            MethodTypeDesc.of(
+                    CD_int));
+    private static final InterfaceMethodDesc MD_List_copyOf = InterfaceMethodDesc.of(
+            CD_List,
+            "copyOf",
+            MethodTypeDesc.of(
+                    CD_List,
+                    CD_Collection));
+    private static final InterfaceMethodDesc MD_Set_copyOf = InterfaceMethodDesc.of(
+            CD_Set,
+            "copyOf",
+            MethodTypeDesc.of(
+                    CD_Set,
+                    CD_Collection));
+    private static final InterfaceMethodDesc MD_Map_ofEntries = InterfaceMethodDesc.of(
+            CD_Map,
+            "ofEntries",
+            MethodTypeDesc.of(
+                    CD_Map,
+                    CD_Map_Entry.arrayType()));
+
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
     private final ClassOutput output;
@@ -60,7 +99,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     List<Consumer<BlockCreator>> postInits = List.of();
     private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
-    private boolean hasLambdaBootstrap;
+    private int bootstraps;
 
     /**
      * All fields on the class.
@@ -275,8 +314,21 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     abstract MethodDesc methodDesc(final String name, final MethodTypeDesc type);
 
+    /**
+     * {@return true if the bootstrap flag was not yet set}
+     */
+    private boolean getAndSetBootstrap(Bootstrap bootstrap) {
+        int bootstraps = this.bootstraps;
+        int bit = 1 << bootstrap.ordinal();
+        if ((bootstraps & bit) == 0) {
+            this.bootstraps = bootstraps | bit;
+            return true;
+        }
+        return false;
+    }
+
     void buildLambdaBootstrap() {
-        if (!hasLambdaBootstrap) {
+        if (getAndSetBootstrap(Bootstrap.LAMBDA)) {
             staticMethod(
                     "defineLambdaCallSite",
                     MethodTypeDesc.of(
@@ -376,7 +428,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                     });
                         });
                     });
-            hasLambdaBootstrap = true;
         }
     }
 
@@ -407,5 +458,401 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     ElementType annotationTargetType() {
         return ElementType.TYPE;
+    }
+
+    void buildReadLineBoostrapHelper() {
+        if (getAndSetBootstrap(Bootstrap.READ_LINE)) {
+            staticMethod("$readUtfLine", mc -> {
+                mc.returning(CD_String);
+                ParamVar sb = mc.parameter("sb", CD_StringBuilder);
+                ParamVar is = mc.parameter("is", CD_InputStream);
+                mc.body(b0 -> {
+                    // first byte of the line
+                    LocalVar a = b0.define("a", b0.invokeVirtual(MD_InputStream_read, is));
+                    // EOF (expected)
+                    b0.if_(b0.eq(a, -1), BlockCreator::returnNull);
+                    b0.loop(b1 -> {
+                        // process characters
+                        b1.block(b2 -> {
+                            // check for newline
+                            b2.if_(b2.eq(a, '\n'), b3 -> {
+                                // end of string
+                                Expr toString = b3.withObject(sb).objToString();
+                                // this is safe because this statement does not use or leave anything on the stack
+                                b3.withStringBuilder(sb).setLength(0);
+                                b3.return_(toString);
+                            });
+                            // parse code point
+                            b2.if_(b2.lt(a, 0x80), b3 -> {
+                                // one-byte sequence
+                                b3.withStringBuilder(sb).append(b3.cast(a, CD_char));
+                                b3.break_(b2);
+                            });
+                            // validate prefix
+                            b2.if_(b2.lt(a, 0xC0), b3 -> {
+                                // invalid first byte (unexpected)
+                                b3.throw_(CharConversionException.class);
+                            });
+                            // at least two bytes
+                            LocalVar b = b2.define("b", b2.invokeVirtual(MD_InputStream_read, is));
+                            // check for eof (unexpected)
+                            b2.if_(b2.eq(b, -1), b3 -> {
+                                // eof (unexpected)
+                                b3.throw_(EOFException.class);
+                            });
+                            // validate second byte
+                            b2.if_(b2.logicalOr(b2.lt(b, 0x80), b3 -> b3.yield(b3.ge(b, 0xC0))), b3 -> {
+                                // invalid (unexpected)
+                                b3.throw_(CharConversionException.class);
+                            });
+                            // test for two-byte sequence
+                            b2.if_(b2.lt(a, 0xE0), b3 -> {
+                                // two-byte sequence
+                                b3.withStringBuilder(sb).appendCodePoint(
+                                        b3.or(
+                                                b3.shl(b3.and(a, 0x1F), 6),
+                                                b3.and(b, 0x3F)));
+                                b3.break_(b2);
+                            });
+                            // at least three bytes
+                            LocalVar c = b2.define("c", b2.invokeVirtual(MD_InputStream_read, is));
+                            // check for eof (unexpected)
+                            b2.if_(b2.eq(c, -1), b3 -> {
+                                // eof (unexpected)
+                                b3.throw_(EOFException.class);
+                            });
+                            // validate third byte
+                            b2.if_(b2.logicalOr(b2.lt(c, 0x80), b3 -> b3.yield(b3.ge(c, 0xC0))), b3 -> {
+                                // invalid (unexpected)
+                                b3.throw_(CharConversionException.class);
+                            });
+                            // test for three-byte sequence
+                            b2.if_(b2.lt(a, 0xF0), b3 -> {
+                                // three-byte sequence
+                                b3.withStringBuilder(sb).appendCodePoint(
+                                        b3.or(
+                                                b3.or(
+                                                        b3.shl(b3.and(a, 0x0F), 12),
+                                                        b3.shl(b3.and(b, 0x3F), 6)),
+                                                b3.and(c, 0x3F)));
+                                b3.break_(b2);
+                            });
+                            // four bytes (or invalid)
+                            LocalVar d = b2.define("d", b2.invokeVirtual(MD_InputStream_read, is));
+                            // check for eof (unexpected)
+                            b2.if_(b2.eq(d, -1), b3 -> {
+                                // eof (unexpected)
+                                b3.throw_(EOFException.class);
+                            });
+                            // validate fourth byte
+                            b2.if_(b2.logicalOr(b2.lt(d, 0x80), b3 -> b3.yield(b3.ge(d, 0xC0))), b3 -> {
+                                // invalid (unexpected)
+                                b3.throw_(CharConversionException.class);
+                            });
+                            // test for four-byte sequence
+                            b2.if_(b2.lt(a, 0xF8), b3 -> {
+                                // four-byte sequence
+                                b3.withStringBuilder(sb).appendCodePoint(
+                                        b3.or(
+                                                b3.or(
+                                                        b3.shl(b3.and(a, 0x07), 18),
+                                                        b3.shl(b3.and(b, 0x3F), 12)),
+                                                b3.or(
+                                                        b3.shl(b3.and(c, 0x0F), 6),
+                                                        b3.and(d, 0x3F))));
+                                b3.break_(b2);
+                            });
+                            // invalid sequence (unexpected)
+                            b2.throw_(CharConversionException.class);
+                        });
+                        b1.set(a, b1.invokeVirtual(MD_InputStream_read, is));
+                        b1.if_(b1.eq(a, -1), b2 -> {
+                            b2.throw_(EOFException.class);
+                        });
+                    });
+                });
+            });
+        }
+    }
+
+    void buildStringListConstantBootstrap() {
+        buildReadLineBoostrapHelper();
+        if (getAndSetBootstrap(Bootstrap.LIST_CONSTANT)) {
+            staticMethod("loadStringListConstant", mc -> {
+                mc.returning(CD_List);
+                mc.parameter("lookup", CD_MethodHandles_Lookup);
+                ParamVar name = mc.parameter("name", CD_String);
+                ParamVar clazz = mc.parameter("type", CD_Class);
+                mc.body(b0 -> {
+                    // verify type
+                    b0.if_(b0.ne(clazz, Const.of(CD_List)), b1 -> {
+                        b1.throw_(ClassCastException.class);
+                    });
+                    // load resource
+                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                            ClassMethodDesc.of(
+                                    CD_Class,
+                                    "getResourceAsStream",
+                                    MethodTypeDesc.of(
+                                            CD_InputStream,
+                                            CD_String)),
+                            Const.of(type),
+                            b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
+                                    .concat(Const.of(".txt"))));
+                    b0.if_(b0.eq(is, Const.ofNull(CD_InputStream)), b1 -> {
+                        b1.throw_(NoSuchElementException.class);
+                    });
+                    b0.autoClose(is, b1 -> {
+                        // decode the bytes
+                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar line = b1.define("line", b1.invokeStatic(ClassMethodDesc.of(
+                                type,
+                                "$readUtfLine",
+                                MethodTypeDesc.of(
+                                        CD_String,
+                                        CD_StringBuilder,
+                                        CD_InputStream)),
+                                sb, is));
+                        b1.while_(b2 -> b2.yield(b2.isNotNull(line)), b2 -> {
+                            b2.withCollection(list).add(line);
+                            b2.set(line, b2.invokeStatic(ClassMethodDesc.of(
+                                    type,
+                                    "$readUtfLine",
+                                    MethodTypeDesc.of(
+                                            CD_String,
+                                            CD_StringBuilder,
+                                            CD_InputStream)),
+                                    sb, is));
+                        });
+                        b1.return_(b1.invokeStatic(MD_List_copyOf, list));
+                    });
+                });
+            });
+        }
+    }
+
+    public Const stringListResourceConstant(String name, List<String> items) {
+        buildStringListConstantBootstrap();
+        byte[] array = encodeStrings(items.stream());
+        output.write("%s$%s.txt".formatted(Util.internalName(type), name), array);
+        DynamicConstantDesc<List<String>> stringListConstant = DynamicConstantDesc.ofNamed(
+                ofConstantBootstrap(
+                        type,
+                        "loadStringListConstant",
+                        CD_List),
+                name,
+                CD_List);
+        return Const.of(stringListConstant);
+    }
+
+    void buildStringSetConstantBootstrap() {
+        buildReadLineBoostrapHelper();
+        if (getAndSetBootstrap(Bootstrap.SET_CONSTANT)) {
+            staticMethod("loadStringSetConstant", mc -> {
+                mc.returning(CD_Set);
+                mc.parameter("lookup", CD_MethodHandles_Lookup);
+                ParamVar name = mc.parameter("name", CD_String);
+                ParamVar clazz = mc.parameter("type", CD_Class);
+                mc.body(b0 -> {
+                    // verify type
+                    b0.if_(b0.ne(clazz, Const.of(CD_Set)), b1 -> {
+                        b1.throw_(ClassCastException.class);
+                    });
+                    // load resource
+                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                            ClassMethodDesc.of(
+                                    CD_Class,
+                                    "getResourceAsStream",
+                                    MethodTypeDesc.of(
+                                            CD_InputStream,
+                                            CD_String)),
+                            Const.of(type),
+                            b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
+                                    .concat(Const.of(".txt"))));
+                    b0.if_(b0.eq(is, Const.ofNull(CD_InputStream)), b1 -> {
+                        b1.throw_(NoSuchElementException.class);
+                    });
+                    b0.autoClose(is, b1 -> {
+                        // decode the bytes
+                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar line = b1.define("line", b1.invokeStatic(ClassMethodDesc.of(
+                                type,
+                                "$readUtfLine",
+                                MethodTypeDesc.of(
+                                        CD_String,
+                                        CD_StringBuilder,
+                                        CD_InputStream)),
+                                sb, is));
+                        b1.while_(b2 -> b2.yield(b2.isNotNull(line)), b2 -> {
+                            b2.withCollection(list).add(line);
+                            b2.set(line, b2.invokeStatic(ClassMethodDesc.of(
+                                    type,
+                                    "$readUtfLine",
+                                    MethodTypeDesc.of(
+                                            CD_String,
+                                            CD_StringBuilder,
+                                            CD_InputStream)),
+                                    sb, is));
+                        });
+                        b1.return_(b1.invokeStatic(MD_Set_copyOf, list));
+                    });
+                });
+            });
+        }
+    }
+
+    public Const stringSetResourceConstant(String name, Set<String> items) {
+        buildStringSetConstantBootstrap();
+        byte[] array = encodeStrings(items.stream());
+        output.write("%s$%s.txt".formatted(Util.internalName(type), name), array);
+        DynamicConstantDesc<Set<String>> stringSetConstant = DynamicConstantDesc.ofNamed(
+                ofConstantBootstrap(
+                        type,
+                        "loadStringSetConstant",
+                        CD_Set),
+                name,
+                CD_Set);
+        return Const.of(stringSetConstant);
+    }
+
+    void buildStringMapConstantBootstrap() {
+        buildReadLineBoostrapHelper();
+        if (getAndSetBootstrap(Bootstrap.MAP_CONSTANT)) {
+            staticMethod("loadStringMapConstant", mc -> {
+                mc.returning(CD_Map);
+                mc.parameter("lookup", CD_MethodHandles_Lookup);
+                ParamVar name = mc.parameter("name", CD_String);
+                ParamVar clazz = mc.parameter("type", CD_Class);
+                mc.body(b0 -> {
+                    // verify type
+                    b0.if_(b0.ne(clazz, Const.of(CD_Map)), b1 -> {
+                        b1.throw_(ClassCastException.class);
+                    });
+                    // load resource
+                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                            ClassMethodDesc.of(
+                                    CD_Class,
+                                    "getResourceAsStream",
+                                    MethodTypeDesc.of(
+                                            CD_InputStream,
+                                            CD_String)),
+                            Const.of(type),
+                            b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
+                                    .concat(Const.of(".txt"))));
+                    b0.if_(b0.eq(is, Const.ofNull(CD_InputStream)), b1 -> {
+                        b1.throw_(NoSuchElementException.class);
+                    });
+                    b0.autoClose(is, b1 -> {
+                        // decode the bytes
+                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar key = b1.define("key", b1.invokeStatic(ClassMethodDesc.of(
+                                type,
+                                "$readUtfLine",
+                                MethodTypeDesc.of(
+                                        CD_String,
+                                        CD_StringBuilder,
+                                        CD_InputStream)),
+                                sb, is));
+                        LocalVar value = b1.define("value", b1.invokeStatic(ClassMethodDesc.of(
+                                type,
+                                "$readUtfLine",
+                                MethodTypeDesc.of(
+                                        CD_String,
+                                        CD_StringBuilder,
+                                        CD_InputStream)),
+                                sb, is));
+                        b1.while_(b2 -> b2.yield(b2.isNotNull(key)), b2 -> {
+                            b2.withCollection(list).add(b2.mapEntry(key, value));
+                            b2.set(key, b2.invokeStatic(ClassMethodDesc.of(
+                                    type,
+                                    "$readUtfLine",
+                                    MethodTypeDesc.of(
+                                            CD_String,
+                                            CD_StringBuilder,
+                                            CD_InputStream)),
+                                    sb, is));
+                            b2.set(value, b2.invokeStatic(ClassMethodDesc.of(
+                                    type,
+                                    "$readUtfLine",
+                                    MethodTypeDesc.of(
+                                            CD_String,
+                                            CD_StringBuilder,
+                                            CD_InputStream)),
+                                    sb, is));
+                        });
+                        Expr array = b1.newEmptyArray(CD_Map_Entry, b1.withList(list).size());
+                        array = b1.invokeVirtual(ClassMethodDesc.of(
+                                CD_ArrayList,
+                                "toArray",
+                                MethodTypeDesc.of(
+                                        CD_Object.arrayType(),
+                                        CD_Object.arrayType())),
+                                list, array);
+                        b1.return_(b1.invokeStatic(MD_Map_ofEntries, array));
+                    });
+                });
+            });
+        }
+    }
+
+    public Const stringMapResourceConstant(String name, Map<String, String> items) {
+        buildStringMapConstantBootstrap();
+        byte[] array = encodeStrings(items.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())));
+        output.write("%s$%s.txt".formatted(Util.internalName(type), name), array);
+        DynamicConstantDesc<Map<String, String>> stringMapConstant = DynamicConstantDesc.ofNamed(
+                ofConstantBootstrap(
+                        type,
+                        "loadStringMapConstant",
+                        CD_Map),
+                name,
+                CD_Map);
+        return Const.of(stringMapConstant);
+    }
+
+    private byte[] encodeStrings(final Stream<String> stream) {
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream(8192)) {
+            stream.forEachOrdered(s -> {
+                int cp;
+                for (int i = 0; i < s.length(); i += Character.charCount(cp)) {
+                    cp = s.codePointAt(i);
+                    // always use 2-byte encoding for \n so we can embed strings with newlines
+                    // (but it still looks OK in editors)
+                    if (cp <= 0x7f && cp != '\n') {
+                        os.write(cp);
+                    } else if (cp <= 0x7ff) {
+                        os.write(0b110_00000 | cp >> 6);
+                        os.write(0b10_000000 | cp & 0x3f);
+                    } else if (cp <= 0xffff) {
+                        os.write(0b1110_0000 | cp >> 12);
+                        os.write(0b10_000000 | cp >> 6 & 0x3f);
+                        os.write(0b10_000000 | cp & 0x3f);
+                    } else if (cp <= 0x10ffff) {
+                        os.write(0b11110_000 | cp >> 18);
+                        os.write(0b10_000000 | cp >> 12 & 0x3f);
+                        os.write(0b10_000000 | cp >> 6 & 0x3f);
+                        os.write(0b10_000000 | cp & 0x3f);
+                    } else {
+                        throw new IllegalStateException("Unexpected invalid code point");
+                    }
+                }
+                os.write('\n');
+            });
+            return os.toByteArray();
+        } catch (IOException e) {
+            // impossible?
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private enum Bootstrap {
+        LAMBDA,
+        READ_LINE,
+        LIST_CONSTANT,
+        SET_CONSTANT,
+        MAP_CONSTANT,
+        ;
     }
 }
