@@ -26,6 +26,8 @@ import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
+    protected final String creationSite = Util.trackCaller();
+
     Map<ClassDesc, Annotation> invisible = Map.of();
     Map<ClassDesc, Annotation> visible = Map.of();
 

@@ -51,7 +51,13 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
     private void checkSlot() {
         if (slot == -1) {
-            throw new IllegalStateException("Local variable failed to be allocated");
+            if (creationSite == null) {
+                throw new IllegalStateException("Local variable '" + name + "' was not allocated (check if it was"
+                        + " declared on the correct BlockCreator)" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("Local variable '" + name + "' created at " + creationSite
+                        + " was not allocated (check if it was declared on the correct BlockCreator)");
+            }
         }
     }
 
@@ -102,6 +108,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+                    checkSlot();
                     cb.iinc(slot, ((IntBasedConst) amount).intValue());
                 }
             });
@@ -118,6 +125,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
                 }
 
                 public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+                    checkSlot();
                     cb.iinc(slot, -((IntBasedConst) amount).intValue());
                 }
             });
