@@ -206,8 +206,13 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         bc.accept(builder);
         bc.writeCode(cb, bc);
         if (bc.mayFallThrough()) {
-            throw new IllegalStateException(
-                    "Outermost block of an executable member must not fall out (return or throw instead)");
+            if (creationSite == null) {
+                throw new IllegalStateException("Outermost block of an executable member must not fall out"
+                        + " (return or throw instead)" + Util.trackingMessage);
+            } else {
+                throw new IllegalStateException("Outermost block of an executable member created at " + creationSite
+                        + " must not fall out (return or throw instead)");
+            }
         }
     }
 
