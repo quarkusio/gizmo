@@ -290,6 +290,10 @@ public abstract non-sealed class Item implements Expr {
             return Item.this.itemName() + "." + desc.name();
         }
 
+        public Item instance() {
+            return Item.this;
+        }
+
         Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
             return switch (mode) {
                 case AsDeclared -> asBound();
@@ -366,7 +370,7 @@ public abstract non-sealed class Item implements Expr {
         }
     }
 
-    final class ArrayDeref extends AssignableImpl {
+    public final class ArrayDeref extends AssignableImpl {
         private final ClassDesc componentType;
         private final Item index;
 
@@ -377,6 +381,14 @@ public abstract non-sealed class Item implements Expr {
 
         protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
             return Item.this.process(index.process(node.prev(), op), op);
+        }
+
+        public Item array() {
+            return Item.this;
+        }
+
+        public Item index() {
+            return index;
         }
 
         Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {

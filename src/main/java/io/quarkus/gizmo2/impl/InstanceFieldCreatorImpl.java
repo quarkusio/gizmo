@@ -22,6 +22,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
     public void withInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
+        withType(initial.type());
         this.initial = initial;
     }
 
