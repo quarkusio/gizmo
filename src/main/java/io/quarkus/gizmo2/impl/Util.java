@@ -122,7 +122,8 @@ public final class Util {
         return SW.walk(stream -> stream
                 .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2") || it.getClassName().endsWith("Test"))
                 .findFirst()
-                .map(it -> it.getClassName() + "." + it.getMethodName() + "():" + it.getLineNumber())
+                .map(it -> it.getClassName() + "." + it.getMethodName()
+                        + "(" + it.getFileName() + ":" + it.getLineNumber() + ")")
                 .orElseThrow(IllegalStateException::new));
     }
 

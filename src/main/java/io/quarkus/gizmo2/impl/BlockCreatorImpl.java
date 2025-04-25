@@ -665,13 +665,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             } else if (boxTypes.containsKey(a.type()) && toType.equals(boxTypes.get(a.type()))) {
                 return box(a);
             } else {
-                throw new IllegalArgumentException("Cannot cast primitive value to object type");
+                throw new IllegalArgumentException("Cannot cast primitive value of type '" + a.type().displayName()
+                        + "' to object type '" + toType.displayName() + "'");
             }
         } else {
             if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
                 return unbox(a);
             } else if (toType.isPrimitive()) {
-                throw new IllegalArgumentException("Cannot cast object value to primitive type");
+                throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
+                        + "' to primitive type '" + toType.displayName() + "'");
             } else {
                 return addItem(new CheckCast(a, toType));
             }
@@ -875,7 +877,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void ifInstanceOf(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue) {
-        if_(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, cast(obj, type))));
+        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), null);
     }
 
     public void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse) {
@@ -884,7 +886,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue,
             final Consumer<BlockCreator> ifFalse) {
-        ifElse(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), ifFalse);
+        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), ifFalse);
     }
 
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {
