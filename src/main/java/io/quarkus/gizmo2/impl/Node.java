@@ -143,4 +143,30 @@ public final class Node {
         }
         return "Not found";
     }
+
+    public String debugList() {
+        Node first = this;
+        while (first.prev() != null) {
+            first = first.prev();
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        Node current = first;
+        while (current != null) {
+            if (current == this) {
+                sb.append('|');
+            }
+            current.item.toShortString(sb);
+            if (current == this) {
+                sb.append('|');
+            }
+            if (current.next != null) {
+                sb.append(" -> ");
+            }
+            current = current.next();
+        }
+
+        return sb.toString();
+    }
 }
