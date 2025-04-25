@@ -184,6 +184,19 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
     StaticFieldVar staticField(String name, Consumer<StaticFieldCreator> builder);
 
     /**
+     * Add a static field to this type.
+     *
+     * @param name the field name (must not be {@code null})
+     * @param initial the field's initial value (must not be {@code null})
+     * @return a variable for the static field (not {@code null})
+     */
+    default StaticFieldVar staticField(String name, Const initial) {
+        return staticField(name, sfc -> {
+            sfc.withInitial(initial);
+        });
+    }
+
+    /**
      * Add a public static final field to this type. The field is initialized to the given {@code value}.
      *
      * @param name the field name (must not be {@code null})
@@ -194,7 +207,6 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
         return staticField(name, sfc -> {
             sfc.public_();
             sfc.final_();
-            sfc.withType(value.type());
             sfc.withInitial(value);
         });
     }
