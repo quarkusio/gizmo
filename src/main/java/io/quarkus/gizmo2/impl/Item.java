@@ -18,7 +18,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public abstract non-sealed class Item implements Expr {
-    private final String creationSite = Util.trackCaller();
+    protected final String creationSite = Util.trackCaller();
 
     public String itemName() {
         return getClass().getSimpleName();
