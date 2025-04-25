@@ -3,6 +3,8 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.function.Predicate;
+
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -95,6 +97,95 @@ public class ConditionalsTest {
 
         boolean apply(String val);
 
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testIfInstanceOf() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.IfInstanceOf", cc -> {
+            cc.staticMethod("test", mc -> {
+                // static boolean test(Object param) {
+                //    if (param instanceof CharSequence) {
+                //        return true;
+                //    }
+                //    return false;
+                // }
+                mc.returning(boolean.class);
+                ParamVar param = mc.parameter("param", Object.class);
+                mc.body(b0 -> {
+                    b0.ifInstanceOf(param, CharSequence.class, (b1, ignored) -> {
+                        b1.return_(true);
+                    });
+                    b0.return_(false);
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test", Predicate.class).test("foobar"));
+        assertTrue(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
+        assertFalse(tcm.staticMethod("test", Predicate.class).test(123));
+        assertFalse(tcm.staticMethod("test", Predicate.class).test(new Object()));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testIfNotInstanceOf() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.IfNotInstanceOf", cc -> {
+            cc.staticMethod("test", mc -> {
+                // static boolean test(Object param) {
+                //    if (!(param instanceof CharSequence)) {
+                //        return true;
+                //    }
+                //    return false;
+                // }
+                mc.returning(boolean.class);
+                ParamVar param = mc.parameter("param", Object.class);
+                mc.body(b0 -> {
+                    b0.ifNotInstanceOf(param, CharSequence.class, b1 -> {
+                        b1.return_(true);
+                    });
+                    b0.return_(false);
+                });
+            });
+        });
+        assertFalse(tcm.staticMethod("test", Predicate.class).test("foobar"));
+        assertFalse(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
+        assertTrue(tcm.staticMethod("test", Predicate.class).test(123));
+        assertTrue(tcm.staticMethod("test", Predicate.class).test(new Object()));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testIfInstanceOfElse() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.IfInstanceOfElse", cc -> {
+            cc.staticMethod("test", mc -> {
+                // static boolean test(Object param) {
+                //    if (param instanceof CharSequence) {
+                //        return true;
+                //    } else {
+                //        return false;
+                //    }
+                // }
+                mc.returning(boolean.class);
+                ParamVar param = mc.parameter("param", Object.class);
+                mc.body(b0 -> {
+                    b0.ifInstanceOfElse(param, CharSequence.class, (b1, ignored) -> {
+                        b1.return_(true);
+                    }, b1 -> {
+                        b1.return_(false);
+                    });
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test", Predicate.class).test("foobar"));
+        assertTrue(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
+        assertFalse(tcm.staticMethod("test", Predicate.class).test(123));
+        assertFalse(tcm.staticMethod("test", Predicate.class).test(new Object()));
     }
 
 }
