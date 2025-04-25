@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2;
 
 import static java.lang.constant.ConstantDescs.CD_String;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -478,5 +479,61 @@ public class InvocationTest {
             });
         });
         assertEquals('b', tcm.staticMethod("invoke", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void invokeNonInterfaceMethodOnInterface() {
+        // interface MyInterface {
+        //     String returnString();
+        // }
+        //
+        // class InterfaceInvocation implements MyInterface {
+        //     public String returnString() {
+        //         return "foobar";
+        //     }
+        //
+        //     static Object invoke() {
+        //         return ((MyInterface) new InterfaceInvocation()).returnString(); // <--- invokeinterface
+        //     }
+        // }
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+
+        ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
+            cc.method("returnString", mc -> {
+                mc.returning(String.class);
+            });
+        });
+
+        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+            cc.implements_(myInterface);
+
+            cc.defaultConstructor();
+
+            cc.method("returnString", mc -> {
+                mc.public_();
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_("foobar");
+                });
+            });
+
+            cc.staticMethod("invoke", mc -> {
+                mc.returning(Object.class); // in fact always `String`
+                mc.body(bc -> {
+                    Expr instance = bc.new_(cc.type());
+                    assertThrows(IllegalArgumentException.class, () -> {
+                        MethodDesc desc = ClassMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
+                        bc.return_(bc.invokeInterface(desc, instance));
+                    });
+                    assertDoesNotThrow(() -> {
+                        MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
+                        bc.return_(bc.invokeInterface(desc, instance));
+                    });
+                });
+            });
+        });
+        assertEquals("foobar", tcm.staticMethod("invoke", Supplier.class).get());
     }
 }
