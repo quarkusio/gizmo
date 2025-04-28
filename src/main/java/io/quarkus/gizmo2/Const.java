@@ -12,6 +12,7 @@ import java.util.List;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.Util;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 /**
@@ -66,6 +67,37 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const ofNull(Class<?> type) {
         return ConstImpl.ofNull(type);
+    }
+
+    /**
+     * {@return a constant with the default value of given {@code type}}
+     * This is zero for primitive types and {@code null} for reference types.
+     *
+     * @param type the type of the constant (must not be {@code null})
+     */
+    static Const ofDefault(ClassDesc type) {
+        return switch (type.descriptorString()) {
+            case "B" -> of((byte) 0);
+            case "S" -> of((short) 0);
+            case "C" -> of('\0');
+            case "I" -> of(0);
+            case "J" -> of(0L);
+            case "F" -> of(0.0F);
+            case "D" -> of(0.0);
+            case "Z" -> of(false);
+            case "V" -> ofVoid();
+            default -> ofNull(type);
+        };
+    }
+
+    /**
+     * {@return a constant with the default value of given {@code type}}
+     * This is zero for primitive types and {@code null} for reference types.
+     *
+     * @param type the type of the constant (must not be {@code null})
+     */
+    static Const ofDefault(Class<?> type) {
+        return ofDefault(Util.classDesc(type));
     }
 
     /**
