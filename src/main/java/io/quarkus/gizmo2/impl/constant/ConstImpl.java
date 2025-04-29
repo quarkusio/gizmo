@@ -296,10 +296,8 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
         };
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static InvokeConst ofInvoke(Const handle, List<Const> args) {
-        // we could theoretically use a stream to cast the list properly, but instead let's cheat and save some CPU
-        return new InvokeConst((MethodHandleConst) handle, (List<ConstImpl>) (List) args);
+        return new InvokeConst((MethodHandleConst) handle, Util.reinterpretCast(args));
     }
 
     public static MethodHandleConst of(MethodHandleDesc desc) {

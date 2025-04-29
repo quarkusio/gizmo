@@ -1,6 +1,8 @@
 package io.quarkus.gizmo2;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.constant.ClassDesc;
 import java.lang.invoke.MethodHandleProxies;
@@ -8,9 +10,18 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
@@ -55,6 +66,13 @@ public class TestClassMaker implements ClassOutput {
         }
         cl.accept(classDesc, bytes);
         desc = classDesc;
+    }
+
+    public void write(final String path, final byte[] bytes) {
+        if (path.endsWith(".class")) {
+            throw new IllegalStateException("Class writing was not handled correctly");
+        }
+        cl.addResource(path, bytes);
     }
 
     public TestClassOps forClass(ClassDesc desc) {
@@ -189,6 +207,7 @@ public class TestClassMaker implements ClassOutput {
 
     private static class TestClassLoader extends ClassLoader implements BiConsumer<ClassDesc, byte[]> {
         private final ConcurrentHashMap<String, byte[]> classes = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, byte[]> resources = new ConcurrentHashMap<>();
         private final ClassFile cf;
 
         private TestClassLoader() {
@@ -204,9 +223,8 @@ public class TestClassMaker implements ClassOutput {
             if (desc.isArray()) {
                 return loadClass(desc.componentType()).arrayType();
             } else {
-                String ds = desc.descriptorString();
                 if (desc.isPrimitive()) {
-                    return switch (ds.charAt(0)) {
+                    return switch (desc.descriptorString().charAt(0)) {
                         case 'B' -> byte.class;
                         case 'C' -> char.class;
                         case 'D' -> double.class;
@@ -219,7 +237,7 @@ public class TestClassMaker implements ClassOutput {
                         default -> throw new ClassNotFoundException(desc.toString());
                     };
                 } else {
-                    String dotName = ds.substring(1, ds.length() - 1).replace('/', '.');
+                    String dotName = Util.binaryName(desc);
                     Class<?> loaded = findLoadedClass(dotName);
                     if (loaded == null) {
                         byte[] bytes = classes.get(dotName);
@@ -250,13 +268,75 @@ public class TestClassMaker implements ClassOutput {
 
         public void accept(final ClassDesc classDesc, final byte[] bytes) {
             if (classDesc.isClassOrInterface()) {
-                String ds = classDesc.descriptorString();
-                String dotName = ds.substring(1, ds.length() - 1).replace('/', '.');
+                String dotName = Util.binaryName(classDesc);
                 byte[] existing = classes.putIfAbsent(dotName, bytes);
                 if (existing != null) {
                     throw new IllegalArgumentException("Duplicate class " + classDesc);
                 }
             }
+        }
+
+        public URL getResource(final String name) {
+            byte[] bytes = resources.get(name);
+            if (bytes != null) {
+                try {
+                    return new URL("tcm", null, -1, name, new URLStreamHandler() {
+                        protected URLConnection openConnection(final URL u) {
+                            return new URLConnection(u) {
+                                public void connect() {
+                                }
+
+                                public InputStream getInputStream() {
+                                    return new ByteArrayInputStream(bytes);
+                                }
+
+                                public int getContentLength() {
+                                    return bytes.length;
+                                }
+
+                                public long getContentLengthLong() {
+                                    return bytes.length;
+                                }
+
+                                public Object getContent() {
+                                    return bytes.clone();
+                                }
+
+                                public Object getContent(final Class<?>... classes) {
+                                    Set<Class<?>> set = Set.of(classes);
+                                    if (set.contains(byte[].class)) {
+                                        return bytes.clone();
+                                    } else if (set.contains(String[].class)) {
+                                        return new String(bytes, StandardCharsets.UTF_8).split("\n");
+                                    } else if (set.contains(List.class)) {
+                                        return List.of(new String(bytes, StandardCharsets.UTF_8).split("\n"));
+                                    } else {
+                                        return null;
+                                    }
+                                }
+                            };
+                        }
+                    });
+                } catch (MalformedURLException e) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        public Enumeration<URL> getResources(final String name) {
+            URL url = getResource(name);
+            return url == null ? Collections.emptyEnumeration() : Collections.enumeration(List.of(url));
+        }
+
+        public InputStream getResourceAsStream(final String name) {
+            byte[] bytes = resources.get(name);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        }
+
+        void addResource(final String path, final byte[] bytes) {
+            resources.putIfAbsent(path, bytes.clone());
         }
 
         private ClassHierarchyResolver.ClassHierarchyInfo getClassInfo(final ClassDesc classDesc) {

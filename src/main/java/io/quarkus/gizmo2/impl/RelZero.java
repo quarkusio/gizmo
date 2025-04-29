@@ -47,7 +47,7 @@ final class RelZero extends Item {
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         Label true_ = cb.newLabel();
         Label end = cb.newLabel();
-        switch (typeKind().asLoadable()) {
+        switch (a.typeKind().asLoadable()) {
             case INT -> kind.if_.accept(cb, true_);
             case REFERENCE -> kind.if_acmpnull.accept(cb, true_);
             case LONG -> {

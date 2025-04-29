@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2;
 
+import static java.lang.constant.ConstantDescs.*;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
@@ -7,10 +9,16 @@ import java.lang.constant.DynamicConstantDesc;
 import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.Util;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
@@ -467,5 +475,132 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const of(MethodTypeDesc desc) {
         return ConstImpl.of(desc);
+    }
+
+    /**
+     * {@return a list constant containing the given items}
+     * The maximum number of items is around 254 (depending on the constant type); however,
+     * this method should only be used for relatively short lists to avoid overfilling the constant pool.
+     * Note that the JDK immutable collection types forbid {@code null}, so
+     * {@linkplain Const#ofNull(ClassDesc) <code>null</code> values} should not be used.
+     *
+     * @param items the list of items, which must be {@code Const}, {@code Constable}, or {@code ConstantDesc} subtypes
+     *        (must not be {@code null})
+     */
+    static Const of(List<?> items) {
+        items = List.copyOf(items);
+        if (items.size() > 254) {
+            throw new IllegalArgumentException(
+                    "List is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+        }
+        ClassDesc[] paramDescs = items.size() <= 10 ? Collections.nCopies(items.size(), CD_Object).toArray(ClassDesc[]::new)
+                : new ClassDesc[] { CD_Object.arrayType() };
+        return ofInvoke(
+                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
+                        CD_List,
+                        "of",
+                        MethodTypeDesc.of(CD_List, paramDescs))),
+                consts(items));
+    }
+
+    /**
+     * {@return a set constant containing the given items}
+     * The maximum number of items is around 254 (depending on the constant type); however,
+     * this method should only be used for relatively small sets to avoid overfilling the constant pool.
+     * Note that the JDK immutable collection types forbid {@code null}, so
+     * {@linkplain Const#ofNull(ClassDesc) <code>null</code> values} should not be used.
+     *
+     * @param items the set of items, which must be {@code Const}, {@code Constable}, or {@code ConstantDesc} subtypes
+     *        (must not be {@code null})
+     */
+    static Const of(Set<?> items) {
+        items = Set.copyOf(items);
+        if (items.size() > 254) {
+            throw new IllegalArgumentException(
+                    "Set is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+        }
+        ClassDesc[] paramDescs = items.size() <= 10 ? Collections.nCopies(items.size(), CD_Object).toArray(ClassDesc[]::new)
+                : new ClassDesc[] { CD_Object.arrayType() };
+        return ofInvoke(
+                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
+                        CD_Set,
+                        "of",
+                        MethodTypeDesc.of(CD_Set, paramDescs))),
+                consts(items));
+    }
+
+    /**
+     * {@return a map constant containing the given items}
+     * The maximum number of items is around 254 (depending on the constant type); however,
+     * this method should only be used for relatively small maps to avoid overfilling the constant pool.
+     * Note that the JDK immutable collection types forbid {@code null}, so
+     * {@linkplain Const#ofNull(ClassDesc) <code>null</code> values} should not be used.
+     *
+     * @param items the set of items, which must be {@code Const}, {@code Constable}, or {@code ConstantDesc} subtypes
+     *        (must not be {@code null})
+     */
+    static Const of(Map<?, ?> items) {
+        items = Map.copyOf(items);
+        if (items.size() > 254) {
+            throw new IllegalArgumentException(
+                    "Map is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+        }
+        if (items.size() <= 10) {
+            // use the simple factory
+            ClassDesc[] paramDescs = Collections.nCopies(items.size() * 2, CD_Object).toArray(ClassDesc[]::new);
+            Const[] args = items.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).map(Const::of)
+                    .toArray(Const[]::new);
+            return ofInvoke(
+                    ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
+                            CD_Map,
+                            "of",
+                            MethodTypeDesc.of(CD_Map, paramDescs))),
+                    args);
+        } else {
+            // create map entry constants
+            Const[] args = items.entrySet().stream().map(Const::of).toArray(Const[]::new);
+            return ofInvoke(
+                    ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
+                            CD_Map,
+                            "ofEntries",
+                            MethodTypeDesc.of(CD_Map, Util.classDesc(Map.Entry.class).arrayType()))),
+                    args);
+        }
+    }
+
+    /**
+     * {@return a map entry constant with the key and value of the given entry}
+     *
+     * @param entry the map entry containing a constant key and value,
+     *        which must be {@code Const}, {@code Constable}, or {@code ConstantDesc} subtypes
+     *        (must not be {@code null})
+     */
+    static Const of(Map.Entry<?, ?> entry) {
+        return ofInvoke(
+                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
+                        CD_Map,
+                        "entry",
+                        MethodTypeDesc.of(Util.classDesc(Map.Entry.class), CD_Object, CD_Object))),
+                of(entry.getKey()),
+                of(entry.getValue()));
+    }
+
+    // Private to avoid ambiguous overload behavior
+    private static Const of(Object any) {
+        if (any instanceof ConstantDesc cd) {
+            return of(cd);
+        } else if (any instanceof Constable c) {
+            return of(c);
+        } else {
+            throw wrongType(any);
+        }
+    }
+
+    private static Const[] consts(final Collection<?> items) {
+        return items.stream().map(Const::of).toArray(Const[]::new);
+    }
+
+    private static IllegalArgumentException wrongType(Object object) {
+        return new IllegalArgumentException("Given object %s is not a valid constant".formatted(object));
     }
 }

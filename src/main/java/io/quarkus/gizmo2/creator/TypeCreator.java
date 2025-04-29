@@ -4,6 +4,8 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
@@ -210,6 +212,42 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
             sfc.withInitial(value);
         });
     }
+
+    /**
+     * Create a private constant which loads the given list of strings from a generated resource file.
+     * The constant may not be used outside of this class.
+     * Any number of strings may be stored in the constant;
+     * however, for smaller lists, {@link Const#of(List)} is preferred.
+     *
+     * @param name the constant name (must not be {@code null})
+     * @param items the list of strings for the constant (must not be {@code null})
+     * @return the constant (not {@code null})
+     */
+    Const stringListResourceConstant(String name, List<String> items);
+
+    /**
+     * Create a private constant which loads the given set of strings from a generated resource file.
+     * The constant may not be used outside of this class.
+     * Any number of strings may be stored in the constant;
+     * however, for smaller sets, {@link Const#of(Set)} is preferred.
+     *
+     * @param name the constant name (must not be {@code null})
+     * @param items the set of strings for the constant (must not be {@code null})
+     * @return the constant (not {@code null})
+     */
+    Const stringSetResourceConstant(String name, Set<String> items);
+
+    /**
+     * Create a private constant which loads the given map of strings from a generated resource file.
+     * The constant may not be used outside of this class.
+     * Any number of strings may be stored in the constant;
+     * however, for smaller maps, {@link Const#of(Map)} is preferred.
+     *
+     * @param name the constant name (must not be {@code null})
+     * @param items the map of strings for the constant (must not be {@code null})
+     * @return the constant (not {@code null})
+     */
+    Const stringMapResourceConstant(String name, Map<String, String> items);
 
     /**
      * {@return the {@code this} expression}

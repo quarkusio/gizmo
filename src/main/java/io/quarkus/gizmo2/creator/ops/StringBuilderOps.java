@@ -56,7 +56,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @return this instance
      */
     public StringBuilderOps append(final Expr expr) {
-        switch (expr.type().descriptorString()) {
+        return new StringBuilderOps(bc, switch (expr.type().descriptorString()) {
             case "Z" -> invokeInstance(StringBuilder.class, "append", boolean.class, expr);
             case "B", "S", "I" -> invokeInstance(StringBuilder.class, "append", int.class, expr);
             case "J" -> invokeInstance(StringBuilder.class, "append", long.class, expr);
@@ -67,8 +67,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
             case "Ljava/lang/String;" -> invokeInstance(StringBuilder.class, "append", String.class, expr);
             case "Ljava/lang/CharSequence;" -> invokeInstance(StringBuilder.class, "append", CharSequence.class, expr);
             default -> invokeInstance(StringBuilder.class, "append", Object.class, expr);
-        }
-        return this;
+        });
     }
 
     /**
@@ -89,6 +88,44 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      */
     public StringBuilderOps append(final String constant) {
         return append(Const.of(constant));
+    }
+
+    /**
+     * Appends the given code point to this {@code StringBuilder}.
+     *
+     * @param codePoint the value to append (must not be {@code null})
+     * @return a valid wrapper for this instance (not {@code null})
+     */
+    public StringBuilderOps appendCodePoint(final Expr codePoint) {
+        return new StringBuilderOps(bc, invokeInstance(StringBuilder.class, "appendCodePoint", int.class, codePoint));
+    }
+
+    /**
+     * Appends the given code point to this {@code StringBuilder}.
+     *
+     * @param codePoint the value to append
+     * @return a valid wrapper for this instance (not {@code null})
+     */
+    public StringBuilderOps appendCodePoint(final int codePoint) {
+        return appendCodePoint(Const.of(codePoint));
+    }
+
+    /**
+     * Set the length of this {@code StringBuilder}.
+     *
+     * @param length the length expression (must not be {@code null})
+     */
+    public void setLength(Expr length) {
+        invokeInstance(void.class, "setLength", int.class, length);
+    }
+
+    /**
+     * Set the length of this {@code StringBuilder}.
+     *
+     * @param length the constant length
+     */
+    public void setLength(int length) {
+        setLength(Const.of(length));
     }
 
     @Override

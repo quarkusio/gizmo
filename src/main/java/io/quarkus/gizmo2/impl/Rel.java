@@ -58,7 +58,7 @@ final class Rel extends Item {
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         Label true_ = cb.newLabel();
         Label end = cb.newLabel();
-        switch (typeKind().asLoadable()) {
+        switch (a.typeKind().asLoadable()) {
             case INT -> kind.if_icmp.accept(cb, true_);
             case REFERENCE -> kind.if_acmp.accept(cb, true_);
             default -> throw impossibleSwitchCase(typeKind().asLoadable());
