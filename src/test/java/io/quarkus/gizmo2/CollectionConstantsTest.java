@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-public final class TestCollectionsConstants {
+public final class CollectionConstantsTest {
     @Test
     public void testConstantStringList() {
         TestClassMaker tcm = new TestClassMaker();
