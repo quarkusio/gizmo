@@ -119,50 +119,54 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return contains(var.block());
     }
 
-    // lexical variables
+    // local variables
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the given {@code value}.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
+     * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    LocalVar declare(String name, GenericType type);
+    LocalVar localVar(String name, GenericType type, Expr value);
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the given {@code value}.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
+     * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    default LocalVar declare(String name, ClassDesc type) {
-        return declare(name, GenericType.of(type));
+    default LocalVar localVar(String name, ClassDesc type, Expr value) {
+        return localVar(name, GenericType.of(type), value);
     }
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the given {@code value}.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
      * @param name the variable name (must not be {@code null})
      * @param type the variable type (must not be {@code null})
+     * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    default LocalVar declare(String name, Class<?> type) {
-        return declare(name, GenericType.of(type));
+    default LocalVar localVar(String name, Class<?> type, Expr value) {
+        return localVar(name, GenericType.of(type), value);
     }
 
     /**
-     * Declare a local variable and define its initial value.
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is the type of the {@code value}.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
@@ -170,23 +174,103 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    default LocalVar define(String name, Expr value) {
-        LocalVar var = declare(name, value.genericType());
-        set(var, value);
-        return var;
+    default LocalVar localVar(String name, Expr value) {
+        return localVar(name, value.genericType(), value);
     }
 
     /**
-     * Declare a local variable which is initialized to the given variable's current value.
-     * The given variable may be a parameter, local variable, or field variable.
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code boolean}.
      * <p>
-     * The name of the new variable is the same as the name of the {@code original}.
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, boolean value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code int}.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, int value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code long}.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, long value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code float}.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, float value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code double}.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, double value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is {@code String}.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param value the variable initial value (must not be {@code null})
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar localVar(String name, String value) {
+        return localVar(name, Const.of(value));
+    }
+
+    /**
+     * Declare a local variable, which is initialized to the given variable's current value.
+     * The name and type of the new variable are the same as the name and type of the {@code original}.
      *
      * @param original the original variable (must not be {@code null})
-     * @return the new local variable (must not be {@code null})
+     * @return the new local variable (not {@code null})
      */
-    default LocalVar define(Var original) {
-        return define(original.name(), original);
+    default LocalVar localVar(Var original) {
+        return localVar(original.name(), original);
     }
 
     // reading memory

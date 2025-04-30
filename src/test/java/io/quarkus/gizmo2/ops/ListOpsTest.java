@@ -32,9 +32,9 @@ public class ListOpsTest {
                 ParamVar t = mc.parameter("t", Object.class);
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    var list = bc.define("list", bc.cast(t, List.class));
+                    var list = bc.localVar("list", bc.cast(t, List.class));
                     ListOps listOps = bc.withList(list);
-                    var size = bc.define("size", listOps.size());
+                    var size = bc.localVar("size", listOps.size());
                     bc.if_(bc.gt(size, 1), gt1 -> {
                         gt1.return_(gt1.withList(list).get(gt1.sub(size, Const.of(1))));
                     });

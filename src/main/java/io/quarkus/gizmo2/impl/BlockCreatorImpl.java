@@ -215,9 +215,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return this == other || parent != null && parent.isContainedBy(other);
     }
 
-    public LocalVar declare(final String name, final GenericType type) {
+    public LocalVar localVar(final String name, final GenericType type, final Expr value) {
         LocalVarImpl lv = new LocalVarImpl(this, name, type);
         addItem(lv.allocator());
+        set(lv, value);
         return lv;
     }
 
@@ -723,15 +724,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
         block(fn, (b0, fn0) -> {
-            Var items = b0.define("$$items" + depth, fn0);
+            Var items = b0.localVar("$$items" + depth, fn0);
             if (items.type().isArray()) {
                 // iterate array
                 Expr lv = items.length();
-                Expr length = lv instanceof Const ? lv : b0.define("$$length" + depth, lv);
-                LocalVar idx = b0.define("$$idx" + depth, Const.of(0));
+                Expr length = lv instanceof Const ? lv : b0.localVar("$$length" + depth, lv);
+                LocalVar idx = b0.localVar("$$idx" + depth, Const.of(0));
                 b0.block(b1 -> {
                     b1.if_(b1.lt(idx, length), b2 -> {
-                        LocalVar val = b2.define("$$val" + depth, items.elem(idx));
+                        LocalVar val = b2.localVar("$$val" + depth, items.elem(idx));
                         builder.accept(b2, val);
                         if (b2.active()) {
                             b2.inc(idx);
@@ -741,10 +742,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 });
             } else {
                 // use iterable
-                LocalVar itr = b0.define("$$itr" + depth, b0.iterate(items));
+                LocalVar itr = b0.localVar("$$itr" + depth, b0.iterate(items));
                 b0.block(b1 -> {
                     b1.if_(b1.withIterator(itr).hasNext(), b2 -> {
-                        LocalVar val = b2.define("$$val" + depth, b2.withIterator(itr).next());
+                        LocalVar val = b2.localVar("$$val" + depth, b2.withIterator(itr).next());
                         ((BlockCreatorImpl) b2).loopAction = bb -> bb.goto_(b1);
                         builder.accept(b2, val);
                         if (b2.active()) {
@@ -830,7 +831,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void ifInstanceOf(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue) {
-        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), null);
+        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.localVar("$$instance" + depth, bc.cast(obj, type))), null);
     }
 
     public void ifNotInstanceOf(Expr obj, ClassDesc type, Consumer<BlockCreator> ifFalse) {
@@ -839,7 +840,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void ifInstanceOfElse(final Expr obj, final ClassDesc type, final BiConsumer<BlockCreator, ? super LocalVar> ifTrue,
             final Consumer<BlockCreator> ifFalse) {
-        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.define("$$instance" + depth, bc.cast(obj, type))), ifFalse);
+        doIf(instanceOf(obj, type), bc -> ifTrue.accept(bc, bc.localVar("$$instance" + depth, bc.cast(obj, type))), ifFalse);
     }
 
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {
@@ -982,7 +983,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             });
         } else {
             block(resource, (b0, opened) -> {
-                LocalVar rsrc = b0.define("$$resource" + depth, opened);
+                LocalVar rsrc = b0.localVar("$$resource" + depth, opened);
                 autoClose(rsrc, b1 -> {
                     body.accept(b1, rsrc);
                 });
@@ -1020,7 +1021,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void synchronized_(final Expr monitor, final Consumer<BlockCreator> body) {
         block(monitor, (b0, mon) -> {
-            LocalVar mv = b0.define("$$monitor" + depth, mon);
+            LocalVar mv = b0.localVar("$$monitor" + depth, mon);
             ((BlockCreatorImpl) b0).monitorEnter((Item) mv);
             b0.try_(t1 -> {
                 t1.body(body);
@@ -1031,7 +1032,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void locked(final Expr jucLock, final Consumer<BlockCreator> body) {
         block(jucLock, (b0, lock) -> {
-            LocalVar lv = b0.define("$$lock" + depth, lock);
+            LocalVar lv = b0.localVar("$$lock" + depth, lock);
             b0.invokeInterface(MethodDesc.of(Lock.class, "lock", void.class), lv);
             b0.try_(t1 -> {
                 t1.body(body);

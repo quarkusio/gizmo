@@ -331,10 +331,10 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar local1 = bc.declare("local1", Integer.class);
+                    LocalVar local1 = bc.localVar("local1", Integer.class, Const.ofDefault(Integer.class));
                     bc.set(local1, Const.of(13));
 
-                    LocalVar local2 = bc.declare("local2", int.class);
+                    LocalVar local2 = bc.localVar("local2", int.class, Const.ofDefault(int.class));
                     bc.set(local2, bc.new_(Integer.class, Const.of(42)));
 
                     bc.return_(bc.add(local1, local2));
@@ -357,10 +357,10 @@ public class AutoConversionTest {
                 // }
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    LocalVar local1 = bc.declare("local1", long.class);
+                    LocalVar local1 = bc.localVar("local1", long.class, Const.ofDefault(long.class));
                     bc.set(local1, Const.of(13));
 
-                    LocalVar local2 = bc.declare("local2", double.class);
+                    LocalVar local2 = bc.localVar("local2", double.class, Const.ofDefault(double.class));
                     bc.set(local2, Const.of(42.0F));
 
                     bc.return_(bc.add(local1, local2));
@@ -513,7 +513,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field1), Const.of(13));
                     bc.set(instance.field(field2), bc.new_(Integer.class, Const.of(42)));
@@ -548,7 +548,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field1), Const.of(13));
                     bc.set(instance.field(field2), Const.of(42.0F));
@@ -583,7 +583,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field1), Const.of(13), MemoryOrder.Volatile);
                     bc.set(instance.field(field2), bc.new_(Integer.class, Const.of(42)), MemoryOrder.Volatile);
@@ -618,7 +618,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field1), Const.of(13), MemoryOrder.Volatile);
                     bc.set(instance.field(field2), Const.of(42.0F), MemoryOrder.Volatile);
@@ -694,7 +694,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(int.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(int.class, 2));
                     bc.set(array.elem(0), Const.of(13));
                     bc.set(array.elem(1), bc.new_(Integer.class, Const.of(42)));
 
@@ -719,7 +719,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(Integer.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(Integer.class, 2));
                     bc.set(array.elem(0), Const.of(13));
                     bc.set(array.elem(1), bc.new_(Integer.class, Const.of(42)));
 
@@ -744,7 +744,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(double.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(double.class, 2));
                     bc.set(array.elem(0), Const.of(13));
                     bc.set(array.elem(1), Const.of(42L));
 
@@ -769,7 +769,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(int.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(int.class, 2));
                     bc.set(array.elem(0), Const.of(13), MemoryOrder.Volatile);
                     bc.set(array.elem(1), bc.new_(Integer.class, Const.of(42)), MemoryOrder.Volatile);
 
@@ -794,7 +794,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(Integer.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(Integer.class, 2));
                     bc.set(array.elem(0), Const.of(13), MemoryOrder.Volatile);
                     bc.set(array.elem(1), bc.new_(Integer.class, Const.of(42)), MemoryOrder.Volatile);
 
@@ -819,7 +819,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(double.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array", bc.newEmptyArray(double.class, 2));
+                    LocalVar array = bc.localVar("array", bc.newEmptyArray(double.class, 2));
                     bc.set(array.elem(0), Const.of(13), MemoryOrder.Volatile);
                     bc.set(array.elem(1), Const.of(42L), MemoryOrder.Volatile);
 
@@ -842,7 +842,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array",
+                    LocalVar array = bc.localVar("array",
                             bc.newArray(int.class, Const.of(13), Const.of(42)));
 
                     bc.return_(bc.add(
@@ -866,7 +866,7 @@ public class AutoConversionTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array",
+                    LocalVar array = bc.localVar("array",
                             bc.newArray(int.class, Const.of(13), Const.of(42)));
 
                     bc.return_(bc.add(

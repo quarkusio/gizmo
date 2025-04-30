@@ -23,7 +23,7 @@ public class StringBuilderOpsTest {
             MethodDesc charSeq = cc.staticMethod("createCharSequence", mc -> {
                 mc.returning(CharSequence.class);
                 mc.body(bc -> {
-                    LocalVar strBuilder = bc.define("stringBuilder", bc.new_(StringBuilder.class));
+                    LocalVar strBuilder = bc.localVar("stringBuilder", bc.new_(StringBuilder.class));
                     bc.withStringBuilder(strBuilder).append("ghi");
                     bc.return_(strBuilder);
                 });

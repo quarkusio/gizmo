@@ -88,7 +88,7 @@ public class ComparisonsTest {
                 // }
                 mc.returning(boolean.class);
                 mc.body(bc -> {
-                    LocalVar obj = bc.define("obj", bc.new_(Object.class));
+                    LocalVar obj = bc.localVar("obj", bc.new_(Object.class));
                     bc.return_(bc.eq(obj, obj));
                 });
             });
@@ -146,7 +146,7 @@ public class ComparisonsTest {
                 // }
                 mc.returning(boolean.class);
                 mc.body(bc -> {
-                    LocalVar obj = bc.define("obj", bc.new_(Object.class));
+                    LocalVar obj = bc.localVar("obj", bc.new_(Object.class));
                     bc.return_(bc.ne(obj, obj));
                 });
             });

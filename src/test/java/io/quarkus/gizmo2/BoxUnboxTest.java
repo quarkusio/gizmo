@@ -217,9 +217,9 @@ public class BoxUnboxTest {
                 mc.body(bc -> {
                     // WORKAROUND: we need to use local vars for types where unboxing involves cmp/cmpg
                     // TODO: file a new issue
-                    var lu = bc.define("lv", bc.unbox(l));
-                    var fu = bc.define("fv", bc.unbox(f));
-                    var du = bc.define("dv", bc.unbox(d));
+                    var lu = bc.localVar("lv", bc.unbox(l));
+                    var fu = bc.localVar("fv", bc.unbox(f));
+                    var du = bc.localVar("dv", bc.unbox(d));
                     bc.ifNot(bc.unbox(bool), fail -> fail.return_(1));
                     bc.if_(bc.ne(bc.unbox(b), Const.of((byte) 123)), fail -> fail.return_(2));
                     bc.if_(bc.ne(bc.unbox(s), Const.of((short) 456)), fail -> fail.return_(3));
@@ -281,9 +281,9 @@ public class BoxUnboxTest {
                 mc.body(bc -> {
                     // WORKAROUND: we need to use local vars for types where unboxing involves cmp/cmpg
                     // TODO: file a new issue
-                    var lu = bc.define("lv", bc.unbox(bc.unbox(l)));
-                    var fu = bc.define("fv", bc.unbox(bc.unbox(f)));
-                    var du = bc.define("dv", bc.unbox(bc.unbox(d)));
+                    var lu = bc.localVar("lv", bc.unbox(bc.unbox(l)));
+                    var fu = bc.localVar("fv", bc.unbox(bc.unbox(f)));
+                    var du = bc.localVar("dv", bc.unbox(bc.unbox(d)));
                     bc.ifNot(bc.unbox(bc.unbox(bool)), fail -> fail.return_(1));
                     bc.if_(bc.ne(bc.unbox(bc.unbox(b)), Const.of((byte) 123)), fail -> fail.return_(2));
                     bc.if_(bc.ne(bc.unbox(bc.unbox(s)), Const.of((short) 456)), fail -> fail.return_(3));
@@ -345,9 +345,9 @@ public class BoxUnboxTest {
                 mc.body(bc -> {
                     // WORKAROUND: we need to use local vars for types where unboxing involves cmp/cmpg
                     // TODO: file a new issue
-                    var lu = bc.define("lv", bc.cast(l, long.class));
-                    var fu = bc.define("fv", bc.cast(f, float.class));
-                    var du = bc.define("dv", bc.cast(d, double.class));
+                    var lu = bc.localVar("lv", bc.cast(l, long.class));
+                    var fu = bc.localVar("fv", bc.cast(f, float.class));
+                    var du = bc.localVar("dv", bc.cast(d, double.class));
                     bc.ifNot(bc.cast(bool, boolean.class), fail -> fail.return_(1));
                     bc.if_(bc.ne(bc.cast(b, byte.class), Const.of((byte) 123)), fail -> fail.return_(2));
                     bc.if_(bc.ne(bc.cast(s, short.class), Const.of((short) 456)), fail -> fail.return_(3));

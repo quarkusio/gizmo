@@ -88,7 +88,7 @@ public final class TryCreatorImpl implements TryCreator {
             tryCatch = new TryCatch(body);
         }
         tryCatch.addCatch(superType, types, caughtName).accept((b0, e) -> {
-            builder.accept(b0, b0.define(caughtName, e));
+            builder.accept(b0, b0.localVar(caughtName, e));
         });
     }
 
