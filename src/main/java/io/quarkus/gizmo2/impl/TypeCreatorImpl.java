@@ -387,16 +387,16 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);
                         smc.body(b0 -> {
-                            var decoder = b0.define("decoder", b0.invokeStatic(MethodDesc.of(
+                            var decoder = b0.declare("decoder", b0.invokeStatic(MethodDesc.of(
                                     Base64.class,
                                     "getDecoder",
                                     Base64.Decoder.class)));
-                            var bytes = b0.define("bytes", b0.invokeVirtual(MethodDesc.of(
+                            var bytes = b0.declare("bytes", b0.invokeVirtual(MethodDesc.of(
                                     Base64.Decoder.class,
                                     "decode",
                                     byte[].class,
                                     String.class), decoder, base64));
-                            var definedLookup = b0.define("definedLookup", b0.invokeVirtual(MethodDesc.of(
+                            var definedLookup = b0.declare("definedLookup", b0.invokeVirtual(MethodDesc.of(
                                     MethodHandles.Lookup.class,
                                     "defineHiddenClass",
                                     MethodHandles.Lookup.class,
@@ -408,13 +408,13 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                     Const.of(false),
                                     b0.newArray(MethodHandles.Lookup.ClassOption.class,
                                             Const.of(MethodHandles.Lookup.ClassOption.NESTMATE))));
-                            var definedClass = b0.define("definedClass", b0.invokeVirtual(
+                            var definedClass = b0.declare("definedClass", b0.invokeVirtual(
                                     MethodDesc.of(
                                             MethodHandles.Lookup.class,
                                             "lookupClass",
                                             Class.class),
                                     definedLookup));
-                            var ctorType = b0.define("ctorType", b0.invokeVirtual(
+                            var ctorType = b0.declare("ctorType", b0.invokeVirtual(
                                     MethodDesc.of(
                                             MethodType.class,
                                             "changeReturnType",
@@ -422,7 +422,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                             Class.class),
                                     methodType,
                                     Const.of(void.class)));
-                            var ctorHandle = b0.define("ctorHandle", b0.invokeVirtual(
+                            var ctorHandle = b0.declare("ctorHandle", b0.invokeVirtual(
                                     MethodDesc.of(
                                             MethodHandles.Lookup.class,
                                             "findConstructor",
@@ -441,10 +441,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                             methodType),
                                     0), t1 -> {
                                         // no parameters, so it should be a singleton
-                                        LocalVar instance = t1.define("instance", t1.invokeVirtual(
+                                        LocalVar instance = t1.declare("instance", t1.invokeVirtual(
                                                 MethodDesc.of(MethodHandle.class, "invoke", Object.class),
                                                 ctorHandle));
-                                        LocalVar constHandle = t1.define("constHandle", t1.invokeStatic(
+                                        LocalVar constHandle = t1.declare("constHandle", t1.invokeStatic(
                                                 MethodDesc.of(
                                                         MethodHandles.class,
                                                         "constant",
@@ -528,7 +528,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                 ParamVar is = mc.parameter("is", CD_InputStream);
                 mc.body(b0 -> {
                     // first byte of the line
-                    LocalVar a = b0.define("a", b0.invokeVirtual(MD_InputStream_read, is));
+                    LocalVar a = b0.declare("a", b0.invokeVirtual(MD_InputStream_read, is));
                     // EOF (expected)
                     b0.if_(b0.eq(a, -1), BlockCreator::returnNull);
                     b0.loop(b1 -> {
@@ -554,7 +554,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                 b3.throw_(CharConversionException.class);
                             });
                             // at least two bytes
-                            LocalVar b = b2.define("b", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar b = b2.declare("b", b2.invokeVirtual(MD_InputStream_read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(b, -1), b3 -> {
                                 // eof (unexpected)
@@ -575,7 +575,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                 b3.break_(b2);
                             });
                             // at least three bytes
-                            LocalVar c = b2.define("c", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar c = b2.declare("c", b2.invokeVirtual(MD_InputStream_read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(c, -1), b3 -> {
                                 // eof (unexpected)
@@ -598,7 +598,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                 b3.break_(b2);
                             });
                             // four bytes (or invalid)
-                            LocalVar d = b2.define("d", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar d = b2.declare("d", b2.invokeVirtual(MD_InputStream_read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(d, -1), b3 -> {
                                 // eof (unexpected)
@@ -649,7 +649,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                         b1.throw_(ClassCastException.class);
                     });
                     // load resource
-                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                    LocalVar is = b0.declare("is", b0.invokeVirtual(
                             ClassMethodDesc.of(
                                     CD_Class,
                                     "getResourceAsStream",
@@ -664,9 +664,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                     });
                     b0.autoClose(is, b1 -> {
                         // decode the bytes
-                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
-                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
-                        LocalVar line = b1.define("line", b1.invokeStatic(ClassMethodDesc.of(
+                        LocalVar sb = b1.declare("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.declare("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar line = b1.declare("line", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
                                 MethodTypeDesc.of(
@@ -720,7 +720,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                         b1.throw_(ClassCastException.class);
                     });
                     // load resource
-                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                    LocalVar is = b0.declare("is", b0.invokeVirtual(
                             ClassMethodDesc.of(
                                     CD_Class,
                                     "getResourceAsStream",
@@ -735,9 +735,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                     });
                     b0.autoClose(is, b1 -> {
                         // decode the bytes
-                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
-                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
-                        LocalVar line = b1.define("line", b1.invokeStatic(ClassMethodDesc.of(
+                        LocalVar sb = b1.declare("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.declare("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar line = b1.declare("line", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
                                 MethodTypeDesc.of(
@@ -791,7 +791,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                         b1.throw_(ClassCastException.class);
                     });
                     // load resource
-                    LocalVar is = b0.define("is", b0.invokeVirtual(
+                    LocalVar is = b0.declare("is", b0.invokeVirtual(
                             ClassMethodDesc.of(
                                     CD_Class,
                                     "getResourceAsStream",
@@ -806,9 +806,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                     });
                     b0.autoClose(is, b1 -> {
                         // decode the bytes
-                        LocalVar sb = b1.define("sb", b1.new_(CD_StringBuilder, Const.of(100)));
-                        LocalVar list = b1.define("list", b1.new_(CD_ArrayList, Const.of(60)));
-                        LocalVar key = b1.define("key", b1.invokeStatic(ClassMethodDesc.of(
+                        LocalVar sb = b1.declare("sb", b1.new_(CD_StringBuilder, Const.of(100)));
+                        LocalVar list = b1.declare("list", b1.new_(CD_ArrayList, Const.of(60)));
+                        LocalVar key = b1.declare("key", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
                                 MethodTypeDesc.of(
@@ -816,7 +816,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                                         CD_StringBuilder,
                                         CD_InputStream)),
                                 sb, is));
-                        LocalVar value = b1.define("value", b1.invokeStatic(ClassMethodDesc.of(
+                        LocalVar value = b1.declare("value", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
                                 MethodTypeDesc.of(
