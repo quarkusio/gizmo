@@ -2,8 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 
-import java.util.function.BiFunction;
-
 /**
  * A basic mutable doubly-linked-list node which holds an {@link Item}.
  */
@@ -59,10 +57,6 @@ public final class Node {
         Item old = this.item;
         this.item = item;
         return old;
-    }
-
-    public Node apply(BiFunction<Item, Node, Node> op) {
-        return op.apply(item, this);
     }
 
     public Node insertPrev(Item item) {
