@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.creator;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator interface for parameters.
  */
-public sealed interface ParamCreator extends Annotatable, SimpleTyped permits ParamCreatorImpl {
+public sealed interface ParamCreator extends AnnotatableCreator, SimpleTyped permits ParamCreatorImpl {
     /**
      * Add a flag to this parameter.
      *

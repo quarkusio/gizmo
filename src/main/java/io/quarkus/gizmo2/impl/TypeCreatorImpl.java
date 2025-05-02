@@ -43,6 +43,8 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
@@ -460,8 +462,14 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return List.copyOf(constructors);
     }
 
-    ElementType annotationTargetType() {
+    public ElementType annotationTargetType() {
         return ElementType.TYPE;
+    }
+
+    public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
+        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+        builder.accept(creator);
+        return creator.forType(type());
     }
 
     void buildReadLineBoostrapHelper() {

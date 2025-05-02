@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.SimpleTyped;
@@ -25,7 +25,8 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a type.
  */
-public sealed interface TypeCreator extends Annotatable, SimpleTyped permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
+public sealed interface TypeCreator extends AnnotatableCreator, SimpleTyped
+        permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
      * If not called, the generated class has the version of Java 17.

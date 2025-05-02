@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
@@ -20,18 +22,35 @@ import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
-import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.smallrye.common.constraint.Assert;
 
-public abstract sealed class AnnotatableCreatorImpl implements Annotatable
-        permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeCreatorImpl {
+public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreator
+        permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeAnnotatableCreatorImpl, TypeCreatorImpl,
+        TypeVariableCreatorImpl {
     protected final String creationSite = Util.trackCaller();
 
-    Map<ClassDesc, Annotation> invisible = Map.of();
-    Map<ClassDesc, Annotation> visible = Map.of();
+    Map<ClassDesc, Annotation> invisible;
+    Map<ClassDesc, Annotation> visible;
 
-    private Map<ClassDesc, Annotation> visible() {
+    protected AnnotatableCreatorImpl() {
+        invisible = Map.of();
+        visible = Map.of();
+    }
+
+    protected AnnotatableCreatorImpl(List<Annotation> visible, List<Annotation> invisible) {
+        this.invisible = invisible.isEmpty() ? Map.of()
+                : invisible.stream().collect(Collectors.toMap(Annotation::classSymbol, Function.identity(), (a, b) -> {
+                    throw new IllegalStateException();
+                }, LinkedHashMap::new));
+        this.visible = visible.isEmpty() ? Map.of()
+                : visible.stream().collect(Collectors.toMap(Annotation::classSymbol, Function.identity(), (a, b) -> {
+                    throw new IllegalStateException();
+                }, LinkedHashMap::new));
+    }
+
+    private Map<ClassDesc, Annotation> visibleMap() {
         Map<ClassDesc, Annotation> map = visible;
         if (map.isEmpty()) {
             map = visible = new LinkedHashMap<>(4);
@@ -39,7 +58,7 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         return map;
     }
 
-    private Map<ClassDesc, Annotation> invisible() {
+    private Map<ClassDesc, Annotation> invisibleMap() {
         Map<ClassDesc, Annotation> map = invisible;
         if (map.isEmpty()) {
             map = invisible = new LinkedHashMap<>(4);
@@ -47,7 +66,7 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         return map;
     }
 
-    abstract ElementType annotationTargetType();
+    public abstract ElementType annotationTargetType();
 
     @Override
     public <A extends java.lang.annotation.Annotation> void withAnnotation(Class<A> annotationClass,
@@ -107,8 +126,8 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
     private Map<ClassDesc, Annotation> getAnnotationMap(final RetentionPolicy retentionPolicy) {
         return switch (retentionPolicy) {
             case SOURCE -> throw Assert.impossibleSwitchCase(retentionPolicy);
-            case CLASS -> invisible();
-            case RUNTIME -> visible();
+            case CLASS -> invisibleMap();
+            case RUNTIME -> visibleMap();
         };
     }
 
@@ -144,5 +163,13 @@ public abstract sealed class AnnotatableCreatorImpl implements Annotatable
         if (!visible.isEmpty()) {
             consumer.accept(RuntimeVisibleAnnotationsAttribute.of(List.copyOf(visible.values())));
         }
+    }
+
+    public List<Annotation> invisible() {
+        return List.copyOf(invisible.values());
+    }
+
+    public List<Annotation> visible() {
+        return List.copyOf(visible.values());
     }
 }

@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -112,6 +113,15 @@ public sealed interface ConstructorDesc extends MemberDesc, MethodTyped permits 
      */
     static ConstructorDesc of(Class<?> owner, List<Class<?>> paramTypes) {
         return of(owner, MethodType.methodType(void.class, paramTypes));
+    }
+
+    /**
+     * {@return a constructor descriptor for the given constructor}
+     *
+     * @param ctor the constructor (must not be {@code null})
+     */
+    static ConstructorDesc of(Constructor<?> ctor) {
+        return of(ctor.getDeclaringClass(), ctor.getParameterTypes());
     }
 
     /**

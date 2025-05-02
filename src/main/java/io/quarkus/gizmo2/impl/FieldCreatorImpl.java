@@ -123,7 +123,7 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
         return type;
     }
 
-    ElementType annotationTargetType() {
+    public ElementType annotationTargetType() {
         return ElementType.FIELD;
     }
 }
