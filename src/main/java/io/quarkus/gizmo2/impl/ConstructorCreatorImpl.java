@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -68,7 +70,13 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         super.clearType();
     }
 
-    ElementType annotationTargetType() {
+    public ElementType annotationTargetType() {
         return ElementType.CONSTRUCTOR;
+    }
+
+    public TypeVariable.OfConstructor typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
+        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+        builder.accept(creator);
+        return creator.forConstructor(desc);
     }
 }

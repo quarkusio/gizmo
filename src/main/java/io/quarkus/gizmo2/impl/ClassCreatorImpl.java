@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;

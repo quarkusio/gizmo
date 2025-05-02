@@ -1,13 +1,18 @@
 package io.quarkus.gizmo2;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
+import java.lang.reflect.AnnotatedElement;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.quarkus.gizmo2.creator.MemberCreator;
@@ -18,7 +23,34 @@ import io.quarkus.gizmo2.impl.AnnotatableCreatorImpl;
 /**
  * An element that can be annotated.
  */
-public sealed interface Annotatable permits MemberCreator, ParamCreator, TypeCreator, AnnotatableCreatorImpl {
+public sealed interface AnnotatableCreator
+        permits TypeVariableCreator, MemberCreator, ParamCreator, TypeCreator, AnnotatableCreatorImpl {
+    /**
+     * Copy all of the annotations from the given annotated element.
+     *
+     * @param element the annotated element (must not be {@code null})
+     * @return a consumer which copies the annotations (not {@code null})
+     */
+    static Consumer<AnnotatableCreator> from(AnnotatedElement element) {
+        return ac -> Stream.of(element.getAnnotations())
+                .filter(a -> Set.of(Objects.requireNonNull(a.annotationType().getAnnotation(Target.class)).value())
+                        .contains(((AnnotatableCreatorImpl) ac).annotationTargetType()))
+                .forEach(ac::withAnnotation);
+    }
+
+    /**
+     * Add the given annotation object to this creator.
+     *
+     * @param annotation the annotation object (must not be {@code null})
+     * @param <A> the annotation type
+     */
+    default <A extends Annotation> void withAnnotation(A annotation) {
+        checkNotNullParam("annotation", annotation);
+        @SuppressWarnings("unchecked")
+        Class<A> annotationType = (Class<A>) annotation.annotationType();
+        withAnnotation(annotationType, AnnotationCreator.from(annotation));
+    }
+
     /**
      * Add an annotation with no elements. If {@code annotationClass} has no {@link Retention}
      * annotation, {@link RetentionPolicy#RUNTIME} is assumed. This is the most commonly used

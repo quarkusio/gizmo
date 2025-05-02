@@ -12,14 +12,19 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.github.dmlloyd.classfile.Annotation;
+import io.github.dmlloyd.classfile.AnnotationElement;
+import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
 
 public final class Util {
@@ -227,5 +232,64 @@ public final class Util {
 
     public static String binaryName(final ClassDesc desc) {
         return internalName(desc).replace('/', '.');
+    }
+
+    public static StringBuilder appendAnnotation(final StringBuilder b, final Annotation annotation) {
+        b.append('@');
+        b.append(binaryName(annotation.classSymbol()));
+        List<AnnotationElement> elements = annotation.elements();
+        if (!elements.isEmpty()) {
+            b.append('(');
+            if (elements.size() == 1 && elements.get(0).name().equalsString("value")) {
+                appendAnnotationValue(b, elements.get(0).value());
+            } else {
+                Iterator<AnnotationElement> iter = elements.iterator();
+                assert iter.hasNext();
+                AnnotationElement entry = iter.next();
+                appendAnnotationValue(b.append(entry.name().stringValue()).append('='), entry.value());
+                while (iter.hasNext()) {
+                    entry = iter.next();
+                    appendAnnotationValue(b.append(',').append(entry.name().stringValue()).append('='), entry.value());
+                }
+            }
+            b.append(')');
+        }
+        return b;
+    }
+
+    public static void appendAnnotationValue(final StringBuilder b, final AnnotationValue value) {
+        switch (value.tag()) {
+            case AnnotationValue.TAG_BYTE -> b.append(((AnnotationValue.OfByte) value).byteValue());
+            case AnnotationValue.TAG_CHAR -> b.append('\'').append(((AnnotationValue.OfChar) value).charValue()).append('\'');
+            case AnnotationValue.TAG_SHORT -> b.append(((AnnotationValue.OfShort) value).shortValue());
+            case AnnotationValue.TAG_INT -> b.append(((AnnotationValue.OfInt) value).intValue());
+            case AnnotationValue.TAG_LONG -> b.append(((AnnotationValue.OfLong) value).longValue()).append('L');
+            case AnnotationValue.TAG_FLOAT -> b.append(((AnnotationValue.OfFloat) value).floatValue()).append('F');
+            case AnnotationValue.TAG_DOUBLE -> b.append(((AnnotationValue.OfDouble) value).doubleValue());
+            case AnnotationValue.TAG_BOOLEAN -> b.append(((AnnotationValue.OfBoolean) value).booleanValue());
+            case AnnotationValue.TAG_STRING ->
+                b.append('"').append(((AnnotationValue.OfString) value).stringValue()).append('"');
+            case AnnotationValue.TAG_ENUM -> {
+                AnnotationValue.OfEnum ofEnum = (AnnotationValue.OfEnum) value;
+                b.append(binaryName(ofEnum.classSymbol())).append('.').append(ofEnum.constantName().stringValue());
+            }
+            case AnnotationValue.TAG_ARRAY -> {
+                b.append('{');
+                final Iterator<AnnotationValue> iterator = ((AnnotationValue.OfArray) value).values().iterator();
+                if (iterator.hasNext()) {
+                    AnnotationValue nested = iterator.next();
+                    appendAnnotationValue(b, nested);
+                    while (iterator.hasNext()) {
+                        b.append(',');
+                        nested = iterator.next();
+                        appendAnnotationValue(b, nested);
+                    }
+                }
+                b.append('}');
+            }
+            case AnnotationValue.TAG_CLASS -> b.append(binaryName(((AnnotationValue.OfClass) value).classSymbol()));
+            case AnnotationValue.TAG_ANNOTATION -> appendAnnotation(b, ((AnnotationValue.OfAnnotation) value).annotation());
+            default -> throw Assert.impossibleSwitchCase(value.tag());
+        }
     }
 }

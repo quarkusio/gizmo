@@ -4,14 +4,14 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDesc;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.Typed;
 import io.quarkus.gizmo2.desc.MemberDesc;
 
 /**
  * A generalized creator for any kind of class member.
  */
-public sealed interface MemberCreator extends Annotatable, Typed
+public sealed interface MemberCreator extends AnnotatableCreator, Typed
         permits ConstructorCreator, FieldCreator, MethodCreator {
 
     /**

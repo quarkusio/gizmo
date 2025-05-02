@@ -12,7 +12,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for an executable (i.e. something that can be called with arguments).
  */
-public sealed interface ExecutableCreator extends MethodTyped
+public sealed interface ExecutableCreator extends MethodTyped, TypeParameterizedCreator
         permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     /**
      * {@return the type descriptor of this executable (not {@code null})}

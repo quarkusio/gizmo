@@ -67,7 +67,7 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         return type;
     }
 
-    ElementType annotationTargetType() {
+    public ElementType annotationTargetType() {
         return ElementType.PARAMETER;
     }
 }
