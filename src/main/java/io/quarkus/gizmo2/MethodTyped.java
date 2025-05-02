@@ -2,6 +2,7 @@ package io.quarkus.gizmo2;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.List;
 
 import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
@@ -50,6 +51,13 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Executable
      */
     default boolean isPrimitiveReturn() {
         return returnType().isPrimitive();
+    }
+
+    /**
+     * {@return the list of parameter types}
+     */
+    default List<ClassDesc> parameterTypes() {
+        return type().parameterList();
     }
 
     /**
