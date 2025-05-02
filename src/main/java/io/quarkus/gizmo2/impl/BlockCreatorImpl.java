@@ -425,7 +425,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         // stitch the object graph into our list
         insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
-        return nea;
+        Item result = nea;
+        if (size > 0) {
+            result = addItem(new NewArrayResult(nea, Util.reinterpretCast(stores)));
+        }
+        return result;
     }
 
     private Expr relZero(final Expr a, final If.Kind kind) {
@@ -697,10 +701,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         Node dupNode = dup_.insert(node.next());
         new_.insert(dupNode);
-        // finally, add the invoke at tail
-        addItem(new Invoke(ctor, dup_, args));
-        // the New is all that is left on the stack now
-        return new_;
+        // add the invoke at tail
+        Invoke invoke = new Invoke(ctor, dup_, args);
+        addItem(invoke);
+        // finally, add the result
+        return addItem(new NewResult(new_, invoke));
     }
 
     public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
