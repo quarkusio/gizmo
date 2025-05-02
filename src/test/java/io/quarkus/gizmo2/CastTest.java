@@ -28,10 +28,10 @@ public final class CastTest {
     }
 
     @Test
-    public void testUnsafeCast() {
+    public void testUncheckedCast() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.UnsafeCast", cc -> {
+        g.class_("io.quarkus.gizmo2.UncheckedCast", cc -> {
             cc.staticMethod("test", smc -> {
                 smc.returning(Object.class);
                 ParamVar input = smc.parameter("input", String.class);
@@ -40,10 +40,10 @@ public final class CastTest {
                 });
             });
         });
-        assertEquals("Hello", tcm.staticMethod("test", UnsafeCast.class).run("Hello"));
+        assertEquals("Hello", tcm.staticMethod("test", UncheckedCast.class).run("Hello"));
     }
 
-    public interface UnsafeCast {
+    public interface UncheckedCast {
         Object run(String input);
     }
 

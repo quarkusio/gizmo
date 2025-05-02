@@ -5,9 +5,9 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 
-final class UnsafeCast extends Cast {
+final class UncheckedCast extends Cast {
 
-    UnsafeCast(final Expr a, final ClassDesc toType) {
+    UncheckedCast(final Expr a, final ClassDesc toType) {
         super(a, toType);
     }
 

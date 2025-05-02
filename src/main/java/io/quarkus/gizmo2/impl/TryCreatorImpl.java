@@ -53,7 +53,7 @@ public final class TryCreatorImpl implements TryCreator {
         }
         Iterator<Class<? extends Throwable>> iterator = types.iterator();
         assert iterator.hasNext();
-        // extra subclass check to detect errors from unsafe casts early
+        // extra subclass check to detect errors from unchecked casts early
         Class<? extends Throwable> type = iterator.next().asSubclass(Throwable.class);
         while (iterator.hasNext()) {
             type = findCommonSuper(type, iterator.next().asSubclass(Throwable.class));
