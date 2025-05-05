@@ -7,13 +7,14 @@ import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.stream.Stream;
 
+import io.quarkus.gizmo2.MethodTyped;
 import io.quarkus.gizmo2.impl.ConstructorDescImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A descriptor for a constructor.
  */
-public sealed interface ConstructorDesc extends MemberDesc permits ConstructorDescImpl {
+public sealed interface ConstructorDesc extends MemberDesc, MethodTyped permits ConstructorDescImpl {
     /**
      * Construct a new instance.
      *
