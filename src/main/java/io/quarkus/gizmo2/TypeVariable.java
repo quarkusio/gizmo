@@ -2,60 +2,93 @@ package io.quarkus.gizmo2;
 
 import static java.lang.constant.ConstantDescs.*;
 
-import java.lang.annotation.Annotation;
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A type variable on a class, interface, or method.
  */
 public sealed abstract class TypeVariable implements GenericTyped {
-    // TODO arguments for classes we do not define
     private final String name;
-    private final List<GenericType.OfThrows> bounds;
+    private final Optional<GenericType.OfThrows> firstBound;
+    private final List<GenericType.OfThrows> otherBounds;
     private final List<Annotation> visible;
     private final List<Annotation> invisible;
 
     GenericType.OfTypeVariable genericType;
 
     TypeVariable(final List<Annotation> visible, final List<Annotation> invisible, final String name,
-            final List<GenericType.OfThrows> bounds) {
+            final Optional<GenericType.OfThrows> firstBound, final List<GenericType.OfThrows> otherBounds) {
         this.name = name;
-        this.bounds = bounds;
+        this.firstBound = firstBound;
+        this.otherBounds = List.copyOf(otherBounds);
         this.visible = visible;
         this.invisible = invisible;
     }
 
     static TypeVariable of(final java.lang.reflect.TypeVariable<?> typeVar) {
         GenericDeclaration decl = typeVar.getGenericDeclaration();
-        List<GenericType.OfThrows> bounds = Stream.of(typeVar.getAnnotatedBounds())
+        List<GenericType.OfThrows> allBounds = Stream.of(typeVar.getAnnotatedBounds())
                 .map(GenericType::of)
                 .map(GenericType.OfThrows.class::cast)
                 .toList();
-        // TODO: populate annotations
+        Optional<GenericType.OfThrows> firstBound;
+        List<GenericType.OfThrows> otherBounds;
+        // make a best-effort guess to populate this stuff as correctly as possible
+        if (allBounds.isEmpty() || allBounds.size() == 1 && allBounds.get(0).equals(GenericType.of(Object.class))) {
+            firstBound = Optional.empty();
+            otherBounds = List.of();
+        } else if (typeVar.getBounds()[0] instanceof Class<?> c && !c.isInterface()) {
+            firstBound = Optional.of(allBounds.get(0));
+            otherBounds = allBounds.subList(1, allBounds.size());
+        } else if (allBounds.size() == 1 && allBounds.get(0) instanceof GenericType.OfTypeVariable) {
+            firstBound = Optional.of(allBounds.get(0));
+            otherBounds = List.of();
+        } else {
+            firstBound = Optional.empty();
+            otherBounds = allBounds;
+        }
+        TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl();
+        AnnotatableCreator.from(typeVar).accept(tac);
         if (decl instanceof Class<?> c) {
-            return new OfType(List.of(), List.of(), typeVar.getName(), bounds, Util.classDesc(c));
+            return new OfType(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds, Util.classDesc(c));
         } else if (decl instanceof Method m) {
-            return new OfMethod(List.of(), List.of(), typeVar.getName(), bounds, MethodDesc.of(m));
+            return new OfMethod(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds, MethodDesc.of(m));
         } else if (decl instanceof Constructor<?> c) {
-            return new OfConstructor(List.of(), List.of(), typeVar.getName(), bounds, ConstructorDesc.of(c));
+            return new OfConstructor(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds,
+                    ConstructorDesc.of(c));
         } else {
             // should be impossible, actually
             throw new IllegalStateException("Unexpected declaration " + decl);
         }
     }
 
-    public List<GenericType.OfThrows> bounds() {
-        return bounds;
+    /**
+     * {@return the optional first (primary) bound (not null)}
+     * This should be a class or type variable bound.
+     */
+    public Optional<GenericType.OfThrows> firstBound() {
+        return firstBound;
+    }
+
+    /**
+     * {@return the other (secondary) bounds (not {@code null})}
+     * This should be a list of interface types, or empty if the first bound is a type variable.
+     */
+    public List<GenericType.OfThrows> otherBounds() {
+        return otherBounds;
     }
 
     /**
@@ -67,6 +100,10 @@ public sealed abstract class TypeVariable implements GenericTyped {
 
     public GenericType.OfTypeVariable genericType() {
         return GenericType.ofTypeVariable(this);
+    }
+
+    public ClassDesc type() {
+        return genericType.desc();
     }
 
     List<Annotation> visible() {
@@ -88,11 +125,11 @@ public sealed abstract class TypeVariable implements GenericTyped {
     }
 
     public boolean equals(final TypeVariable other) {
-        return other != null && name.equals(other.name) && bounds.equals(other.bounds);
+        return other != null && name.equals(other.name) && otherBounds.equals(other.otherBounds);
     }
 
     public int hashCode() {
-        return Objects.hash(name, bounds);
+        return Objects.hash(name, otherBounds);
     }
 
     public String toString() {
@@ -100,15 +137,16 @@ public sealed abstract class TypeVariable implements GenericTyped {
     }
 
     public ClassDesc erasure() {
-        return bounds().stream().findFirst().map(GenericType::desc).orElse(CD_Object);
+        return otherBounds().stream().findFirst().map(GenericType::desc).orElse(CD_Object);
     }
 
     public static final class OfType extends TypeVariable {
         private final ClassDesc owner;
 
         OfType(final List<Annotation> visible, final List<Annotation> invisible, final String name,
-                final List<GenericType.OfThrows> bounds, final ClassDesc owner) {
-            super(visible, invisible, name, bounds);
+                final Optional<GenericType.OfThrows> firstBound, final List<GenericType.OfThrows> otherBounds,
+                final ClassDesc owner) {
+            super(visible, invisible, name, firstBound, otherBounds);
             this.owner = owner;
         }
 
@@ -148,8 +186,9 @@ public sealed abstract class TypeVariable implements GenericTyped {
         private final MethodDesc owner;
 
         OfMethod(final List<Annotation> visible, final List<Annotation> invisible, final String name,
-                final List<GenericType.OfThrows> bounds, final MethodDesc owner) {
-            super(visible, invisible, name, bounds);
+                final Optional<GenericType.OfThrows> firstBound, final List<GenericType.OfThrows> otherBounds,
+                final MethodDesc owner) {
+            super(visible, invisible, name, firstBound, otherBounds);
             this.owner = owner;
         }
 
@@ -190,8 +229,9 @@ public sealed abstract class TypeVariable implements GenericTyped {
         private final ConstructorDesc owner;
 
         OfConstructor(final List<Annotation> visible, final List<Annotation> invisible, final String name,
-                final List<GenericType.OfThrows> bounds, final ConstructorDesc owner) {
-            super(visible, invisible, name, bounds);
+                final Optional<GenericType.OfThrows> firstBound, final List<GenericType.OfThrows> otherBounds,
+                final ConstructorDesc owner) {
+            super(visible, invisible, name, firstBound, otherBounds);
             this.owner = owner;
         }
 

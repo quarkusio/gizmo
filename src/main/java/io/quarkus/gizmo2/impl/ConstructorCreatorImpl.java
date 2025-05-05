@@ -77,6 +77,6 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     public TypeVariable.OfConstructor typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
         TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
         builder.accept(creator);
-        return creator.forConstructor(desc);
+        return addTypeVariable(creator.forConstructor(desc));
     }
 }

@@ -1,31 +1,34 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static io.smallrye.common.constraint.Assert.*;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
+import io.github.dmlloyd.classfile.MethodSignature;
+import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
 import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
 import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
@@ -33,7 +36,6 @@ import io.quarkus.gizmo2.creator.ParamCreator;
 public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {
 
-    private static final ParamVarImpl[] NO_PARAMS = new ParamVarImpl[0];
     private static final MethodParameterInfo EMPTY_PI = MethodParameterInfo.of(Optional.empty(), 0);
 
     static final int ST_INITIAL = 0;
@@ -47,13 +49,15 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     final Set<AccessFlag> allowedFlags;
     final Set<AccessFlag> unremovableFlags;
 
-    ClassDesc returnType;
+    private List<TypeVariable> typeVariables = List.of();
+
+    GenericType genericReturnType;
     boolean typeEstablished;
     MethodTypeDesc type = null;
     int flags;
-    ParamVarImpl[] params = NO_PARAMS;
-    int nextParam;
+    List<ParamVarImpl> params = List.of();
     int state = ST_INITIAL;
+    List<GenericType.OfThrows> genericThrows = List.of();
     List<ClassDesc> throws_ = List.of();
 
     // `defaultFlags` are also flags that cannot be removed
@@ -94,20 +98,20 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
                 return;
             }
             // validate existing information
-            ClassDesc returnType = this.returnType;
-            if (returnType != null && !desc.returnType().equals(returnType)) {
+            GenericType returnType = this.genericReturnType;
+            if (returnType != null && !desc.returnType().equals(returnType.desc())) {
                 throw new IllegalArgumentException(
                         "Type " + desc + " has a return type that does not match established return type " + returnType);
             }
-            int paramCnt = nextParam;
+            int paramCnt = params.size();
             int descParamCnt = desc.parameterCount();
             if (paramCnt > descParamCnt) {
                 throw new IllegalArgumentException(
                         "Existing parameter count (" + paramCnt + ") is greater than the number of parameters in " + desc);
             }
-            ParamVarImpl[] params = this.params;
+            List<ParamVarImpl> params = this.params;
             for (int i = 0; i < paramCnt; i++) {
-                final ParamVarImpl param = params[i];
+                final ParamVarImpl param = params.get(i);
                 if (param != null && !param.type().equals(desc.parameterType(i))) {
                     throw new IllegalArgumentException(
                             "Defined parameter " + i + " has a type of " + param.type() + " which conflicts with " + desc);
@@ -115,10 +119,15 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             }
             clearType();
             type = desc;
-            this.returnType = desc.returnType();
-            if (params.length != descParamCnt) {
-                // exactly size the array
-                this.params = Arrays.copyOf(params, descParamCnt);
+            this.genericReturnType = GenericType.of(desc.returnType());
+            if (params.size() != descParamCnt) {
+                if (params instanceof ArrayList<ParamVarImpl> al) {
+                    al.ensureCapacity(descParamCnt);
+                } else {
+                    // exactly size the array
+                    this.params = new ArrayList<>(descParamCnt);
+                    this.params.addAll(params);
+                }
             }
             typeEstablished = true;
         }
@@ -127,36 +136,41 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     MethodTypeDesc computeType() {
         assert type == null;
         return MethodTypeDesc.of(returnType(),
-                IntStream.range(0, nextParam).mapToObj(this::param).map(ParamVarImpl::type).toArray(ClassDesc[]::new));
+                params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
     }
 
-    private ParamVarImpl param(int idx) {
-        return params[idx];
-    }
-
-    public ClassDesc returnType() {
-        ClassDesc returnType = this.returnType;
+    public GenericType genericReturnType() {
+        GenericType returnType = this.genericReturnType;
         if (returnType == null) {
-            return CD_void;
+            return GenericType.of(CD_void);
         }
         return returnType;
     }
 
-    void returning(final ClassDesc type) {
+    public ClassDesc returnType() {
+        return genericReturnType().desc();
+    }
+
+    void returning(final GenericType type) {
         checkNotNullParam("type", type);
         if (state >= ST_BODY) {
             throw new IllegalStateException("Return type may no longer be changed");
         }
-        ClassDesc returnType = this.returnType;
+        GenericType returnType = this.genericReturnType;
         if (returnType == null) {
             assert !typeEstablished;
-            this.returnType = type;
+            this.genericReturnType = type;
         } else if (!returnType.equals(type)) {
             throw new IllegalArgumentException("Return type " + type + " does not match established return type " + returnType);
         }
     }
 
+    void returning(final ClassDesc type) {
+        returning(GenericType.of(type));
+    }
+
     void doBody(final Consumer<BlockCreator> builder, MethodBuilder mb) {
+        mb.with(SignatureAttribute.of(computeSignature()));
         mb.withFlags(flags);
         addVisible(mb);
         addInvisible(mb);
@@ -165,24 +179,19 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             mb.with(ExceptionsAttribute.of(throws_.stream().map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
         }
         // lock parameters
-        int arraySize = params.length;
-        int parameterCount = type().parameterCount();
-        if (parameterCount != arraySize) {
-            params = Arrays.copyOf(params, parameterCount);
-        }
-        List<MethodParameterInfo> mpi = Stream.of(params)
+        List<MethodParameterInfo> mpi = params.stream()
                 .map(pv -> pv == null ? EMPTY_PI : MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags()))
                 .toList();
         if (!mpi.isEmpty()) {
             mb.with(MethodParametersAttribute.of(mpi));
         }
         // find parameter annotations, if any
-        if (Stream.of(params).anyMatch(pvi -> !pvi.visible.isEmpty())) {
-            mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
+        if (params.stream().anyMatch(pvi -> !pvi.visible.isEmpty())) {
+            mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(params.stream().map(
                     pvi -> pvi != null ? pvi.visible : List.<Annotation> of()).toList()));
         }
-        if (Stream.of(params).anyMatch(pvi -> !pvi.invisible.isEmpty())) {
-            mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(Stream.of(params).map(
+        if (params.stream().anyMatch(pvi -> !pvi.invisible.isEmpty())) {
+            mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(params.stream().map(
                     pvi -> pvi != null ? pvi.invisible : List.<Annotation> of()).toList()));
         }
         if (builder != null) {
@@ -190,6 +199,14 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
                 doCode(builder, cb);
             });
         }
+    }
+
+    MethodSignature computeSignature() {
+        return MethodSignature.of(
+                typeVariables.stream().map(Util::typeParamOf).toList(),
+                genericThrows.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
+                Util.signatureOf(genericReturnType()),
+                params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
@@ -233,7 +250,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     public ParamVar parameter(final String name, final Consumer<ParamCreator> builder) {
-        return parameter(name, nextParam, builder);
+        return parameter(name, params.size(), builder);
     }
 
     public ParamVar parameter(final String name, final int position, final Consumer<ParamCreator> builder) {
@@ -249,7 +266,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         ParamCreatorImpl pc;
         if (type == null) {
             // all parameters not established
-            int size = nextParam;
+            int size = params.size();
             if (position != size) {
                 throw new IllegalStateException(
                         "Cannot define positional parameter with index " + position + " before the type has been established");
@@ -257,20 +274,15 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             if (size == 0) {
                 slot = firstSlot();
             } else {
-                ParamVarImpl last = params[size - 1];
+                ParamVarImpl last = params.get(size - 1);
                 slot = last.slot() + last.slotSize();
             }
             pc = new ParamCreatorImpl();
-            if (params.length == nextParam) {
-                // grow it
-                params = Arrays.copyOf(params, params.length + 5);
-            }
         } else {
             if (position < 0 || position > type.parameterCount()) {
                 throw new IndexOutOfBoundsException("Parameter position " + position + " is out of bounds for type " + type);
             }
-            ParamVarImpl existing = params[position];
-            if (existing != null) {
+            if (position < params.size()) {
                 throw new IllegalStateException("Parameter already defined at position " + position);
             }
             pc = new ParamCreatorImpl(type.parameterType(position));
@@ -278,13 +290,16 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
                     .mapToInt(TypeKind::slotSize).sum();
         }
         ParamVarImpl pv = pc.apply(builder, name, position, slot);
-        params[position] = pv;
+        if (params instanceof ArrayList<ParamVarImpl> al) {
+            al.add(pv);
+        } else {
+            params = Util.listWith(params, pv);
+        }
         locals.set(slot);
         if (TypeKind.from(pv.type()).slotSize() == 2) {
             // reserve the next slot as well
             locals.set(slot + 1);
         }
-        nextParam = position + 1;
         return pv;
     }
 
@@ -355,5 +370,14 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         for (AccessFlag flag : flags) {
             withoutFlag(flag);
         }
+    }
+
+    <T extends TypeVariable> T addTypeVariable(T var) {
+        if (typeVariables instanceof ArrayList<TypeVariable> al) {
+            al.add(var);
+        } else {
+            typeVariables = Util.listWith(typeVariables, var);
+        }
+        return var;
     }
 }

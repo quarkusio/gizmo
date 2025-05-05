@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -102,7 +101,7 @@ public abstract class GenericType {
         return of(type, List.of());
     }
 
-    public static OfClass of(Class<?> type, List<TypeArgument> typeArguments) {
+    public static GenericType of(Class<?> type, List<TypeArgument> typeArguments) {
         int tpCount = type.getTypeParameters().length;
         int taSize = typeArguments.size();
         if (tpCount != taSize && taSize != 0) {
@@ -112,12 +111,12 @@ public abstract class GenericType {
         if (type.isMemberClass()) {
             Class<?> enclosingClass = type.getEnclosingClass();
             if (Modifier.isStatic(type.getModifiers())) {
-                return (OfClass) of(Util.classDesc(type), typeArguments);
+                return of(Util.classDesc(type), typeArguments);
             } else {
                 return ofInnerClass((OfClass) of(enclosingClass), type.getSimpleName()).withArguments(typeArguments);
             }
         } else {
-            return (OfClass) of(Util.classDesc(type), typeArguments);
+            return of(Util.classDesc(type), typeArguments);
         }
     }
 
@@ -209,7 +208,7 @@ public abstract class GenericType {
         return of(type.getAnnotatedGenericComponentType()).arrayType().withAnnotations(AnnotatableCreator.from(type));
     }
 
-    public static OfClass of(AnnotatedParameterizedType type) {
+    public static GenericType of(AnnotatedParameterizedType type) {
         List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::of).toList();
         ParameterizedType pt = (ParameterizedType) type.getType();
         return of((Class<?>) pt.getRawType(), typeArgs).withAnnotations(AnnotatableCreator.from(type));
@@ -290,26 +289,24 @@ public abstract class GenericType {
         return list;
     }
 
-    abstract Signature computeSignature();
-
     public static final class OfTypeVariable extends OfThrows {
-        private final TypeVariable typeParameter;
+        private final TypeVariable typeVariable;
 
-        OfTypeVariable(final List<Annotation> visible, final List<Annotation> invisible, final TypeVariable typeParameter) {
+        OfTypeVariable(final List<Annotation> visible, final List<Annotation> invisible, final TypeVariable typeVariable) {
             super(visible, invisible);
-            this.typeParameter = typeParameter;
+            this.typeVariable = typeVariable;
         }
 
         public ClassDesc desc() {
-            return typeParameter.erasure();
+            return typeVariable.erasure();
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append(typeParameter);
+            return super.toString(b).append(typeVariable);
         }
 
-        TypeVariable typeParameter() {
-            return typeParameter;
+        public TypeVariable typeVariable() {
+            return typeVariable;
         }
 
         public OfTypeVariable withAnnotations(final Consumer<AnnotatableCreator> builder) {
@@ -317,7 +314,7 @@ public abstract class GenericType {
         }
 
         OfTypeVariable copy(final List<Annotation> visible, final List<Annotation> invisible) {
-            return new OfTypeVariable(visible, invisible, typeParameter);
+            return new OfTypeVariable(visible, invisible, typeVariable);
         }
 
         public boolean equals(final GenericType gt) {
@@ -325,15 +322,11 @@ public abstract class GenericType {
         }
 
         public boolean equals(final OfTypeVariable tvt) {
-            return this == tvt || super.equals(tvt) && typeParameter().equals(tvt.typeParameter());
+            return this == tvt || super.equals(tvt) && typeVariable().equals(tvt.typeVariable());
         }
 
         public int hashCode() {
-            return super.hashCode() * 19 + typeParameter().hashCode();
-        }
-
-        Signature.TypeVarSig computeSignature() {
-            return Signature.TypeVarSig.of(typeParameter.name());
+            return super.hashCode() * 19 + typeVariable().hashCode();
         }
     }
 
@@ -345,8 +338,6 @@ public abstract class GenericType {
         OfReference(final List<Annotation> visible, final List<Annotation> invisible) {
             super(visible, invisible);
         }
-
-        abstract Signature.RefTypeSig computeSignature();
     }
 
     public static abstract class OfThrows extends OfReference {
@@ -397,12 +388,12 @@ public abstract class GenericType {
             // supertype annotations []
             return super.toString(componentType.toString(b)).append("[]");
         }
-
-        Signature.ArrayTypeSig computeSignature() {
-            return Signature.ArrayTypeSig.of(1, componentType.computeSignature());
-        }
     }
 
+    /**
+     * A generic type of a class or interface.
+     * There is no separate type for non-{@code class} object types.
+     */
     public static abstract class OfClass extends OfThrows {
         final List<TypeArgument> typeArguments;
 
@@ -412,6 +403,10 @@ public abstract class GenericType {
         }
 
         public abstract ClassDesc desc();
+
+        public List<TypeArgument> typeArguments() {
+            return typeArguments;
+        }
 
         public OfClass withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfClass) super.withAnnotations(builder);
@@ -470,12 +465,6 @@ public abstract class GenericType {
             return list;
         }
 
-        abstract Signature.ClassTypeSig computeSignature();
-
-        Signature.TypeArg[] toTypeArgs(final List<TypeArgument> typeArguments) {
-            return typeArguments.stream().map(TypeArgument::toTypeArg).toArray(Signature.TypeArg[]::new);
-        }
-
         StringBuilder typeArgumentsToString(StringBuilder b) {
             Iterator<TypeArgument> iter = typeArguments.iterator();
             if (iter.hasNext()) {
@@ -527,10 +516,6 @@ public abstract class GenericType {
         public StringBuilder toString(final StringBuilder b) {
             return typeArgumentsToString(super.toString(b).append(Util.binaryName(desc)));
         }
-
-        Signature.ClassTypeSig computeSignature() {
-            return Signature.ClassTypeSig.of(desc, toTypeArgs(typeArguments));
-        }
     }
 
     public static final class OfInnerClass extends OfClass {
@@ -551,6 +536,14 @@ public abstract class GenericType {
                 desc = this.desc = outerType.desc().nested(name);
             }
             return desc;
+        }
+
+        public OfClass outerType() {
+            return outerType;
+        }
+
+        public String name() {
+            return name;
         }
 
         OfInnerClass copy(final List<Annotation> visible, final List<Annotation> invisible) {
@@ -578,10 +571,6 @@ public abstract class GenericType {
             path.removeLast();
             return list;
         }
-
-        Signature.ClassTypeSig computeSignature() {
-            return Signature.ClassTypeSig.of(outerType.computeSignature(), name, toTypeArgs(typeArguments));
-        }
     }
 
     public static final class OfPrimitive extends GenericType {
@@ -599,16 +588,17 @@ public abstract class GenericType {
         private final ClassDesc type;
 
         private OfPrimitive(final ClassDesc type) {
-            this(List.of(), List.of(), type);
-        }
-
-        private OfPrimitive(final List<Annotation> visible, final List<Annotation> invisible, final ClassDesc type) {
-            super(visible, invisible);
+            super(List.of(), List.of());
             this.type = type;
         }
 
+        private OfPrimitive(OfPrimitive orig, final List<Annotation> visible, final List<Annotation> invisible) {
+            super(visible, invisible);
+            this.type = orig.type;
+        }
+
         OfPrimitive copy(final List<Annotation> visible, final List<Annotation> invisible) {
-            return new OfPrimitive(visible, invisible, type);
+            return new OfPrimitive(this, visible, invisible);
         }
 
         public OfPrimitive withAnnotations(final Consumer<AnnotatableCreator> builder) {
@@ -621,10 +611,6 @@ public abstract class GenericType {
 
         public ClassDesc desc() {
             return type;
-        }
-
-        Signature computeSignature() {
-            return Signature.BaseTypeSig.of(type);
         }
     }
 }

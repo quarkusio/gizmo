@@ -4,7 +4,6 @@ import java.lang.constant.ClassDesc;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
-import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
@@ -14,7 +13,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
  * A typed thing whose type is a simple type.
  */
 public sealed interface SimpleTyped extends Typed
-        permits Expr, FieldDesc, BlockCreator, ClassCreator, FieldCreator, ParamCreator, SwitchCreator, TypeCreator {
+        permits Expr, GenericTyped, BlockCreator, ClassCreator, ParamCreator, SwitchCreator, TypeCreator, FieldDesc {
     /**
      * {@return the type of this entity (not {@code null})}
      */

@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.AnnotatableCreator;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -18,6 +19,14 @@ public sealed interface ParamCreator extends AnnotatableCreator, SimpleTyped per
      * @param flag the flag to add (must not be {@code null})
      */
     void withFlag(AccessFlag flag);
+
+    /**
+     * Change the type of this parameter.
+     *
+     * @param type the new generic type (must not be {@code null})
+     * @throws IllegalArgumentException if the new type is different from the established type
+     */
+    void withType(GenericType type);
 
     /**
      * Change the type of this parameter.

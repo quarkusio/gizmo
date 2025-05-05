@@ -39,6 +39,7 @@ import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
@@ -92,14 +93,13 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private final ClassOutput output;
     private final ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
-    private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
-    private ClassSignature sig;
-    private List<Signature.TypeParam> typeParams = List.of();
+    private GenericType.OfClass superSig = (GenericType.OfClass) GenericType.of(Object.class);
+    private List<GenericType.OfClass> interfaceSigs = List.of();
+    private List<TypeVariable> typeVariables = List.of();
     final ClassBuilder zb;
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
-    private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
     private int bootstraps;
 
@@ -145,14 +145,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return version;
     }
 
-    public void withTypeParam(final Signature.TypeParam param) {
-        checkNotNullParam("param", param);
-        if (typeParams.isEmpty()) {
-            typeParams = new ArrayList<>(4);
-        }
-        typeParams.add(param);
-    }
-
     public void withFlag(final AccessFlag flag) {
         flags |= flag.mask();
     }
@@ -171,17 +163,15 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         zb.with(SourceFileAttribute.of(name));
     }
 
-    void extends_(final Signature.ClassTypeSig genericType) {
-        ClassDesc desc = genericType.classDesc();
+    void extends_(final GenericType.OfClass genericType) {
+        ClassDesc desc = genericType.desc();
         zb.withSuperclass(superType = desc);
         superSig = genericType;
-        sig = null;
     }
 
     void extends_(final ClassDesc desc) {
         zb.withSuperclass(superType = desc);
-        superSig = Signature.ClassTypeSig.of(desc);
-        sig = null;
+        superSig = (GenericType.OfClass) GenericType.of(desc);
     }
 
     ClassDesc superClass() {
@@ -192,30 +182,23 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return type;
     }
 
-    public ClassSignature signature() {
-        ClassSignature sig = this.sig;
-        if (sig == null) {
-            // compute one
-            sig = this.sig = computeSignature();
-        }
-        return sig;
-    }
-
     ClassSignature computeSignature() {
-        return ClassSignature.of(typeParams, superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
+        return ClassSignature.of(
+                typeVariables.stream().map(Util::typeParamOf).toList(),
+                Util.signatureOf(superSig),
+                interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
     }
 
-    public void implements_(final Signature.ClassTypeSig genericType) {
-        zb.withInterfaceSymbols(genericType.classDesc());
+    public void implements_(final GenericType.OfClass genericType) {
+        zb.withInterfaceSymbols(genericType.desc());
         if (interfaceSigs.isEmpty()) {
             interfaceSigs = new ArrayList<>(4);
         }
         interfaceSigs.add(genericType);
-        sig = null;
     }
 
     public void implements_(final ClassDesc interface_) {
-        implements_(Signature.ClassTypeSig.of(interface_));
+        implements_((GenericType.OfClass) GenericType.of(interface_));
     }
 
     public void staticInitializer(final Consumer<BlockCreator> builder) {
@@ -296,10 +279,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     void postAccept() {
-        zb.withSuperclass(superSig.classDesc());
-        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.classDesc())).toList());
+        zb.withSuperclass(superSig.desc());
+        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
         zb.withFlags(flags);
-        zb.with(SignatureAttribute.of(signature()));
+        zb.with(SignatureAttribute.of(computeSignature()));
         addVisible(zb);
         addInvisible(zb);
         if (!staticInits.isEmpty()) {
@@ -469,7 +452,13 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
         TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
         builder.accept(creator);
-        return creator.forType(type());
+        TypeVariable.OfType var = creator.forType(type());
+        if (typeVariables instanceof ArrayList<TypeVariable> al) {
+            al.add(var);
+        } else {
+            typeVariables = Util.listWith(typeVariables, var);
+        }
+        return var;
     }
 
     void buildReadLineBoostrapHelper() {
