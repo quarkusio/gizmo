@@ -588,7 +588,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
-            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            zb.withVersion(owner.version().major(), 0);
             AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb,
                     ConstructorDesc.of(Object.class), captureExprs);
             if (sam instanceof InterfaceMethodDesc imd) {
@@ -637,7 +637,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         final ArrayList<Expr> captureExprs = new ArrayList<>();
 
         byte[] bytes = cf.build(desc, zb -> {
-            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            zb.withVersion(owner.version().major(), 0);
             zb.with(NestHostAttribute.of(ownerDesc));
             zb.with(InnerClassesAttribute.of(
                     InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)));

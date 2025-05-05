@@ -139,6 +139,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         };
     }
 
+    ClassFileFormatVersion version() {
+        return version;
+    }
+
     public void withTypeParam(final Signature.TypeParam param) {
         checkNotNullParam("param", param);
         if (typeParams.isEmpty()) {
