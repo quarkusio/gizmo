@@ -842,9 +842,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void accept(final BiConsumer<? super BlockCreatorImpl, Expr> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
+        checkActive();
         Expr input;
         if (head.next().item() instanceof BlockExpr be) {
             input = be;
@@ -858,9 +856,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void accept(final Consumer<? super BlockCreatorImpl> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
+        checkActive();
         handler.accept(this);
         if (tail.item() instanceof Yield yield) {
             Expr val = yield.value();
