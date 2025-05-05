@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
 public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements ParamCreator {
     int flags = 0;
     boolean typeEstablished;
     ClassDesc type;
+    GenericType genericType;
 
     public ParamCreatorImpl() {
     }
@@ -39,6 +41,18 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         } else {
             throw new IllegalArgumentException("Invalid flag for parameter: " + flag);
         }
+    }
+
+    public void withType(final GenericType genericType) {
+        checkNotNullParam("type", genericType);
+        if (genericType.desc().equals(ConstantDescs.CD_void)) {
+            throw new IllegalArgumentException("Bad genericType for parameter: " + genericType);
+        }
+        if (typeEstablished && !genericType.desc().equals(this.type)) {
+            throw new IllegalArgumentException(
+                    "Given genericType " + genericType + " differs from established genericType " + this.type);
+        }
+        this.genericType = genericType;
     }
 
     public void withType(final ClassDesc type) {

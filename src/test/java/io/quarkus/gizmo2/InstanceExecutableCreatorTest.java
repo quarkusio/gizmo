@@ -1,14 +1,13 @@
 package io.quarkus.gizmo2;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.constant.ClassDesc;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.dmlloyd.classfile.Signature.ClassTypeSig;
-import io.github.dmlloyd.classfile.Signature.TypeArg;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
@@ -20,7 +19,9 @@ public class InstanceExecutableCreatorTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
-            cc.implements_(ClassTypeSig.of(Function.class.getName(), TypeArg.of(ClassTypeSig.of(String.class.getName()))));
+            cc.implements_(
+                    (GenericType.OfClass) GenericType.of(Function.class,
+                            List.of(TypeArgument.of(String.class), TypeArgument.of(String.class))));
             cc.constructor(con -> {
                 con.public_();
                 con.body(bc -> {

@@ -16,13 +16,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.Signature;
+import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
+import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
@@ -291,5 +296,146 @@ public final class Util {
             case AnnotationValue.TAG_ANNOTATION -> appendAnnotation(b, ((AnnotationValue.OfAnnotation) value).annotation());
             default -> throw Assert.impossibleSwitchCase(value.tag());
         }
+    }
+
+    // Generic type signature mapping
+
+    private static final Map<ClassDesc, Signature.BaseTypeSig> baseTypeSigs = Stream.of(
+            CD_boolean,
+            CD_byte,
+            CD_short,
+            CD_char,
+            CD_int,
+            CD_long,
+            CD_float,
+            CD_double,
+            CD_void).collect(Collectors.toUnmodifiableMap(Function.identity(), Signature.BaseTypeSig::of));
+
+    public static Signature signatureOf(GenericType type) {
+        if (type instanceof GenericType.OfPrimitive prim) {
+            return signatureOf(prim);
+        } else if (type instanceof GenericType.OfReference ref) {
+            return signatureOf(ref);
+        } else {
+            throw invalidType(type);
+        }
+    }
+
+    public static Signature.BaseTypeSig signatureOf(GenericType.OfPrimitive type) {
+        return baseTypeSigs.get(type.desc());
+    }
+
+    public static Signature.RefTypeSig signatureOf(GenericType.OfReference type) {
+        if (type instanceof GenericType.OfArray array) {
+            return signatureOf(array);
+        } else if (type instanceof GenericType.OfThrows ot) {
+            return signatureOf(ot);
+        } else {
+            throw invalidType(type);
+        }
+    }
+
+    public static Signature.RefTypeSig signatureOf(GenericType.OfThrows type) {
+        if (type instanceof GenericType.OfClass oc) {
+            return signatureOf(oc);
+        } else if (type instanceof GenericType.OfTypeVariable tv) {
+            return signatureOf(tv);
+        } else {
+            throw invalidType(type);
+        }
+    }
+
+    public static Signature.ArrayTypeSig signatureOf(GenericType.OfArray type) {
+        return Signature.ArrayTypeSig.of(1, signatureOf(type.componentType()));
+    }
+
+    public static Signature.ClassTypeSig signatureOf(GenericType.OfClass type) {
+        if (type instanceof GenericType.OfInnerClass ic) {
+            return signatureOf(ic);
+        } else if (type instanceof GenericType.OfRootClass oc) {
+            return signatureOf(oc);
+        } else {
+            throw invalidType(type);
+        }
+    }
+
+    public static Signature.ClassTypeSig signatureOf(GenericType.OfInnerClass type) {
+        return Signature.ClassTypeSig.of(signatureOf(type.outerType()), type.name(), typeArgsOf(type.typeArguments()));
+    }
+
+    public static Signature.ClassTypeSig signatureOf(GenericType.OfRootClass type) {
+        return Signature.ClassTypeSig.of(type.desc(), typeArgsOf(type.typeArguments()));
+    }
+
+    public static Signature.TypeVarSig signatureOf(GenericType.OfTypeVariable type) {
+        return Signature.TypeVarSig.of(type.typeVariable().name());
+    }
+
+    // Generic type argument mapping
+
+    public static Signature.TypeArg[] typeArgsOf(final List<TypeArgument> typeArguments) {
+        return typeArguments.stream().map(Util::typeArgOf).toArray(Signature.TypeArg[]::new);
+    }
+
+    public static Signature.TypeArg typeArgOf(TypeArgument arg) {
+        if (arg instanceof TypeArgument.OfAnnotated oa) {
+            return typeArgOf(oa);
+        } else if (arg instanceof TypeArgument.OfExact ex) {
+            return typeArgOf(ex);
+        } else {
+            throw invalidType(arg);
+        }
+    }
+
+    public static Signature.TypeArg typeArgOf(TypeArgument.OfAnnotated arg) {
+        if (arg instanceof TypeArgument.OfExtends oe) {
+            return typeArgOf(oe);
+        } else if (arg instanceof TypeArgument.OfSuper os) {
+            return typeArgOf(os);
+        } else if (arg instanceof TypeArgument.Wildcard wc) {
+            return typeArgOf(wc);
+        } else {
+            throw invalidType(arg);
+        }
+    }
+
+    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfBounded arg) {
+        if (arg instanceof TypeArgument.OfExtends oe) {
+            return typeArgOf(oe);
+        } else if (arg instanceof TypeArgument.OfSuper os) {
+            return typeArgOf(os);
+        } else if (arg instanceof TypeArgument.OfExact ex) {
+            return typeArgOf(ex);
+        } else {
+            throw new IllegalArgumentException(arg.getClass().toString());
+        }
+    }
+
+    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfExtends arg) {
+        return Signature.TypeArg.extendsOf(signatureOf(arg.bound()));
+    }
+
+    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfSuper arg) {
+        return Signature.TypeArg.superOf(signatureOf(arg.bound()));
+    }
+
+    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfExact arg) {
+        return Signature.TypeArg.of(signatureOf(arg.bound()));
+    }
+
+    public static Signature.TypeArg.Unbounded typeArgOf(TypeArgument.Wildcard arg) {
+        return Signature.TypeArg.unbounded();
+    }
+
+    public static Signature.TypeParam typeParamOf(TypeVariable tv) {
+        return Signature.TypeParam.of(
+                tv.name(),
+                tv.firstBound().map(Util::signatureOf),
+                tv.otherBounds().stream().map(Util::signatureOf)
+                        .toArray(Signature.RefTypeSig[]::new));
+    }
+
+    private static IllegalArgumentException invalidType(final Object type) {
+        return new IllegalArgumentException(type.getClass().toString());
     }
 }

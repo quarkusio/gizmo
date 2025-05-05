@@ -4,7 +4,9 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
@@ -70,7 +72,13 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 int slot = cb.allocateLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()));
                 // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-                cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
+                Label startScope = cb.newBoundLabel();
+                Label endScope = block.endLabel();
+                cb.localVariable(slot, name, type, startScope, endScope);
+                GenericType gt = genericType();
+                if (gt instanceof GenericType.OfClass oc && !oc.typeArguments().isEmpty()) {
+                    cb.localVariableType(slot, name, Util.signatureOf(gt), startScope, endScope);
+                }
                 if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
                     throw new IllegalStateException("Local variable reallocated into a different slot");
                 }

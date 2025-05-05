@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
@@ -42,13 +42,6 @@ public sealed interface TypeCreator extends AnnotatableCreator, SimpleTyped
      * @param version the class file version (must not be {@code null})
      */
     void withVersion(ClassVersion version);
-
-    /**
-     * Add a type parameter.
-     *
-     * @param param the type parameter specification (must not be {@code null})
-     */
-    void withTypeParam(Signature.TypeParam param);
 
     /**
      * Add a flag to the type.
@@ -104,7 +97,7 @@ public sealed interface TypeCreator extends AnnotatableCreator, SimpleTyped
      *
      * @param genericType the generic interface type (must not be {@code null})
      */
-    void implements_(Signature.ClassTypeSig genericType);
+    void implements_(GenericType.OfClass genericType);
 
     /**
      * Implement an interface.

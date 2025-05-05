@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
@@ -96,8 +95,6 @@ public abstract class TypeArgument {
         return Wildcard.instance;
     }
 
-    abstract Signature.TypeArg toTypeArg();
-
     public sealed interface OfBounded permits OfExtends, OfSuper, OfExact {
         GenericType.OfReference bound();
     }
@@ -163,10 +160,6 @@ public abstract class TypeArgument {
         public StringBuilder toString(final StringBuilder b) {
             return super.toString(b.append("? extends "));
         }
-
-        Signature.TypeArg toTypeArg() {
-            return Signature.TypeArg.extendsOf(bound.computeSignature());
-        }
     }
 
     public static final class OfExact extends TypeArgument implements OfBounded {
@@ -182,10 +175,6 @@ public abstract class TypeArgument {
 
         public StringBuilder toString(final StringBuilder b) {
             return bound.toString(b);
-        }
-
-        Signature.TypeArg toTypeArg() {
-            return Signature.TypeArg.of(bound.computeSignature());
         }
     }
 
@@ -212,10 +201,6 @@ public abstract class TypeArgument {
         public StringBuilder toString(final StringBuilder b) {
             return super.toString(b.append("? super "));
         }
-
-        Signature.TypeArg toTypeArg() {
-            return Signature.TypeArg.superOf(bound.computeSignature());
-        }
     }
 
     public static final class Wildcard extends OfAnnotated {
@@ -239,10 +224,6 @@ public abstract class TypeArgument {
 
         public StringBuilder toString(final StringBuilder b) {
             return super.toString(b).append('*');
-        }
-
-        Signature.TypeArg toTypeArg() {
-            return Signature.TypeArg.unbounded();
         }
     }
 }
