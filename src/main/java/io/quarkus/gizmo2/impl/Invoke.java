@@ -57,6 +57,11 @@ final class Invoke extends Item {
         this.args = args;
     }
 
+    @Override
+    public String itemName() {
+        return "Invoke:" + owner.displayName() + "." + name;
+    }
+
     public ClassDesc type() {
         return type.returnType();
     }

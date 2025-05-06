@@ -210,7 +210,7 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public StringBuilder toShortString(StringBuilder b) {
-        return b.append(itemName()).append('@').append(Integer.toHexString(hashCode()));
+        return b.append(itemName());
     }
 
     public Assignable elem(final Expr index) {

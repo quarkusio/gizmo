@@ -29,6 +29,11 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
         this.visible = visible;
     }
 
+    @Override
+    public String itemName() {
+        return "ParamVar:" + name;
+    }
+
     int flags() {
         return flags;
     }
