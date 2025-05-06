@@ -58,6 +58,14 @@ public abstract class TypeArgument {
         return ofExtends((GenericType.OfReference) GenericType.of(aub.get(0))).withAnnotations(AnnotatableCreator.from(type));
     }
 
+    public abstract boolean hasVisibleAnnotations();
+
+    public abstract boolean hasInvisibleAnnotations();
+
+    public final boolean hasAnnotations() {
+        return hasVisibleAnnotations() || hasInvisibleAnnotations();
+    }
+
     public abstract StringBuilder toString(StringBuilder b);
 
     public String toString() {
@@ -120,6 +128,14 @@ public abstract class TypeArgument {
             return null;
         }
 
+        public boolean hasVisibleAnnotations() {
+            return !visible.isEmpty();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return !invisible.isEmpty();
+        }
+
         public OfAnnotated withAnnotations(Consumer<AnnotatableCreator> builder) {
             TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl(visible, invisible);
             builder.accept(tac);
@@ -149,6 +165,14 @@ public abstract class TypeArgument {
             return bound;
         }
 
+        public boolean hasVisibleAnnotations() {
+            return super.hasVisibleAnnotations() || bound.hasVisibleAnnotations();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return super.hasInvisibleAnnotations() || bound.hasInvisibleAnnotations();
+        }
+
         OfExtends copy(final List<Annotation> visible, final List<Annotation> invisible) {
             return new OfExtends(visible, invisible, bound());
         }
@@ -173,6 +197,14 @@ public abstract class TypeArgument {
             return bound;
         }
 
+        public boolean hasVisibleAnnotations() {
+            return bound.hasVisibleAnnotations();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return bound.hasInvisibleAnnotations();
+        }
+
         public StringBuilder toString(final StringBuilder b) {
             return bound.toString(b);
         }
@@ -188,6 +220,14 @@ public abstract class TypeArgument {
 
         public GenericType.OfReference bound() {
             return bound;
+        }
+
+        public boolean hasVisibleAnnotations() {
+            return super.hasVisibleAnnotations() || bound.hasVisibleAnnotations();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return super.hasInvisibleAnnotations() || bound.hasInvisibleAnnotations();
         }
 
         OfSuper copy(final List<Annotation> visible, final List<Annotation> invisible) {

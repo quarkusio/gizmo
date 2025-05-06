@@ -15,24 +15,24 @@ import io.quarkus.gizmo2.creator.ParamCreator;
 public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements ParamCreator {
     int flags = 0;
     boolean typeEstablished;
-    ClassDesc type;
     GenericType genericType;
 
     public ParamCreatorImpl() {
     }
 
-    public ParamCreatorImpl(final ClassDesc type) {
-        this.type = type;
+    public ParamCreatorImpl(final GenericType type) {
+        this.genericType = type;
         typeEstablished = true;
     }
 
     ParamVarImpl apply(final Consumer<ParamCreator> builder, final String name, final int index, final int slot) {
         builder.accept(this);
-        if (type == null) {
+        if (genericType == null) {
             throw new IllegalStateException("Parameter type was not set");
         }
         typeEstablished = true;
-        return new ParamVarImpl(type, name, index, slot, flags, List.copyOf(invisible.values()), List.copyOf(visible.values()));
+        return new ParamVarImpl(genericType, name, index, slot, flags, List.copyOf(invisible.values()),
+                List.copyOf(visible.values()));
     }
 
     public void withFlag(final AccessFlag flag) {
@@ -48,37 +48,24 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         if (genericType.desc().equals(ConstantDescs.CD_void)) {
             throw new IllegalArgumentException("Bad genericType for parameter: " + genericType);
         }
-        if (typeEstablished && !genericType.desc().equals(this.type)) {
+        if (typeEstablished && !genericType.equals(this.genericType)) {
             throw new IllegalArgumentException(
-                    "Given genericType " + genericType + " differs from established genericType " + this.type);
+                    "Given type " + genericType + " differs from established type " + this.genericType);
         }
         this.genericType = genericType;
     }
 
     public void withType(final ClassDesc type) {
         checkNotNullParam("type", type);
-        if (type.equals(ConstantDescs.CD_void)) {
-            throw new IllegalArgumentException("Bad type for parameter: " + type);
-        }
-        if (typeEstablished && !type.equals(this.type)) {
-            throw new IllegalArgumentException("Given type " + type + " differs from established type " + this.type);
-        }
-        this.type = type;
-    }
-
-    void establishType(ClassDesc type) {
-        if (typeEstablished) {
-            if (!type.equals(this.type)) {
-                throw new IllegalArgumentException("Established type " + type + " differs from existing type " + this.type);
-            }
-        } else {
-            this.type = type;
-            typeEstablished = true;
-        }
+        withType(GenericType.of(type));
     }
 
     public ClassDesc type() {
-        return type;
+        return genericType.desc();
+    }
+
+    public GenericType genericType() {
+        return genericType;
     }
 
     public ElementType annotationTargetType() {

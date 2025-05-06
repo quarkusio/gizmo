@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
@@ -231,6 +232,36 @@ public abstract class GenericType {
         return copy(tac.visible(), tac.invisible());
     }
 
+    public final <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
+            Consumer<AnnotationCreator<A>> builder) {
+        return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
+    }
+
+    public abstract boolean isRaw();
+
+    public final boolean hasAnnotations(RetentionPolicy retention) {
+        return switch (retention) {
+            case RUNTIME -> hasVisibleAnnotations();
+            case CLASS -> hasInvisibleAnnotations();
+            case SOURCE -> false;
+        };
+    }
+
+    public boolean hasVisibleAnnotations() {
+        return !visible.isEmpty();
+    }
+
+    public boolean hasInvisibleAnnotations() {
+        return !visible.isEmpty();
+    }
+
+    public final boolean hasAnnotations() {
+        return hasVisibleAnnotations() || hasInvisibleAnnotations();
+    }
+
+    /**
+     * {@return the array type which can contain this type}
+     */
     public OfArray arrayType() {
         OfArray arrayType = this.arrayType;
         if (arrayType == null) {
@@ -239,6 +270,9 @@ public abstract class GenericType {
         return arrayType;
     }
 
+    /**
+     * {@return the type descriptor for this generic type (not {@code null})}
+     */
     public abstract ClassDesc desc();
 
     /**
@@ -313,6 +347,10 @@ public abstract class GenericType {
             return (OfTypeVariable) super.withAnnotations(builder);
         }
 
+        public boolean isRaw() {
+            return false;
+        }
+
         OfTypeVariable copy(final List<Annotation> visible, final List<Annotation> invisible) {
             return new OfTypeVariable(visible, invisible, typeVariable);
         }
@@ -376,6 +414,18 @@ public abstract class GenericType {
             return (OfArray) super.withAnnotations(builder);
         }
 
+        public boolean isRaw() {
+            return componentType.isRaw();
+        }
+
+        public boolean hasVisibleAnnotations() {
+            return super.hasVisibleAnnotations() || componentType.hasVisibleAnnotations();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return super.hasInvisibleAnnotations() || componentType.hasInvisibleAnnotations();
+        }
+
         public ClassDesc desc() {
             ClassDesc desc = this.desc;
             if (desc == null) {
@@ -410,6 +460,18 @@ public abstract class GenericType {
 
         public OfClass withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfClass) super.withAnnotations(builder);
+        }
+
+        public boolean isRaw() {
+            return typeArguments.isEmpty();
+        }
+
+        public boolean hasVisibleAnnotations() {
+            return super.hasVisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasVisibleAnnotations);
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return super.hasVisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
         }
 
         public OfClass withArguments(List<TypeArgument> newArguments) {
@@ -559,6 +621,14 @@ public abstract class GenericType {
             return new OfInnerClass(visible, invisible, Assert.checkNotNullParam("outerType", outerType), name, typeArguments);
         }
 
+        public boolean hasVisibleAnnotations() {
+            return super.hasVisibleAnnotations() || outerType.hasVisibleAnnotations();
+        }
+
+        public boolean hasInvisibleAnnotations() {
+            return super.hasInvisibleAnnotations() || outerType.hasInvisibleAnnotations();
+        }
+
         public StringBuilder toString(final StringBuilder b) {
             return typeArgumentsToString(super.toString(outerType.toString(b).append('.')).append(name));
         }
@@ -603,6 +673,10 @@ public abstract class GenericType {
 
         public OfPrimitive withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfPrimitive) super.withAnnotations(builder);
+        }
+
+        public boolean isRaw() {
+            return true;
         }
 
         public StringBuilder toString(final StringBuilder b) {

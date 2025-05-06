@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.io.Serializable;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -11,6 +12,7 @@ import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +26,7 @@ import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
@@ -65,13 +68,24 @@ public final class Util {
     }
 
     private static final MethodHandle actualKind;
+    private static final MethodHandle GenericType_computeAnnotations;
 
     static {
         try {
             actualKind = MethodHandles.privateLookupIn(TypeKind.class, MethodHandles.lookup()).findGetter(TypeKind.class,
                     "actualKind", io.github.dmlloyd.classfile.TypeKind.class);
+            MethodHandles.Lookup genericTypeLookup = MethodHandles.privateLookupIn(GenericType.class, MethodHandles.lookup());
+            GenericType_computeAnnotations = genericTypeLookup.findVirtual(
+                    GenericType.class, "computeAnnotations", MethodType.methodType(
+                            List.class,
+                            RetentionPolicy.class,
+                            TypeAnnotation.TargetInfo.class,
+                            ArrayList.class,
+                            ArrayDeque.class));
         } catch (NoSuchFieldException e) {
             throw new NoSuchFieldError(e.getMessage());
+        } catch (NoSuchMethodException e) {
+            throw new NoSuchMethodError(e.getMessage());
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         }
@@ -433,6 +447,20 @@ public final class Util {
                 tv.firstBound().map(Util::signatureOf),
                 tv.otherBounds().stream().map(Util::signatureOf)
                         .toArray(Signature.RefTypeSig[]::new));
+    }
+
+    public static List<TypeAnnotation> computeAnnotations(GenericType type, RetentionPolicy retention,
+            TypeAnnotation.TargetInfo targetInfo,
+            ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
+        try {
+            var ignored = (List<?>) GenericType_computeAnnotations.invokeExact(
+                    type, retention, targetInfo, list, path);
+            return list;
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new UndeclaredThrowableException(e);
+        }
     }
 
     private static IllegalArgumentException invalidType(final Object type) {

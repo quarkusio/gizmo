@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MethodTyped;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.impl.ExecutableCreatorImpl;
@@ -188,8 +189,27 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
         return parameter(name, position, Util.classDesc(type));
     }
 
-    void throws_(ClassDesc throwableType);
+    /**
+     * Declare that this method throws exceptions of the given type.
+     *
+     * @param throwableType the generic exception type (must not be {@code null})
+     */
+    void throws_(GenericType.OfThrows throwableType);
 
+    /**
+     * Declare that this method throws exceptions of the given type.
+     *
+     * @param throwableType the exception type (must not be {@code null})
+     */
+    default void throws_(ClassDesc throwableType) {
+        throws_((GenericType.OfThrows) GenericType.of(throwableType));
+    }
+
+    /**
+     * Declare that this method throws exceptions of the given type.
+     *
+     * @param throwableType the exception type (must not be {@code null})
+     */
     default void throws_(Class<? extends Throwable> throwableType) {
         throws_(Util.classDesc(throwableType));
     }

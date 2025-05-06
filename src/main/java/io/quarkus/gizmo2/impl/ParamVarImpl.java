@@ -6,11 +6,12 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.ParamVar;
 
 public final class ParamVarImpl extends AssignableImpl implements ParamVar {
-    private final ClassDesc type;
+    private final GenericType type;
     private final String name;
     private final int index;
     private final int slot;
@@ -18,7 +19,7 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     final List<Annotation> visible;
     private final int flags;
 
-    public ParamVarImpl(final ClassDesc type, final String name, final int index, final int slot, final int flags,
+    public ParamVarImpl(final GenericType type, final String name, final int index, final int slot, final int flags,
             final List<Annotation> invisible, final List<Annotation> visible) {
         this.type = type;
         this.name = name;
@@ -58,6 +59,10 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     }
 
     public ClassDesc type() {
+        return type.desc();
+    }
+
+    public GenericType genericType() {
         return type;
     }
 
