@@ -391,37 +391,26 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new NewEmptyArray(componentType, (Item) size));
     }
 
-    private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values,
-            int idx) {
-        Dup dup = (Dup) stores.get(idx).arrayExpr();
-        Node prev = dup.insert(node);
-        insertNewArrayNextStore(nea, stores, prev, values, idx);
-        // post-process
-        // (not needed)
-    }
-
     private void insertNewArrayStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
-        ArrayStore store = stores.get(idx);
-        Node storeNode = store.insert(node);
-        // skip predecessor (value)
-        Node beforeValNode = storeNode.prev();
-        Item value = values.get(idx);
-        if (value.bound()) {
-            beforeValNode = value.verify(beforeValNode);
-        }
-        // (skip index for now)
-        // insert dup before value
-        insertNewArrayDup(nea, stores, beforeValNode.next(), values, idx);
-        // post-process (inserts index)
-        store.forEachDependency(storeNode, Item::insertIfUnbound);
-    }
-
-    private void insertNewArrayNextStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
         if (idx == 0) {
             // all elements processed
             nea.forEachDependency(nea.insert(node), Item::insertIfUnbound);
         } else {
-            insertNewArrayStore(nea, stores, node, values, idx - 1);
+            ArrayStore store = stores.get(idx - 1);
+            Node storeNode = store.insert(node);
+            // skip predecessor (value)
+            Node beforeValNode = storeNode.prev();
+            Item value = values.get(idx - 1);
+            if (value.bound()) {
+                beforeValNode = value.verify(beforeValNode);
+            }
+            // (skip index for now)
+            // insert dup before value
+            Dup dup = (Dup) stores.get(idx - 1).arrayExpr();
+            Node prev = dup.insert(beforeValNode.next());
+            insertNewArrayStore(nea, stores, prev, values, idx - 1);
+            // post-process (inserts index)
+            store.forEachDependency(storeNode, Item::insertIfUnbound);
         }
     }
 
@@ -435,7 +424,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) values.get(i), componentType));
         }
         // stitch the object graph into our list
-        insertNewArrayNextStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
+        insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
         return nea;
     }
 
