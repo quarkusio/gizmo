@@ -32,7 +32,7 @@ final class BinOp extends Item {
         // it is important here that `type()` (to which `typeKind()` delegates) returns the type
         // of the _first_ operand, at least for operations that use `Operands.SECOND_INT` (see above)
         if (!kind.isValidFor(typeKind())) {
-            throw new IllegalArgumentException("Operation is not valid for type kind of " + typeKind());
+            throw new IllegalArgumentException("Operation " + kind + " is not valid for type kind of " + typeKind());
         }
     }
 
