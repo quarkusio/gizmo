@@ -5,14 +5,14 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.GenericTyped;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator interface for parameters.
  */
-public sealed interface ParamCreator extends AnnotatableCreator, SimpleTyped permits ParamCreatorImpl {
+public sealed interface ParamCreator extends AnnotatableCreator, GenericTyped permits ParamCreatorImpl {
     /**
      * Add a flag to this parameter.
      *

@@ -3,8 +3,10 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -18,12 +20,15 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
 import io.github.dmlloyd.classfile.MethodSignature;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
 import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
 import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
+import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
+import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.GenericType;
@@ -57,8 +62,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     int flags;
     List<ParamVarImpl> params = List.of();
     int state = ST_INITIAL;
-    List<GenericType.OfThrows> genericThrows = List.of();
-    List<ClassDesc> throws_ = List.of();
+    List<GenericType.OfThrows> throws_ = List.of();
 
     // `defaultFlags` are also flags that cannot be removed
     // `allowedFlags` must contain all `defaultFlags`
@@ -170,13 +174,23 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     }
 
     void doBody(final Consumer<BlockCreator> builder, MethodBuilder mb) {
+        ArrayList<TypeAnnotation> visible = new ArrayList<>();
+        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         mb.with(SignatureAttribute.of(computeSignature()));
         mb.withFlags(flags);
         addVisible(mb);
         addInvisible(mb);
-        List<ClassDesc> throws_ = this.throws_;
+        List<GenericType.OfThrows> throws_ = this.throws_;
         if (!throws_.isEmpty()) {
-            mb.with(ExceptionsAttribute.of(throws_.stream().map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
+            mb.with(ExceptionsAttribute.of(
+                    throws_.stream().map(GenericType::desc).map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
+            for (int i = 0; i < throws_.size(); i++) {
+                final GenericType.OfThrows genericType = throws_.get(i);
+                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofThrows(i),
+                        visible, new ArrayDeque<>());
+                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofThrows(i),
+                        invisible, new ArrayDeque<>());
+            }
         }
         // lock parameters
         List<MethodParameterInfo> mpi = params.stream()
@@ -194,30 +208,61 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(params.stream().map(
                     pvi -> pvi != null ? pvi.invisible : List.<Annotation> of()).toList()));
         }
+        for (int i = 0; i < params.size(); i++) {
+            GenericType genericType = params.get(i).genericType();
+            Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                    invisible, new ArrayDeque<>());
+        }
         if (builder != null) {
             mb.withCode(cb -> {
                 doCode(builder, cb);
             });
+        }
+        if (!visible.isEmpty()) {
+            mb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
+        }
+        if (!invisible.isEmpty()) {
+            mb.with(RuntimeInvisibleTypeAnnotationsAttribute.of(invisible));
         }
     }
 
     MethodSignature computeSignature() {
         return MethodSignature.of(
                 typeVariables.stream().map(Util::typeParamOf).toList(),
-                genericThrows.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
+                throws_.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
                 Util.signatureOf(genericReturnType()),
                 params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
+        ArrayList<TypeAnnotation> visible = new ArrayList<>();
+        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
         if ((flags & AccessFlag.STATIC.mask()) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
+            // todo: typeCreator.genericType()
         }
-        for (ParamVarImpl param : params) {
+        for (final ParamVarImpl param : params) {
             if (param != null) {
                 cb.localVariable(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel());
+                GenericType genericType = param.genericType();
+                if (!genericType.isRaw()) {
+                    cb.localVariableType(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
+                            bc.endLabel());
+                }
+                if (genericType.hasVisibleAnnotations()) {
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            visible, new ArrayDeque<>());
+                }
+                if (genericType.hasInvisibleAnnotations()) {
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            invisible, new ArrayDeque<>());
+                }
             }
         }
         bc.accept(builder);
@@ -230,6 +275,14 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
                 throw new IllegalStateException("Outermost block of an executable member created at " + creationSite
                         + " must not fall out (return or throw instead)");
             }
+        }
+        bc.writeAnnotations(RetentionPolicy.RUNTIME, visible);
+        bc.writeAnnotations(RetentionPolicy.CLASS, invisible);
+        if (!visible.isEmpty()) {
+            cb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
+        }
+        if (!invisible.isEmpty()) {
+            cb.with(RuntimeInvisibleTypeAnnotationsAttribute.of(invisible));
         }
     }
 
@@ -285,7 +338,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             if (position < params.size()) {
                 throw new IllegalStateException("Parameter already defined at position " + position);
             }
-            pc = new ParamCreatorImpl(type.parameterType(position));
+            pc = new ParamCreatorImpl(GenericType.of(type.parameterType(position)));
             slot = firstSlot() + IntStream.range(0, position).mapToObj(type::parameterType).map(TypeKind::from)
                     .mapToInt(TypeKind::slotSize).sum();
         }
@@ -303,12 +356,12 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         return pv;
     }
 
-    public void throws_(final ClassDesc throwableType) {
+    public void throws_(final GenericType.OfThrows throwableType) {
         checkNotNullParam("throwableType", throwableType);
         if (state >= ST_BODY) {
             throw new IllegalStateException("Exception throws may no longer be established");
         }
-        if (throws_ instanceof ArrayList<ClassDesc> al) {
+        if (throws_ instanceof ArrayList<GenericType.OfThrows> al) {
             al.add(throwableType);
         } else {
             throws_ = Util.listWith(throws_, throwableType);

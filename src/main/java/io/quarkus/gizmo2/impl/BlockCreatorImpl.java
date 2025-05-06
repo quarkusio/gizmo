@@ -8,6 +8,7 @@ import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
 import java.io.PrintStream;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.DynamicCallSiteDesc;
@@ -34,12 +35,14 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.MethodModel;
 import io.github.dmlloyd.classfile.Opcode;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
 import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
 import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -59,6 +62,7 @@ import io.quarkus.gizmo2.impl.constant.ConstImpl;
 import io.quarkus.gizmo2.impl.constant.IntConst;
 import io.quarkus.gizmo2.impl.constant.NullConst;
 import io.quarkus.gizmo2.impl.constant.VoidConst;
+import io.smallrye.common.constraint.Assert;
 
 /**
  * The block builder implementation. Internal only.
@@ -209,7 +213,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return this == other || parent != null && parent.isContainedBy(other);
     }
 
-    public LocalVar declare(final String name, final ClassDesc type) {
+    public LocalVar declare(final String name, final GenericType type) {
         LocalVarImpl lv = new LocalVarImpl(this, name, type);
         addItem(lv.allocator());
         return lv;
@@ -651,10 +655,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 Stream.concat(args.stream(), captureExprs.stream()).toList());
     }
 
-    public Expr cast(final Expr a, final ClassDesc toType) {
+    public Expr cast(final Expr a, final GenericType toGenType) {
+        ClassDesc toType = toGenType.desc();
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
-                return addItem(new PrimitiveCast(a, toType));
+                return addItem(new PrimitiveCast(a, toGenType));
             } else if (boxTypes.containsKey(a.type()) && toType.equals(boxTypes.get(a.type()))) {
                 return box(a);
             } else {
@@ -668,28 +673,29 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
                         + "' to primitive type '" + toType.displayName() + "'");
             } else {
-                return addItem(new CheckCast(a, toType));
+                return addItem(new CheckCast(a, toGenType));
             }
         }
     }
 
-    public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
+    public Expr uncheckedCast(final Expr a, final GenericType toType) {
         if (a.type().isPrimitive()) {
             throw new IllegalArgumentException("Cannot apply unchecked cast to primitive value: " + a.type().displayName());
         }
-        if (toType.isPrimitive()) {
-            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.displayName());
+        if (toType.desc().isPrimitive()) {
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.desc().displayName());
         }
         return addItem(new UncheckedCast(a, toType));
     }
 
-    public Expr instanceOf(final Expr obj, final ClassDesc type) {
+    public Expr instanceOf(final Expr obj, final GenericType type) {
+        Assert.checkNotNullParam("type", type);
         return addItem(new InstanceOf(obj, type));
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
-        New new_ = new New(ctor.owner());
+        New new_ = new New(GenericType.of(ctor.owner()));
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
         // insert New & Dup *before* the arguments
@@ -1246,6 +1252,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             }
             bcb.labelBinding(endLabel);
         });
+    }
+
+    public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
+        Node node = head;
+        while (node != null) {
+            node.item().writeAnnotations(retention, annotations);
+            node = node.next();
+        }
     }
 
     // non-public
