@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
+import java.util.Optional;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.GenericType;
@@ -14,10 +15,12 @@ import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.common.constraint.Assert;
 
 public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implements TypeVariableCreator {
     private final String name;
-    private List<GenericType.OfReference> bounds = List.of();
+    private GenericType.OfReference firstBound;
+    private List<GenericType.OfReference> otherBounds = List.of();
 
     public TypeVariableCreatorImpl(final String name) {
         this.name = name;
@@ -32,12 +35,16 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         return name;
     }
 
-    public void withBounds(final List<GenericType.OfReference> bounds) {
-        this.bounds = List.copyOf(bounds);
+    public void withFirstBound(final GenericType.OfReference bound) {
+        firstBound = Assert.checkNotNullParam("bound", bound);
+    }
+
+    public void withOtherBounds(final List<GenericType.OfReference> bounds) {
+        this.otherBounds = List.copyOf(bounds);
     }
 
     public List<GenericType.OfReference> bounds() {
-        return bounds;
+        return otherBounds;
     }
 
     public ElementType annotationTargetType() {
@@ -53,13 +60,13 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
             MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(TypeVariable.class, MethodHandles.lookup());
             ofType = lookup.findConstructor(TypeVariable.OfType.class, MethodType.methodType(
                     void.class,
-                    List.class, List.class, String.class, List.class, ClassDesc.class));
+                    List.class, List.class, String.class, Optional.class, List.class, ClassDesc.class));
             ofConstructor = lookup.findConstructor(TypeVariable.OfConstructor.class, MethodType.methodType(
                     void.class,
-                    List.class, List.class, String.class, List.class, ConstructorDesc.class));
+                    List.class, List.class, String.class, Optional.class, List.class, ConstructorDesc.class));
             ofMethod = lookup.findConstructor(TypeVariable.OfMethod.class, MethodType.methodType(
                     void.class,
-                    List.class, List.class, String.class, List.class, MethodDesc.class));
+                    List.class, List.class, String.class, Optional.class, List.class, MethodDesc.class));
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchMethodException e) {
@@ -73,7 +80,8 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,
-                    bounds,
+                    Optional.ofNullable(firstBound),
+                    otherBounds,
                     desc);
         } catch (RuntimeException | Error e) {
             throw e;
@@ -88,7 +96,8 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,
-                    bounds,
+                    Optional.ofNullable(firstBound),
+                    otherBounds,
                     desc);
         } catch (RuntimeException | Error e) {
             throw e;
@@ -103,7 +112,8 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,
-                    bounds,
+                    Optional.ofNullable(firstBound),
+                    otherBounds,
                     desc);
         } catch (RuntimeException | Error e) {
             throw e;
