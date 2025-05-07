@@ -26,12 +26,8 @@ final class LocalVarAllocator extends Item {
         endScope = block.endLabel();
         cb.localVariable(slot, localVar.name(), localVar.type(), startScope, endScope);
         GenericType gt = localVar.genericType();
-        if (gt instanceof GenericType.OfClass oc && !oc.typeArguments().isEmpty()) {
+        if (!gt.isRaw()) {
             cb.localVariableType(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope);
-        }
-        int lvSlot = localVar.slot;
-        if (lvSlot != -1 && slot != lvSlot) {
-            throw new IllegalStateException("Local variable reallocated into a different slot");
         }
         localVar.slot = slot;
     }
