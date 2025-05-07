@@ -2,11 +2,13 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
+import java.util.AbstractList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -203,5 +205,46 @@ public final class GenericTypeTest {
     @Target(ElementType.TYPE_USE)
     @Retention(RetentionPolicy.CLASS)
     public @interface Invisible {
+    }
+
+    @Test
+    public void testClassTypeParameter() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassTypeParameter", zc -> {
+            zc.typeParameter("T", tvc -> {
+                tvc.withFirstBound((GenericType.OfReference) GenericType.of(String.class));
+                tvc.withOtherBounds(List.of((GenericType.OfReference) GenericType.of(Serializable.class)));
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("<T:Ljava/lang/String;:Ljava/io/Serializable;>Ljava/lang/Object;", sa.signature().stringValue());
+    }
+
+    @Test
+    public void testClassExtendsGeneric() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassExtendsGeneric", zc -> {
+            zc.extends_((GenericType.OfClass) GenericType.of(AbstractList.class,
+                    List.of(TypeArgument.ofSuper((GenericType.OfReference) GenericType.of(String.class)))));
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("Ljava/util/AbstractList<-Ljava/lang/String;>;", sa.signature().stringValue());
+    }
+
+    @Test
+    public void testClassImplementsGeneric() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassImplementsGeneric", zc -> {
+            zc.implements_((GenericType.OfClass) GenericType.of(List.class,
+                    List.of(TypeArgument.ofExtends((GenericType.OfReference) GenericType.of(String.class)))));
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("Ljava/lang/Object;Ljava/util/List<+Ljava/lang/String;>;", sa.signature().stringValue());
     }
 }
