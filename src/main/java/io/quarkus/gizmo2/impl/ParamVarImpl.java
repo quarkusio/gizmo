@@ -52,7 +52,7 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.storeLocal(Util.actualKindOf(typeKind()), slot);
+                cb.storeLocal(Util.actualKindOf(ParamVarImpl.this.typeKind()), slot);
             }
         };
     }
