@@ -89,15 +89,14 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
                 startScope = cb.newBoundLabel();
                 endScope = block.endLabel();
                 cb.localVariable(slot, name, type.desc(), startScope, endScope);
-                GenericType gt = genericType();
-                if (gt instanceof GenericType.OfClass oc && !oc.typeArguments().isEmpty()) {
-                    cb.localVariableType(slot, name, Util.signatureOf(gt), startScope, endScope);
+                if (!type.isRaw()) {
+                    cb.localVariableType(slot, name, Util.signatureOf(type), startScope, endScope);
                 }
                 LocalVarImpl.this.slot = slot;
             }
 
             public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-                if (genericType().hasAnnotations(retention)) {
+                if (type.hasAnnotations(retention)) {
                     Util.computeAnnotations(type, retention, TypeAnnotation.TargetInfo.ofLocalVariable(
                             List.of(
                                     TypeAnnotation.LocalVarTargetInfo.of(startScope, endScope, slot))),

@@ -232,6 +232,11 @@ public abstract class GenericType {
         return copy(tac.visible(), tac.invisible());
     }
 
+    public final <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType) {
+        return withAnnotation(annotationType, ac -> {
+        });
+    }
+
     public final <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
             Consumer<AnnotationCreator<A>> builder) {
         return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
@@ -252,7 +257,7 @@ public abstract class GenericType {
     }
 
     public boolean hasInvisibleAnnotations() {
-        return !visible.isEmpty();
+        return !invisible.isEmpty();
     }
 
     public final boolean hasAnnotations() {
@@ -471,7 +476,7 @@ public abstract class GenericType {
         }
 
         public boolean hasInvisibleAnnotations() {
-            return super.hasVisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
+            return super.hasInvisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
         }
 
         public OfClass withArguments(List<TypeArgument> newArguments) {

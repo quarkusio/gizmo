@@ -4,9 +4,16 @@ import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Set;
 
+import io.github.dmlloyd.classfile.FieldBuilder;
+import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.FieldCreator;
@@ -130,5 +137,20 @@ public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl imp
 
     public ElementType annotationTargetType() {
         return ElementType.FIELD;
+    }
+
+    void addTypeAnnotations(final FieldBuilder fb) {
+        ArrayList<TypeAnnotation> visible = new ArrayList<>();
+        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
+        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofField(),
+                visible, new ArrayDeque<>());
+        Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofField(),
+                invisible, new ArrayDeque<>());
+        if (!visible.isEmpty()) {
+            fb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
+        }
+        if (!invisible.isEmpty()) {
+            fb.with(RuntimeInvisibleTypeAnnotationsAttribute.of(invisible));
+        }
     }
 }
