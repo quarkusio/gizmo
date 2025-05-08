@@ -36,7 +36,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericLocalVar", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
-                    LocalVar list = b0.declare("list", GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
+                    LocalVar list = b0.declare("list", GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
                     b0.set(list, Const.ofNull(List.class));
                     b0.return_();
                 });
@@ -97,7 +97,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("list", pc -> {
-                    pc.withType(GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
+                    pc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -165,7 +165,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericField", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
+                fc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();

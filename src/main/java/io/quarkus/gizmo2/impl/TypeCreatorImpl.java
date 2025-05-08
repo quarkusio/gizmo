@@ -9,6 +9,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
@@ -17,6 +18,7 @@ import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -31,6 +33,8 @@ import java.util.stream.Stream;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.ClassSignature;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
@@ -285,6 +289,37 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         zb.with(SignatureAttribute.of(computeSignature()));
         addVisible(zb);
         addInvisible(zb);
+        ArrayList<TypeAnnotation> visible = new ArrayList<>();
+        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
+        for (int i = 0; i < typeVariables.size(); i++) {
+            final TypeVariable tv = typeVariables.get(i);
+            Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(tv, RetentionPolicy.CLASS,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
+                    invisible, new ArrayDeque<>());
+        }
+        Util.computeAnnotations(superSig, RetentionPolicy.RUNTIME,
+                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
+                visible, new ArrayDeque<>());
+        Util.computeAnnotations(superSig, RetentionPolicy.CLASS,
+                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
+                invisible, new ArrayDeque<>());
+        for (int i = 0; i < interfaceSigs.size(); i++) {
+            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.RUNTIME,
+                    TypeAnnotation.TargetInfo.ofClassExtends(i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.CLASS,
+                    TypeAnnotation.TargetInfo.ofClassExtends(i),
+                    invisible, new ArrayDeque<>());
+        }
+        if (!visible.isEmpty()) {
+            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
+        }
+        if (!invisible.isEmpty()) {
+            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(invisible));
+        }
         if (!staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {

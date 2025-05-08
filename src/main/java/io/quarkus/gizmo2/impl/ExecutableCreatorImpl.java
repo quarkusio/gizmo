@@ -215,6 +215,15 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
                     invisible, new ArrayDeque<>());
         }
+        for (int i = 0; i < typeVariables.size(); i++) {
+            final TypeVariable tv = typeVariables.get(i);
+            Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER, i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(tv, RetentionPolicy.CLASS,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER, i),
+                    invisible, new ArrayDeque<>());
+        }
         if (builder != null) {
             mb.withCode(cb -> {
                 doCode(builder, cb);

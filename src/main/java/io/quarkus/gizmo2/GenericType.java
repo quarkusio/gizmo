@@ -13,11 +13,13 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,53 +39,6 @@ import io.smallrye.common.constraint.Assert;
  * for usage in any kind of type-checking system.
  */
 public abstract class GenericType {
-    /*
-     *
-     * JavaTypeSignature
-     * +- ReferenceTypeSignature
-     * | +- ThrowsSignature
-     * | | +- ClassTypeSignature :: [PackageSpec] {Identifier [TypeArguments] [{Nested}]}
-     * | | +- TypeVariableSignature :: Identifier
-     * | +- ArrayTypeSignature :: JavaTypeSignature
-     * +- BaseType (primitive)
-     *
-     * TypeArguments
-     * +- [WildCard == +/-] ReferenceTypeSignature
-     * +- `*`
-     *
-     * Annotations:
-     *
-     * - Type parameters (class or method) (top level or method info)
-     * - Supertype (class or interface) (top level)
-     * - Type parameter bound type (class or method) (top level or method info)
-     * - Type of field (or record component) (field info, record component info)
-     * - Method return type or ctor output type (OK weird) (method info)
-     * - Receiver type (method or ctor) (method info)
-     * - Throws clause type (method into)
-     *
-     * - Local variable `@xyz Foo foo;` (Code attr)
-     * - Resource variable `try (@xyz Foo foo = bar()) {}` (Code attr)
-     * - Catch parameter `catch (Foo | @xyz Bar e)` (special target) (Code attr)
-     * - Instanceof `instanceof @xyz Foo` (bytecode offset) (Code attr)
-     * - Type of `new @xyz Foo()` expr (bytecode offset) (Code attr)
-     * - Type of `(@xyz Abc)::new` (bytecode offset) (Code attr)
-     * - Type of `(@xyz Abc)::identifier` (bytecode offset) (Code attr)
-     * - Cast type (Code attr)
-     * - Generic type argument for `new` invocation e.g. `new <@xyz Foo> Bar()`
-     * - Generic type argument for method invocation `<@xyz Foo> bar()`
-     * - Generic type argument for `::<@xyz Foo>new`
-     * - Generic type argument for `::<@xyz Foo>identifier`
-     *
-     *
-     * GenericType
-     * +- OfReference
-     * | +- OfThrows
-     * | | +- OfClass :: enclosing (outer) OfThrows
-     * | | +- OfTypeVariable
-     * | +- OfArray
-     * +- OfPrimitive
-     */
-
     final List<Annotation> visible;
     final List<Annotation> invisible;
     OfArray arrayType;
@@ -111,31 +66,14 @@ public abstract class GenericType {
         }
     }
 
-    public static GenericType.OfClass ofClass(Class<?> type) {
-        if (type.isPrimitive() || type.isArray()) {
-            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(type));
-        }
-        return (OfClass) of(type);
-    }
-
-    public static GenericType.OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
-        return ofClass(type).withArguments(typeArguments);
-    }
-
-    public static GenericType.OfArray ofArray(Class<?> type) {
-        if (!type.isArray()) {
-            throw new IllegalArgumentException("Type %s does not represent an array type".formatted(type));
-        }
-        return (OfArray) of(type);
-    }
-
-    public static GenericType.OfPrimitive ofPrimitive(Class<?> type) {
-        if (!type.isPrimitive()) {
-            throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
-        }
-        return (OfPrimitive) of(type);
-    }
-
+    /**
+     * {@return the given type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     * @param typeArguments the type arguments, if any (must not be {@code null})
+     * @throws IllegalArgumentException if the nonzero number of type arguments does not match
+     *         the number of type parameters on the given class
+     */
     public static GenericType of(Class<?> type, List<TypeArgument> typeArguments) {
         int tpCount = type.getTypeParameters().length;
         int taSize = typeArguments.size();
@@ -155,9 +93,59 @@ public abstract class GenericType {
     }
 
     /**
+     * {@return a generic type for the given class or interface type}
+     *
+     * @param type the class object for the class or interface (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static GenericType.OfClass ofClass(Class<?> type) {
+        if (type.isPrimitive() || type.isArray()) {
+            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(type));
+        }
+        return (OfClass) of(type);
+    }
+
+    /**
+     * {@return a generic type for the given class or interface type}
+     *
+     * @param type the class object for the class or interface (must not be {@code null})
+     * @param typeArguments the type arguments for the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static GenericType.OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
+        return ofClass(type).withArguments(typeArguments);
+    }
+
+    /**
+     * {@return a generic type for the given array class}
+     *
+     * @param type the class object for the array type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent an array type
+     */
+    public static GenericType.OfArray ofArray(Class<?> type) {
+        if (!type.isArray()) {
+            throw new IllegalArgumentException("Type %s does not represent an array type".formatted(type));
+        }
+        return (OfArray) of(type);
+    }
+
+    /**
+     * {@return a generic type for the given primitive class}
+     *
+     * @param type the class object for the primitive type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a primitive type
+     */
+    public static GenericType.OfPrimitive ofPrimitive(Class<?> type) {
+        if (!type.isPrimitive()) {
+            throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
+        }
+        return (OfPrimitive) of(type);
+    }
+
+    /**
      * {@return the given type as an erased generic type (not {@code null})}
      *
-     * @param desc the type descriptor
+     * @param desc the type descriptor (must not be {@code null})
      */
     public static GenericType of(ClassDesc desc) {
         if (desc.isClassOrInterface()) {
@@ -170,6 +158,14 @@ public abstract class GenericType {
         return new OfArray(List.of(), List.of(), of(desc.componentType()));
     }
 
+    /**
+     * {@return the given type as a generic type (not {@code null})}
+     *
+     * @param desc the type descriptor (must not be {@code null})
+     * @param typeArguments the type arguments, if any (must not be {@code null})
+     * @throws IllegalArgumentException if the nonzero number of type arguments does not match
+     *         the number of type parameters on the given class
+     */
     public static GenericType of(ClassDesc desc, List<TypeArgument> typeArguments) {
         GenericType genericType = of(desc);
         if (typeArguments.isEmpty()) {
@@ -181,6 +177,9 @@ public abstract class GenericType {
         }
     }
 
+    /**
+     * {@return the given type variable as a generic type (not {@code null})}
+     */
     public static OfTypeVariable ofTypeVariable(TypeVariable typeVariable) {
         OfTypeVariable type = typeVariable.genericType;
         if (type == null) {
@@ -189,6 +188,12 @@ public abstract class GenericType {
         return type;
     }
 
+    /**
+     * {@return a generic type representing an inner (non-static nested) class of another class (not {@code null})}
+     *
+     * @param outerClass the enclosing class generic type (must not be {@code null})
+     * @param name the inner class name (must not be {@code null})
+     */
     public static OfInnerClass ofInnerClass(OfClass outerClass, String name) {
         return new OfInnerClass(List.of(), List.of(),
                 Assert.checkNotNullParam("outerClass", outerClass),
@@ -196,6 +201,12 @@ public abstract class GenericType {
                 List.of());
     }
 
+    /**
+     * {@return the given reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type is a wildcard type or is not recognized
+     */
     public static GenericType of(Type type) {
         if (type instanceof Class<?> c) {
             return of(c);
@@ -205,24 +216,47 @@ public abstract class GenericType {
             return of(pt);
         } else if (type instanceof java.lang.reflect.TypeVariable<?> tv) {
             return of(tv);
+        } else if (type instanceof WildcardType) {
+            throw noWildcards();
         } else {
             throw new IllegalArgumentException("Invalid type " + type.getClass());
         }
     }
 
+    /**
+     * {@return the given array reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     */
     public static OfArray of(GenericArrayType type) {
         return of(type.getGenericComponentType()).arrayType();
     }
 
+    /**
+     * {@return the given type variable reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type variable (must not be {@code null})
+     */
     public static OfTypeVariable of(java.lang.reflect.TypeVariable<?> type) {
         return TypeVariable.of(type).genericType();
     }
 
+    /**
+     * {@return the given parameterized reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     */
     public static OfClass of(ParameterizedType type) {
         return ((OfClass) of(type.getRawType())).withArguments(
-                Stream.of(type.getActualTypeArguments()).map(TypeArgument::ofExact).toList());
+                Stream.of(type.getActualTypeArguments()).map(TypeArgument::of).toList());
     }
 
+    /**
+     * {@return the given annotated reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type is a wildcard type or is not recognized
+     */
     public static GenericType of(AnnotatedType type) {
         if (type instanceof AnnotatedArrayType aat) {
             return of(aat);
@@ -231,30 +265,48 @@ public abstract class GenericType {
         } else if (type instanceof AnnotatedTypeVariable atv) {
             return of(atv);
         } else if (type instanceof AnnotatedWildcardType) {
-            throw new IllegalArgumentException("Wildcard types cannot be used here (see `TypeArgument.of(AnnotatedType)`)");
+            throw noWildcards();
         } else {
             // annotated plain type
             return of(type.getType()).withAnnotations(AnnotatableCreator.from(type));
         }
     }
 
+    /**
+     * {@return the given annotated array reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     */
     public static OfArray of(AnnotatedArrayType type) {
         return of(type.getAnnotatedGenericComponentType()).arrayType().withAnnotations(AnnotatableCreator.from(type));
     }
 
+    /**
+     * {@return the given annotated parameterized type as a generic type (not {@code null})}
+     *
+     * @param type the type (must not be {@code null})
+     */
     public static GenericType of(AnnotatedParameterizedType type) {
-        List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::ofExact).toList();
+        List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::of).toList();
         ParameterizedType pt = (ParameterizedType) type.getType();
         return of((Class<?>) pt.getRawType(), typeArgs).withAnnotations(AnnotatableCreator.from(type));
     }
 
+    /**
+     * {@return the given type variable annotated reflection type as a generic type (not {@code null})}
+     *
+     * @param type the type variable (must not be {@code null})
+     */
     public static OfTypeVariable of(AnnotatedTypeVariable type) {
         TypeVariable tv = TypeVariable.of((java.lang.reflect.TypeVariable<?>) type.getType());
         return tv.genericType().withAnnotations(AnnotatableCreator.from(type));
     }
 
-    abstract GenericType copy(List<Annotation> visible, List<Annotation> invisible);
-
+    /**
+     * {@return this generic type with annotations added by the given builder (not {@code null})}
+     *
+     * @param builder the annotation builder (must not be {@code null})
+     */
     public GenericType withAnnotations(Consumer<AnnotatableCreator> builder) {
         TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl(visible, invisible);
         builder.accept(tac);
@@ -265,18 +317,38 @@ public abstract class GenericType {
         return copy(tac.visible(), tac.invisible());
     }
 
+    /**
+     * {@return this generic type with the given additional annotation (not {@code null})}
+     *
+     * @param annotationType the annotation type (must not be {@code null})
+     */
     public <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType) {
         return withAnnotation(annotationType, ac -> {
         });
     }
 
+    /**
+     * {@return this generic type with the given additional annotation (not {@code null})}
+     *
+     * @param annotationType the annotation type (must not be {@code null})
+     * @param builder the builder for the given annotation type (must not be {@code null})
+     */
     public <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
             Consumer<AnnotationCreator<A>> builder) {
         return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
     }
 
+    /**
+     * {@return {@code true} if this type has no arguments, or {@code false} if it has arguments}
+     */
     public abstract boolean isRaw();
 
+    /**
+     * {@return {@code true} if this type has annotations corresponding to the given retention policy, or {@code false} if it
+     * does not}
+     *
+     * @param retention the retention policy (must not be {@code null})
+     */
     public final boolean hasAnnotations(RetentionPolicy retention) {
         return switch (retention) {
             case RUNTIME -> hasVisibleAnnotations();
@@ -285,14 +357,23 @@ public abstract class GenericType {
         };
     }
 
+    /**
+     * {@return {@code true} if this type has runtime-visible annotations, or {@code false} if it does not}
+     */
     public boolean hasVisibleAnnotations() {
         return !visible.isEmpty();
     }
 
+    /**
+     * {@return {@code true} if this type has runtime-invisible annotations, or {@code false} if it does not}
+     */
     public boolean hasInvisibleAnnotations() {
         return !invisible.isEmpty();
     }
 
+    /**
+     * {@return {@code true} if this type has any annotations, or {@code false} if it does not}
+     */
     public final boolean hasAnnotations() {
         return hasVisibleAnnotations() || hasInvisibleAnnotations();
     }
@@ -309,7 +390,7 @@ public abstract class GenericType {
     }
 
     /**
-     * {@return the type descriptor for this generic type (not {@code null})}
+     * {@return the erased type descriptor for this generic type (not {@code null})}
      */
     public abstract ClassDesc desc();
 
@@ -336,17 +417,28 @@ public abstract class GenericType {
         return toString(new StringBuilder()).toString();
     }
 
+    /**
+     * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+     */
     public final boolean equals(final Object obj) {
         return obj instanceof GenericType gt && equals(gt);
     }
 
+    /**
+     * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+     */
     public boolean equals(GenericType gt) {
         return this == gt || visible.equals(gt.visible) && invisible.equals(gt.invisible);
     }
 
+    /**
+     * {@return the hash code of this generic type}
+     */
     public int hashCode() {
-        return visible.hashCode() * 19 + invisible.hashCode();
+        return Objects.hash(getClass(), visible, invisible);
     }
+
+    abstract GenericType copy(List<Annotation> visible, List<Annotation> invisible);
 
     List<TypeAnnotation> computeAnnotations(RetentionPolicy retention, TypeAnnotation.TargetInfo targetInfo,
             ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
@@ -361,6 +453,9 @@ public abstract class GenericType {
         return list;
     }
 
+    /**
+     * A generic type corresponding to a type variable.
+     */
     public static final class OfTypeVariable extends OfThrows {
         private final TypeVariable typeVariable;
 
@@ -377,6 +472,9 @@ public abstract class GenericType {
             return super.toString(b).append(typeVariable);
         }
 
+        /**
+         * {@return the type variable of this type}
+         */
         public TypeVariable typeVariable() {
             return typeVariable;
         }
@@ -402,10 +500,13 @@ public abstract class GenericType {
             return new OfTypeVariable(visible, invisible, typeVariable);
         }
 
-        public boolean equals(final GenericType gt) {
-            return gt instanceof OfTypeVariable tv && equals(tv);
+        public boolean equals(final OfThrows other) {
+            return other instanceof OfTypeVariable tv && equals(tv);
         }
 
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
         public boolean equals(final OfTypeVariable tvt) {
             return this == tvt || super.equals(tvt) && typeVariable().equals(tvt.typeVariable());
         }
@@ -415,6 +516,9 @@ public abstract class GenericType {
         }
     }
 
+    /**
+     * A generic type corresponding to some reference type.
+     */
     public static abstract class OfReference extends GenericType {
         TypeArgument.OfExact exactArg;
         TypeArgument.OfExtends extendsArg;
@@ -436,8 +540,22 @@ public abstract class GenericType {
                 final Consumer<AnnotationCreator<A>> builder) {
             return (OfReference) super.withAnnotation(annotationType, builder);
         }
+
+        public final boolean equals(final GenericType gt) {
+            return gt instanceof OfReference or && equals(or);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfReference other) {
+            return super.equals(other);
+        }
     }
 
+    /**
+     * A generic type corresponding to a reference type that is suitable for use in a method {@code throws} clause.
+     */
     public static abstract class OfThrows extends OfReference {
         OfThrows(final List<Annotation> visible, final List<Annotation> invisible) {
             super(visible, invisible);
@@ -455,8 +573,22 @@ public abstract class GenericType {
                 final Consumer<AnnotationCreator<A>> builder) {
             return (OfThrows) super.withAnnotation(annotationType, builder);
         }
+
+        public final boolean equals(final OfReference other) {
+            return other instanceof OfThrows ot && equals(ot);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfThrows other) {
+            return super.equals(other);
+        }
     }
 
+    /**
+     * A generic type corresponding to an array type.
+     */
     public static final class OfArray extends OfReference {
         private final GenericType componentType;
         private ClassDesc desc;
@@ -466,6 +598,9 @@ public abstract class GenericType {
             this.componentType = componentType;
         }
 
+        /**
+         * {@return the component type of this array type}
+         */
         public GenericType componentType() {
             return componentType;
         }
@@ -520,11 +655,26 @@ public abstract class GenericType {
             // supertype annotations []
             return super.toString(componentType.toString(b)).append("[]");
         }
+
+        public boolean equals(final OfReference other) {
+            return other instanceof OfArray oa && equals(oa);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfArray oa) {
+            return this == oa || super.equals(oa) && componentType.equals(oa.componentType);
+        }
+
+        public int hashCode() {
+            return super.hashCode() * 19 + componentType.hashCode();
+        }
     }
 
     /**
      * A generic type of a class or interface.
-     * There is no separate type for non-{@code class} object types.
+     * There is no separate type for non-{@code class} object types such as interfaces or annotations.
      */
     public static abstract class OfClass extends OfThrows {
         final List<TypeArgument> typeArguments;
@@ -534,8 +684,9 @@ public abstract class GenericType {
             this.typeArguments = typeArguments;
         }
 
-        public abstract ClassDesc desc();
-
+        /**
+         * {@return the list of type arguments (not {@code null})}
+         */
         public List<TypeArgument> typeArguments() {
             return typeArguments;
         }
@@ -565,6 +716,13 @@ public abstract class GenericType {
             return super.hasInvisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
         }
 
+        /**
+         * {@return a copy of this generic type with the given type arguments}
+         *
+         * @param newArguments the new type arguments (must not be {@code null})
+         * @throws IllegalArgumentException if this type has type arguments and the given number of arguments
+         *         does not match the current number of arguments
+         */
         public OfClass withArguments(List<TypeArgument> newArguments) {
             if (typeArguments.equals(newArguments)) {
                 return this;
@@ -577,6 +735,21 @@ public abstract class GenericType {
                 throw new IllegalArgumentException("Invalid number of type arguments (expected %d but got %d)"
                         .formatted(Integer.valueOf(naSize), Integer.valueOf(taSize)));
             }
+        }
+
+        public final boolean equals(final OfThrows other) {
+            return other instanceof OfClass oc && equals(oc);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfClass other) {
+            return super.equals(other) && typeArguments.equals(other.typeArguments);
+        }
+
+        public int hashCode() {
+            return super.hashCode() * 19 + typeArguments.hashCode();
         }
 
         abstract OfClass copy(final List<Annotation> visible, final List<Annotation> invisible,
@@ -633,6 +806,9 @@ public abstract class GenericType {
         }
     }
 
+    /**
+     * A generic type corresponding to a "root" (non-inner) class.
+     */
     public static final class OfRootClass extends OfClass {
         private final ClassDesc desc;
 
@@ -673,6 +849,21 @@ public abstract class GenericType {
         public <A extends java.lang.annotation.Annotation> OfRootClass withAnnotation(final Class<A> annotationType,
                 final Consumer<AnnotationCreator<A>> builder) {
             return (OfRootClass) super.withAnnotation(annotationType, builder);
+        }
+
+        public boolean equals(final OfClass other) {
+            return other instanceof OfRootClass orc && equals(orc);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfRootClass other) {
+            return this == other || super.equals(other) && desc.equals(other.desc);
+        }
+
+        public int hashCode() {
+            return super.hashCode() * 19 + desc.hashCode();
         }
 
         public StringBuilder toString(final StringBuilder b) {
@@ -742,6 +933,21 @@ public abstract class GenericType {
             return super.hasInvisibleAnnotations() || outerType.hasInvisibleAnnotations();
         }
 
+        public boolean equals(final OfClass other) {
+            return other instanceof OfInnerClass oic && equals(oic);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfInnerClass other) {
+            return this == other || super.equals(other) && outerType.equals(other.outerType);
+        }
+
+        public int hashCode() {
+            return super.hashCode() * 19 + outerType.hashCode();
+        }
+
         public StringBuilder toString(final StringBuilder b) {
             return typeArgumentsToString(super.toString(outerType.toString(b).append('.')).append(name));
         }
@@ -801,6 +1007,21 @@ public abstract class GenericType {
             return true;
         }
 
+        public boolean equals(final GenericType other) {
+            return other instanceof OfPrimitive op && equals(op);
+        }
+
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
+        public boolean equals(final OfPrimitive other) {
+            return this == other || super.equals(other) && type.equals(other.type);
+        }
+
+        public int hashCode() {
+            return super.hashCode() * 19 + type.hashCode();
+        }
+
         public StringBuilder toString(final StringBuilder b) {
             return super.toString(b).append(Util.binaryName(type));
         }
@@ -808,5 +1029,9 @@ public abstract class GenericType {
         public ClassDesc desc() {
             return type;
         }
+    }
+
+    private static IllegalArgumentException noWildcards() {
+        return new IllegalArgumentException("Wildcard types cannot be used here (see `TypeArgument.of(AnnotatedType)`)");
     }
 }

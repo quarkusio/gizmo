@@ -69,6 +69,7 @@ public final class Util {
 
     private static final MethodHandle actualKind;
     private static final MethodHandle GenericType_computeAnnotations;
+    private static final MethodHandle TypeVariable_computeAnnotations;
 
     static {
         try {
@@ -77,6 +78,13 @@ public final class Util {
             MethodHandles.Lookup genericTypeLookup = MethodHandles.privateLookupIn(GenericType.class, MethodHandles.lookup());
             GenericType_computeAnnotations = genericTypeLookup.findVirtual(
                     GenericType.class, "computeAnnotations", MethodType.methodType(
+                            List.class,
+                            RetentionPolicy.class,
+                            TypeAnnotation.TargetInfo.class,
+                            ArrayList.class,
+                            ArrayDeque.class));
+            TypeVariable_computeAnnotations = genericTypeLookup.findVirtual(
+                    TypeVariable.class, "computeAnnotations", MethodType.methodType(
                             List.class,
                             RetentionPolicy.class,
                             TypeAnnotation.TargetInfo.class,
@@ -455,6 +463,20 @@ public final class Util {
         try {
             var ignored = (List<?>) GenericType_computeAnnotations.invokeExact(
                     type, retention, targetInfo, list, path);
+            return list;
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new UndeclaredThrowableException(e);
+        }
+    }
+
+    public static List<TypeAnnotation> computeAnnotations(TypeVariable tv, RetentionPolicy retention,
+            TypeAnnotation.TargetInfo targetInfo,
+            ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
+        try {
+            var ignored = (List<?>) TypeVariable_computeAnnotations.invokeExact(
+                    tv, retention, targetInfo, list, path);
             return list;
         } catch (RuntimeException | Error e) {
             throw e;
