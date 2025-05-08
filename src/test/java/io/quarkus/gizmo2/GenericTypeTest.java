@@ -13,11 +13,13 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.Attributes;
 import io.github.dmlloyd.classfile.ClassModel;
 import io.github.dmlloyd.classfile.CodeModel;
 import io.github.dmlloyd.classfile.FieldModel;
 import io.github.dmlloyd.classfile.MethodModel;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.LocalVariableTypeInfo;
 import io.github.dmlloyd.classfile.attribute.LocalVariableTypeTableAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
@@ -34,7 +36,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericLocalVar", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
-                    LocalVar list = b0.declare("list", GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                    LocalVar list = b0.declare("list", GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
                     b0.set(list, Const.ofNull(List.class));
                     b0.return_();
                 });
@@ -58,14 +60,14 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationLocalVar", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
-                    LocalVar foo = b0.declare("foo", GenericType.of(String.class).withAnnotation(Visible.class));
+                    LocalVar foo = b0.declare("foo", GenericType.ofClass(String.class).withAnnotation(Visible.class));
                     b0.set(foo, Const.of("hello"));
                     b0.return_();
                 });
             });
             zc.staticMethod("test1", mc -> {
                 mc.body(b0 -> {
-                    LocalVar foo = b0.declare("foo", GenericType.of(String.class).withAnnotation(Invisible.class));
+                    LocalVar foo = b0.declare("foo", GenericType.ofClass(String.class).withAnnotation(Invisible.class));
                     b0.set(foo, Const.of("hello"));
                     b0.return_();
                 });
@@ -95,7 +97,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("list", pc -> {
-                    pc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                    pc.withType(GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -120,13 +122,13 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.withType(GenericType.of(String.class).withAnnotation(Visible.class));
+                    pc.withType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
             zc.staticMethod("test1", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.withType(GenericType.of(String.class).withAnnotation(Invisible.class));
+                    pc.withType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -163,7 +165,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericField", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                fc.withType(GenericType.of(List.class, List.of(TypeArgument.ofExact(String.class))));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -178,10 +180,10 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationField", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(GenericType.of(String.class).withAnnotation(Visible.class));
+                fc.withType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
             });
             zc.field("test1", fc -> {
-                fc.withType(GenericType.of(String.class).withAnnotation(Invisible.class));
+                fc.withType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -195,6 +197,99 @@ public final class GenericTypeTest {
                 .findAttribute(Attributes.runtimeInvisibleTypeAnnotations()).orElseThrow();
         assertEquals(1, test1ann.annotations().size());
         assertEquals(Invisible.class.descriptorString(), test1ann.annotations().get(0).annotation().className().stringValue());
+    }
+
+    @Test
+    public void testComplexCase() {
+        GenericType bigGenericType = GenericType.of(Generic.class, List.of(
+                TypeArgument.ofExtends(GenericType.ofClass(GenericStatic.class, List.of(
+                        TypeArgument.ofSuper(GenericType.ofClass(String.class).withAnnotation(Invisible.class))
+                                .withAnnotation(Visible.class),
+                        TypeArgument.ofExact(GenericType.ofClass(Integer.class).withAnnotation(Visible.class))))),
+                TypeArgument.ofWildcard().withAnnotations(ac -> {
+                    ac.withAnnotation(Visible.class);
+                    ac.withAnnotation(Invisible.class);
+                }))).withAnnotation(Visible.class);
+        assertEquals(
+                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String,@io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>,@io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible *>",
+                bigGenericType.toString());
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestComplexCase", zc -> {
+            zc.field("test0", fc -> {
+                fc.withType(bigGenericType);
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        FieldModel test0 = model.fields().stream().filter(fm -> fm.fieldName().equalsString("test0")).findFirst().orElseThrow();
+        RuntimeVisibleTypeAnnotationsAttribute visibleAttr = test0.findAttribute(Attributes.runtimeVisibleTypeAnnotations())
+                .orElseThrow();
+        RuntimeInvisibleTypeAnnotationsAttribute invisibleAttr = test0
+                .findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
+                .orElseThrow();
+        List<TypeAnnotation> visibleType = visibleAttr.annotations();
+        List<TypeAnnotation> invisibleType = invisibleAttr.annotations();
+        assertEquals(4, visibleType.size());
+        assertEquals(2, invisibleType.size());
+        TypeAnnotation typeAnn = visibleType.get(0);
+        Annotation ann = typeAnn.annotation();
+        assertEquals(Visible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(TypeAnnotation.TypePathComponent.INNER_TYPE), typeAnn.targetPath());
+        typeAnn = visibleType.get(1);
+        ann = typeAnn.annotation();
+        assertEquals(Visible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(
+                TypeAnnotation.TypePathComponent.INNER_TYPE,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 0),
+                TypeAnnotation.TypePathComponent.WILDCARD,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 0)),
+                typeAnn.targetPath());
+        typeAnn = visibleType.get(2);
+        ann = typeAnn.annotation();
+        assertEquals(Visible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(
+                TypeAnnotation.TypePathComponent.INNER_TYPE,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 0),
+                TypeAnnotation.TypePathComponent.WILDCARD,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 1)),
+                typeAnn.targetPath());
+        typeAnn = visibleType.get(3);
+        ann = typeAnn.annotation();
+        assertEquals(Visible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(
+                TypeAnnotation.TypePathComponent.INNER_TYPE,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 1)),
+                typeAnn.targetPath());
+        typeAnn = invisibleType.get(0);
+        ann = typeAnn.annotation();
+        assertEquals(Invisible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(
+                TypeAnnotation.TypePathComponent.INNER_TYPE,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 0),
+                TypeAnnotation.TypePathComponent.WILDCARD,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 0),
+                TypeAnnotation.TypePathComponent.WILDCARD), typeAnn.targetPath());
+        typeAnn = invisibleType.get(1);
+        ann = typeAnn.annotation();
+        assertEquals(Invisible.class.descriptorString(), ann.className().stringValue());
+        assertEquals(TypeAnnotation.TargetInfo.ofField(), typeAnn.targetInfo());
+        assertEquals(List.of(
+                TypeAnnotation.TypePathComponent.INNER_TYPE,
+                TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 1)),
+                typeAnn.targetPath());
+    }
+
+    @SuppressWarnings({ "InnerClassMayBeStatic", "unused" })
+    public class Generic<T, S> {
+    }
+
+    @SuppressWarnings("unused")
+    public static class GenericStatic<T, S> {
     }
 
     @Target(ElementType.TYPE_USE)
@@ -213,8 +308,8 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassTypeParameter", zc -> {
             zc.typeParameter("T", tvc -> {
-                tvc.withFirstBound((GenericType.OfReference) GenericType.of(String.class));
-                tvc.withOtherBounds(List.of((GenericType.OfReference) GenericType.of(Serializable.class)));
+                tvc.withFirstBound(GenericType.ofClass(String.class));
+                tvc.withOtherBounds(List.of(GenericType.ofClass(Serializable.class)));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -228,7 +323,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassExtendsGeneric", zc -> {
             zc.extends_((GenericType.OfClass) GenericType.of(AbstractList.class,
-                    List.of(TypeArgument.ofSuper((GenericType.OfReference) GenericType.of(String.class)))));
+                    List.of(TypeArgument.ofSuper(GenericType.ofClass(String.class)))));
         });
         ClassModel model = tcm.forClass(desc).getModel();
         SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
@@ -241,7 +336,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassImplementsGeneric", zc -> {
             zc.implements_((GenericType.OfClass) GenericType.of(List.class,
-                    List.of(TypeArgument.ofExtends((GenericType.OfReference) GenericType.of(String.class)))));
+                    List.of(TypeArgument.ofExtends(GenericType.ofClass(String.class)))));
         });
         ClassModel model = tcm.forClass(desc).getModel();
         SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
