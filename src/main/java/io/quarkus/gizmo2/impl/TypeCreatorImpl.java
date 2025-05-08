@@ -93,7 +93,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private final ClassOutput output;
     private final ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
-    private GenericType.OfClass superSig = (GenericType.OfClass) GenericType.of(Object.class);
+    private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
     private List<GenericType.OfClass> interfaceSigs = List.of();
     private List<TypeVariable> typeVariables = List.of();
     final ClassBuilder zb;

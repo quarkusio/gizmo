@@ -47,7 +47,7 @@ public sealed abstract class TypeVariable implements GenericTyped {
         Optional<GenericType.OfThrows> firstBound;
         List<GenericType.OfThrows> otherBounds;
         // make a best-effort guess to populate this stuff as correctly as possible
-        if (allBounds.isEmpty() || allBounds.size() == 1 && allBounds.get(0).equals(GenericType.of(Object.class))) {
+        if (allBounds.isEmpty() || allBounds.size() == 1 && allBounds.get(0).equals(GenericType.ofClass(Object.class))) {
             firstBound = Optional.empty();
             otherBounds = List.of();
         } else if (typeVar.getBounds()[0] instanceof Class<?> c && !c.isInterface()) {

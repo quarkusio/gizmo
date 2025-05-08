@@ -99,7 +99,41 @@ public abstract class GenericType {
      * @param type the type (must not be {@code null})
      */
     public static GenericType of(Class<?> type) {
-        return of(type, List.of());
+        if (type.isMemberClass()) {
+            Class<?> enclosingClass = type.getEnclosingClass();
+            if (Modifier.isStatic(type.getModifiers()) || type.isInterface() || type.isEnum() || type.isRecord()) {
+                return of(Util.classDesc(type));
+            } else {
+                return ofInnerClass(ofClass(enclosingClass), type.getSimpleName());
+            }
+        } else {
+            return of(Util.classDesc(type));
+        }
+    }
+
+    public static GenericType.OfClass ofClass(Class<?> type) {
+        if (type.isPrimitive() || type.isArray()) {
+            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(type));
+        }
+        return (OfClass) of(type);
+    }
+
+    public static GenericType.OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
+        return ofClass(type).withArguments(typeArguments);
+    }
+
+    public static GenericType.OfArray ofArray(Class<?> type) {
+        if (!type.isArray()) {
+            throw new IllegalArgumentException("Type %s does not represent an array type".formatted(type));
+        }
+        return (OfArray) of(type);
+    }
+
+    public static GenericType.OfPrimitive ofPrimitive(Class<?> type) {
+        if (!type.isPrimitive()) {
+            throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
+        }
+        return (OfPrimitive) of(type);
     }
 
     public static GenericType of(Class<?> type, List<TypeArgument> typeArguments) {
@@ -109,16 +143,15 @@ public abstract class GenericType {
             throw new IllegalArgumentException("Invalid number of type arguments (expected %d but got %d)"
                     .formatted(Integer.valueOf(tpCount), Integer.valueOf(taSize)));
         }
-        if (type.isMemberClass()) {
-            Class<?> enclosingClass = type.getEnclosingClass();
-            if (Modifier.isStatic(type.getModifiers())) {
-                return of(Util.classDesc(type), typeArguments);
-            } else {
-                return ofInnerClass((OfClass) of(enclosingClass), type.getSimpleName()).withArguments(typeArguments);
-            }
-        } else {
-            return of(Util.classDesc(type), typeArguments);
+        GenericType base = of(type);
+        if (base instanceof OfClass oc) {
+            return oc.withArguments(typeArguments);
         }
+        if (typeArguments.isEmpty()) {
+            return base;
+        }
+        throw new IllegalArgumentException("Invalid number of type arguments (expected 0 but got %d)"
+                .formatted(Integer.valueOf(taSize)));
     }
 
     /**
@@ -187,7 +220,7 @@ public abstract class GenericType {
 
     public static OfClass of(ParameterizedType type) {
         return ((OfClass) of(type.getRawType())).withArguments(
-                Stream.of(type.getActualTypeArguments()).map(TypeArgument::of).toList());
+                Stream.of(type.getActualTypeArguments()).map(TypeArgument::ofExact).toList());
     }
 
     public static GenericType of(AnnotatedType type) {
@@ -210,7 +243,7 @@ public abstract class GenericType {
     }
 
     public static GenericType of(AnnotatedParameterizedType type) {
-        List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::of).toList();
+        List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::ofExact).toList();
         ParameterizedType pt = (ParameterizedType) type.getType();
         return of((Class<?>) pt.getRawType(), typeArgs).withAnnotations(AnnotatableCreator.from(type));
     }
@@ -232,12 +265,12 @@ public abstract class GenericType {
         return copy(tac.visible(), tac.invisible());
     }
 
-    public final <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType) {
+    public <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType) {
         return withAnnotation(annotationType, ac -> {
         });
     }
 
-    public final <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
+    public <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
             Consumer<AnnotationCreator<A>> builder) {
         return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
     }
@@ -352,6 +385,15 @@ public abstract class GenericType {
             return (OfTypeVariable) super.withAnnotations(builder);
         }
 
+        public <A extends java.lang.annotation.Annotation> OfTypeVariable withAnnotation(final Class<A> annotationType) {
+            return (OfTypeVariable) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfTypeVariable withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfTypeVariable) super.withAnnotation(annotationType, builder);
+        }
+
         public boolean isRaw() {
             return false;
         }
@@ -381,11 +423,37 @@ public abstract class GenericType {
         OfReference(final List<Annotation> visible, final List<Annotation> invisible) {
             super(visible, invisible);
         }
+
+        public OfReference withAnnotations(final Consumer<AnnotatableCreator> builder) {
+            return (OfReference) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfReference withAnnotation(final Class<A> annotationType) {
+            return (OfReference) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfReference withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfReference) super.withAnnotation(annotationType, builder);
+        }
     }
 
     public static abstract class OfThrows extends OfReference {
         OfThrows(final List<Annotation> visible, final List<Annotation> invisible) {
             super(visible, invisible);
+        }
+
+        public OfThrows withAnnotations(final Consumer<AnnotatableCreator> builder) {
+            return (OfThrows) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfThrows withAnnotation(final Class<A> annotationType) {
+            return (OfThrows) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfThrows withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfThrows) super.withAnnotation(annotationType, builder);
         }
     }
 
@@ -417,6 +485,15 @@ public abstract class GenericType {
 
         public OfArray withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfArray) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfArray withAnnotation(final Class<A> annotationType) {
+            return (OfArray) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfArray withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfArray) super.withAnnotation(annotationType, builder);
         }
 
         public boolean isRaw() {
@@ -465,6 +542,15 @@ public abstract class GenericType {
 
         public OfClass withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfClass) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfClass withAnnotation(final Class<A> annotationType) {
+            return (OfClass) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfClass withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfClass) super.withAnnotation(annotationType, builder);
         }
 
         public boolean isRaw() {
@@ -580,6 +666,15 @@ public abstract class GenericType {
             return (OfRootClass) super.withAnnotations(builder);
         }
 
+        public <A extends java.lang.annotation.Annotation> OfRootClass withAnnotation(final Class<A> annotationType) {
+            return (OfRootClass) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfRootClass withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfRootClass) super.withAnnotation(annotationType, builder);
+        }
+
         public StringBuilder toString(final StringBuilder b) {
             return typeArgumentsToString(super.toString(b).append(Util.binaryName(desc)));
         }
@@ -624,6 +719,19 @@ public abstract class GenericType {
 
         public OfInnerClass withOuterType(OfClass outerType) {
             return new OfInnerClass(visible, invisible, Assert.checkNotNullParam("outerType", outerType), name, typeArguments);
+        }
+
+        public OfInnerClass withAnnotations(final Consumer<AnnotatableCreator> builder) {
+            return (OfInnerClass) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfInnerClass withAnnotation(final Class<A> annotationType) {
+            return (OfInnerClass) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfInnerClass withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfInnerClass) super.withAnnotation(annotationType, builder);
         }
 
         public boolean hasVisibleAnnotations() {
@@ -678,6 +786,15 @@ public abstract class GenericType {
 
         public OfPrimitive withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (OfPrimitive) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfPrimitive withAnnotation(final Class<A> annotationType) {
+            return (OfPrimitive) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfPrimitive withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfPrimitive) super.withAnnotation(annotationType, builder);
         }
 
         public boolean isRaw() {

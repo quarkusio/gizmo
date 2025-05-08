@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Annotation;
+import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
@@ -20,14 +21,14 @@ public abstract class TypeArgument {
     TypeArgument() {
     }
 
-    public static TypeArgument of(final Type type) {
+    public static TypeArgument ofExact(final Type type) {
         if (type instanceof WildcardType wt) {
             return of(wt);
         }
         return ofExact((GenericType.OfReference) GenericType.of(type));
     }
 
-    public static TypeArgument of(final AnnotatedType type) {
+    public static TypeArgument ofExact(final AnnotatedType type) {
         if (type instanceof AnnotatedWildcardType wt) {
             return of(wt);
         }
@@ -142,6 +143,15 @@ public abstract class TypeArgument {
             return copy(tac.visible(), tac.invisible());
         }
 
+        public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType) {
+            return withAnnotations(ac -> ac.withAnnotation(annotationType));
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
+        }
+
         public StringBuilder toString(StringBuilder b) {
             for (Annotation annotation : visible) {
                 Util.appendAnnotation(b, annotation).append(' ');
@@ -181,8 +191,17 @@ public abstract class TypeArgument {
             return (OfExtends) super.withAnnotations(builder);
         }
 
+        public <A extends java.lang.annotation.Annotation> OfExtends withAnnotation(final Class<A> annotationType) {
+            return (OfExtends) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfExtends withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfExtends) super.withAnnotation(annotationType, builder);
+        }
+
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b.append("? extends "));
+            return bound.toString(super.toString(b).append("? extends "));
         }
     }
 
@@ -238,8 +257,17 @@ public abstract class TypeArgument {
             return (OfSuper) super.withAnnotations(builder);
         }
 
+        public <A extends java.lang.annotation.Annotation> OfSuper withAnnotation(final Class<A> annotationType) {
+            return (OfSuper) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> OfSuper withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (OfSuper) super.withAnnotation(annotationType, builder);
+        }
+
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b.append("? super "));
+            return bound.toString(super.toString(b).append("? super "));
         }
     }
 
@@ -258,6 +286,15 @@ public abstract class TypeArgument {
 
         public Wildcard withAnnotations(final Consumer<AnnotatableCreator> builder) {
             return (Wildcard) super.withAnnotations(builder);
+        }
+
+        public <A extends java.lang.annotation.Annotation> Wildcard withAnnotation(final Class<A> annotationType) {
+            return (Wildcard) super.withAnnotation(annotationType);
+        }
+
+        public <A extends java.lang.annotation.Annotation> Wildcard withAnnotation(final Class<A> annotationType,
+                final Consumer<AnnotationCreator<A>> builder) {
+            return (Wildcard) super.withAnnotation(annotationType, builder);
         }
 
         private static final Wildcard instance = new Wildcard();
