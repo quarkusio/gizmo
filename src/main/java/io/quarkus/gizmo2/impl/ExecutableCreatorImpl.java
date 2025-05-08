@@ -215,6 +215,11 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
             Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
                     invisible, new ArrayDeque<>());
         }
+        Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
+                visible, new ArrayDeque<>());
+        Util.computeAnnotations(genericReturnType(), RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReturn(),
+                invisible, new ArrayDeque<>());
+        // todo: `this` type annotations and generic type
         for (int i = 0; i < typeVariables.size(); i++) {
             final TypeVariable tv = typeVariables.get(i);
             Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,

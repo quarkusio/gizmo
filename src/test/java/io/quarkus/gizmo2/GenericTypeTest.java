@@ -160,6 +160,53 @@ public final class GenericTypeTest {
     }
 
     @Test
+    public void testGenericReturn() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericReturn", zc -> {
+            zc.staticMethod("test0", mc -> {
+                mc.returning(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                mc.body(BlockCreator::returnNull);
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        MethodModel test0 = model.methods().stream().filter(mm -> mm.methodName().equalsString("test0")).findFirst()
+                .orElseThrow();
+        SignatureAttribute sa = test0.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("()Ljava/util/List<Ljava/lang/String;>;", sa.signature().stringValue());
+    }
+
+    @Test
+    public void testTypeAnnotationReturn() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationReturn", zc -> {
+            zc.staticMethod("test0", mc -> {
+                mc.returning(GenericType.ofClass(String.class).withAnnotation(Visible.class));
+                mc.body(BlockCreator::returnNull);
+            });
+            zc.staticMethod("test1", mc -> {
+                mc.returning(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
+                mc.body(BlockCreator::returnNull);
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        MethodModel test0 = model.methods().stream().filter(mm -> mm.methodName().equalsString("test0")).findFirst()
+                .orElseThrow();
+        RuntimeVisibleTypeAnnotationsAttribute test0topAnn = test0.findAttribute(Attributes.runtimeVisibleTypeAnnotations())
+                .orElseThrow();
+        assertEquals(1, test0topAnn.annotations().size());
+        assertEquals(Visible.class.descriptorString(), test0topAnn.annotations().get(0).annotation().className().stringValue());
+        MethodModel test1 = model.methods().stream().filter(mm -> mm.methodName().equalsString("test1")).findFirst()
+                .orElseThrow();
+        RuntimeInvisibleTypeAnnotationsAttribute test1topAnn = test1.findAttribute(Attributes.runtimeInvisibleTypeAnnotations())
+                .orElseThrow();
+        assertEquals(1, test1topAnn.annotations().size());
+        assertEquals(Invisible.class.descriptorString(),
+                test1topAnn.annotations().get(0).annotation().className().stringValue());
+    }
+
+    @Test
     public void testGenericField() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
