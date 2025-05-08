@@ -2,25 +2,32 @@ package io.quarkus.gizmo2;
 
 import static java.lang.constant.ConstantDescs.*;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
+import io.smallrye.common.constraint.Assert;
 
 /**
  * A type variable on a class, interface, or method.
  */
 public sealed abstract class TypeVariable implements GenericTyped {
+    // these fields contribute to equality
     private final String name;
     private final Optional<GenericType.OfThrows> firstBound;
     private final List<GenericType.OfThrows> otherBounds;
@@ -98,48 +105,109 @@ public sealed abstract class TypeVariable implements GenericTyped {
         return name;
     }
 
+    /**
+     * {@return the generic type corresponding to this type variable (not {@code null})}
+     */
     public GenericType.OfTypeVariable genericType() {
         return GenericType.ofTypeVariable(this);
     }
 
+    /**
+     * {@return the type of this type variable, which is equal to its erasure (not {@code null})}
+     */
     public ClassDesc type() {
-        return genericType.desc();
+        return erasure();
     }
 
-    List<Annotation> visible() {
-        return visible;
-    }
-
-    List<Annotation> invisible() {
-        return invisible;
-    }
-
+    /**
+     * {@return {@code true} if this type variable is visible throughout the given class, or {@code false} if it is not}
+     */
     public abstract boolean visibleIn(ClassDesc desc);
 
+    /**
+     * {@return {@code true} if this type variable is visible throughout the given method, or {@code false} if it is not}
+     */
     public abstract boolean visibleIn(MethodDesc desc);
 
+    /**
+     * {@return {@code true} if this type variable is visible throughout the given constructor, or {@code false} if it is not}
+     */
     public abstract boolean visibleIn(ConstructorDesc desc);
 
+    /**
+     * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+     */
     public final boolean equals(final Object obj) {
         return obj instanceof TypeVariable tv && equals(tv);
     }
 
+    /**
+     * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+     */
     public boolean equals(final TypeVariable other) {
-        return other != null && name.equals(other.name) && otherBounds.equals(other.otherBounds);
+        return other != null && name.equals(other.name) && firstBound.equals(other.firstBound)
+                && otherBounds.equals(other.otherBounds)
+                && visible.equals(other.visible) && invisible.equals(other.invisible);
     }
 
+    /**
+     * {@return the hash code for this type variable}
+     */
     public int hashCode() {
-        return Objects.hash(name, otherBounds);
+        return Objects.hash(getClass(), name, firstBound, otherBounds, visible, invisible);
     }
 
+    /**
+     * {@return the name of this type variable}
+     */
     public String toString() {
         return name();
     }
 
+    /**
+     * {@return the erased type of this type variable (not {@code null})}
+     */
     public ClassDesc erasure() {
         return otherBounds().stream().findFirst().map(GenericType::desc).orElse(CD_Object);
     }
 
+    @SuppressWarnings("unused") // called from Util reflectively
+    List<TypeAnnotation> computeAnnotations(RetentionPolicy retention, TypeAnnotation.TargetInfo targetInfo,
+            ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
+        List<TypeAnnotation.TypePathComponent> pathSnapshot = List.copyOf(path);
+        for (Annotation annotation : switch (retention) {
+            case RUNTIME -> visible;
+            case CLASS -> invisible;
+            default -> throw Assert.impossibleSwitchCase(retention);
+        }) {
+            list.add(TypeAnnotation.of(targetInfo, pathSnapshot, annotation));
+        }
+        if (firstBound.isPresent() || !otherBounds.isEmpty()) {
+            IntFunction<TypeAnnotation.TargetInfo> targetFn;
+            if (targetInfo instanceof TypeAnnotation.TypeParameterTarget tpt) {
+                targetFn = switch (targetInfo.targetType()) {
+                    case METHOD_TYPE_PARAMETER ->
+                        idx -> TypeAnnotation.TargetInfo.ofMethodTypeParameterBound(tpt.typeParameterIndex(), idx);
+                    case CLASS_TYPE_PARAMETER ->
+                        idx -> TypeAnnotation.TargetInfo.ofClassTypeParameterBound(tpt.typeParameterIndex(), idx);
+                    default -> throw Assert.impossibleSwitchCase(targetInfo.targetType());
+                };
+            } else {
+                throw new IllegalStateException();
+            }
+            firstBound.ifPresent(b -> {
+                b.computeAnnotations(retention, targetFn.apply(0), list, path);
+            });
+            for (int i = 0; i < otherBounds.size(); i++) {
+                otherBounds.get(i).computeAnnotations(retention, targetFn.apply(i + 1), list, path);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * A type variable on a class or interface.
+     */
     public static final class OfType extends TypeVariable {
         private final ClassDesc owner;
 
@@ -173,6 +241,9 @@ public sealed abstract class TypeVariable implements GenericTyped {
             return other instanceof OfType ot && equals(ot);
         }
 
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
         public boolean equals(final OfType other) {
             return this == other || super.equals(other) && owner.equals(other.owner);
         }
@@ -182,6 +253,9 @@ public sealed abstract class TypeVariable implements GenericTyped {
         }
     }
 
+    /**
+     * A type variable on a method.
+     */
     public static final class OfMethod extends TypeVariable {
         private final MethodDesc owner;
 
@@ -216,15 +290,21 @@ public sealed abstract class TypeVariable implements GenericTyped {
             return other instanceof OfMethod om && equals(om);
         }
 
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
         public boolean equals(final OfMethod other) {
             return this == other || super.equals(other) && owner.equals(other.owner);
         }
 
         public int hashCode() {
-            return super.hashCode();
+            return super.hashCode() * 19 + owner.hashCode();
         }
     }
 
+    /**
+     * A type variable on a constructor.
+     */
     public static final class OfConstructor extends TypeVariable {
         private final ConstructorDesc owner;
 
@@ -259,12 +339,15 @@ public sealed abstract class TypeVariable implements GenericTyped {
             return other instanceof OfConstructor om && equals(om);
         }
 
+        /**
+         * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
+         */
         public boolean equals(final OfConstructor other) {
             return this == other || super.equals(other) && owner.equals(other.owner);
         }
 
         public int hashCode() {
-            return super.hashCode();
+            return super.hashCode() * 19 + owner.hashCode();
         }
     }
 }

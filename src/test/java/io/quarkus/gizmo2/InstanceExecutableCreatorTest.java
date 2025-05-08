@@ -21,7 +21,7 @@ public class InstanceExecutableCreatorTest {
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
             cc.implements_(
                     (GenericType.OfClass) GenericType.of(Function.class,
-                            List.of(TypeArgument.ofExact(String.class), TypeArgument.ofExact(String.class))));
+                            List.of(TypeArgument.of(String.class), TypeArgument.of(String.class))));
             cc.constructor(con -> {
                 con.public_();
                 con.body(bc -> {

@@ -15,26 +15,47 @@ import io.smallrye.common.constraint.Assert;
 
 /**
  * An actual type argument for a formal type parameter.
+ * Type arguments differ from {@linkplain GenericType generic types} in that they may have a bound
+ * or may represent the {@linkplain Wildcard wildcard type}.
  */
 public abstract class TypeArgument {
 
     TypeArgument() {
     }
 
-    public static TypeArgument ofExact(final Type type) {
+    /**
+     * {@return a type argument for the given generic reflection type}
+     *
+     * @param type the argument type (must not be {@code null})
+     */
+    public static TypeArgument of(final Type type) {
         if (type instanceof WildcardType wt) {
             return of(wt);
         }
         return ofExact((GenericType.OfReference) GenericType.of(type));
     }
 
-    public static TypeArgument ofExact(final AnnotatedType type) {
+    /**
+     * {@return a type argument for the given annotated generic reflection type}
+     * If the type is an annotated wildcard type, then the type argument will be a wildcard type
+     * with any annotations attached to the given type.
+     * Otherwise, the result will be an exact type argument whose {@linkplain OfExact#bound() bound type}
+     * will have any annotations attached to the given type.
+     *
+     * @param type the argument type (must not be {@code null})
+     */
+    public static TypeArgument of(final AnnotatedType type) {
         if (type instanceof AnnotatedWildcardType wt) {
             return of(wt);
         }
         return ofExact((GenericType.OfReference) GenericType.of(type));
     }
 
+    /**
+     * {@return a type argument for the given reflection wildcard type}
+     *
+     * @param type the argument type (must not be {@code null})
+     */
     public static OfAnnotated of(final WildcardType type) {
         List<Type> ub = List.of(type.getUpperBounds());
         List<Type> lb = List.of(type.getLowerBounds());
@@ -47,6 +68,11 @@ public abstract class TypeArgument {
         }
     }
 
+    /**
+     * {@return a type argument for the given annotated reflection wildcard type}
+     *
+     * @param type the argument type (must not be {@code null})
+     */
     public static OfAnnotated of(final AnnotatedWildcardType type) {
         List<AnnotatedType> aub = List.of(type.getAnnotatedUpperBounds());
         List<AnnotatedType> alb = List.of(type.getAnnotatedLowerBounds());
@@ -59,29 +85,25 @@ public abstract class TypeArgument {
         return ofExtends((GenericType.OfReference) GenericType.of(aub.get(0))).withAnnotations(AnnotatableCreator.from(type));
     }
 
-    public abstract boolean hasVisibleAnnotations();
-
-    public abstract boolean hasInvisibleAnnotations();
-
-    public final boolean hasAnnotations() {
-        return hasVisibleAnnotations() || hasInvisibleAnnotations();
-    }
-
-    public abstract StringBuilder toString(StringBuilder b);
-
-    public String toString() {
-        return toString(new StringBuilder()).toString();
-    }
-
-    public static TypeArgument.OfExact ofExact(GenericType.OfReference bound) {
-        Assert.checkNotNullParam("bound", bound);
-        OfExact ofExact = bound.exactArg;
+    /**
+     * {@return a type argument representing exactly the given type}
+     *
+     * @param type the argument type (must not be {@code null})
+     */
+    public static TypeArgument.OfExact ofExact(GenericType.OfReference type) {
+        Assert.checkNotNullParam("type", type);
+        OfExact ofExact = type.exactArg;
         if (ofExact == null) {
-            ofExact = bound.exactArg = new OfExact(bound);
+            ofExact = type.exactArg = new OfExact(type);
         }
         return ofExact;
     }
 
+    /**
+     * {@return a type argument representing the given covariant bound}
+     *
+     * @param bound the covariant bound (must not be {@code null})
+     */
     public static TypeArgument.OfExtends ofExtends(GenericType.OfReference bound) {
         Assert.checkNotNullParam("bound", bound);
         OfExtends ofExtends = bound.extendsArg;
@@ -91,6 +113,11 @@ public abstract class TypeArgument {
         return ofExtends;
     }
 
+    /**
+     * {@return a type argument representing the given contravariant bound}
+     *
+     * @param bound the contravariant bound (must not be {@code null})
+     */
     public static TypeArgument.OfSuper ofSuper(GenericType.OfReference bound) {
         Assert.checkNotNullParam("bound", bound);
         OfSuper ofSuper = bound.superArg;
@@ -100,14 +127,58 @@ public abstract class TypeArgument {
         return ofSuper;
     }
 
+    /**
+     * {@return a type argument representing the wildcard type}
+     */
     public static Wildcard ofWildcard() {
         return Wildcard.instance;
     }
 
+    /**
+     * {@return {@code true} if runtime-visible type annotations are present, or {@code false} otherwise}
+     */
+    public abstract boolean hasVisibleAnnotations();
+
+    /**
+     * {@return {@code true} if runtime-invisible type annotations are present, or {@code false} otherwise}
+     */
+    public abstract boolean hasInvisibleAnnotations();
+
+    /**
+     * {@return {@code true} if any type annotations are present, or {@code false} otherwise}
+     */
+    public final boolean hasAnnotations() {
+        return hasVisibleAnnotations() || hasInvisibleAnnotations();
+    }
+
+    /**
+     * Append the string representation of this type argument to the given builder, and return it.
+     *
+     * @param b the string builder (must not be {@code null})
+     * @return the same string builder (not {@code null})
+     */
+    public abstract StringBuilder toString(StringBuilder b);
+
+    /**
+     * {@return the string representation of this type argument}
+     */
+    public String toString() {
+        return toString(new StringBuilder()).toString();
+    }
+
+    /**
+     * A type argument that has a bound.
+     */
     public sealed interface OfBounded permits OfExtends, OfSuper, OfExact {
+        /**
+         * {@return the bound of this type argument (not {@code null})}
+         */
         GenericType.OfReference bound();
     }
 
+    /**
+     * A type argument that may be annotated.
+     */
     public static abstract class OfAnnotated extends TypeArgument {
         final List<Annotation> visible;
         final List<Annotation> invisible;
@@ -137,16 +208,32 @@ public abstract class TypeArgument {
             return !invisible.isEmpty();
         }
 
+        /**
+         * {@return a copy of this type argument with annotations defined by the given builder}
+         *
+         * @param builder the annotation builder (must not be {@code null})
+         */
         public OfAnnotated withAnnotations(Consumer<AnnotatableCreator> builder) {
             TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl(visible, invisible);
             builder.accept(tac);
             return copy(tac.visible(), tac.invisible());
         }
 
+        /**
+         * {@return a copy of this type argument with the given annotation}
+         *
+         * @param annotationType the annotation type
+         */
         public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType) {
             return withAnnotations(ac -> ac.withAnnotation(annotationType));
         }
 
+        /**
+         * {@return a copy of this type argument with the given annotation}
+         *
+         * @param annotationType the annotation type
+         * @param builder the builder for the single annotation (must not be {@code null})
+         */
         public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType,
                 final Consumer<AnnotationCreator<A>> builder) {
             return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
@@ -163,6 +250,9 @@ public abstract class TypeArgument {
         }
     }
 
+    /**
+     * A bound type argument with a covariant ("extends") bound.
+     */
     public static final class OfExtends extends OfAnnotated implements OfBounded {
         private final GenericType.OfReference bound;
 
@@ -205,6 +295,9 @@ public abstract class TypeArgument {
         }
     }
 
+    /**
+     * A bound type argument with an exact bound.
+     */
     public static final class OfExact extends TypeArgument implements OfBounded {
         private final GenericType.OfReference bound;
 
@@ -229,6 +322,9 @@ public abstract class TypeArgument {
         }
     }
 
+    /**
+     * A bound type argument with a contravariant ("super") bound.
+     */
     public static final class OfSuper extends OfAnnotated implements OfBounded {
         private final GenericType.OfReference bound;
 
@@ -271,6 +367,9 @@ public abstract class TypeArgument {
         }
     }
 
+    /**
+     * A wildcard type argument.
+     */
     public static final class Wildcard extends OfAnnotated {
         private Wildcard() {
             super(List.of(), List.of());
