@@ -241,4 +241,82 @@ public class ArraysTest {
         });
         assertEquals(expectedResult, tcm.staticMethod("returnInt", IntSupplier.class).getAsInt());
     }
+
+    @Test
+    public void testComputedIndex() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.ComputedIndex", cc -> {
+            MethodDesc one = cc.staticMethod("one", mc -> {
+                // static int one() {
+                //     return 1;
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(1);
+                });
+            });
+            MethodDesc two = cc.staticMethod("two", mc -> {
+                // static int two() {
+                //     return 2;
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(2);
+                });
+            });
+            cc.staticMethod("runTest", mc -> {
+                // static Object runTest() {
+                //    String[] arr = new String[] { "foo", "bar", "baz", "quux" };
+                //    return arr[one() + two()];
+                // }
+                mc.returning(Object.class); // always `String`
+                mc.body(bc -> {
+                    LocalVar arr = bc.define("arr", bc.newArray(String.class, Const.of("foo"),
+                            Const.of("bar"), Const.of("baz"), Const.of("quux")));
+                    bc.return_(arr.elem(bc.add(bc.invokeStatic(one), bc.invokeStatic(two))));
+                });
+            });
+        });
+        assertEquals("quux", tcm.staticMethod("runTest", Supplier.class).get());
+    }
+
+    @Test
+    public void testMultipleComputedIndices() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.MultipleComputedIndices", cc -> {
+            MethodDesc two = cc.staticMethod("two", mc -> {
+                // static int two() {
+                //     return 2;
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(2);
+                });
+            });
+            MethodDesc three = cc.staticMethod("three", mc -> {
+                // static int three() {
+                //     return 3;
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(3);
+                });
+            });
+            cc.staticMethod("runTest", mc -> {
+                // static int runTest() {
+                //    int[] arr = new int[] { 1, 2, 3, 4, 5 };
+                //    return arr[two()] + arr[three()];
+                // }
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    LocalVar arr = bc.define("arr", bc.newArray(int.class, Const.of(1),
+                            Const.of(2), Const.of(3), Const.of(4), Const.of(5)));
+                    bc.return_(bc.add(arr.elem(bc.invokeStatic(two)), arr.elem(bc.invokeStatic(three))));
+                });
+            });
+        });
+        assertEquals(7, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+    }
 }
