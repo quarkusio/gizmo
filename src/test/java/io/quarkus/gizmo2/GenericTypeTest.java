@@ -389,4 +389,26 @@ public final class GenericTypeTest {
         SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
         assertEquals("Ljava/lang/Object;Ljava/util/List<+Ljava/lang/String;>;", sa.signature().stringValue());
     }
+
+    @Test
+    public void testGenericReceiver() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericReceiver", zc -> {
+            zc.typeParameter("T", tvc -> {
+                tvc.withOtherBounds(List.of(GenericType.ofClass(CharSequence.class)));
+            });
+            zc.method("test0", mc -> {
+                mc.returning(zc.genericType());
+                mc.body(b0 -> b0.return_(zc.this_()));
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("<T::Ljava/lang/CharSequence;>Ljava/lang/Object;", sa.signature().stringValue());
+        MethodModel test0 = model.methods().stream().filter(mm -> mm.methodName().equalsString("test0")).findFirst()
+                .orElseThrow();
+        assertEquals("()Lio/quarkus/gizmo2/TestGenericReceiver<TT;>;",
+                test0.findAttribute(Attributes.signature()).orElseThrow().signature().stringValue());
+    }
 }

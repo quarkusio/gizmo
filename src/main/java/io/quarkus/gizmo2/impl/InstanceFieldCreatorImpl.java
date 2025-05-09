@@ -32,8 +32,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         checkOneInit();
         initializer = (b0 -> {
             FieldDesc desc = desc();
-            // todo: replace ThisExpr from a shared instance on TypeCreator
-            b0.set(new ThisExpr(owner()).field(desc), b0.blockExpr(desc.type(), init));
+            b0.set(tc.this_().field(desc), b0.blockExpr(desc.type(), init));
         });
     }
 
@@ -46,8 +45,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
     void accept(final Consumer<InstanceFieldCreator> builder) {
         builder.accept(this);
         if (initial != null) {
-            // todo: replace ThisExpr from a shared instance on TypeCreator
-            tc.instancePreinitializer(b0 -> b0.set(new ThisExpr(owner()).field(desc()), initial));
+            tc.instancePreinitializer(b0 -> b0.set(tc.this_().field(desc()), initial));
         } else if (initializer != null) {
             tc.instanceInitializer(initializer);
         }
