@@ -257,7 +257,24 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         if ((flags & AccessFlag.STATIC.mask()) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
-            // todo: typeCreator.genericType()
+            GenericType.OfClass genericType = typeCreator.genericType();
+            if (!genericType.isRaw()) {
+                cb.localVariableType(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel());
+            }
+            if (genericType.hasVisibleAnnotations()) {
+                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                        visible, new ArrayDeque<>());
+                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
+                        visible, new ArrayDeque<>());
+            }
+            if (genericType.hasInvisibleAnnotations()) {
+                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                        invisible, new ArrayDeque<>());
+                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
+                        invisible, new ArrayDeque<>());
+            }
         }
         for (final ParamVarImpl param : params) {
             if (param != null) {

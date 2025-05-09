@@ -48,6 +48,7 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -94,8 +95,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
+    private GenericType.OfClass genericType;
     private final ClassOutput output;
-    private final ThisExpr this_;
+    private ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
     private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
     private List<GenericType.OfClass> interfaceSigs = List.of();
@@ -121,7 +123,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb, final int flags) {
         this.type = type;
-        this_ = new ThisExpr(type);
         this.output = output;
         this.zb = zb;
         this.flags = flags;
@@ -184,6 +185,22 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     public ClassDesc type() {
         return type;
+    }
+
+    public GenericType.OfClass genericType() {
+        GenericType.OfClass genericType = this.genericType;
+        if (genericType == null) {
+            genericType = GenericType.ofClass(type());
+            if (!typeVariables.isEmpty()) {
+                genericType = genericType.withArguments(typeVariables.stream()
+                        .map(TypeVariable::genericType)
+                        .map(TypeArgument::ofExact)
+                        .map(TypeArgument.class::cast)
+                        .toList());
+            }
+            this.genericType = genericType;
+        }
+        return genericType;
     }
 
     ClassSignature computeSignature() {
@@ -265,6 +282,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public This this_() {
+        ThisExpr this_ = this.this_;
+        if (this_ == null) {
+            this_ = this.this_ = new ThisExpr(genericType());
+        }
         return this_;
     }
 
@@ -485,6 +506,9 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
+        if (genericType != null) {
+            throw new IllegalStateException("Type has already been established");
+        }
         TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
         builder.accept(creator);
         TypeVariable.OfType var = creator.forType(type());

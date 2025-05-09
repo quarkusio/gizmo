@@ -108,12 +108,36 @@ public abstract class GenericType {
     /**
      * {@return a generic type for the given class or interface type}
      *
+     * @param desc the descriptor for the class or interface (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static GenericType.OfClass ofClass(ClassDesc desc) {
+        if (!desc.isClassOrInterface()) {
+            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(desc));
+        }
+        return (OfClass) of(desc);
+    }
+
+    /**
+     * {@return a generic type for the given class or interface type}
+     *
      * @param type the class object for the class or interface (must not be {@code null})
      * @param typeArguments the type arguments for the type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
     public static GenericType.OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
         return ofClass(type).withArguments(typeArguments);
+    }
+
+    /**
+     * {@return a generic type for the given class or interface type}
+     *
+     * @param desc the descriptor for the class or interface (must not be {@code null})
+     * @param typeArguments the type arguments for the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static GenericType.OfClass ofClass(ClassDesc desc, List<TypeArgument> typeArguments) {
+        return ofClass(desc).withArguments(typeArguments);
     }
 
     /**
