@@ -108,6 +108,14 @@ public class TestClassMaker implements ClassOutput {
             this.desc = desc;
         }
 
+        public ClassModel getModel() {
+            try {
+                return cl.loadClassModel(desc);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("Class was not defined");
+            }
+        }
+
         public Class<?> get() {
             try {
                 return cl.loadClass(desc);
@@ -213,6 +221,22 @@ public class TestClassMaker implements ClassOutput {
         private TestClassLoader() {
             super("[TEST]", TestClassMaker.class.getClassLoader());
             cf = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(this::getClassInfo));
+        }
+
+        public ClassModel loadClassModel(final ClassDesc desc) throws ClassNotFoundException {
+            if (desc.isClassOrInterface()) {
+                return loadClassModel(Util.binaryName(desc));
+            } else {
+                throw new IllegalArgumentException("Descriptor must be class or interface");
+            }
+        }
+
+        public ClassModel loadClassModel(final String name) throws ClassNotFoundException {
+            byte[] bytes = classes.get(name);
+            if (bytes == null) {
+                throw new ClassNotFoundException(name);
+            }
+            return cf.parse(bytes);
         }
 
         public Class<?> loadClass(final String name) throws ClassNotFoundException {

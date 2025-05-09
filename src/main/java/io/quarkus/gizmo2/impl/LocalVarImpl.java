@@ -1,10 +1,17 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.Label;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
@@ -13,11 +20,13 @@ import io.quarkus.gizmo2.impl.constant.IntBasedConst;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
-    private final ClassDesc type;
+    private final GenericType type;
     private final BlockCreatorImpl owner;
     private int slot = -1;
+    private Label startScope;
+    private Label endScope;
 
-    LocalVarImpl(final BlockCreatorImpl owner, final String name, final ClassDesc type) {
+    LocalVarImpl(final BlockCreatorImpl owner, final String name, final GenericType type) {
         this.name = name;
         this.type = type;
         this.owner = owner;
@@ -36,6 +45,10 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     public ClassDesc type() {
+        return type.desc();
+    }
+
+    public GenericType genericType() {
         return type;
     }
 
@@ -69,12 +82,26 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 int slot = cb.allocateLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()));
-                // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-                cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
                 if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
                     throw new IllegalStateException("Local variable reallocated into a different slot");
                 }
+                // we reserve the slot for the full remainder of the block to avoid control-flow analysis
+                startScope = cb.newBoundLabel();
+                endScope = block.endLabel();
+                cb.localVariable(slot, name, type.desc(), startScope, endScope);
+                if (!type.isRaw()) {
+                    cb.localVariableType(slot, name, Util.signatureOf(type), startScope, endScope);
+                }
                 LocalVarImpl.this.slot = slot;
+            }
+
+            public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
+                if (type.hasAnnotations(retention)) {
+                    Util.computeAnnotations(type, retention, TypeAnnotation.TargetInfo.ofLocalVariable(
+                            List.of(
+                                    TypeAnnotation.LocalVarTargetInfo.of(startScope, endScope, slot))),
+                            annotations, new ArrayDeque<>());
+                }
             }
         };
     }

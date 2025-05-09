@@ -5,9 +5,9 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.Const;
-import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTyped;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.FieldCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -15,7 +15,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a field.
  */
-public sealed interface FieldCreator extends MemberCreator, SimpleTyped
+public sealed interface FieldCreator extends MemberCreator, GenericTyped
         permits InstanceFieldCreator, StaticFieldCreator, FieldCreatorImpl {
     ClassDesc type();
 
@@ -25,11 +25,11 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
     FieldDesc desc();
 
     /**
-     * Change the type of the field to the given generic type.
+     * Change the type of the field to the given type.
      *
-     * @param type the class type signature (must not be {@code null})
+     * @param type the generic type (must not be {@code null})
      */
-    void withTypeSignature(Signature type);
+    void withType(GenericType type);
 
     /**
      * Change the type of the field to the given type.

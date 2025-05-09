@@ -4,12 +4,15 @@ import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_VarHandle;
 import static java.lang.constant.ConstantDescs.CD_int;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ArrayList;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
@@ -184,6 +187,9 @@ public abstract non-sealed class Item implements Expr {
     }
 
     public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);
+
+    public void writeAnnotations(final RetentionPolicy retention, ArrayList<TypeAnnotation> annotations) {
+    }
 
     /**
      * {@return true if this node may fall through to the next node}

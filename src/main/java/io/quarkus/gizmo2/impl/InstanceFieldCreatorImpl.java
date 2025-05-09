@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
@@ -31,8 +32,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         checkOneInit();
         initializer = (b0 -> {
             FieldDesc desc = desc();
-            // todo: replace ThisExpr from a shared instance on TypeCreator
-            b0.set(new ThisExpr(owner()).field(desc), b0.blockExpr(desc.type(), init));
+            b0.set(tc.this_().field(desc), b0.blockExpr(desc.type(), init));
         });
     }
 
@@ -45,15 +45,16 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
     void accept(final Consumer<InstanceFieldCreator> builder) {
         builder.accept(this);
         if (initial != null) {
-            // todo: replace ThisExpr from a shared instance on TypeCreator
-            tc.instancePreinitializer(b0 -> b0.set(new ThisExpr(owner()).field(desc()), initial));
+            tc.instancePreinitializer(b0 -> b0.set(tc.this_().field(desc()), initial));
         } else if (initializer != null) {
             tc.instanceInitializer(initializer);
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(flags);
+            fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
             addVisible(fb);
             addInvisible(fb);
+            addTypeAnnotations(fb);
         });
     }
 }

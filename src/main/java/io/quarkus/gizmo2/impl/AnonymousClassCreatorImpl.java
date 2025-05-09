@@ -43,7 +43,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
                 superArgs.add(cc.parameter("p" + i, ctorType.parameterType(i)));
             }
         });
-        this_ = new ThisExpr(type);
+        this_ = new ThisExpr(genericType());
     }
 
     public Var capture(final String name, final Expr value) {

@@ -1,15 +1,15 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -32,7 +32,7 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         super.withFlag(flag);
     }
 
-    public void extends_(final Signature.ClassTypeSig genericType) {
+    public void extends_(final GenericType.OfClass genericType) {
         super.extends_(genericType);
     }
 

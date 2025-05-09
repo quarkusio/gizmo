@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.InterfaceCreatorImpl;
 /**
  * A creator for an interface type.
  */
-public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCreatorImpl {
+public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedCreator permits InterfaceCreatorImpl {
 
     /**
      * Add a default method to the interface.
