@@ -20,10 +20,6 @@ final class InstanceOf extends Item {
         return ConstantDescs.CD_boolean;
     }
 
-    public boolean bound() {
-        return input.bound();
-    }
-
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return input.process(node.prev(), op);
     }

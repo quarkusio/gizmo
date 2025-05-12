@@ -24,10 +24,6 @@ final class PrimitiveCast extends Item {
         return toType;
     }
 
-    public boolean bound() {
-        return a.bound();
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.conversion(Util.actualKindOf(a.typeKind()), TypeKind.from(toType));
     }

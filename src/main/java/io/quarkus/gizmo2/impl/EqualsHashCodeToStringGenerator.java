@@ -97,8 +97,9 @@ public class EqualsHashCodeToStringGenerator {
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
-                    Expr value = b0.get(cc.this_().field(field));
-                    Expr hash = field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value);
+                    LocalVar value = b0.define("value", b0.get(cc.this_().field(field)));
+                    LocalVar hash = b0.define("hash",
+                            field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value));
                     b0.set(result, b0.add(b0.mul(Const.of(31), result), hash));
                 }
 

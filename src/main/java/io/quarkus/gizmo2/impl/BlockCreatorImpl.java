@@ -443,7 +443,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         switch (a.typeKind().asLoadable()) {
             case INT, REFERENCE -> {
                 // normal relZero
-                return addItemIfBound(new RelZero(a, kind));
+                return addItem(new RelZero(a, kind));
             }
             case LONG -> {
                 // wrap with cmp
@@ -466,7 +466,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 } else if (b instanceof IntConst bc && bc.intValue() == 0) {
                     return relZero(a, kind);
                 } else {
-                    return addItemIfBound(new Rel(a, b, kind));
+                    return addItem(new Rel(a, b, kind));
                 }
             }
             case LONG -> {
@@ -483,7 +483,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 } else if (b instanceof NullConst) {
                     return relZero(a, kind);
                 } else {
-                    return addItemIfBound(new Rel(a, b, kind));
+                    return addItem(new Rel(a, b, kind));
                 }
             }
             default -> throw new IllegalStateException();
@@ -687,8 +687,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (toType.isPrimitive()) {
             throw new IllegalArgumentException("Cannot unsafely cast to a primitive type");
         }
-        UnsafeCast unsafeCast = new UnsafeCast(a, toType);
-        return unsafeCast.bound() ? addItem(unsafeCast) : unsafeCast;
+        return addItem(new UnsafeCast(a, toType));
     }
 
     public Expr instanceOf(final Expr obj, final ClassDesc type) {
@@ -1300,13 +1299,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     void postInit(final List<Consumer<BlockCreator>> postInits) {
         this.postInits = postInits;
-    }
-
-    <I extends Item> I addItemIfBound(I item) {
-        if (item.bound()) {
-            addItem(item);
-        }
-        return item;
     }
 
     <I extends Item> I addItem(I item) {

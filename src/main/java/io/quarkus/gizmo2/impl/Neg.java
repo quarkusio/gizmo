@@ -28,10 +28,6 @@ final class Neg extends Item {
         return a.type();
     }
 
-    public boolean bound() {
-        return a.bound();
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         switch (typeKind().asLoadable()) {
             case INT -> cb.ineg();

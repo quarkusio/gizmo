@@ -11,11 +11,6 @@ final class UnsafeCast extends Cast {
         super(a, toType);
     }
 
-    public boolean bound() {
-        // has side effects
-        return a.bound();
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         // nothing
     }
