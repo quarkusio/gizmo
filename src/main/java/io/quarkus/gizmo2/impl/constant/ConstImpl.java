@@ -254,7 +254,6 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
 
     public static ConstImpl of(int value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
-            case BOOLEAN -> of(value != 0);
             case INT -> of(value);
             case LONG -> of((long) value);
             case FLOAT -> of((float) value);
@@ -265,34 +264,31 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
 
     public static ConstImpl of(long value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
-            case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
             case LONG -> of(value);
             case FLOAT -> of((float) value);
             case DOUBLE -> of((double) value);
-            default -> throw new IllegalArgumentException("Cannot cast integer constant to " + typeKind);
+            default -> throw new IllegalArgumentException("Cannot cast long constant to " + typeKind);
         };
     }
 
     public static ConstImpl of(float value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
-            case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
             case LONG -> of((long) value);
             case FLOAT -> of(value);
             case DOUBLE -> of((double) value);
-            default -> throw new IllegalArgumentException("Cannot cast integer constant to " + typeKind);
+            default -> throw new IllegalArgumentException("Cannot cast float constant to " + typeKind);
         };
     }
 
     public static ConstImpl of(double value, TypeKind typeKind) {
         return switch (typeKind.asLoadable()) {
-            case BOOLEAN -> of(value != 0);
             case INT -> of((int) value);
             case LONG -> of((long) value);
             case FLOAT -> of((float) value);
             case DOUBLE -> of(value);
-            default -> throw new IllegalArgumentException("Cannot cast integer constant to " + typeKind);
+            default -> throw new IllegalArgumentException("Cannot cast double constant to " + typeKind);
         };
     }
 
