@@ -2,7 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 import static java.lang.constant.ConstantDescs.CD_VarHandle;
-import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -217,7 +216,7 @@ public abstract non-sealed class Item implements Expr {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new ArrayDeref(type().componentType(), index);
+        return new ArrayDeref(this, type().componentType(), index);
     }
 
     public Expr length() {
@@ -348,105 +347,6 @@ public abstract non-sealed class Item implements Expr {
 
         public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
             cb.getfield(owner(), name(), type());
-        }
-    }
-
-    public final class ArrayDeref extends AssignableImpl {
-        private final ClassDesc componentType;
-        private final Item index;
-        private boolean bound;
-
-        public ArrayDeref(final ClassDesc componentType, final Expr index) {
-            this.componentType = componentType;
-            this.index = (Item) index;
-        }
-
-        protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-            return Item.this.process(index.process(node.prev(), op), op);
-        }
-
-        public Item array() {
-            return Item.this;
-        }
-
-        public Item index() {
-            return index;
-        }
-
-        Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
-            if (!mode.validForReads()) {
-                throw new IllegalArgumentException("Invalid mode " + mode);
-            }
-            return switch (mode) {
-                case AsDeclared, Plain -> asBound();
-                default -> new Item() {
-                    public String itemName() {
-                        return "ArrayDeref$Get" + super.itemName();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofArrayVarHandle(Item.this.type())
-                                .process(Item.this.process(index.process(node.prev(), op), op), op);
-                    }
-
-                    public ClassDesc type() {
-                        return componentType;
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Opaque -> "getOpaque";
-                            case Acquire -> "getAcquire";
-                            case Volatile -> "getVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                type(),
-                                Item.this.type(),
-                                CD_int));
-                    }
-                };
-            };
-        }
-
-        Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-            return switch (mode) {
-                case AsDeclared, Plain -> new ArrayStore(Item.this, index, value, componentType);
-                default -> new Item() {
-                    public String itemName() {
-                        return "ArrayDeref$SetVolatile" + super.itemName();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofArrayVarHandle(Item.this.type())
-                                .process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, "setVolatile", MethodTypeDesc.of(
-                                type(),
-                                Item.this.type(),
-                                CD_int));
-                    }
-                };
-            };
-        }
-
-        public ClassDesc type() {
-            return componentType;
-        }
-
-        protected void bind() {
-            if (Item.this.bound() || index.bound()) {
-                bound = true;
-            }
-        }
-
-        public boolean bound() {
-            return bound;
-        }
-
-        public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-            cb.arrayLoad(Util.actualKindOf(typeKind()));
         }
     }
 }
