@@ -1054,15 +1054,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     void monitorExit(final Item monitor) {
-        addItem(new Item() {
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return monitor.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.monitorexit();
-            }
-        });
+        addItem(new MonitorExit(monitor));
     }
 
     public void synchronized_(final Expr monitor, final Consumer<BlockCreator> body) {
