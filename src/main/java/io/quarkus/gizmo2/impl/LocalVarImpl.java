@@ -15,7 +15,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
     private final ClassDesc type;
     private final BlockCreatorImpl owner;
-    private int slot = -1;
+    int slot = -1;
 
     LocalVarImpl(final BlockCreatorImpl owner, final String name, final ClassDesc type) {
         this.name = name;
@@ -62,21 +62,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     Item allocator() {
-        return new Item() {
-            public String itemName() {
-                return "LocalVar$Allocator";
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                int slot = cb.allocateLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()));
-                // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-                cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
-                if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
-                    throw new IllegalStateException("Local variable reallocated into a different slot");
-                }
-                LocalVarImpl.this.slot = slot;
-            }
-        };
+        return new LocalVarAllocator(this);
     }
 
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
