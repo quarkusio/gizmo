@@ -224,33 +224,7 @@ public abstract non-sealed class Item implements Expr {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new Item() {
-            boolean bound;
-
-            @Override
-            public ClassDesc type() {
-                return ConstantDescs.CD_int;
-            }
-
-            protected void bind() {
-                if (Item.this.bound()) {
-                    bound = true;
-                }
-            }
-
-            @Override
-            public boolean bound() {
-                return bound;
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return Item.this.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.arraylength();
-            }
-        };
+        return new ArrayLength(this);
     }
 
     public InstanceFieldVar field(final FieldDesc desc) {
