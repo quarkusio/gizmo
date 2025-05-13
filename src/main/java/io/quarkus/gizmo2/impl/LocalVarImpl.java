@@ -9,7 +9,6 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.impl.constant.IntBasedConst;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
@@ -88,16 +87,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
     void emitInc(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.addItem(new Item() {
-                public String itemName() {
-                    return "LocalVar$Inc";
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    checkSlot();
-                    cb.iinc(slot, ((IntBasedConst) amount).intValue());
-                }
-            });
+            block.addItem(new LocalVarIncrement(this, amount));
         } else {
             super.emitInc(block, amount);
         }
