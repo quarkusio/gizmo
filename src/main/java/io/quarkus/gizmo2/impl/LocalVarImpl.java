@@ -1,7 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
@@ -69,20 +68,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-        return new Item() {
-            public String itemName() {
-                return "LocalVar$Set";
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return value.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                checkSlot();
-                cb.storeLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()), slot);
-            }
-        };
+        return new LocalVarSet(this, value);
     }
 
     void emitInc(final BlockCreatorImpl block, final Const amount) {
