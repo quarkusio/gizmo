@@ -49,7 +49,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         cb.loadLocal(Util.actualKindOf(typeKind()), slot);
     }
 
-    private void checkSlot() {
+    void checkSlot() {
         if (slot == -1) {
             if (creationSite == null) {
                 throw new IllegalStateException("Local variable '" + name + "' was not allocated (check if it was"
@@ -105,18 +105,9 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
     void emitDec(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.addItem(new Item() {
-                public String itemName() {
-                    return "LocalVar$Dec";
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    checkSlot();
-                    cb.iinc(slot, -((IntBasedConst) amount).intValue());
-                }
-            });
+            block.addItem(new LocalVarDecrement(this, amount));
         } else {
-            super.emitInc(block, amount);
+            super.emitDec(block, amount);
         }
     }
 }
