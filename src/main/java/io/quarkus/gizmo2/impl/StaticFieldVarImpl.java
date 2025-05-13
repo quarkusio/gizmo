@@ -33,32 +33,9 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
     }
 
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
-        if (mode == MemoryOrder.AsDeclared) {
-            return asBound();
-        }
-        return new Item() {
-            public ClassDesc type() {
-                return StaticFieldVarImpl.this.type();
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return ConstImpl.ofFieldVarHandle(desc).forEachDependency(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.invokevirtual(CD_VarHandle, switch (mode) {
-                    case Plain -> "get";
-                    case Opaque -> "getOpaque";
-                    case Acquire -> "getAcquire";
-                    case Volatile -> "getVolatile";
-                    default -> throw new IllegalStateException();
-                }, MethodTypeDesc.of(
-                        type()));
-            }
-
-            public String itemName() {
-                return "StaticFieldVar:get";
-            }
+        return switch (mode) {
+            case AsDeclared -> asBound();
+            default -> new StaticFieldGetViaHandle(this, mode);
         };
     }
 
@@ -75,20 +52,14 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
                 switch (mode) {
-                    case AsDeclared -> {
-                        cb.putstatic(owner(), name(), desc().type());
-                    }
-                    default -> {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Plain -> "set";
-                            case Opaque -> "setOpaque";
-                            case Release -> "setRelease";
-                            case Volatile -> "setVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                CD_void,
-                                type()));
-                    }
+                    case AsDeclared -> cb.putstatic(owner(), name(), desc().type());
+                    default -> cb.invokevirtual(CD_VarHandle, switch (mode) {
+                        case Plain -> "set";
+                        case Opaque -> "setOpaque";
+                        case Release -> "setRelease";
+                        case Volatile -> "setVolatile";
+                        default -> throw new IllegalStateException();
+                    }, MethodTypeDesc.of(CD_void, type()));
                 }
             }
 

@@ -1,0 +1,39 @@
+package io.quarkus.gizmo2.impl;
+
+import static java.lang.constant.ConstantDescs.*;
+
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+import java.util.function.BiFunction;
+
+import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.MemoryOrder;
+import io.quarkus.gizmo2.impl.constant.ConstImpl;
+
+final class StaticFieldGetViaHandle extends Item {
+    private final StaticFieldVarImpl staticFieldVar;
+    private final MemoryOrder mode;
+
+    StaticFieldGetViaHandle(final StaticFieldVarImpl staticFieldVar, final MemoryOrder mode) {
+        this.staticFieldVar = staticFieldVar;
+        this.mode = mode;
+    }
+
+    public ClassDesc type() {
+        return staticFieldVar.type();
+    }
+
+    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
+        return ConstImpl.ofFieldVarHandle(staticFieldVar.desc()).forEachDependency(node.prev(), op);
+    }
+
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+        cb.invokevirtual(CD_VarHandle, switch (mode) {
+            case Plain -> "get";
+            case Opaque -> "getOpaque";
+            case Acquire -> "getAcquire";
+            case Volatile -> "getVolatile";
+            default -> throw new IllegalStateException();
+        }, MethodTypeDesc.of(type()));
+    }
+}
