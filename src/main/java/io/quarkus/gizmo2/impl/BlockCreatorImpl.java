@@ -1215,11 +1215,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void line(final int lineNumber) {
-        addItem(new Item() {
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.lineNumber(lineNumber);
-            }
-        });
+        addItem(new LineNumber(lineNumber));
     }
 
     public void printf(final String format, final List<? extends Expr> values) {
