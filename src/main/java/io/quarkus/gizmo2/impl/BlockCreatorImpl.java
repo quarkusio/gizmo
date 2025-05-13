@@ -740,24 +740,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {
-        return addItem(new Item() {
-            protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                node = node.prev();
-                for (int i = args.size() - 1; i >= 0; i--) {
-                    final Item arg = (Item) args.get(i);
-                    node = arg.process(node, op);
-                }
-                return node;
-            }
-
-            public ClassDesc type() {
-                return callSiteDesc.invocationType().returnType();
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.invokedynamic(callSiteDesc);
-            }
-        });
+        return addItem(new InvokeDynamic(args, callSiteDesc));
     }
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
