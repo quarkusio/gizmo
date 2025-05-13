@@ -11,11 +11,6 @@ final class CheckCast extends Cast {
         super(a, toType);
     }
 
-    public boolean bound() {
-        // has side effects
-        return true;
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.checkcast(toType);
     }

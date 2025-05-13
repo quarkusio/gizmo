@@ -112,10 +112,18 @@ public abstract non-sealed class Item implements Expr {
      */
     protected Node insertIfUnbound(Node node) {
         if (!bound()) {
-            return forEachDependency(node.insertNext(this), Item::insertIfUnbound);
+            Node prev = forEachDependency(node.insertNext(this), Item::insertIfUnbound);
+            bind();
+            return prev;
         } else {
             return verify(node);
         }
+    }
+
+    /**
+     * If unbound and non-reusable, set this item's status to "bound".
+     */
+    protected void bind() {
     }
 
     /**
@@ -207,24 +215,32 @@ public abstract non-sealed class Item implements Expr {
 
     public Assignable elem(final Expr index) {
         if (!type().isArray()) {
-            throw new IllegalArgumentException("Value type is not array");
+            throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
         return new ArrayDeref(type().componentType(), index);
     }
 
     public Expr length() {
         if (!type().isArray()) {
-            throw new IllegalArgumentException("Length is only allowed on arrays (expression type is actually " + type() + ")");
+            throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
         return new Item() {
+            boolean bound;
+
             @Override
             public ClassDesc type() {
                 return ConstantDescs.CD_int;
             }
 
+            protected void bind() {
+                if (Item.this.bound()) {
+                    bound = true;
+                }
+            }
+
             @Override
             public boolean bound() {
-                return Item.this.bound();
+                return bound;
             }
 
             protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -264,6 +280,7 @@ public abstract non-sealed class Item implements Expr {
 
     public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
         private final FieldDesc desc;
+        private boolean bound;
 
         private FieldDeref(final FieldDesc desc) {
             this.desc = desc;
@@ -274,7 +291,13 @@ public abstract non-sealed class Item implements Expr {
         }
 
         public boolean bound() {
-            return false;
+            return bound;
+        }
+
+        protected void bind() {
+            if (Item.this.bound()) {
+                bound = true;
+            }
         }
 
         public FieldDesc desc() {
@@ -373,6 +396,7 @@ public abstract non-sealed class Item implements Expr {
     public final class ArrayDeref extends AssignableImpl {
         private final ClassDesc componentType;
         private final Item index;
+        private boolean bound;
 
         public ArrayDeref(final ClassDesc componentType, final Expr index) {
             this.componentType = componentType;
@@ -453,8 +477,14 @@ public abstract non-sealed class Item implements Expr {
             return componentType;
         }
 
+        protected void bind() {
+            if (Item.this.bound() || index.bound()) {
+                bound = true;
+            }
+        }
+
         public boolean bound() {
-            return false;
+            return bound;
         }
 
         public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

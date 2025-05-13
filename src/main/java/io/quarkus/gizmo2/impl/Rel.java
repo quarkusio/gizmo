@@ -47,10 +47,6 @@ final class Rel extends Item {
         return CD_boolean;
     }
 
-    public boolean bound() {
-        return a.bound() || b.bound();
-    }
-
     If.Kind kind() {
         return kind;
     }

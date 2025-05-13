@@ -16,7 +16,8 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     ClassDesc type();
 
     /**
-     * {@return true if the expression is bound to one location, or false if it may be reused many times}
+     * {@return {@code true} if the expression is bound to a single point in the instruction list, or {@code false} otherwise}
+     * Bound expressions may not be used again.
      */
     boolean bound();
 

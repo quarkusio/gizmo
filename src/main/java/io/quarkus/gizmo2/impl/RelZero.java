@@ -36,10 +36,6 @@ final class RelZero extends Item {
         return CD_boolean;
     }
 
-    public boolean bound() {
-        return a.bound();
-    }
-
     If.Kind kind() {
         return kind;
     }

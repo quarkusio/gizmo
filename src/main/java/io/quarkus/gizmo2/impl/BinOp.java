@@ -44,10 +44,6 @@ final class BinOp extends Item {
         return a.type();
     }
 
-    public boolean bound() {
-        return a.bound() || b.bound() || kind == Kind.DIV || kind == Kind.REM;
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         Operation op = kind.opFor(typeKind());
         // we validated op above

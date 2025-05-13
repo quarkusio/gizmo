@@ -35,10 +35,6 @@ final class Cmp extends Item {
         return CD_int;
     }
 
-    public boolean bound() {
-        return a.bound() && b.bound();
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         switch (a.typeKind().asLoadable()) {
             case INT -> kind.intOp.apply(cb);
