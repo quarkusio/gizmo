@@ -1,17 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.CD_VarHandle;
-import static java.lang.constant.ConstantDescs.CD_void;
-
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
-import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public final class StaticFieldVarImpl extends AssignableImpl implements StaticFieldVar {
     private final FieldDesc desc;
@@ -40,32 +34,9 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
     }
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-        return new Item() {
-            protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                if (mode != MemoryOrder.AsDeclared) {
-                    node = ConstImpl.ofStaticFieldVarHandle(desc).process(node.prev(), op);
-                } else {
-                    node = value.process(node.prev(), op);
-                }
-                return node;
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                switch (mode) {
-                    case AsDeclared -> cb.putstatic(owner(), name(), desc().type());
-                    default -> cb.invokevirtual(CD_VarHandle, switch (mode) {
-                        case Plain -> "set";
-                        case Opaque -> "setOpaque";
-                        case Release -> "setRelease";
-                        case Volatile -> "setVolatile";
-                        default -> throw new IllegalStateException();
-                    }, MethodTypeDesc.of(CD_void, type()));
-                }
-            }
-
-            public String itemName() {
-                return "StaticFieldVar:set";
-            }
+        return switch (mode) {
+            case AsDeclared -> new StaticFieldSet(this, value);
+            default -> new StaticFieldSetViaHandle(this, mode, value);
         };
     }
 
