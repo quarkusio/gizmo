@@ -168,7 +168,7 @@ public sealed abstract class TypeVariable implements GenericTyped {
      * {@return the erased type of this type variable (not {@code null})}
      */
     public ClassDesc erasure() {
-        return otherBounds().stream().findFirst().map(GenericType::desc).orElse(CD_Object);
+        return firstBound.map(GenericType::desc).orElse(CD_Object);
     }
 
     @SuppressWarnings("unused") // called from Util reflectively
