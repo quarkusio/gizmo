@@ -73,23 +73,7 @@ public final class ArrayDeref extends AssignableImpl {
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return switch (mode) {
             case AsDeclared, Plain -> new ArrayStore(item, index, value, componentType);
-            default -> new Item() {
-                public String itemName() {
-                    return "ArrayDeref$SetVolatile" + super.itemName();
-                }
-
-                protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                    return ConstImpl.ofArrayVarHandle(item.type())
-                            .process(item.process(index.process(value.process(node.prev(), op), op), op), op);
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.invokevirtual(CD_VarHandle, "setVolatile", MethodTypeDesc.of(
-                            type(),
-                            item.type(),
-                            CD_int));
-                }
-            };
+            default -> new ArrayStoreViaHandle(this, value);
         };
     }
 
