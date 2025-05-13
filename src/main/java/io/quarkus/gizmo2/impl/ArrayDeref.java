@@ -1,15 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
-import static java.lang.constant.ConstantDescs.*;
-
 import java.lang.constant.ClassDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.MemoryOrder;
-import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public final class ArrayDeref extends AssignableImpl {
     private final Item item;
@@ -41,32 +37,7 @@ public final class ArrayDeref extends AssignableImpl {
         }
         return switch (mode) {
             case AsDeclared, Plain -> asBound();
-            default -> new Item() {
-                public String itemName() {
-                    return "ArrayDeref$Get" + super.itemName();
-                }
-
-                protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                    return ConstImpl.ofArrayVarHandle(item.type())
-                            .process(item.process(index.process(node.prev(), op), op), op);
-                }
-
-                public ClassDesc type() {
-                    return componentType;
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.invokevirtual(CD_VarHandle, switch (mode) {
-                        case Opaque -> "getOpaque";
-                        case Acquire -> "getAcquire";
-                        case Volatile -> "getVolatile";
-                        default -> throw new IllegalStateException();
-                    }, MethodTypeDesc.of(
-                            type(),
-                            item.type(),
-                            CD_int));
-                }
-            };
+            default -> new ArrayLoadViaHandle(this, mode);
         };
     }
 
