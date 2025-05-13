@@ -740,24 +740,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {
-        return addItem(new Item() {
-            protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                node = node.prev();
-                for (int i = args.size() - 1; i >= 0; i--) {
-                    final Item arg = (Item) args.get(i);
-                    node = arg.process(node, op);
-                }
-                return node;
-            }
-
-            public ClassDesc type() {
-                return callSiteDesc.invocationType().returnType();
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.invokedynamic(callSiteDesc);
-            }
-        });
+        return addItem(new InvokeDynamic(args, callSiteDesc));
     }
 
     public void forEach(final Expr fn, final BiConsumer<BlockCreator, ? super LocalVar> builder) {
@@ -1050,27 +1033,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     void monitorEnter(final Item monitor) {
-        addItem(new Item() {
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return monitor.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.monitorenter();
-            }
-        });
+        addItem(new MonitorEnter(monitor));
     }
 
     void monitorExit(final Item monitor) {
-        addItem(new Item() {
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return monitor.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.monitorexit();
-            }
-        });
+        addItem(new MonitorExit(monitor));
     }
 
     public void synchronized_(final Expr monitor, final Consumer<BlockCreator> body) {
@@ -1248,11 +1215,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void line(final int lineNumber) {
-        addItem(new Item() {
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.lineNumber(lineNumber);
-            }
-        });
+        addItem(new LineNumber(lineNumber));
     }
 
     public void printf(final String format, final List<? extends Expr> values) {

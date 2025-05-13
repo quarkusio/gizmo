@@ -1,7 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
@@ -9,13 +8,12 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
-import io.quarkus.gizmo2.impl.constant.IntBasedConst;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
     private final ClassDesc type;
     private final BlockCreatorImpl owner;
-    private int slot = -1;
+    int slot = -1;
 
     LocalVarImpl(final BlockCreatorImpl owner, final String name, final ClassDesc type) {
         this.name = name;
@@ -49,7 +47,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         cb.loadLocal(Util.actualKindOf(typeKind()), slot);
     }
 
-    private void checkSlot() {
+    void checkSlot() {
         if (slot == -1) {
             if (creationSite == null) {
                 throw new IllegalStateException("Local variable '" + name + "' was not allocated (check if it was"
@@ -62,21 +60,7 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     Item allocator() {
-        return new Item() {
-            public String itemName() {
-                return "LocalVar$Allocator";
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                int slot = cb.allocateLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()));
-                // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-                cb.localVariable(slot, name, type, cb.newBoundLabel(), block.endLabel());
-                if (LocalVarImpl.this.slot != -1 && slot != LocalVarImpl.this.slot) {
-                    throw new IllegalStateException("Local variable reallocated into a different slot");
-                }
-                LocalVarImpl.this.slot = slot;
-            }
-        };
+        return new LocalVarAllocator(this);
     }
 
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
@@ -84,34 +68,12 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-        return new Item() {
-            public String itemName() {
-                return "LocalVar$Set";
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return value.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                checkSlot();
-                cb.storeLocal(Util.actualKindOf(LocalVarImpl.this.typeKind()), slot);
-            }
-        };
+        return new LocalVarSet(this, value);
     }
 
     void emitInc(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.addItem(new Item() {
-                public String itemName() {
-                    return "LocalVar$Inc";
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    checkSlot();
-                    cb.iinc(slot, ((IntBasedConst) amount).intValue());
-                }
-            });
+            block.addItem(new LocalVarIncrement(this, amount));
         } else {
             super.emitInc(block, amount);
         }
@@ -119,18 +81,9 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
     void emitDec(final BlockCreatorImpl block, final Const amount) {
         if (typeKind().asLoadable() == TypeKind.INT) {
-            block.addItem(new Item() {
-                public String itemName() {
-                    return "LocalVar$Dec";
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    checkSlot();
-                    cb.iinc(slot, -((IntBasedConst) amount).intValue());
-                }
-            });
+            block.addItem(new LocalVarDecrement(this, amount));
         } else {
-            super.emitInc(block, amount);
+            super.emitDec(block, amount);
         }
     }
 }

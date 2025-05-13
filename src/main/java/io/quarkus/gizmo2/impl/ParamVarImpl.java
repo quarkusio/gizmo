@@ -2,7 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -51,15 +50,7 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     }
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-        return new Item() {
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return value.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.storeLocal(Util.actualKindOf(ParamVarImpl.this.typeKind()), slot);
-            }
-        };
+        return new ParamSet(this, value);
     }
 
     public ClassDesc type() {

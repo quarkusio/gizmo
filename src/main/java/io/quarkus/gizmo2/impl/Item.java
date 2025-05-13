@@ -1,21 +1,16 @@
 package io.quarkus.gizmo2.impl;
 
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
-import static java.lang.constant.ConstantDescs.CD_VarHandle;
-import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
-import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
-import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
 public abstract non-sealed class Item implements Expr {
     protected final String creationSite = Util.trackCaller();
@@ -217,278 +212,22 @@ public abstract non-sealed class Item implements Expr {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new ArrayDeref(type().componentType(), index);
+        return new ArrayDeref(this, type().componentType(), index);
     }
 
     public Expr length() {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new Item() {
-            boolean bound;
-
-            @Override
-            public ClassDesc type() {
-                return ConstantDescs.CD_int;
-            }
-
-            protected void bind() {
-                if (Item.this.bound()) {
-                    bound = true;
-                }
-            }
-
-            @Override
-            public boolean bound() {
-                return bound;
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return Item.this.process(node.prev(), op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.arraylength();
-            }
-        };
+        return new ArrayLength(this);
     }
 
     public InstanceFieldVar field(final FieldDesc desc) {
         checkNotNullParam("desc", desc);
-        return new FieldDeref(desc);
+        return new FieldDeref(this, desc);
     }
 
     Item asBound() {
-        return bound() ? this : new Item() {
-            public ClassDesc type() {
-                return Item.this.type();
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return Item.this.forEachDependency(node, op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                Item.this.writeCode(cb, block);
-            }
-
-            public String itemName() {
-                return Item.this.itemName() + ":bound";
-            }
-        };
-    }
-
-    public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
-        private final FieldDesc desc;
-        private boolean bound;
-
-        private FieldDeref(final FieldDesc desc) {
-            this.desc = desc;
-        }
-
-        protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-            return Item.this.process(node.prev(), op);
-        }
-
-        public boolean bound() {
-            return bound;
-        }
-
-        protected void bind() {
-            if (Item.this.bound()) {
-                bound = true;
-            }
-        }
-
-        public FieldDesc desc() {
-            return desc;
-        }
-
-        @Override
-        public ClassDesc type() {
-            return desc.type();
-        }
-
-        public String itemName() {
-            return Item.this.itemName() + "." + desc.name();
-        }
-
-        public Item instance() {
-            return Item.this;
-        }
-
-        Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
-            return switch (mode) {
-                case AsDeclared -> asBound();
-                default -> new Item() {
-                    public ClassDesc type() {
-                        return FieldDeref.this.type();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(node.prev(), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Plain -> "get";
-                            case Opaque -> "getOpaque";
-                            case Acquire -> "getAcquire";
-                            case Volatile -> "getVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                type(),
-                                Util.NO_DESCS));
-                    }
-
-                    public String itemName() {
-                        return FieldDeref.this.itemName() + ":get*";
-                    }
-                };
-            };
-        }
-
-        Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-            return switch (mode) {
-                case AsDeclared -> new Item() {
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return Item.this.process(value.process(node.prev(), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.putfield(owner(), name(), desc().type());
-                    }
-
-                    public String itemName() {
-                        return FieldDeref.this.itemName() + ":set";
-                    }
-                };
-                default -> new Item() {
-                    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofFieldVarHandle(desc)
-                                .process(FieldDeref.this.process(value.process(node.prev(), op), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Plain -> "set";
-                            case Opaque -> "setOpaque";
-                            case Release -> "setRelease";
-                            case Volatile -> "setVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                desc().type(),
-                                Util.NO_DESCS));
-                    }
-
-                    public String itemName() {
-                        return FieldDeref.this.itemName() + ":set*";
-                    }
-                };
-            };
-        }
-
-        public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-            cb.getfield(owner(), name(), type());
-        }
-    }
-
-    public final class ArrayDeref extends AssignableImpl {
-        private final ClassDesc componentType;
-        private final Item index;
-        private boolean bound;
-
-        public ArrayDeref(final ClassDesc componentType, final Expr index) {
-            this.componentType = componentType;
-            this.index = (Item) index;
-        }
-
-        protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-            return Item.this.process(index.process(node.prev(), op), op);
-        }
-
-        public Item array() {
-            return Item.this;
-        }
-
-        public Item index() {
-            return index;
-        }
-
-        Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
-            if (!mode.validForReads()) {
-                throw new IllegalArgumentException("Invalid mode " + mode);
-            }
-            return switch (mode) {
-                case AsDeclared, Plain -> asBound();
-                default -> new Item() {
-                    public String itemName() {
-                        return "ArrayDeref$Get" + super.itemName();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofArrayVarHandle(Item.this.type())
-                                .process(Item.this.process(index.process(node.prev(), op), op), op);
-                    }
-
-                    public ClassDesc type() {
-                        return componentType;
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Opaque -> "getOpaque";
-                            case Acquire -> "getAcquire";
-                            case Volatile -> "getVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                type(),
-                                Item.this.type(),
-                                CD_int));
-                    }
-                };
-            };
-        }
-
-        Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
-            return switch (mode) {
-                case AsDeclared, Plain -> new ArrayStore(Item.this, index, value, componentType);
-                default -> new Item() {
-                    public String itemName() {
-                        return "ArrayDeref$SetVolatile" + super.itemName();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofArrayVarHandle(Item.this.type())
-                                .process(Item.this.process(index.process(value.process(node.prev(), op), op), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, "setVolatile", MethodTypeDesc.of(
-                                type(),
-                                Item.this.type(),
-                                CD_int));
-                    }
-                };
-            };
-        }
-
-        public ClassDesc type() {
-            return componentType;
-        }
-
-        protected void bind() {
-            if (Item.this.bound() || index.bound()) {
-                bound = true;
-            }
-        }
-
-        public boolean bound() {
-            return bound;
-        }
-
-        public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-            cb.arrayLoad(Util.actualKindOf(typeKind()));
-        }
+        return bound() ? this : new BoundItem(this);
     }
 }

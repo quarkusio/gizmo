@@ -42,8 +42,9 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.ArrayDeref;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-import io.quarkus.gizmo2.impl.Item;
+import io.quarkus.gizmo2.impl.FieldDeref;
 import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 import io.quarkus.gizmo2.impl.Util;
 
@@ -414,11 +415,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
             varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
             args = List.of(expected, update);
             typeDesc = MethodTypeDesc.of(CD_boolean, var.type(), var.type());
-        } else if (var instanceof Item.FieldDeref fd) {
+        } else if (var instanceof FieldDeref fd) {
             varHandle = Const.ofFieldVarHandle(fd.desc());
             args = List.of(fd.instance(), expected, update);
             typeDesc = MethodTypeDesc.of(CD_boolean, fd.instance().type(), var.type(), var.type());
-        } else if (var instanceof Item.ArrayDeref ad) {
+        } else if (var instanceof ArrayDeref ad) {
             varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
             args = List.of(ad.array(), ad.index(), expected, update);
             typeDesc = MethodTypeDesc.of(CD_boolean, ad.array().type(), CD_int, var.type(), var.type());
@@ -498,11 +499,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
             varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
             args = List.of(expected, update);
             typeDesc = MethodTypeDesc.of(var.type(), var.type(), var.type());
-        } else if (var instanceof Item.FieldDeref fd) {
+        } else if (var instanceof FieldDeref fd) {
             varHandle = Const.ofFieldVarHandle(fd.desc());
             args = List.of(fd.instance(), expected, update);
             typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type(), var.type());
-        } else if (var instanceof Item.ArrayDeref ad) {
+        } else if (var instanceof ArrayDeref ad) {
             varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
             args = List.of(ad.array(), ad.index(), expected, update);
             typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type(), var.type());
@@ -532,11 +533,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
             varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
             args = List.of(arg);
             typeDesc = MethodTypeDesc.of(var.type(), var.type());
-        } else if (var instanceof Item.FieldDeref fd) {
+        } else if (var instanceof FieldDeref fd) {
             varHandle = Const.ofFieldVarHandle(fd.desc());
             args = List.of(fd.instance(), arg);
             typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type());
-        } else if (var instanceof Item.ArrayDeref ad) {
+        } else if (var instanceof ArrayDeref ad) {
             varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
             args = List.of(ad.array(), ad.index(), arg);
             typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type());
