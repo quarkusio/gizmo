@@ -17,6 +17,11 @@ final class NewEmptyArray extends Item {
         this.size = size;
     }
 
+    @Override
+    public String itemName() {
+        return "NewEmptyArray:" + arrayType.displayName();
+    }
+
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return size.process(node.prev(), op);
     }

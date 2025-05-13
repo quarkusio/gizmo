@@ -391,37 +391,26 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new NewEmptyArray(componentType, (Item) size));
     }
 
-    private void insertNewArrayDup(final NewEmptyArray nea, final List<ArrayStore> stores, Node node, List<Item> values,
-            int idx) {
-        Dup dup = (Dup) stores.get(idx).arrayExpr();
-        Node prev = dup.insert(node);
-        insertNewArrayNextStore(nea, stores, prev, values, idx);
-        // post-process
-        // (not needed)
-    }
-
     private void insertNewArrayStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
-        ArrayStore store = stores.get(idx);
-        Node storeNode = store.insert(node);
-        // skip predecessor (value)
-        Node beforeValNode = storeNode.prev();
-        Item value = values.get(idx);
-        if (value.bound()) {
-            beforeValNode = value.verify(beforeValNode);
-        }
-        // (skip index for now)
-        // insert dup before value
-        insertNewArrayDup(nea, stores, beforeValNode.next(), values, idx);
-        // post-process (inserts index)
-        store.forEachDependency(storeNode, Item::insertIfUnbound);
-    }
-
-    private void insertNewArrayNextStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
         if (idx == 0) {
             // all elements processed
             nea.forEachDependency(nea.insert(node), Item::insertIfUnbound);
         } else {
-            insertNewArrayStore(nea, stores, node, values, idx - 1);
+            ArrayStore store = stores.get(idx - 1);
+            Node storeNode = store.insert(node);
+            // skip predecessor (value)
+            Node beforeValNode = storeNode.prev();
+            Item value = values.get(idx - 1);
+            if (value.bound()) {
+                beforeValNode = value.verify(beforeValNode);
+            }
+            // (skip index for now)
+            // insert dup before value
+            Dup dup = (Dup) stores.get(idx - 1).arrayExpr();
+            Node prev = dup.insert(beforeValNode.next());
+            insertNewArrayStore(nea, stores, prev, values, idx - 1);
+            // post-process (inserts index)
+            store.forEachDependency(storeNode, Item::insertIfUnbound);
         }
     }
 
@@ -435,8 +424,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) values.get(i), componentType));
         }
         // stitch the object graph into our list
-        insertNewArrayNextStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
-        return nea;
+        insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
+        Item result = nea;
+        if (size > 0) {
+            result = addItem(new NewArrayResult(nea, Util.reinterpretCast(stores)));
+        }
+        return result;
     }
 
     private Expr relZero(final Expr a, final If.Kind kind) {
@@ -588,7 +581,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
-            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            zb.withVersion(owner.version().major(), 0);
             AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(desc, owner.output(), zb,
                     ConstructorDesc.of(Object.class), captureExprs);
             if (sam instanceof InterfaceMethodDesc imd) {
@@ -637,7 +630,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         final ArrayList<Expr> captureExprs = new ArrayList<>();
 
         byte[] bytes = cf.build(desc, zb -> {
-            zb.withVersion(ClassFile.JAVA_17_VERSION, 0);
+            zb.withVersion(owner.version().major(), 0);
             zb.with(NestHostAttribute.of(ownerDesc));
             zb.with(InnerClassesAttribute.of(
                     InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)));
@@ -682,12 +675,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
         if (a.type().isPrimitive()) {
-            throw new IllegalArgumentException("Only object types may be unsafely cast");
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive value: " + a.type().displayName());
         }
         if (toType.isPrimitive()) {
-            throw new IllegalArgumentException("Cannot unsafely cast to a primitive type");
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.displayName());
         }
-        return addItem(new UnsafeCast(a, toType));
+        return addItem(new UncheckedCast(a, toType));
     }
 
     public Expr instanceOf(final Expr obj, final ClassDesc type) {
@@ -708,10 +701,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         Node dupNode = dup_.insert(node.next());
         new_.insert(dupNode);
-        // finally, add the invoke at tail
-        addItem(new Invoke(ctor, dup_, args));
-        // the New is all that is left on the stack now
-        return new_;
+        // add the invoke at tail
+        Invoke invoke = new Invoke(ctor, dup_, args);
+        addItem(invoke);
+        // finally, add the result
+        return addItem(new NewResult(new_, invoke));
     }
 
     public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
@@ -842,9 +836,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void accept(final BiConsumer<? super BlockCreatorImpl, Expr> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
+        checkActive();
         Expr input;
         if (head.next().item() instanceof BlockExpr be) {
             input = be;
@@ -853,14 +845,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             input = VoidConst.INSTANCE;
         }
         handler.accept(this, input);
-        cleanStack(tail.apply(Item::verify));
+        cleanStack(tail.item().process(tail, Item::verify));
         markDone();
     }
 
     public void accept(final Consumer<? super BlockCreatorImpl> handler) {
-        if (state != ST_ACTIVE) {
-            throw new IllegalStateException("Block already processed");
-        }
+        checkActive();
         handler.accept(this);
         if (tail.item() instanceof Yield yield) {
             Expr val = yield.value();
@@ -874,7 +864,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 }
             }
         }
-        cleanStack(tail.apply(Item::verify));
+        cleanStack(tail.item().process(tail, Item::verify));
         markDone();
     }
 

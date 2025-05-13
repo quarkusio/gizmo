@@ -11,6 +11,11 @@ final class New extends Item {
         this.type = type;
     }
 
+    @Override
+    public String itemName() {
+        return "New:" + type.displayName();
+    }
+
     public ClassDesc type() {
         return type;
     }

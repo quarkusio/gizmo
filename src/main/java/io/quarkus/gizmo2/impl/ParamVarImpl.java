@@ -29,6 +29,11 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
         this.visible = visible;
     }
 
+    @Override
+    public String itemName() {
+        return "ParamVar:" + name;
+    }
+
     int flags() {
         return flags;
     }
@@ -52,7 +57,7 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
             }
 
             public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                cb.storeLocal(Util.actualKindOf(typeKind()), slot);
+                cb.storeLocal(Util.actualKindOf(ParamVarImpl.this.typeKind()), slot);
             }
         };
     }
