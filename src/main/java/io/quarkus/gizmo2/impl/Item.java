@@ -277,31 +277,7 @@ public abstract non-sealed class Item implements Expr {
         Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
             return switch (mode) {
                 case AsDeclared -> asBound();
-                default -> new Item() {
-                    public ClassDesc type() {
-                        return FieldDeref.this.type();
-                    }
-
-                    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                        return ConstImpl.ofFieldVarHandle(desc).process(FieldDeref.this.process(node.prev(), op), op);
-                    }
-
-                    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                        cb.invokevirtual(CD_VarHandle, switch (mode) {
-                            case Plain -> "get";
-                            case Opaque -> "getOpaque";
-                            case Acquire -> "getAcquire";
-                            case Volatile -> "getVolatile";
-                            default -> throw new IllegalStateException();
-                        }, MethodTypeDesc.of(
-                                type(),
-                                Util.NO_DESCS));
-                    }
-
-                    public String itemName() {
-                        return FieldDeref.this.itemName() + ":get*";
-                    }
-                };
+                default -> new FieldGetViaHandle(this, mode);
             };
         }
 
