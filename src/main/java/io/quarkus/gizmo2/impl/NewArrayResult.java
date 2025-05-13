@@ -7,10 +7,10 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 
 public class NewArrayResult extends Item {
-    private final Item newEmptyArray;
-    private final List<Item> elements;
+    private final NewEmptyArray newEmptyArray;
+    private final List<ArrayStore> elements;
 
-    NewArrayResult(Item newEmptyArray, List<Item> elements) {
+    NewArrayResult(NewEmptyArray newEmptyArray, List<ArrayStore> elements) {
         this.newEmptyArray = newEmptyArray;
         this.elements = elements;
     }
@@ -34,6 +34,18 @@ public class NewArrayResult extends Item {
             node = elements.get(i).process(node, op);
         }
         node = newEmptyArray.process(node, op);
+        return node;
+    }
+
+    public Node pop(Node ourNode) {
+        Node node = ourNode.prev();
+        remove(ourNode);
+        int size = elements.size();
+        for (int i = size - 1; i >= 0; i--) {
+            // delete the array store and pop the things being stored
+            node = elements.get(i).revoke(node);
+        }
+        node = newEmptyArray.pop(node);
         return node;
     }
 
