@@ -62,19 +62,7 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return switch (mode) {
-            case AsDeclared -> new Item() {
-                protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                    return item.process(value.process(node.prev(), op), op);
-                }
-
-                public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                    cb.putfield(owner(), name(), desc().type());
-                }
-
-                public String itemName() {
-                    return io.quarkus.gizmo2.impl.FieldDeref.this.itemName() + ":set";
-                }
-            };
+            case AsDeclared -> new FieldSet(this, value);
             default -> new Item() {
                 protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
                     return ConstImpl.ofFieldVarHandle(desc)
