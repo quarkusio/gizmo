@@ -259,23 +259,7 @@ public abstract non-sealed class Item implements Expr {
     }
 
     Item asBound() {
-        return bound() ? this : new Item() {
-            public ClassDesc type() {
-                return Item.this.type();
-            }
-
-            protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-                return Item.this.forEachDependency(node, op);
-            }
-
-            public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-                Item.this.writeCode(cb, block);
-            }
-
-            public String itemName() {
-                return Item.this.itemName() + ":bound";
-            }
-        };
+        return bound() ? this : new BoundItem(this);
     }
 
     public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
