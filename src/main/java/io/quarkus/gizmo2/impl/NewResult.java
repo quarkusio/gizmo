@@ -6,10 +6,10 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 
 public class NewResult extends Item {
-    private final Item new_;
-    private final Item invoke;
+    private final New new_;
+    private final Invoke invoke;
 
-    NewResult(Item new_, Item invoke) {
+    NewResult(New new_, Invoke invoke) {
         this.new_ = new_;
         this.invoke = invoke;
     }

@@ -23,9 +23,7 @@ final class ArrayStoreViaHandle extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.invokevirtual(CD_VarHandle, "setVolatile", MethodTypeDesc.of(
-                type(),
-                arrayDeref.array().type(),
-                CD_int));
+        cb.invokevirtual(CD_VarHandle, "setVolatile",
+                MethodTypeDesc.of(CD_void, arrayDeref.array().type(), CD_int, arrayDeref.type()));
     }
 }

@@ -8,6 +8,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
@@ -318,5 +319,99 @@ public class ArraysTest {
             });
         });
         assertEquals(7, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void testGetArrayElement() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.GetArrayElement", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    Expr array = bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3));
+                    bc.return_(array.elem(1));
+                });
+            });
+        });
+        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void testExplicitGetArrayElement() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.ExplicitGetArrayElement", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    Expr array = bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3));
+                    bc.return_(bc.get(array.elem(1)));
+                });
+            });
+        });
+        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void testVolatileGetArrayElement() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.VolatileGetArrayElement", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    Expr array = bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3));
+                    bc.return_(bc.get(array.elem(1), MemoryOrder.Volatile));
+                });
+            });
+        });
+        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void testSetArrayElement() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.SetArrayElement", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(int.class);
+                ParamVar param = mc.parameter("value", int.class);
+                mc.body(bc -> {
+                    LocalVar array = bc.define("array",
+                            bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3)));
+
+                    bc.set(array.elem(1), param);
+
+                    bc.return_(array.elem(1));
+                });
+            });
+        });
+        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+    }
+
+    @Test
+    public void testVolatileSetArrayElement() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.VolatileSetArrayElement", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(int.class);
+                ParamVar param = mc.parameter("value", int.class);
+                mc.body(bc -> {
+                    LocalVar array = bc.define("array",
+                            bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3)));
+
+                    bc.set(array.elem(1), param, MemoryOrder.Volatile);
+
+                    bc.return_(array.elem(1));
+                });
+            });
+        });
+        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
     }
 }
