@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
@@ -33,10 +34,7 @@ final class ArrayLoadViaHandle extends Item {
             case Opaque -> "getOpaque";
             case Acquire -> "getAcquire";
             case Volatile -> "getVolatile";
-            default -> throw new IllegalStateException();
-        }, MethodTypeDesc.of(
-                type(),
-                arrayDeref.array().type(),
-                CD_int));
+            default -> throw impossibleSwitchCase(mode);
+        }, MethodTypeDesc.of(type(), arrayDeref.array().type(), CD_int));
     }
 }

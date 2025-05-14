@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
@@ -24,7 +25,7 @@ final class StaticFieldGetViaHandle extends Item {
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return ConstImpl.ofFieldVarHandle(staticFieldVar.desc()).forEachDependency(node.prev(), op);
+        return ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()).process(node.prev(), op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -33,7 +34,7 @@ final class StaticFieldGetViaHandle extends Item {
             case Opaque -> "getOpaque";
             case Acquire -> "getAcquire";
             case Volatile -> "getVolatile";
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(mode);
         }, MethodTypeDesc.of(type()));
     }
 }

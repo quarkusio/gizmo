@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.MethodTypeDesc;
@@ -22,7 +23,7 @@ final class FieldSetViaHandle extends Item {
 
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
         return ConstImpl.ofFieldVarHandle(fieldDeref.desc())
-                .process(fieldDeref.process(value.process(node.prev(), op), op), op);
+                .process(fieldDeref.instance().process(value.process(node.prev(), op), op), op);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
@@ -31,9 +32,7 @@ final class FieldSetViaHandle extends Item {
             case Opaque -> "setOpaque";
             case Release -> "setRelease";
             case Volatile -> "setVolatile";
-            default -> throw new IllegalStateException();
-        }, MethodTypeDesc.of(
-                fieldDeref.desc().type(),
-                Util.NO_DESCS));
+            default -> throw impossibleSwitchCase(mode);
+        }, MethodTypeDesc.of(CD_void, fieldDeref.instance().type(), fieldDeref.desc().type()));
     }
 }

@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.MethodTypeDesc;
@@ -30,7 +31,7 @@ final class StaticFieldSetViaHandle extends Item {
             case Opaque -> "setOpaque";
             case Release -> "setRelease";
             case Volatile -> "setVolatile";
-            default -> throw new IllegalStateException();
-        }, MethodTypeDesc.of(CD_void, type()));
+            default -> throw impossibleSwitchCase(mode);
+        }, MethodTypeDesc.of(CD_void, staticFieldVar.desc().type()));
     }
 }
