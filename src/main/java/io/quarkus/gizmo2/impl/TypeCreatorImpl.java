@@ -9,6 +9,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
@@ -17,6 +18,7 @@ import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -31,6 +33,8 @@ import java.util.stream.Stream;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.ClassSignature;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
@@ -39,10 +43,14 @@ import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.TypeArgument;
+import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
@@ -87,17 +95,17 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
+    private GenericType.OfClass genericType;
     private final ClassOutput output;
-    private final ThisExpr this_;
+    private ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
-    private Signature.ClassTypeSig superSig = Signature.ClassTypeSig.of(CD_Object);
-    private ClassSignature sig;
-    private List<Signature.TypeParam> typeParams = List.of();
+    private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
+    private List<GenericType.OfClass> interfaceSigs = List.of();
+    private List<TypeVariable> typeVariables = List.of();
     final ClassBuilder zb;
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
-    private List<Signature.ClassTypeSig> interfaceSigs = List.of();
     private int flags;
     private int bootstraps;
 
@@ -115,7 +123,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb, final int flags) {
         this.type = type;
-        this_ = new ThisExpr(type);
         this.output = output;
         this.zb = zb;
         this.flags = flags;
@@ -143,14 +150,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return version;
     }
 
-    public void withTypeParam(final Signature.TypeParam param) {
-        checkNotNullParam("param", param);
-        if (typeParams.isEmpty()) {
-            typeParams = new ArrayList<>(4);
-        }
-        typeParams.add(param);
-    }
-
     public void withFlag(final AccessFlag flag) {
         flags |= flag.mask();
     }
@@ -169,17 +168,15 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         zb.with(SourceFileAttribute.of(name));
     }
 
-    void extends_(final Signature.ClassTypeSig genericType) {
-        ClassDesc desc = genericType.classDesc();
+    void extends_(final GenericType.OfClass genericType) {
+        ClassDesc desc = genericType.desc();
         zb.withSuperclass(superType = desc);
         superSig = genericType;
-        sig = null;
     }
 
     void extends_(final ClassDesc desc) {
         zb.withSuperclass(superType = desc);
-        superSig = Signature.ClassTypeSig.of(desc);
-        sig = null;
+        superSig = (GenericType.OfClass) GenericType.of(desc);
     }
 
     ClassDesc superClass() {
@@ -190,30 +187,39 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return type;
     }
 
-    public ClassSignature signature() {
-        ClassSignature sig = this.sig;
-        if (sig == null) {
-            // compute one
-            sig = this.sig = computeSignature();
+    public GenericType.OfClass genericType() {
+        GenericType.OfClass genericType = this.genericType;
+        if (genericType == null) {
+            genericType = GenericType.ofClass(type());
+            if (!typeVariables.isEmpty()) {
+                genericType = genericType.withArguments(typeVariables.stream()
+                        .map(TypeVariable::genericType)
+                        .map(TypeArgument::ofExact)
+                        .map(TypeArgument.class::cast)
+                        .toList());
+            }
+            this.genericType = genericType;
         }
-        return sig;
+        return genericType;
     }
 
     ClassSignature computeSignature() {
-        return ClassSignature.of(typeParams, superSig, interfaceSigs.toArray(Signature.ClassTypeSig[]::new));
+        return ClassSignature.of(
+                typeVariables.stream().map(Util::typeParamOf).toList(),
+                Util.signatureOf(superSig),
+                interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
     }
 
-    public void implements_(final Signature.ClassTypeSig genericType) {
-        zb.withInterfaceSymbols(genericType.classDesc());
+    public void implements_(final GenericType.OfClass genericType) {
+        zb.withInterfaceSymbols(genericType.desc());
         if (interfaceSigs.isEmpty()) {
             interfaceSigs = new ArrayList<>(4);
         }
         interfaceSigs.add(genericType);
-        sig = null;
     }
 
     public void implements_(final ClassDesc interface_) {
-        implements_(Signature.ClassTypeSig.of(interface_));
+        implements_((GenericType.OfClass) GenericType.of(interface_));
     }
 
     public void staticInitializer(final Consumer<BlockCreator> builder) {
@@ -276,6 +282,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     public This this_() {
+        ThisExpr this_ = this.this_;
+        if (this_ == null) {
+            this_ = this.this_ = new ThisExpr(genericType());
+        }
         return this_;
     }
 
@@ -294,12 +304,43 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     }
 
     void postAccept() {
-        zb.withSuperclass(superSig.classDesc());
-        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.classDesc())).toList());
+        zb.withSuperclass(superSig.desc());
+        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
         zb.withFlags(flags);
-        zb.with(SignatureAttribute.of(signature()));
+        zb.with(SignatureAttribute.of(computeSignature()));
         addVisible(zb);
         addInvisible(zb);
+        ArrayList<TypeAnnotation> visible = new ArrayList<>();
+        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
+        for (int i = 0; i < typeVariables.size(); i++) {
+            final TypeVariable tv = typeVariables.get(i);
+            Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(tv, RetentionPolicy.CLASS,
+                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
+                    invisible, new ArrayDeque<>());
+        }
+        Util.computeAnnotations(superSig, RetentionPolicy.RUNTIME,
+                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
+                visible, new ArrayDeque<>());
+        Util.computeAnnotations(superSig, RetentionPolicy.CLASS,
+                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
+                invisible, new ArrayDeque<>());
+        for (int i = 0; i < interfaceSigs.size(); i++) {
+            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.RUNTIME,
+                    TypeAnnotation.TargetInfo.ofClassExtends(i),
+                    visible, new ArrayDeque<>());
+            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.CLASS,
+                    TypeAnnotation.TargetInfo.ofClassExtends(i),
+                    invisible, new ArrayDeque<>());
+        }
+        if (!visible.isEmpty()) {
+            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
+        }
+        if (!invisible.isEmpty()) {
+            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(invisible));
+        }
         if (!staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
                 mb.withCode(cb -> {
@@ -460,8 +501,23 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
         return List.copyOf(constructors);
     }
 
-    ElementType annotationTargetType() {
+    public ElementType annotationTargetType() {
         return ElementType.TYPE;
+    }
+
+    public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
+        if (genericType != null) {
+            throw new IllegalStateException("Type has already been established");
+        }
+        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+        builder.accept(creator);
+        TypeVariable.OfType var = creator.forType(type());
+        if (typeVariables instanceof ArrayList<TypeVariable> al) {
+            al.add(var);
+        } else {
+            typeVariables = Util.listWith(typeVariables, var);
+        }
+        return var;
     }
 
     void buildReadLineBoostrapHelper() {

@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.SimpleTyped;
@@ -130,7 +131,21 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the variable type (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    LocalVar declare(String name, ClassDesc type);
+    LocalVar declare(String name, GenericType type);
+
+    /**
+     * Declare a local variable, but doesn't assign it a value.
+     * Such variables may not be read before they are written.
+     * <p>
+     * Variable names are not strictly required to be unique, but it is a good practice.
+     *
+     * @param name the variable name (must not be {@code null})
+     * @param type the variable type (must not be {@code null})
+     * @return the local variable (not {@code null})
+     */
+    default LocalVar declare(String name, ClassDesc type) {
+        return declare(name, GenericType.of(type));
+    }
 
     /**
      * Declare a local variable, but doesn't assign it a value.
@@ -143,7 +158,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the local variable (not {@code null})
      */
     default LocalVar declare(String name, Class<?> type) {
-        return declare(name, Util.classDesc(type));
+        return declare(name, GenericType.of(type));
     }
 
     /**
@@ -156,7 +171,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the local variable (not {@code null})
      */
     default LocalVar define(String name, Expr value) {
-        LocalVar var = declare(name, value.type());
+        LocalVar var = declare(name, value.genericType());
         set(var, value);
         return var;
     }
@@ -2272,7 +2287,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @see #ifInstanceOf(Expr, ClassDesc, BiConsumer)
      * @see #ifInstanceOfElse(Expr, ClassDesc, BiConsumer, Consumer)
      */
-    Expr cast(Expr a, ClassDesc toType);
+    Expr cast(Expr a, GenericType toType);
+
+    /**
+     * Cast a value to the given type.
+     * For primitives, the appropriate conversion is applied.
+     * For objects, a class cast is performed.
+     *
+     * @param a the value to cast (must not be {@code null})
+     * @param toType the type to cast to (must not be {@code null})
+     * @return the cast value (not {@code null})
+     * @see #instanceOf(Expr, ClassDesc)
+     * @see #ifInstanceOf(Expr, ClassDesc, BiConsumer)
+     * @see #ifInstanceOfElse(Expr, ClassDesc, BiConsumer, Consumer)
+     */
+    default Expr cast(Expr a, ClassDesc toType) {
+        return cast(a, GenericType.of(toType));
+    }
 
     /**
      * Cast a value to the given type.
@@ -2299,7 +2330,20 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the cast value (not {@code null})
      * @see #cast(Expr, ClassDesc)
      */
-    Expr uncheckedCast(Expr a, ClassDesc toType);
+    Expr uncheckedCast(Expr a, GenericType toType);
+
+    /**
+     * Cast an object value to the given type without a type check.
+     * If the cast is invalid, then class validation will fail.
+     *
+     * @param a the value to cast (must not be {@code null})
+     * @param toType the type to cast to (must not be {@code null})
+     * @return the cast value (not {@code null})
+     * @see #cast(Expr, ClassDesc)
+     */
+    default Expr uncheckedCast(Expr a, ClassDesc toType) {
+        return uncheckedCast(a, GenericType.of(toType));
+    }
 
     /**
      * Cast an object value to the given type without a type check.
@@ -2350,7 +2394,18 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the type to test against (must not be {@code null})
      * @return the boolean result of the check (not {@code null})
      */
-    Expr instanceOf(Expr obj, ClassDesc type);
+    default Expr instanceOf(Expr obj, ClassDesc type) {
+        return instanceOf(obj, GenericType.of(type));
+    }
+
+    /**
+     * Test whether the given object implements the given type.
+     *
+     * @param obj the object to test (must not be {@code null})
+     * @param type the type to test against (must not be {@code null})
+     * @return the boolean result of the check (not {@code null})
+     */
+    Expr instanceOf(Expr obj, GenericType type);
 
     /**
      * Construct a new instance.

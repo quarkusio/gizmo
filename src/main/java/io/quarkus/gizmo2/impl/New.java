@@ -1,26 +1,45 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.Label;
+import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.quarkus.gizmo2.GenericType;
 
 final class New extends Item {
-    private final ClassDesc type;
+    private final GenericType type;
+    private Label label;
 
-    New(final ClassDesc type) {
+    New(final GenericType type) {
         this.type = type;
     }
 
     @Override
     public String itemName() {
-        return "New:" + type.displayName();
+        return "New:" + type().displayName();
     }
 
-    public ClassDesc type() {
+    public GenericType genericType() {
         return type;
     }
 
+    public ClassDesc type() {
+        return type.desc();
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.new_(type);
+        label = cb.newBoundLabel();
+        cb.new_(type.desc());
+    }
+
+    public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
+        if (type.hasAnnotations(retention)) {
+            Util.computeAnnotations(type, retention, TypeAnnotation.TargetInfo.ofNewExpr(label), annotations,
+                    new ArrayDeque<>());
+        }
     }
 }

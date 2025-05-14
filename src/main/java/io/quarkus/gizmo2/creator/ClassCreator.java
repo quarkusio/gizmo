@@ -5,8 +5,8 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -18,7 +18,8 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a class type.
  */
-public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits AnonymousClassCreator, ClassCreatorImpl {
+public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParameterizedCreator
+        permits AnonymousClassCreator, ClassCreatorImpl {
     /**
      * {@return the superclass}
      *
@@ -31,7 +32,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped permits An
      *
      * @param genericType the generic class (must not be {@code null})
      */
-    void extends_(Signature.ClassTypeSig genericType);
+    void extends_(GenericType.OfClass genericType);
 
     /**
      * Extend the given class.

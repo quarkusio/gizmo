@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
@@ -58,6 +59,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(flags);
+            fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
             addVisible(fb);
             addInvisible(fb);
             if (initial != null) {

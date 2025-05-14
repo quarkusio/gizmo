@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.Annotatable;
+import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
-import io.quarkus.gizmo2.SimpleTyped;
+import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -25,7 +25,8 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a type.
  */
-public sealed interface TypeCreator extends Annotatable, SimpleTyped permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
+public sealed interface TypeCreator extends AnnotatableCreator, GenericTyped
+        permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
      * If not called, the generated class has the version of Java 17.
@@ -41,13 +42,6 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
      * @param version the class file version (must not be {@code null})
      */
     void withVersion(ClassVersion version);
-
-    /**
-     * Add a type parameter.
-     *
-     * @param param the type parameter specification (must not be {@code null})
-     */
-    void withTypeParam(Signature.TypeParam param);
 
     /**
      * Add a flag to the type.
@@ -99,11 +93,16 @@ public sealed interface TypeCreator extends Annotatable, SimpleTyped permits Cla
     ClassDesc type();
 
     /**
+     * {@return the generic type of this class}
+     */
+    GenericType.OfClass genericType();
+
+    /**
      * Implement a generic interface.
      *
      * @param genericType the generic interface type (must not be {@code null})
      */
-    void implements_(Signature.ClassTypeSig genericType);
+    void implements_(GenericType.OfClass genericType);
 
     /**
      * Implement an interface.

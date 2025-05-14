@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
@@ -11,11 +12,11 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
-    private final ClassDesc type;
+    private final GenericType type;
     private final BlockCreatorImpl owner;
     int slot = -1;
 
-    LocalVarImpl(final BlockCreatorImpl owner, final String name, final ClassDesc type) {
+    LocalVarImpl(final BlockCreatorImpl owner, final String name, final GenericType type) {
         this.name = name;
         this.type = type;
         this.owner = owner;
@@ -34,6 +35,10 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     }
 
     public ClassDesc type() {
+        return type.desc();
+    }
+
+    public GenericType genericType() {
         return type;
     }
 
