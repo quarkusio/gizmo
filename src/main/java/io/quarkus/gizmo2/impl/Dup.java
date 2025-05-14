@@ -30,8 +30,9 @@ final class Dup extends Item {
     }
 
     protected Node process(final Node node, final BiFunction<Item, Node, Node> op) {
+        Node prev = node.prev();
         super.process(node, op);
-        return node.prev();
+        return prev;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

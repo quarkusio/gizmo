@@ -90,6 +90,19 @@ public abstract non-sealed class Item implements Expr {
     }
 
     /**
+     * Revoke this node from the instruction list, popping any dependencies that became unused as a result.
+     *
+     * @param node the current item's node (not {@code null})
+     * @return the node before the first dependency of this node (not {@code null})
+     */
+    public Node revoke(Node node) {
+        assert this == node.item();
+        Node prev = forEachDependency(node, Item::pop);
+        remove(node);
+        return prev;
+    }
+
+    /**
      * Insert this item into the instruction list before the given node.
      *
      * @param node the node which this item should be inserted before (must not be {@code null})
