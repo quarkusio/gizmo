@@ -1,29 +1,37 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.FINAL;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PUBLIC;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.STATIC;
+import static io.github.dmlloyd.classfile.ClassFile.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.smallrye.common.constraint.Assert;
 
 public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator {
+    private final boolean isInterface;
     private Const initial;
     private Consumer<BlockCreator> initializer;
 
     public StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name,
             final boolean isInterface) {
-        super(owner, name, tc, isInterface ? Set.of(PUBLIC, STATIC, FINAL) : Set.of(STATIC));
+        super(owner, name, tc);
+        this.isInterface = isInterface;
+        flags |= ACC_STATIC;
+        if (isInterface) {
+            flags |= ACC_PUBLIC | ACC_FINAL;
+        }
+    }
+
+    public ModifierLocation modifierLocation() {
+        return isInterface ? ModifierLocation.INTERFACE_STATIC_FIELD : ModifierLocation.CLASS_STATIC_FIELD;
     }
 
     public void withInitial(final Const initial) {

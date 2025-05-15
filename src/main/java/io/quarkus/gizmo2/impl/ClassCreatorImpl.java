@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
@@ -7,7 +8,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
@@ -15,6 +15,7 @@ import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
+import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -22,14 +23,12 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 
 public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
     public ClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
-        super(type, output, zb, AccessFlag.SYNTHETIC.mask() | AccessFlag.PUBLIC.mask());
+        super(type, output, zb);
+        flags |= ACC_PUBLIC | ACC_SYNTHETIC;
     }
 
-    public void withFlag(final AccessFlag flag) {
-        if (flag == AccessFlag.INTERFACE) {
-            throw new IllegalArgumentException("Flag " + flag + " not allowed here");
-        }
-        super.withFlag(flag);
+    public ModifierLocation modifierLocation() {
+        return ModifierLocation.CLASS;
     }
 
     public void extends_(final GenericType.OfClass genericType) {
@@ -117,15 +116,5 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
             throw new IllegalArgumentException("Duplicate constructor added: %s".formatted(desc));
         }
         return desc;
-    }
-
-    @Override
-    public void abstract_() {
-        withFlag(AccessFlag.ABSTRACT);
-    }
-
-    @Override
-    public void final_() {
-        withFlag(AccessFlag.FINAL);
     }
 }
