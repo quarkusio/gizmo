@@ -1,4 +1,4 @@
-package io.quarkus.gizmo2;
+package io.quarkus.gizmo2.creator;
 
 import static io.smallrye.common.constraint.Assert.*;
 
@@ -14,16 +14,12 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.quarkus.gizmo2.creator.AnnotationCreator;
-import io.quarkus.gizmo2.creator.MemberCreator;
-import io.quarkus.gizmo2.creator.ParamCreator;
-import io.quarkus.gizmo2.creator.TypeCreator;
 import io.quarkus.gizmo2.impl.AnnotatableCreatorImpl;
 
 /**
  * An element that can be annotated.
  */
-public sealed interface AnnotatableCreator
+public sealed interface AnnotatableCreator extends ModifiableCreator
         permits TypeVariableCreator, MemberCreator, ParamCreator, TypeCreator, AnnotatableCreatorImpl {
     /**
      * Copy all of the annotations from the given annotated element.

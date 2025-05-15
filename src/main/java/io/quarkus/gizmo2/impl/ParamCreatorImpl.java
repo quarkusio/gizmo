@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
@@ -8,12 +8,11 @@ import java.lang.constant.ConstantDescs;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
 public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements ParamCreator {
-    int flags = 0;
     boolean typeEstablished;
     GenericType genericType;
 
@@ -25,6 +24,10 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         typeEstablished = true;
     }
 
+    public ModifierLocation modifierLocation() {
+        return ModifierLocation.PARAMETER;
+    }
+
     ParamVarImpl apply(final Consumer<ParamCreator> builder, final String name, final int index, final int slot) {
         builder.accept(this);
         if (genericType == null) {
@@ -33,14 +36,6 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
         typeEstablished = true;
         return new ParamVarImpl(genericType, name, index, slot, flags, List.copyOf(invisible.values()),
                 List.copyOf(visible.values()));
-    }
-
-    public void withFlag(final AccessFlag flag) {
-        if (flag.locations().contains(AccessFlag.Location.METHOD_PARAMETER)) {
-            flags |= flag.mask();
-        } else {
-            throw new IllegalArgumentException("Invalid flag for parameter: " + flag);
-        }
     }
 
     public void withType(final GenericType genericType) {

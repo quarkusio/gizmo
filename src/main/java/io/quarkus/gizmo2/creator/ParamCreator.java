@@ -2,8 +2,6 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.GenericTyped;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
@@ -13,13 +11,6 @@ import io.quarkus.gizmo2.impl.Util;
  * A creator interface for parameters.
  */
 public sealed interface ParamCreator extends AnnotatableCreator, GenericTyped permits ParamCreatorImpl {
-    /**
-     * Add a flag to this parameter.
-     *
-     * @param flag the flag to add (must not be {@code null})
-     */
-    void withFlag(AccessFlag flag);
-
     /**
      * Change the type of this parameter.
      *
@@ -48,5 +39,12 @@ public sealed interface ParamCreator extends AnnotatableCreator, GenericTyped pe
      */
     default void withType(Class<?> type) {
         withType(Util.classDesc(type));
+    }
+
+    /**
+     * Add the "mandated" modifier flag to this creator.
+     */
+    default void mandated_() {
+        withFlag(ModifierFlag.MANDATED);
     }
 }

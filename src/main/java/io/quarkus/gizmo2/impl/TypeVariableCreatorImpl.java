@@ -12,7 +12,8 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.ModifierLocation;
+import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
@@ -29,6 +30,10 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
     public TypeVariableCreatorImpl(final List<Annotation> visible, final List<Annotation> invisible, final String name) {
         super(visible, invisible);
         this.name = name;
+    }
+
+    public ModifierLocation modifierLocation() {
+        return ModifierLocation.NONE;
     }
 
     public String name() {

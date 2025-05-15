@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
@@ -37,7 +38,6 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
@@ -50,11 +50,12 @@ import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.Access;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
+import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -106,7 +107,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
-    private int flags;
     private int bootstraps;
 
     /**
@@ -121,11 +121,10 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     final Map<MethodDesc, Boolean> methods = new LinkedHashMap<>();
     final Set<ConstructorDesc> constructors = new LinkedHashSet<>();
 
-    TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb, final int flags) {
+    TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         this.type = type;
         this.output = output;
         this.zb = zb;
-        this.flags = flags;
     }
 
     public ClassOutput output() {
@@ -148,20 +147,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
 
     ClassFileFormatVersion version() {
         return version;
-    }
-
-    public void withFlag(final AccessFlag flag) {
-        flags |= flag.mask();
-    }
-
-    protected void withoutFlag(final AccessFlag flag) {
-        flags &= ~flag.mask();
-    }
-
-    protected void withoutFlags(AccessFlag... flags) {
-        for (AccessFlag flag : flags) {
-            withoutFlag(flag);
-        }
     }
 
     public void sourceFile(final String name) {
@@ -252,7 +237,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public MethodDesc staticMethod(final String name, final Consumer<StaticMethodCreator> builder) {
         checkNotNullParam("builder", builder);
         MethodDesc desc;
-        boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
+        boolean isInterface = (flags & ACC_INTERFACE) != 0;
         if (isInterface) {
             StaticInterfaceMethodCreatorImpl smc = new StaticInterfaceMethodCreatorImpl(this, name);
             smc.accept(builder);
@@ -271,7 +256,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public StaticFieldVar staticField(final String name, final Consumer<StaticFieldCreator> builder) {
         checkNotNullParam("name", name);
         checkNotNullParam("builder", builder);
-        boolean isInterface = (flags & AccessFlag.INTERFACE.mask()) == AccessFlag.INTERFACE.mask();
+        boolean isInterface = (flags & ACC_INTERFACE) != 0;
         var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
@@ -287,16 +272,6 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
             this_ = this.this_ = new ThisExpr(genericType());
         }
         return this_;
-    }
-
-    @Override
-    public void public_() {
-        withFlag(AccessFlag.PUBLIC);
-    }
-
-    @Override
-    public void packagePrivate() {
-        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
     }
 
     void preAccept() {
@@ -342,7 +317,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
             zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(invisible));
         }
         if (!staticInits.isEmpty()) {
-            zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), AccessFlag.STATIC.mask(), mb -> {
+            zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), ACC_STATIC, mb -> {
                 mb.withCode(cb -> {
                     BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void);
                     bc.accept(b0 -> {
@@ -382,7 +357,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                             CD_String,
                             CD_MethodType),
                     smc -> {
-                        smc.withFlag(AccessFlag.PRIVATE);
+                        smc.withAccess(Access.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);

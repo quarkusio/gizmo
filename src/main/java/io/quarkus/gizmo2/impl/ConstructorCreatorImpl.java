@@ -1,23 +1,17 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.BRIDGE;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PRIVATE;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PROTECTED;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.PUBLIC;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.SYNTHETIC;
-import static io.github.dmlloyd.classfile.extras.reflect.AccessFlag.VARARGS;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.TypeVariableCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
+import io.quarkus.gizmo2.creator.ModifierLocation;
+import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implements ConstructorCreator {
@@ -27,9 +21,13 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
 
     ConstructorCreatorImpl(final TypeCreatorImpl owner, final List<Consumer<BlockCreator>> preInits,
             final List<Consumer<BlockCreator>> postInits) {
-        super(owner, Set.of(), Set.of(PUBLIC, PRIVATE, PROTECTED, SYNTHETIC, BRIDGE, VARARGS));
+        super(owner);
         this.preInits = preInits;
         this.postInits = postInits;
+    }
+
+    public ModifierLocation modifierLocation() {
+        return ModifierLocation.CLASS_CONSTRUCTOR;
     }
 
     public ConstructorDesc desc() {
