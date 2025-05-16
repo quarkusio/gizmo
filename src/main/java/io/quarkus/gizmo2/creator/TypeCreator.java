@@ -2,14 +2,11 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
-import io.quarkus.gizmo2.AnnotatableCreator;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.GenericType;
@@ -42,43 +39,6 @@ public sealed interface TypeCreator extends AnnotatableCreator, GenericTyped
      * @param version the class file version (must not be {@code null})
      */
     void withVersion(ClassVersion version);
-
-    /**
-     * Add a flag to the type.
-     *
-     * @param flag the flag to add (must not be {@code null})
-     */
-    void withFlag(AccessFlag flag);
-
-    /**
-     * Add several flags to the type.
-     *
-     * @param flags the flags to add
-     */
-    default void withFlags(Collection<AccessFlag> flags) {
-        flags.forEach(this::withFlag);
-    }
-
-    /**
-     * Add several flags to the type.
-     *
-     * @param flags the flags to add
-     */
-    default void withFlags(AccessFlag... flags) {
-        for (AccessFlag flag : flags) {
-            withFlag(flag);
-        }
-    }
-
-    /**
-     * Add the {@code public} access flag to the type.
-     */
-    void public_();
-
-    /**
-     * Remove the {@code public} access flag.
-     */
-    void packagePrivate();
 
     /**
      * Set the source file name for this type.
@@ -206,8 +166,8 @@ public sealed interface TypeCreator extends AnnotatableCreator, GenericTyped
      */
     default StaticFieldVar constantField(String name, Const value) {
         return staticField(name, sfc -> {
-            sfc.public_();
-            sfc.final_();
+            sfc.withAccess(Access.PUBLIC);
+            sfc.withFlag(ModifierFlag.FINAL);
             sfc.withInitial(value);
         });
     }

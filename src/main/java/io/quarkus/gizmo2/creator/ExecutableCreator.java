@@ -13,7 +13,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for an executable (i.e. something that can be called with arguments).
  */
-public sealed interface ExecutableCreator extends MethodTyped, TypeParameterizedCreator
+public sealed interface ExecutableCreator extends MethodTyped, TypeParameterizedCreator, ModifiableCreator
         permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     /**
      * {@return the type descriptor of this executable (not {@code null})}
@@ -213,4 +213,12 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
     default void throws_(Class<? extends Throwable> throwableType) {
         throws_(Util.classDesc(throwableType));
     }
+
+    /**
+     * Add the variable arguments modifier flag to this creator.
+     */
+    default void varargs_() {
+        withFlag(ModifierFlag.VARARGS);
+    }
+
 }

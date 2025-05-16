@@ -276,14 +276,13 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
     void instanceInitializer(Consumer<BlockCreator> builder);
 
     /**
-     * Add the {@code abstract} access flag to the class.
+     * Add the {@code abstract} modifier flag to this creator.
+     *
+     * @throws IllegalArgumentException if this creator does not support the {@code abstract} modifier flag
      */
-    void abstract_();
-
-    /**
-     * Add the {@code final} access flag to the class.
-     */
-    void final_();
+    default void abstract_() {
+        withFlag(ModifierFlag.ABSTRACT);
+    }
 
     /**
      * Generates a structural {@code equals} method in this class that compares given

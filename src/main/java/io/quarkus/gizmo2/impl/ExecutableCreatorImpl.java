@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -30,7 +30,6 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttr
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.TypeVariable;
@@ -51,32 +50,17 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
     final BitSet locals = new BitSet();
     final TypeCreatorImpl typeCreator;
 
-    final Set<AccessFlag> allowedFlags;
-    final Set<AccessFlag> unremovableFlags;
-
     private List<TypeVariable> typeVariables = List.of();
 
     GenericType genericReturnType;
     boolean typeEstablished;
     MethodTypeDesc type = null;
-    int flags;
     List<ParamVarImpl> params = List.of();
     int state = ST_INITIAL;
     List<GenericType.OfThrows> throws_ = List.of();
 
-    // `defaultFlags` are also flags that cannot be removed
-    // `allowedFlags` must contain all `defaultFlags`
-    ExecutableCreatorImpl(final TypeCreatorImpl typeCreator, final Set<AccessFlag> defaultFlags,
-            final Set<AccessFlag> allowedFlags) {
+    ExecutableCreatorImpl(final TypeCreatorImpl typeCreator) {
         this.typeCreator = typeCreator;
-        assert allowedFlags.containsAll(defaultFlags);
-        this.allowedFlags = allowedFlags;
-        this.unremovableFlags = defaultFlags;
-        int flags = 0;
-        for (AccessFlag defaultFlag : defaultFlags) {
-            flags |= defaultFlag.mask();
-        }
-        this.flags = flags;
     }
 
     public MethodTypeDesc type() {
@@ -254,7 +238,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
-        if ((flags & AccessFlag.STATIC.mask()) == 0) {
+        if ((flags & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
             GenericType.OfClass genericType = typeCreator.genericType();
@@ -409,51 +393,6 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
 
     public ClassDesc owner() {
         return typeCreator.type();
-    }
-
-    public final void public_() {
-        withFlag(AccessFlag.PUBLIC);
-        withoutFlags(AccessFlag.PRIVATE, AccessFlag.PROTECTED);
-    }
-
-    public final void packagePrivate() {
-        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE, AccessFlag.PROTECTED);
-    }
-
-    public final void private_() {
-        withFlag(AccessFlag.PRIVATE);
-        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PROTECTED);
-    }
-
-    public final void protected_() {
-        withFlag(AccessFlag.PROTECTED);
-        withoutFlags(AccessFlag.PUBLIC, AccessFlag.PRIVATE);
-    }
-
-    public final void final_() {
-        withFlag(AccessFlag.FINAL);
-    }
-
-    public final void withFlag(AccessFlag flag) {
-        if (allowedFlags.contains(flag)) {
-            flags |= flag.mask();
-        } else {
-            throw new IllegalArgumentException("Cannot add flag " + flag);
-        }
-    }
-
-    final void withoutFlag(AccessFlag flag) {
-        if (unremovableFlags.contains(flag)) {
-            throw new IllegalArgumentException("Cannot remove flag " + flag);
-        } else {
-            flags &= ~flag.mask();
-        }
-    }
-
-    final void withoutFlags(AccessFlag... flags) {
-        for (AccessFlag flag : flags) {
-            withoutFlag(flag);
-        }
     }
 
     <T extends TypeVariable> T addTypeVariable(T var) {

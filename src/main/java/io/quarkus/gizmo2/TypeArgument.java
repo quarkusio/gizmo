@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.Annotation;
+import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
