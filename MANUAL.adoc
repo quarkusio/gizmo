@@ -15,6 +15,11 @@
 [id=classoutput]
 === `ClassOutput`
 
+Implementations of the `ClassOutput` interface receive the bytes of the generated classes and resources.
+
+Users may implement this interface directly or use a provided implementation.
+
+The `ClassOutput.fileWriter(Path)` static factory method returns a `ClassWriter` which writes classes and resources under the given target path.
 
 [id=descriptors]
 == Descriptors
