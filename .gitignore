@@ -34,3 +34,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Manual artifacts ###
+MANUAL.html
+MANUAL.pdf
