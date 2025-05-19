@@ -11,6 +11,7 @@ import io.smallrye.common.constraint.Assert;
 /**
  * A container for created classes with a specific output strategy.
  */
+@FunctionalInterface
 public interface ClassOutput {
     /**
      * Accept and write the class bytes.
