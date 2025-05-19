@@ -65,7 +65,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
     default void withoutFlags(ModifierFlag... flags) {
-        withFlags(Arrays.asList(flags));
+        withoutFlags(Arrays.asList(flags));
     }
 
     /**
