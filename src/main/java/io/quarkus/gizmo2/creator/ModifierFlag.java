@@ -1,9 +1,8 @@
 package io.quarkus.gizmo2.creator;
 
 import static io.github.dmlloyd.classfile.ClassFile.*;
-import static io.quarkus.gizmo2.creator.ModifierLocation.*;
 
-import java.util.EnumSet;
+import java.util.List;
 
 /**
  * A modifier for a type or member.
@@ -12,96 +11,74 @@ public enum ModifierFlag implements Modifier {
     /**
      * The {@code abstract} modifier.
      */
-    ABSTRACT(ACC_ABSTRACT, EnumSet.of(
-            CLASS,
-            NESTED_CLASS)),
+    ABSTRACT(ACC_ABSTRACT, ACC_FINAL),
+    /**
+     * The "bridge" modifier.
+     */
+    BRIDGE(ACC_BRIDGE),
     /**
      * The {@code final} modifier.
      */
-    FINAL(ACC_FINAL, EnumSet.of(
-            CLASS_CONCRETE_METHOD,
-            CLASS_NATIVE_METHOD,
-            CLASS_STATIC_METHOD,
-            CLASS_INSTANCE_FIELD,
-            CLASS_STATIC_FIELD,
-            CLASS,
-            NESTED_CLASS,
-            PARAMETER,
-            LOCAL_VARIABLE)),
+    FINAL(ACC_FINAL, ACC_ABSTRACT | ACC_VOLATILE),
     /**
      * The "mandated" modifier.
      */
-    MANDATED(ACC_MANDATED, EnumSet.of(
-            PARAMETER)),
+    MANDATED(ACC_MANDATED),
+    /**
+     * The {@code static} modifier.
+     */
+    STATIC(ACC_STATIC),
     /**
      * The {@code synchronized} modifier.
      */
-    SYNCHRONIZED(ACC_SYNCHRONIZED, EnumSet.of(
-            CLASS_CONCRETE_METHOD,
-            CLASS_STATIC_METHOD)),
+    SYNCHRONIZED(ACC_SYNCHRONIZED),
     /**
      * The "synthetic" modifier.
      */
-    SYNTHETIC(ACC_SYNTHETIC, EnumSet.of(
-            INTERFACE_CONCRETE_METHOD,
-            INTERFACE_ABSTRACT_METHOD,
-            INTERFACE_STATIC_FIELD,
-            INTERFACE_STATIC_METHOD,
-            CLASS_CONSTRUCTOR,
-            CLASS_CONCRETE_METHOD,
-            CLASS_ABSTRACT_METHOD,
-            CLASS_NATIVE_METHOD,
-            CLASS_STATIC_METHOD,
-            CLASS_INSTANCE_FIELD,
-            CLASS_STATIC_FIELD,
-            CLASS,
-            INTERFACE,
-            NESTED_CLASS,
-            NESTED_INTERFACE,
-            PARAMETER)),
+    SYNTHETIC(ACC_SYNTHETIC),
     /**
      * The {@code transient} modifier.
      */
-    TRANSIENT(ACC_TRANSIENT, EnumSet.of(
-            CLASS_INSTANCE_FIELD)),
+    TRANSIENT(ACC_TRANSIENT),
     /**
      * The variable-argument modifier.
      */
-    VARARGS(ACC_VARARGS, EnumSet.of(
-            INTERFACE_CONCRETE_METHOD,
-            INTERFACE_ABSTRACT_METHOD,
-            INTERFACE_STATIC_METHOD,
-            CLASS_CONSTRUCTOR,
-            CLASS_CONCRETE_METHOD,
-            CLASS_ABSTRACT_METHOD,
-            CLASS_NATIVE_METHOD,
-            CLASS_STATIC_METHOD)),
+    VARARGS(ACC_VARARGS),
     /**
      * The {@code volatile} modifier.
      */
-    VOLATILE(ACC_VOLATILE, EnumSet.of(
-            CLASS_INSTANCE_FIELD,
-            CLASS_STATIC_FIELD)),
-            ;
+    VOLATILE(ACC_VOLATILE, ACC_FINAL),
+    ;
 
-    private final int mask;
     /**
-     * The valid locations.
-     * Note that this includes not only locations where the flag may be added, but
-     * also locations where it may be <em>removed</em>.
+     * The modifier flag list in order by ordinal.
      */
-    private final EnumSet<ModifierLocation> validLocations;
+    public static final List<ModifierFlag> values = List.of(values());
 
-    ModifierFlag(final int mask, final EnumSet<ModifierLocation> validLocations) {
-        this.mask = mask;
-        this.validLocations = validLocations;
+    private final int sets;
+    private final int clears;
+
+    ModifierFlag(final int sets) {
+        this(sets, 0);
+    }
+
+    ModifierFlag(final int sets, final int clears) {
+        this.sets = sets;
+        this.clears = clears;
     }
 
     public boolean validIn(final ModifierLocation location) {
-        return validLocations.contains(location);
+        return location.supports(this);
     }
 
     public int mask() {
-        return mask;
+        return sets;
+    }
+
+    /**
+     * {@return the mask of bits that are cleared when this modifier flag is set}
+     */
+    public int clearMask() {
+        return clears;
     }
 }

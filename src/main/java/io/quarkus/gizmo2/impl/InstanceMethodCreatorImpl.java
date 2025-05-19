@@ -20,6 +20,6 @@ public final class InstanceMethodCreatorImpl extends MethodCreatorImpl implement
     }
 
     public ModifierLocation modifierLocation() {
-        return ModifierLocation.CLASS_CONCRETE_METHOD;
+        return ModifierLocation.CLASS_INSTANCE_METHOD;
     }
 }

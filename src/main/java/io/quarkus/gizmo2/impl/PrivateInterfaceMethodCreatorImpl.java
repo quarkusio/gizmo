@@ -1,7 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
-
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -11,11 +9,10 @@ import io.quarkus.gizmo2.creator.ModifierLocation;
 public final class PrivateInterfaceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
     PrivateInterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        modifiers |= ACC_PRIVATE;
     }
 
     public ModifierLocation modifierLocation() {
-        return ModifierLocation.INTERFACE_CONCRETE_METHOD;
+        return ModifierLocation.INTERFACE_PRIVATE_INSTANCE_METHOD;
     }
 
     public void body(final Consumer<BlockCreator> builder) {

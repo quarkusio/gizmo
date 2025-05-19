@@ -26,6 +26,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     private FieldDesc desc;
 
     public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc) {
+        super(tc.gizmo);
         this.owner = owner;
         this.name = name;
         this.tc = tc;
