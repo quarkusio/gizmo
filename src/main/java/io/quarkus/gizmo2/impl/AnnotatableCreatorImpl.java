@@ -22,7 +22,7 @@ import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
-import io.quarkus.gizmo2.creator.Access;
+import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.quarkus.gizmo2.creator.Modifier;
@@ -70,9 +70,9 @@ public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreato
         }
     }
 
-    public void withAccess(final Access access) {
+    public void withAccess(final AccessLevel access) {
         if (supports(access)) {
-            flags = flags & ~Access.fullMask() | access.mask();
+            flags = flags & ~AccessLevel.fullMask() | access.mask();
         } else {
             throw modifierUnsupported(access);
         }

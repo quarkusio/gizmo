@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * The possible access levels for an item.
  */
-public enum Access implements Modifier {
+public enum AccessLevel implements Modifier {
     /**
      * The {@code public} access level.
      */
@@ -79,9 +79,9 @@ public enum Access implements Modifier {
     /**
      * The list of access values.
      */
-    public static final List<Access> values = List.of(values());
+    public static final List<AccessLevel> values = List.of(values());
 
-    Access(final int mask, final Set<ModifierLocation> validLocations) {
+    AccessLevel(final int mask, final Set<ModifierLocation> validLocations) {
         this.mask = mask;
         this.validLocations = validLocations;
     }
@@ -100,7 +100,7 @@ public enum Access implements Modifier {
      *
      * @param bits the bit mask
      */
-    public static Access of(int bits) {
+    public static AccessLevel of(int bits) {
         int hob = Integer.highestOneBit(bits & fullMask());
         return switch (hob) {
             case ACC_PROTECTED -> PROTECTED;

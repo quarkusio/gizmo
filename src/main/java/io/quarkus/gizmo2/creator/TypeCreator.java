@@ -166,7 +166,7 @@ public sealed interface TypeCreator extends AnnotatableCreator, GenericTyped
      */
     default StaticFieldVar constantField(String name, Const value) {
         return staticField(name, sfc -> {
-            sfc.withAccess(Access.PUBLIC);
+            sfc.withAccess(AccessLevel.PUBLIC);
             sfc.withFlag(ModifierFlag.FINAL);
             sfc.withInitial(value);
         });

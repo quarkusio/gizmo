@@ -13,7 +13,7 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.Var;
-import io.quarkus.gizmo2.creator.Access;
+import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.AnonymousClassCreator;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -61,7 +61,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
             ParamVar param = cc.parameter(name, value.type());
             FieldDesc desc = field(name, ifc -> {
                 ifc.withType(value.type());
-                ifc.withAccess(Access.PRIVATE);
+                ifc.withAccess(AccessLevel.PRIVATE);
                 ifc.withFlag(ModifierFlag.FINAL);
             });
             InstanceFieldVar fv = this_().field(desc);

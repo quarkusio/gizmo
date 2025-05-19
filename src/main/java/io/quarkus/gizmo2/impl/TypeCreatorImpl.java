@@ -50,7 +50,7 @@ import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.creator.Access;
+import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
@@ -357,7 +357,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
                             CD_String,
                             CD_MethodType),
                     smc -> {
-                        smc.withAccess(Access.PRIVATE);
+                        smc.withAccess(AccessLevel.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);

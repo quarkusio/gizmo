@@ -54,7 +54,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @param flags the flags to remove (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withoutFlag(Collection<ModifierFlag> flags) {
+    default void withoutFlags(Collection<ModifierFlag> flags) {
         flags.forEach(this::withoutFlag);
     }
 
@@ -64,7 +64,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @param flags the flags to remove (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withoutFlag(ModifierFlag... flags) {
+    default void withoutFlags(ModifierFlag... flags) {
         withFlags(Arrays.asList(flags));
     }
 
@@ -83,7 +83,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @param access the access level to set (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support the given access level
      */
-    void withAccess(Access access);
+    void withAccess(AccessLevel access);
 
     /**
      * Set the access level of this creator to {@code public}.
@@ -91,7 +91,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @throws IllegalArgumentException if this creator does not support the {@code public} access level
      */
     default void public_() {
-        withAccess(Access.PUBLIC);
+        withAccess(AccessLevel.PUBLIC);
     }
 
     /**
@@ -100,7 +100,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @throws IllegalArgumentException if this creator does not support the {@code protected} access level
      */
     default void protected_() {
-        withAccess(Access.PROTECTED);
+        withAccess(AccessLevel.PROTECTED);
     }
 
     /**
@@ -109,7 +109,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @throws IllegalArgumentException if this creator does not support the package-private access level
      */
     default void packagePrivate() {
-        withAccess(Access.PACKAGE_PRIVATE);
+        withAccess(AccessLevel.PACKAGE_PRIVATE);
     }
 
     /**
@@ -118,7 +118,7 @@ public sealed interface ModifiableCreator permits AnnotatableCreator, Executable
      * @throws IllegalArgumentException if this creator does not support the {@code private} access level
      */
     default void private_() {
-        withAccess(Access.PRIVATE);
+        withAccess(AccessLevel.PRIVATE);
     }
 
     /**
