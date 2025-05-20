@@ -70,7 +70,7 @@ public class TestClassMaker implements ClassOutput {
 
     public void write(final String path, final byte[] bytes) {
         if (path.endsWith(".class")) {
-            throw new IllegalStateException("Class writing was not handled correctly");
+            throw new IllegalStateException("Use write(ClassDesc, byte[]) to write .class files to TestClassMaker");
         }
         cl.addResource(path, bytes);
     }
