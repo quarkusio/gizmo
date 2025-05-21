@@ -1,5 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static java.lang.constant.ConstantDescs.CD_int;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
@@ -14,8 +17,8 @@ final class ArrayStore extends Item {
 
     ArrayStore(final Item arrayExpr, final Item index, final Item value, final ClassDesc componentType) {
         this.arrayExpr = arrayExpr;
-        this.index = index;
-        this.value = value;
+        this.index = convert(index, CD_int);
+        this.value = convert(value, componentType);
         this.componentType = componentType;
     }
 

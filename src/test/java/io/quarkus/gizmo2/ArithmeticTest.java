@@ -13,6 +13,36 @@ import java.util.function.LongUnaryOperator;
 import org.junit.jupiter.api.Test;
 
 public class ArithmeticTest {
+    @FunctionalInterface
+    public interface IntToLongFunction {
+        long apply(int a);
+    }
+
+    @FunctionalInterface
+    public interface LongToDoubleFunction {
+        double apply(long a);
+    }
+
+    @FunctionalInterface
+    public interface LongIntToLongFunction {
+        long apply(long a, int b);
+    }
+
+    @FunctionalInterface
+    public interface IntLongToLongFunction {
+        long apply(int a, long b);
+    }
+
+    @FunctionalInterface
+    public interface IntIntToLongFunction {
+        long apply(int a, int b);
+    }
+
+    @FunctionalInterface
+    public interface LongDoubleToDoubleFunction {
+        double apply(long a, double b);
+    }
+
     @Test
     public void intArithmetic() {
         TestClassMaker tcm = new TestClassMaker();
@@ -255,9 +285,125 @@ public class ArithmeticTest {
         assertEquals(-200L >>> 3L, tcm.staticMethod("ushr", LongIntToLongFunction.class).apply(-200L, 3));
     }
 
-    @FunctionalInterface
-    public interface LongIntToLongFunction {
-        long apply(long a, int b);
+    @Test
+    public void intLongArithmetic() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.Long", cc -> {
+            cc.staticMethod("neg", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.neg(a));
+                });
+            });
+            cc.staticMethod("add", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.add(a, b));
+                });
+            });
+            cc.staticMethod("sub", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.sub(a, b));
+                });
+            });
+            cc.staticMethod("mul", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.mul(a, b));
+                });
+            });
+            cc.staticMethod("div", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.div(a, b));
+                });
+            });
+            cc.staticMethod("rem", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.rem(a, b));
+                });
+            });
+            cc.staticMethod("and", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.and(a, b));
+                });
+            });
+            cc.staticMethod("or", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.or(a, b));
+                });
+            });
+            cc.staticMethod("xor", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.xor(a, b));
+                });
+            });
+            cc.staticMethod("shl", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.shl(a, b));
+                });
+            });
+            cc.staticMethod("shr", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.shr(a, b));
+                });
+            });
+            cc.staticMethod("ushr", mc -> {
+                mc.returning(long.class);
+                ParamVar a = mc.parameter("a", int.class);
+                ParamVar b = mc.parameter("b", int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ushr(a, b));
+                });
+            });
+        });
+        assertEquals(-2L, tcm.staticMethod("neg", IntToLongFunction.class).apply(2));
+        assertEquals(2L, tcm.staticMethod("neg", IntToLongFunction.class).apply(-2));
+        assertEquals(2L + 3L, tcm.staticMethod("add", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L - 3L, tcm.staticMethod("sub", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L * 3L, tcm.staticMethod("mul", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L / 3L, tcm.staticMethod("div", IntLongToLongFunction.class).apply(2, 3L));
+        assertThrows(ArithmeticException.class, () -> {
+            tcm.staticMethod("div", IntLongToLongFunction.class).apply(2, 0L);
+        });
+        assertEquals(2 % 3, tcm.staticMethod("rem", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 & 3, tcm.staticMethod("and", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 | 3, tcm.staticMethod("or", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 ^ 3, tcm.staticMethod("xor", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 << 3, tcm.staticMethod("shl", IntIntToLongFunction.class).apply(2, 3));
+        assertEquals(200 >> 3, tcm.staticMethod("shr", IntIntToLongFunction.class).apply(200, 3));
+        assertEquals(-200 >> 3, tcm.staticMethod("shr", IntIntToLongFunction.class).apply(-200, 3));
+        assertEquals(200 >>> 3, tcm.staticMethod("ushr", IntIntToLongFunction.class).apply(200, 3));
+        assertEquals(-200 >>> 3, tcm.staticMethod("ushr", IntIntToLongFunction.class).apply(-200, 3));
     }
 
     @Test
@@ -322,5 +468,69 @@ public class ArithmeticTest {
         assertEquals(2.0 / 0.0, tcm.staticMethod("div", DoubleBinaryOperator.class).applyAsDouble(2.0, 0.0));
         assertEquals(-2.0 / 0.0, tcm.staticMethod("div", DoubleBinaryOperator.class).applyAsDouble(-2.0, 0.0));
         assertEquals(2.0 % 3.0, tcm.staticMethod("rem", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+    }
+
+    @Test
+    public void longDoubleArithmetic() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.Double", cc -> {
+            cc.staticMethod("neg", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                mc.body(bc -> {
+                    bc.return_(bc.neg(a));
+                });
+            });
+            cc.staticMethod("add", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                ParamVar b = mc.parameter("b", double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.add(a, b));
+                });
+            });
+            cc.staticMethod("sub", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                ParamVar b = mc.parameter("b", double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.sub(a, b));
+                });
+            });
+            cc.staticMethod("mul", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                ParamVar b = mc.parameter("b", double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.mul(a, b));
+                });
+            });
+            cc.staticMethod("div", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                ParamVar b = mc.parameter("b", double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.div(a, b));
+                });
+            });
+            cc.staticMethod("rem", mc -> {
+                mc.returning(double.class);
+                ParamVar a = mc.parameter("a", long.class);
+                ParamVar b = mc.parameter("b", double.class);
+                mc.body(bc -> {
+                    bc.return_(bc.rem(a, b));
+                });
+            });
+        });
+        assertEquals(-2.0, tcm.staticMethod("neg", LongToDoubleFunction.class).apply(2L));
+        assertEquals(2.0, tcm.staticMethod("neg", LongToDoubleFunction.class).apply(-2L));
+        assertEquals(2L + 3.0, tcm.staticMethod("add", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L - 3.0, tcm.staticMethod("sub", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L * 3.0, tcm.staticMethod("mul", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L / 3.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L / 0.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(2L, 0.0));
+        assertEquals(-2L / 0.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(-2L, 0.0));
+        assertEquals(2L % 3.0, tcm.staticMethod("rem", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
     }
 }

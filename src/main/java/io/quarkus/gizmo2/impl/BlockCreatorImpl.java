@@ -1,7 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.boxingConversion;
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
+import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
 import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
-import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
@@ -53,7 +56,6 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
@@ -224,7 +226,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void set(final Assignable var, final Expr value, final MemoryOrder mode) {
-        addItem(((AssignableImpl) var).emitSet(this, (Item) value, mode));
+        Item newValue = convert(value, var.type());
+        addItem(((AssignableImpl) var).emitSet(this, newValue, mode));
     }
 
     public void andAssign(final Assignable var, final Expr arg) {
@@ -279,57 +282,18 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         set(var, rem(var, arg));
     }
 
-    private static final Map<ClassDesc, ClassDesc> boxTypes = Map.of(
-            CD_boolean, CD_Boolean,
-            CD_byte, CD_Byte,
-            CD_char, CD_Character,
-            CD_short, CD_Short,
-            CD_int, CD_Integer,
-            CD_long, CD_Long,
-            CD_float, CD_Float,
-            CD_double, CD_Double,
-            CD_void, CD_Void);
-
-    private static final Map<ClassDesc, ClassDesc> unboxTypes = Util.reverseMap(boxTypes);
-
     public Expr box(final Expr a) {
-        if (unboxTypes.containsKey(a.type())) {
+        if (Conversions.isPrimitiveWrapper(a.type())) {
             return a;
         }
-        ClassDesc unboxType = a.type();
-        ClassDesc boxType = boxTypes.get(unboxType);
-        if (boxType == null) {
-            throw new IllegalArgumentException("No box type for " + unboxType.displayName());
-        }
-        if (boxType.equals(CD_Void)) {
-            throw new IllegalArgumentException("Cannot box void");
-        }
-        return invokeStatic(ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, unboxType)), a);
+        return addItem(new Box(a));
     }
 
     public Expr unbox(final Expr a) {
-        if (boxTypes.containsKey(a.type())) {
+        if (Conversions.isPrimitive(a.type())) {
             return a;
         }
-        ClassDesc boxType = a.type();
-        ClassDesc unboxType = unboxTypes.get(boxType);
-        if (unboxType == null) {
-            throw new IllegalArgumentException("No unbox type for " + boxType.displayName());
-        }
-        if (unboxType.equals(CD_void)) {
-            throw new IllegalArgumentException("Cannot unbox void");
-        }
-        return invokeVirtual(ClassMethodDesc.of(boxType, switch (TypeKind.from(unboxType)) {
-            case BOOLEAN -> "booleanValue";
-            case BYTE -> "byteValue";
-            case CHAR -> "charValue";
-            case SHORT -> "shortValue";
-            case INT -> "intValue";
-            case LONG -> "longValue";
-            case FLOAT -> "floatValue";
-            case DOUBLE -> "doubleValue";
-            default -> throw impossibleSwitchCase(TypeKind.from(unboxType));
-        }, MethodTypeDesc.of(unboxType, Util.NO_DESCS)), a);
+        return addItem(new Unbox(a));
     }
 
     public Expr switchEnum(final ClassDesc outputType, final Expr enumExpr, final Consumer<SwitchCreator> builder) {
@@ -454,8 +418,17 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    private Expr rel(final Expr a, final Expr b, final If.Kind kind) {
-        switch (a.typeKind().asLoadable()) {
+    private Expr rel(Expr a, Expr b, final If.Kind kind) {
+        ClassDesc operandType = a.type();
+        Optional<ClassDesc> promotedType = numericPromotion(a.type(), b.type());
+        if (promotedType.isPresent()) {
+            operandType = promotedType.get();
+            a = convert(a, operandType);
+            b = convert(b, operandType);
+        }
+        TypeKind typeKind = TypeKind.from(operandType).asLoadable();
+
+        switch (typeKind) {
             case INT -> {
                 // normal rel
                 if (a instanceof IntConst ac && ac.intValue() == 0) {
@@ -483,7 +456,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                     return addItem(new Rel(a, b, kind));
                 }
             }
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(typeKind);
         }
     }
 
@@ -660,14 +633,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
                 return addItem(new PrimitiveCast(a, toGenType));
-            } else if (boxTypes.containsKey(a.type()) && toType.equals(boxTypes.get(a.type()))) {
+            } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
                 return box(a);
             } else {
                 throw new IllegalArgumentException("Cannot cast primitive value of type '" + a.type().displayName()
                         + "' to object type '" + toType.displayName() + "'");
             }
         } else {
-            if (unboxTypes.containsKey(a.type()) && toType.equals(unboxTypes.get(a.type()))) {
+            if (toType.equals(unboxingConversion(a.type()).orElse(null))) {
                 return unbox(a);
             } else if (toType.isPrimitive()) {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
@@ -885,7 +858,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                     }
                     return ifRel;
                 } else if (cond instanceof RelZero rz) {
-                    IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input());
+                    IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input(), false);
                     if (ifZero.mayFallThrough()) {
                         rz.replace(tail.prev(), ifZero);
                     } else {
@@ -900,11 +873,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             if (cond instanceof Rel rel) {
                 return addItem(new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right()));
             } else if (cond instanceof RelZero rz) {
-                return addItem(new IfZero(type, rz.kind(), wt, wf, rz.input()));
+                return addItem(new IfZero(type, rz.kind(), wt, wf, rz.input(), false));
             }
             // failed
         }
-        return addItem(new IfZero(type, If.Kind.NE, wt, wf, (Item) cond));
+        return addItem(new IfZero(type, If.Kind.NE, wt, wf, (Item) cond, true));
     }
 
     private void doIf(final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
@@ -1076,8 +1049,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         replaceLastItem(Return.RETURN_VOID);
     }
 
-    public void return_(final Expr val) {
-        requireSameLoadableTypeKind(returnType, val.type());
+    public void return_(Expr val) {
+        val = convert(val, returnType);
         replaceLastItem(val.equals(Const.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
 
@@ -1085,8 +1058,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         replaceLastItem(new Throw(val));
     }
 
-    public void yield(final Expr val) {
-        requireSameLoadableTypeKind(this, val);
+    public void yield(Expr val) {
+        val = convert(val, outputType);
         replaceLastItem(val.equals(Const.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
@@ -1271,6 +1244,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     <I extends Item> I addItem(I item) {
         checkActive();
         Node node = item.insert(tail);
+        item.bind();
         item.forEachDependency(node, Item::insertIfUnbound);
         if (!item.mayFallThrough()) {
             assert tail.item() instanceof Yield;

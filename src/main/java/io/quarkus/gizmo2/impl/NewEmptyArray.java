@@ -1,5 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static java.lang.constant.ConstantDescs.CD_int;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
@@ -14,7 +17,7 @@ final class NewEmptyArray extends Item {
 
     NewEmptyArray(final ClassDesc componentType, final Item size) {
         arrayType = componentType.arrayType();
-        this.size = size;
+        this.size = convert(size, CD_int);
     }
 
     @Override

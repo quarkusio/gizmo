@@ -1,13 +1,15 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
@@ -39,13 +41,18 @@ final class Invoke extends Item {
             throw new IllegalArgumentException("Method " + owner.displayName() + "." + name + "() takes "
                     + paramsStr + ", but " + argsStr + " passed");
         }
-        for (int i = 0; i < type.parameterCount(); i++) {
-            ClassDesc parameterType = type.parameterType(i);
-            ClassDesc argumentType = args.get(i).type();
-            if (TypeKind.from(parameterType).asLoadable() != TypeKind.from(argumentType).asLoadable()) {
+        if (instance != null) {
+            instance = convert(instance, owner);
+        }
+        List<Item> newArgs = new ArrayList<>(args.size());
+        for (int i = 0; i < args.size(); i++) {
+            try {
+                newArgs.add(convert(args.get(i), type.parameterType(i)));
+            } catch (IllegalArgumentException e) {
+                // slightly better error message
                 throw new IllegalArgumentException("Parameter " + i + " of method " + owner.displayName() + "." + name
-                        + "() is of type '" + parameterType.displayName() + "', but given argument is '"
-                        + argumentType.displayName() + "'");
+                        + "() is of type '" + type.parameterType(i).displayName() + "', but given argument is '"
+                        + args.get(i).type().displayName() + "'");
             }
         }
         this.owner = owner;
@@ -54,7 +61,7 @@ final class Invoke extends Item {
         this.opcode = opcode;
         this.isInterface = isInterface;
         this.instance = instance;
-        this.args = args;
+        this.args = newArgs;
     }
 
     @Override

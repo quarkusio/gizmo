@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 
 import java.lang.constant.ClassDesc;
@@ -12,7 +14,8 @@ import io.quarkus.gizmo2.TypeKind;
 final class Neg extends Item {
     private final Item a;
 
-    Neg(final Expr a) {
+    Neg(Expr a) {
+        a = convert(a, unboxingConversion(a.type()).orElse(a.type()));
         this.a = (Item) a;
         TypeKind typeKind = a.typeKind();
         if (typeKind == TypeKind.REFERENCE || typeKind == TypeKind.BOOLEAN || typeKind == TypeKind.VOID) {

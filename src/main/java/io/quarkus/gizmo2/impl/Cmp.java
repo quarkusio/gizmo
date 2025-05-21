@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
 import static java.lang.constant.ConstantDescs.CD_Double;
 import static java.lang.constant.ConstantDescs.CD_Float;
 import static java.lang.constant.ConstantDescs.CD_Integer;
@@ -10,10 +12,12 @@ import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.TypeKind;
 
 final class Cmp extends Item {
     private static final ClassDesc CD_Comparable = ClassDesc.of("java.lang.Comparable");
@@ -22,8 +26,18 @@ final class Cmp extends Item {
     private final Kind kind;
 
     Cmp(final Expr a, final Expr b, final Kind kind) {
-        this.a = (Item) a;
-        this.b = (Item) b;
+        Optional<ClassDesc> promotedType = numericPromotion(a.type(), b.type());
+        if (promotedType.isPresent()) {
+            this.a = convert(a, promotedType.get());
+            this.b = convert(b, promotedType.get());
+        } else {
+            if (TypeKind.from(a.type()) != TypeKind.REFERENCE || TypeKind.from(b.type()) != TypeKind.REFERENCE) {
+                throw new IllegalArgumentException("Comparison expects both operands to have the same type: "
+                        + a.type().displayName() + ", " + b.type().displayName());
+            }
+            this.a = (Item) a;
+            this.b = (Item) b;
+        }
         this.kind = kind;
     }
 
