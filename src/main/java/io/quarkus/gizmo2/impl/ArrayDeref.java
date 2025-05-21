@@ -1,5 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static java.lang.constant.ConstantDescs.CD_int;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
@@ -16,7 +19,7 @@ public final class ArrayDeref extends AssignableImpl {
     ArrayDeref(final Item item, final ClassDesc componentType, final Expr index) {
         this.item = item;
         this.componentType = componentType;
-        this.index = (Item) index;
+        this.index = convert(index, CD_int);
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {

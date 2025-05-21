@@ -394,64 +394,26 @@ public class InvocationTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.WrongArgumentTypes", cc -> {
-            MethodDesc returnString = cc.staticMethod("returnString", mc -> {
-                ParamVar input = mc.parameter("input", String.class);
-                mc.returning(String.class);
+            MethodDesc returnInt = cc.staticMethod("returnInt", mc -> {
+                ParamVar input = mc.parameter("input", int.class);
+                mc.returning(int.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
-                });
-            });
-
-            MethodDesc returnLong = cc.staticMethod("returnLong", mc -> {
-                ParamVar input = mc.parameter("input", long.class);
-                mc.returning(long.class);
-                mc.body(bc -> {
-                    bc.return_(bc.add(input, Const.of(1L)));
-                });
-            });
-
-            MethodDesc returnDouble = cc.staticMethod("returnDouble", mc -> {
-                ParamVar input = mc.parameter("input", double.class);
-                mc.returning(double.class);
-                mc.body(bc -> {
-                    bc.return_(bc.add(input, Const.of(1.0)));
+                    bc.return_(bc.add(input, Const.of(1)));
                 });
             });
 
             cc.staticMethod("invoke", mc -> {
                 mc.body(bc -> {
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Const.of(1));
+                        bc.invokeStatic(returnInt, Const.of(1L));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Const.of(1L));
+                        bc.invokeStatic(returnInt, Const.of(1.0));
                     });
                     assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnString, Const.of(1.0));
+                        bc.invokeStatic(returnInt, Const.of(""));
                     });
 
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Const.of(1));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Const.of(1.0));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnLong, Const.of(""));
-                    });
-
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Const.of(1));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Const.of(1L));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Const.of(1.0F));
-                    });
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.invokeStatic(returnDouble, Const.of(""));
-                    });
                     bc.return_();
                 });
             });

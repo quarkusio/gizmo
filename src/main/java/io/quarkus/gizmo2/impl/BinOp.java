@@ -1,8 +1,13 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
+import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
+import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
+import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -15,19 +20,31 @@ final class BinOp extends Item {
     private final Kind kind;
 
     BinOp(final Expr a, final Expr b, final Kind kind) {
-        // todo: automatic conversions, unboxing
         switch (kind.operands) {
-            case SAME -> requireSameLoadableTypeKind(a, b);
-            case SECOND_INT -> {
-                // the first operand is checked later by `isValidFor()`
-                if (b.typeKind().asLoadable() != TypeKind.INT) {
-                    throw new IllegalArgumentException("Second operand must be int, but is " + b.type().displayName());
+            case SAME -> {
+                Optional<ClassDesc> promotedType = numericPromotion(a.type(), b.type());
+                if (promotedType.isPresent()) {
+                    this.a = convert(a, promotedType.get());
+                    this.b = convert(b, promotedType.get());
+                } else {
+                    throw new IllegalArgumentException("Operation " + kind
+                            + " expects both operands to have the same type: " + a.type().displayName()
+                            + ", " + b.type().displayName());
                 }
             }
+            case SECOND_INT -> {
+                // the first operand is checked below by `isValidFor()`
+                if (CD_int.equals(unboxingConversion(b.type()).orElse(b.type()))) {
+                    this.a = convert(a, unboxingConversion(a.type()).orElse(a.type()));
+                    this.b = convert(b, CD_int);
+                } else {
+                    throw new IllegalArgumentException("Operation " + kind
+                            + " expects second operand to be int: " + b.type().displayName());
+                }
+            }
+            default -> throw impossibleSwitchCase(kind.operands);
         }
 
-        this.a = (Item) a;
-        this.b = (Item) b;
         this.kind = kind;
         // it is important here that `type()` (to which `typeKind()` delegates) returns the type
         // of the _first_ operand, at least for operations that use `Operands.SECOND_INT` (see above)
