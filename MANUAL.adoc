@@ -1,0 +1,276 @@
+= Gizmo User's Manual
+:preface-title: introduction
+:docname: user-manual
+:toc:
+
+[id=introduction]
+== Introduction
+
+[id=quick-start]
+== Quick start
+
+[id=gizmo-interface]
+== The `Gizmo` interface
+
+[id=classoutput]
+=== `ClassOutput`
+
+
+[id=descriptors]
+== Descriptors
+
+[id=classdesc]
+=== The `ClassDesc` interface
+
+[id=fielddesc]
+=== The `FieldDesc` interface
+
+[id=methoddesc]
+=== `MethodDesc` and `ConstructorDesc`
+
+[id=methodtypedesc]
+=== The `MethodTypeDesc` interface
+
+[id=creating-types]
+== Creating types
+
+[id=creating-fields]
+== Creating fields
+
+[id=creating-methods]
+== Creating methods and constructors
+
+[id=modifiers]
+== Access levels and modifiers
+
+[id=writing-instructions]
+=== Writing instructions
+
+[id=blocks]
+== Blocks
+
+[id=scoping]
+=== Scoping
+
+[id=expressions]
+== Expressions
+
+[id=expressions-use]
+=== How to use expressions correctly
+
+[id=types]
+=== Types
+
+[id=constants]
+=== Constants
+
+[id=const]
+==== The `Const` interface
+
+[id=jdk-const]
+==== The `ConstantDesc` and `Constable` interfaces
+
+[id=condy]
+==== Dynamic constants
+
+[id=this]
+=== The special `this` expression
+
+[id=assignable]
+=== Assignable expressions
+
+[id=local-vars]
+==== Local variables
+
+[id=fields]
+==== Field expressions
+
+[id=array-elements]
+==== Array element expressions
+
+[id=variable-use]
+==== Using variable values
+
+[id=variable-mutate]
+==== Mutating variables
+
+[id=variable-atomics]
+==== Atomic operations on variables
+
+[id=void-expr]
+=== Void expressions
+
+[id=yielding]
+=== Yielding values from blocks
+
+[id=arithmetic]
+=== Arithmetic expressions
+
+xxx: `add`/`sub`/`mul`/`div`/`mod`/`neg`
+
+[id=bitwise-logic]
+=== Bitwise logical expressions
+
+xxx: `and`/`or`/`xor`/`complement`
+
+[id=bitwise-shift]
+=== Bitwise shifting expressions
+
+xxx: `shl`/`shr`/`ushr`
+
+[id=relational]
+=== Relational expressions
+
+[id=equality]
+==== Equality/inequality
+
+xxx: `eq`/`ne`
+
+[id=numerical-relations]
+==== Numerical relations
+
+xxx: `lt`/`le`/`gt`/`ge`
+
+[id=comparator-like]
+==== Comparator-like operations
+
+xxx: `cmp`/`cmpl`/`cmpg`
+
+[id=invocation]
+=== Invocation expressions
+
+[id=invoke-static]
+==== `invokeStatic`
+
+[id=invoke-virtual]
+==== `invokeVirtual`
+
+[id=invoke-interface]
+==== `invokeInterface`
+
+[id=invoke-special]
+==== `invokeSpecial`
+
+[id=new]
+=== `new` expression
+
+[id=new-array]
+=== `newArray` expression
+
+[id=anonymous]
+=== Anonymous class expressions
+
+[id=lambdas]
+=== Lambda expressions
+
+[id=control]
+== Control flow
+
+[id=block]
+=== `block`
+
+[id=break]
+=== `break`
+
+[id=goto]
+=== `goto`/`gotoStart`
+
+[id=if]
+=== `if`/`cond`
+
+[id=logical]
+=== `logicalAnd`/`logicalOr`
+
+[id=switch]
+=== `switch` and `switchEnum`
+
+[id=goto-case]
+==== `gotoCase`/`gotoDefault`
+
+[id=loop]
+=== `loop`
+
+[id=while]
+=== `while`/`doWhile`
+
+[id=for-each]
+=== `forEach`
+
+[id=continue]
+=== `continue_`
+
+[id=try]
+=== `try_`
+
+[id=synchronized]
+=== `synchronized_`
+
+[id=auto-close]
+=== `autoClose`
+
+[id=annotations]
+== Adding annotations
+
+(TODO more detail)
+
+[id=helpers]
+== Helper methods
+
+[id=assertions]
+=== Assertions
+
+[id=expr-equals]
+=== `exprEquals`/`exprHashCode`/`exprToString`
+
+[id=array-equals]
+=== `arrayEquals`/`arrayHashCode`/`arrayToString`
+
+[id=class-for-name]
+=== `classForName`
+
+[id=close]
+=== `close`/`autoClose`
+
+[id=iterate]
+=== `iterate`
+
+[id=current-thread]
+=== `currentThread`
+
+[id=optional]
+=== `optionalOf`/`optionalOfNullable`
+
+[id=collection-of]
+=== `mapOf`/`setOf`/`listOf`/`mapEntryOf`
+
+[id=swap]
+=== `swap`/`rotate`
+
+[id=boxing]
+=== `box`/`unbox`
+
+[id=locked]
+=== `locked`
+
+[id=fences]
+=== Fences
+
+[id=wrappers]
+== Object wrappers
+
+(TODO list them)
+
+[id=generic-type]
+== Generic types and type annotations
+
+[id=building-generic-types]
+=== Building generic types
+
+[id=type-variables]
+=== Adding type variables
+
+[id=debugging]
+== Debugging tips
+
+[id=source-file-line]
+=== Adding source file name and line numbers
