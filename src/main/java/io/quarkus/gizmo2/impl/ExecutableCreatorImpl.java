@@ -37,7 +37,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
-public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImpl implements ExecutableCreator
+public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {
 
     private static final MethodParameterInfo EMPTY_PI = MethodParameterInfo.of(Optional.empty(), 0);
@@ -161,7 +161,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         mb.with(SignatureAttribute.of(computeSignature()));
-        mb.withFlags(flags);
+        mb.withFlags(modifiers);
         addVisible(mb);
         addInvisible(mb);
         List<GenericType.OfThrows> throws_ = this.throws_;
@@ -238,7 +238,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
-        if ((flags & ACC_STATIC) == 0) {
+        if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
             GenericType.OfClass genericType = typeCreator.genericType();
@@ -309,7 +309,7 @@ public sealed abstract class ExecutableCreatorImpl extends AnnotatableCreatorImp
         }
         state = ST_BODY;
         try {
-            typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+            typeCreator.zb.withMethod(name(), type(), modifiers, mb -> {
                 doBody(builder, mb);
             });
         } finally {

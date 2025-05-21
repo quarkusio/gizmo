@@ -10,7 +10,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator interface for parameters.
  */
-public sealed interface ParamCreator extends AnnotatableCreator, GenericTyped permits ParamCreatorImpl {
+public sealed interface ParamCreator extends ModifiableCreator, GenericTyped permits ParamCreatorImpl {
     /**
      * Change the type of this parameter.
      *

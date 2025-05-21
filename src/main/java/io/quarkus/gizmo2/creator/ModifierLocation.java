@@ -76,10 +76,5 @@ public enum ModifierLocation {
      * A local variable.
      */
     LOCAL_VARIABLE,
-    /**
-     * No location.
-     */
-    // always last
-    NONE,
     ;
 }

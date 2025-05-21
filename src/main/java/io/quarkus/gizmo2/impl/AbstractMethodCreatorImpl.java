@@ -10,7 +10,7 @@ import io.quarkus.gizmo2.creator.ModifierLocation;
 public final class AbstractMethodCreatorImpl extends MethodCreatorImpl implements AbstractMethodCreator {
     AbstractMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        flags |= ACC_ABSTRACT;
+        modifiers |= ACC_ABSTRACT;
     }
 
     public ModifierLocation modifierLocation() {
@@ -19,7 +19,7 @@ public final class AbstractMethodCreatorImpl extends MethodCreatorImpl implement
 
     void accept(final Consumer<? super AbstractMethodCreatorImpl> builder) {
         builder.accept(this);
-        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+        typeCreator.zb.withMethod(name(), type(), modifiers, mb -> {
             doBody(null, mb);
         });
     }

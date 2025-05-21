@@ -4,7 +4,6 @@ import java.lang.annotation.ElementType;
 import java.util.List;
 
 import io.github.dmlloyd.classfile.Annotation;
-import io.quarkus.gizmo2.creator.ModifierLocation;
 
 public final class TypeAnnotatableCreatorImpl extends AnnotatableCreatorImpl {
 
@@ -17,9 +16,5 @@ public final class TypeAnnotatableCreatorImpl extends AnnotatableCreatorImpl {
 
     public ElementType annotationTargetType() {
         return ElementType.TYPE_USE;
-    }
-
-    public ModifierLocation modifierLocation() {
-        return ModifierLocation.NONE;
     }
 }

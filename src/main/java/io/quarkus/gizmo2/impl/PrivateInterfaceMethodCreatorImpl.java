@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.creator.ModifierLocation;
 public final class PrivateInterfaceMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
     PrivateInterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        flags |= ACC_PRIVATE;
+        modifiers |= ACC_PRIVATE;
     }
 
     public ModifierLocation modifierLocation() {

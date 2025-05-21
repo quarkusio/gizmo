@@ -10,7 +10,7 @@ import io.quarkus.gizmo2.creator.ModifierLocation;
 public final class StaticNativeMethodCreatorImpl extends MethodCreatorImpl implements AbstractMethodCreator {
     StaticNativeMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        flags |= ACC_STATIC | ACC_NATIVE;
+        modifiers |= ACC_STATIC | ACC_NATIVE;
     }
 
     public ModifierLocation modifierLocation() {
@@ -19,7 +19,7 @@ public final class StaticNativeMethodCreatorImpl extends MethodCreatorImpl imple
 
     void accept(final Consumer<? super StaticNativeMethodCreatorImpl> builder) {
         builder.accept(this);
-        typeCreator.zb.withMethod(name(), type(), flags, mb -> {
+        typeCreator.zb.withMethod(name(), type(), modifiers, mb -> {
             doBody(null, mb);
         });
     }

@@ -3,10 +3,13 @@ package io.quarkus.gizmo2.creator;
 import java.util.Arrays;
 import java.util.Collection;
 
+import io.quarkus.gizmo2.impl.ModifiableCreatorImpl;
+
 /**
  * A creator for something which can have modifiers.
  */
-public sealed interface ModifiableCreator permits AnnotatableCreator, ExecutableCreator {
+public sealed interface ModifiableCreator extends AnnotatableCreator
+        permits ExecutableCreator, MemberCreator, ParamCreator, TypeCreator, ModifiableCreatorImpl {
     /**
      * {@return the modifier location constant for this creator (not {@code null})}
      */

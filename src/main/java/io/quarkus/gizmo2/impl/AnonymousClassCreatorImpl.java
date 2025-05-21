@@ -36,7 +36,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
     AnonymousClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
             final ConstructorDesc superCtor, final ArrayList<Expr> captureExprs) {
         super(type, output, zb);
-        flags |= ACC_FINAL;
+        modifiers |= ACC_FINAL;
         this.superCtor = superCtor;
         extends_(superCtor.owner());
         superArgs = new ArrayList<>(superCtor.type().parameterCount());

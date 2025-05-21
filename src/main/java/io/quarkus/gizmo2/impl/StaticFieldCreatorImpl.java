@@ -24,9 +24,9 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
             final boolean isInterface) {
         super(owner, name, tc);
         this.isInterface = isInterface;
-        flags |= ACC_STATIC;
+        modifiers |= ACC_STATIC;
         if (isInterface) {
-            flags |= ACC_PUBLIC | ACC_FINAL;
+            modifiers |= ACC_PUBLIC | ACC_FINAL;
         }
     }
 
@@ -66,7 +66,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
             tc.staticInitializer(initializer);
         }
         tc.zb.withField(name(), desc().type(), fb -> {
-            fb.withFlags(flags);
+            fb.withFlags(modifiers);
             fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
             addVisible(fb);
             addInvisible(fb);

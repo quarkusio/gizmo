@@ -63,7 +63,7 @@ import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 
-public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl implements TypeCreator
+public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl implements TypeCreator
         permits ClassCreatorImpl, InterfaceCreatorImpl {
 
     private static final ClassDesc CD_InputStream = Util.classDesc(InputStream.class);
@@ -237,7 +237,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public MethodDesc staticMethod(final String name, final Consumer<StaticMethodCreator> builder) {
         checkNotNullParam("builder", builder);
         MethodDesc desc;
-        boolean isInterface = (flags & ACC_INTERFACE) != 0;
+        boolean isInterface = (modifiers & ACC_INTERFACE) != 0;
         if (isInterface) {
             StaticInterfaceMethodCreatorImpl smc = new StaticInterfaceMethodCreatorImpl(this, name);
             smc.accept(builder);
@@ -256,7 +256,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     public StaticFieldVar staticField(final String name, final Consumer<StaticFieldCreator> builder) {
         checkNotNullParam("name", name);
         checkNotNullParam("builder", builder);
-        boolean isInterface = (flags & ACC_INTERFACE) != 0;
+        boolean isInterface = (modifiers & ACC_INTERFACE) != 0;
         var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
@@ -281,7 +281,7 @@ public abstract sealed class TypeCreatorImpl extends AnnotatableCreatorImpl impl
     void postAccept() {
         zb.withSuperclass(superSig.desc());
         zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
-        zb.withFlags(flags);
+        zb.withFlags(modifiers);
         zb.with(SignatureAttribute.of(computeSignature()));
         addVisible(zb);
         addInvisible(zb);

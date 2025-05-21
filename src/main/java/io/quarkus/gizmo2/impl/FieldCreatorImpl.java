@@ -17,7 +17,7 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
-public abstract sealed class FieldCreatorImpl extends AnnotatableCreatorImpl implements FieldCreator
+public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl implements FieldCreator
         permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {
     final ClassDesc owner;
     final String name;

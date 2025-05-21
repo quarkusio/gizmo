@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.desc.MemberDesc;
 /**
  * A generalized creator for any kind of class member.
  */
-public sealed interface MemberCreator extends AnnotatableCreator, Typed
+public sealed interface MemberCreator extends ModifiableCreator, Typed
         permits ConstructorCreator, FieldCreator, MethodCreator {
 
     /**

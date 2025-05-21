@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.creator.StaticMethodCreator;
 public final class StaticInterfaceMethodCreatorImpl extends MethodCreatorImpl implements StaticMethodCreator {
     StaticInterfaceMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        flags |= ACC_PUBLIC | ACC_STATIC;
+        modifiers |= ACC_PUBLIC | ACC_STATIC;
     }
 
     public ModifierLocation modifierLocation() {

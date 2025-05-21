@@ -20,7 +20,7 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
 
     InterfaceCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         super(type, output, zb);
-        flags |= ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC | ACC_PUBLIC;
+        modifiers |= ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC | ACC_PUBLIC;
     }
 
     public ModifierLocation modifierLocation() {

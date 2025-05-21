@@ -11,7 +11,7 @@ import io.quarkus.gizmo2.creator.ModifierLocation;
 public final class DefaultMethodCreatorImpl extends MethodCreatorImpl implements InstanceMethodCreator {
     DefaultMethodCreatorImpl(final TypeCreatorImpl owner, final String name) {
         super(owner, name);
-        flags |= ACC_PUBLIC;
+        modifiers |= ACC_PUBLIC;
     }
 
     public ModifierLocation modifierLocation() {

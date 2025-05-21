@@ -24,7 +24,7 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
     public ClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         super(type, output, zb);
-        flags |= ACC_PUBLIC | ACC_SYNTHETIC;
+        modifiers |= ACC_PUBLIC | ACC_SYNTHETIC;
     }
 
     public ModifierLocation modifierLocation() {

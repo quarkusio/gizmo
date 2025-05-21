@@ -22,21 +22,16 @@ import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
-import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
-import io.quarkus.gizmo2.creator.Modifier;
-import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreator
-        permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeAnnotatableCreatorImpl, TypeCreatorImpl,
-        TypeVariableCreatorImpl {
+        permits ModifiableCreatorImpl, TypeAnnotatableCreatorImpl, TypeVariableCreatorImpl {
     protected final String creationSite = Util.trackCaller();
 
     Map<ClassDesc, Annotation> invisible;
     Map<ClassDesc, Annotation> visible;
-    int flags;
 
     protected AnnotatableCreatorImpl() {
         invisible = Map.of();
@@ -52,34 +47,6 @@ public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreato
                 : visible.stream().collect(Collectors.toMap(Annotation::classSymbol, Function.identity(), (a, b) -> {
                     throw new IllegalStateException();
                 }, LinkedHashMap::new));
-    }
-
-    public void withFlag(final ModifierFlag flag) {
-        if (supports(flag)) {
-            flags |= flag.mask();
-        } else {
-            throw modifierUnsupported(flag);
-        }
-    }
-
-    public void withoutFlag(final ModifierFlag flag) {
-        if (supports(flag)) {
-            flags &= ~flag.mask();
-        } else {
-            throw modifierUnsupported(flag);
-        }
-    }
-
-    public void withAccess(final AccessLevel access) {
-        if (supports(access)) {
-            flags = flags & ~AccessLevel.fullMask() | access.mask();
-        } else {
-            throw modifierUnsupported(access);
-        }
-    }
-
-    private static IllegalArgumentException modifierUnsupported(final Modifier modifier) {
-        return new IllegalArgumentException("Modifier \"%s\" is not supported here".formatted(modifier));
     }
 
     private Map<ClassDesc, Annotation> visibleMap() {

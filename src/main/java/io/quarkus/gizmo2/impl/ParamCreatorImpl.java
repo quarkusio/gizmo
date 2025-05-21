@@ -12,7 +12,7 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
-public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements ParamCreator {
+public final class ParamCreatorImpl extends ModifiableCreatorImpl implements ParamCreator {
     boolean typeEstablished;
     GenericType genericType;
 
@@ -34,7 +34,7 @@ public final class ParamCreatorImpl extends AnnotatableCreatorImpl implements Pa
             throw new IllegalStateException("Parameter type was not set");
         }
         typeEstablished = true;
-        return new ParamVarImpl(genericType, name, index, slot, flags, List.copyOf(invisible.values()),
+        return new ParamVarImpl(genericType, name, index, slot, modifiers, List.copyOf(invisible.values()),
                 List.copyOf(visible.values()));
     }
 

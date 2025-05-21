@@ -22,7 +22,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a type.
  */
-public sealed interface TypeCreator extends AnnotatableCreator, GenericTyped
+public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
         permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
