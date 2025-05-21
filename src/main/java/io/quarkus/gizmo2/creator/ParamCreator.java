@@ -44,7 +44,7 @@ public sealed interface ParamCreator extends ModifiableCreator, GenericTyped per
     /**
      * Add the "mandated" modifier flag to this creator.
      */
-    default void mandated_() {
+    default void mandated() {
         withFlag(ModifierFlag.MANDATED);
     }
 }

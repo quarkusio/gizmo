@@ -217,7 +217,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
     /**
      * Add the variable arguments modifier flag to this creator.
      */
-    default void varargs_() {
+    default void varargs() {
         withFlag(ModifierFlag.VARARGS);
     }
 
