@@ -845,7 +845,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {
         // try to combine the condition into the `if`
-        if (cond.bound()) {
+        if (((Item) cond).bound()) {
             Item prevItem = tail.prev().item();
             if (prevItem == cond) {
                 if (cond instanceof Rel rel) {

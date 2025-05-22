@@ -23,12 +23,6 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     }
 
     /**
-     * {@return {@code true} if the expression is bound to a single point in the instruction list, or {@code false} otherwise}
-     * Bound expressions may not be used again.
-     */
-    boolean bound();
-
-    /**
      * {@return an assignable for an element of this array}
      *
      * @param index the array index (must not be {@code null})
