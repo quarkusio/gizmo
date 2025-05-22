@@ -29,22 +29,22 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param type the generic type (must not be {@code null})
      */
-    void withType(GenericType type);
+    void setType(GenericType type);
 
     /**
      * Change the type of the field to the given type.
      *
      * @param type the class type descriptor (must not be {@code null})
      */
-    void withType(ClassDesc type);
+    void setType(ClassDesc type);
 
     /**
      * Change the type of the field to the given type.
      *
      * @param type the class type (must not be {@code null})
      */
-    default void withType(Class<?> type) {
-        withType(Util.classDesc(type));
+    default void setType(Class<?> type) {
+        setType(Util.classDesc(type));
     }
 
     /**
@@ -52,15 +52,15 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value (must not be {@code null})
      */
-    void withInitial(Const initial);
+    void setInitial(Const initial);
 
     /**
      * Provide an initial constant value for this field.
      *
      * @param initial the initial value
      */
-    default void withInitial(int initial) {
-        withInitial(Const.of(initial));
+    default void setInitial(int initial) {
+        setInitial(Const.of(initial));
     }
 
     /**
@@ -68,8 +68,8 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value
      */
-    default void withInitial(long initial) {
-        withInitial(Const.of(initial));
+    default void setInitial(long initial) {
+        setInitial(Const.of(initial));
     }
 
     /**
@@ -77,8 +77,8 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value
      */
-    default void withInitial(float initial) {
-        withInitial(Const.of(initial));
+    default void setInitial(float initial) {
+        setInitial(Const.of(initial));
     }
 
     /**
@@ -86,8 +86,8 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value
      */
-    default void withInitial(double initial) {
-        withInitial(Const.of(initial));
+    default void setInitial(double initial) {
+        setInitial(Const.of(initial));
     }
 
     /**
@@ -95,8 +95,8 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value
      */
-    default void withInitial(String initial) {
-        withInitial(initial == null ? Const.ofNull(CD_String) : Const.of(initial));
+    default void setInitial(String initial) {
+        setInitial(initial == null ? Const.ofNull(CD_String) : Const.of(initial));
     }
 
     /**
@@ -104,8 +104,8 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param initial the initial value
      */
-    default void withInitial(Class<?> initial) {
-        withInitial(initial == null ? Const.ofNull(CD_Class) : Const.of(initial));
+    default void setInitial(Class<?> initial) {
+        setInitial(initial == null ? Const.ofNull(CD_Class) : Const.of(initial));
     }
 
     /**
@@ -113,5 +113,5 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      *
      * @param init the builder for the initializer which yields the field initial value (must not be {@code null})
      */
-    void withInitializer(Consumer<BlockCreator> init);
+    void setInitializer(Consumer<BlockCreator> init);
 }

@@ -71,8 +71,8 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default FieldDesc field(String name, Const initial) {
         return field(name, ifc -> {
-            ifc.withType(initial.type());
-            ifc.withInitial(initial);
+            ifc.setType(initial.type());
+            ifc.setInitial(initial);
         });
     }
 
@@ -95,7 +95,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default MethodDesc method(String name, MethodTypeDesc type, Consumer<InstanceMethodCreator> builder) {
         return method(name, imc -> {
-            imc.withType(type);
+            imc.setType(type);
             builder.accept(imc);
         });
     }
@@ -130,7 +130,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default MethodDesc abstractMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
         return abstractMethod(name, imc -> {
-            imc.withType(type);
+            imc.setType(type);
             builder.accept(imc);
         });
     }
@@ -165,7 +165,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default MethodDesc nativeMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
         return nativeMethod(name, imc -> {
-            imc.withType(type);
+            imc.setType(type);
             builder.accept(imc);
         });
     }
@@ -200,7 +200,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default MethodDesc staticNativeMethod(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
         return staticNativeMethod(name, imc -> {
-            imc.withType(type);
+            imc.setType(type);
             builder.accept(imc);
         });
     }
@@ -234,7 +234,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      */
     default ConstructorDesc constructor(MethodTypeDesc type, Consumer<ConstructorCreator> builder) {
         return constructor(imc -> {
-            imc.withType(type);
+            imc.setType(type);
             builder.accept(imc);
         });
     }
@@ -281,7 +281,7 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
      * @throws IllegalArgumentException if this creator does not support the {@code abstract} modifier flag
      */
     default void abstract_() {
-        withFlag(ModifierFlag.ABSTRACT);
+        addFlag(ModifierFlag.ABSTRACT);
     }
 
     /**

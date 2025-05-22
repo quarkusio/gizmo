@@ -39,7 +39,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
         return desc;
     }
 
-    public void withType(final GenericType genericType) {
+    public void setType(final GenericType genericType) {
         checkNotNullParam("genericType", genericType);
         if (genericType.desc().equals(CD_void)) {
             throw new IllegalArgumentException("Fields cannot have void type");
@@ -48,7 +48,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
         desc = null;
     }
 
-    public void withType(final ClassDesc type) {
+    public void setType(final ClassDesc type) {
         checkNotNullParam("type", type);
         if (type.equals(CD_void)) {
             throw new IllegalArgumentException("Fields cannot have void type");

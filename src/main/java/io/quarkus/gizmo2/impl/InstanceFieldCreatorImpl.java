@@ -24,14 +24,14 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         return ModifierLocation.CLASS_INSTANCE_FIELD;
     }
 
-    public void withInitial(final Const initial) {
+    public void setInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
-        withType(initial.type());
+        setType(initial.type());
         this.initial = initial;
     }
 
-    public void withInitializer(final Consumer<BlockCreator> init) {
+    public void setInitializer(final Consumer<BlockCreator> init) {
         Assert.checkNotNullParam("init", init);
         checkOneInit();
         initializer = (b0 -> {

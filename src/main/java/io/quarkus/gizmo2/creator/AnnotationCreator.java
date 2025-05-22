@@ -59,53 +59,53 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
                     // the ABCs of annotation value types
                     String name = method.getName();
                     if (val instanceof Annotation a) {
-                        ac.with(name, a.getClass().asSubclass(Annotation.class), AnnotationCreator.from(a));
+                        ac.add(name, a.getClass().asSubclass(Annotation.class), AnnotationCreator.from(a));
                     } else if (val instanceof Boolean b) {
-                        ac.with(name, b.booleanValue());
+                        ac.add(name, b.booleanValue());
                     } else if (val instanceof Byte b) {
-                        ac.with(name, b.byteValue());
+                        ac.add(name, b.byteValue());
                     } else if (val instanceof Class<?> z) {
-                        ac.with(name, z);
+                        ac.add(name, z);
                     } else if (val instanceof Character c) {
-                        ac.with(name, c.charValue());
+                        ac.add(name, c.charValue());
                     } else if (val instanceof Double d) {
-                        ac.with(name, d.doubleValue());
+                        ac.add(name, d.doubleValue());
                     } else if (val instanceof Float f) {
-                        ac.with(name, f.floatValue());
+                        ac.add(name, f.floatValue());
                     } else if (val instanceof Integer i) {
-                        ac.with(name, i.intValue());
+                        ac.add(name, i.intValue());
                     } else if (val instanceof Long l) {
-                        ac.with(name, l.longValue());
+                        ac.add(name, l.longValue());
                     } else if (val instanceof Short s) {
-                        ac.with(name, s.shortValue());
+                        ac.add(name, s.shortValue());
                     } else if (val instanceof String s) {
-                        ac.with(name, s);
+                        ac.add(name, s);
                     } else if (val instanceof Enum<?> e) {
-                        ac.with(name, (Enum) e);
+                        ac.add(name, (Enum) e);
                     } else if (val instanceof Annotation[] array) {
                         ac.doWithArray(name, method.getReturnType().asSubclass(Annotation.class), array);
                     } else if (val instanceof boolean[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof byte[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof Class<?>[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof char[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof double[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof float[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof int[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof long[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof short[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof String[] array) {
-                        ac.withArray(name, array);
+                        ac.addArray(name, array);
                     } else if (val instanceof Enum<?>[] array) {
-                        ac.withArray(name, Util.classDesc(method.getReturnType().asSubclass(Enum.class)),
+                        ac.addArray(name, Util.classDesc(method.getReturnType().asSubclass(Enum.class)),
                                 Stream.of(array).map(Enum::name).toArray(String[]::new));
                     } else {
                         throw Assert.unreachableCode();
@@ -117,7 +117,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
     }
 
     private <AA extends Annotation> void doWithArray(String name, Class<AA> type, Annotation[] values) {
-        withArray(name, type, Stream.of(values).map(type::cast).map(AnnotationCreator::from).toList());
+        addArray(name, type, Stream.of(values).map(type::cast).map(AnnotationCreator::from).toList());
     }
 
     /**
@@ -126,7 +126,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, boolean value);
+    void add(String name, boolean value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -134,7 +134,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(BooleanProperty<A> prop, boolean value);
+    void add(BooleanProperty<A> prop, boolean value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -142,7 +142,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, byte value);
+    void add(String name, byte value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -150,7 +150,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(ByteProperty<A> prop, byte value);
+    void add(ByteProperty<A> prop, byte value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -158,7 +158,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, short value);
+    void add(String name, short value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -166,7 +166,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(ShortProperty<A> prop, short value);
+    void add(ShortProperty<A> prop, short value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -174,7 +174,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, int value);
+    void add(String name, int value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -182,7 +182,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(IntProperty<A> prop, int value);
+    void add(IntProperty<A> prop, int value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -190,7 +190,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, long value);
+    void add(String name, long value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -198,7 +198,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(LongProperty<A> prop, long value);
+    void add(LongProperty<A> prop, long value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -206,7 +206,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, float value);
+    void add(String name, float value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -214,7 +214,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(FloatProperty<A> prop, float value);
+    void add(FloatProperty<A> prop, float value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -222,7 +222,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, double value);
+    void add(String name, double value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -230,7 +230,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(DoubleProperty<A> prop, double value);
+    void add(DoubleProperty<A> prop, double value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -238,7 +238,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value
      */
-    void with(String name, char value);
+    void add(String name, char value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -246,23 +246,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(CharProperty<A> prop, char value);
-
-    /**
-     * Add an annotation property with the given name and value.
-     *
-     * @param name the property name (must not be {@code null})
-     * @param value the property value (must not be {@code null})
-     */
-    void with(String name, String value);
-
-    /**
-     * Add an annotation property for the given method and value.
-     *
-     * @param prop the property method (must not be {@code null})
-     * @param value the property value
-     */
-    void with(StringProperty<A> prop, String value);
+    void add(CharProperty<A> prop, char value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -270,7 +254,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value (must not be {@code null})
      */
-    void with(String name, Class<?> value);
+    void add(String name, String value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -278,7 +262,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(ClassProperty<A> prop, Class<?> value);
+    void add(StringProperty<A> prop, String value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -286,7 +270,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value (must not be {@code null})
      */
-    void with(String name, ClassDesc value);
+    void add(String name, Class<?> value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -294,7 +278,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    void with(ClassProperty<A> prop, ClassDesc value);
+    void add(ClassProperty<A> prop, Class<?> value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -302,7 +286,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param value the property value (must not be {@code null})
      */
-    <E extends Enum<E>> void with(String name, E value);
+    void add(String name, ClassDesc value);
 
     /**
      * Add an annotation property for the given method and value.
@@ -310,7 +294,23 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param value the property value
      */
-    <E extends Enum<E>> void with(EnumProperty<A, E> prop, E value);
+    void add(ClassProperty<A> prop, ClassDesc value);
+
+    /**
+     * Add an annotation property with the given name and value.
+     *
+     * @param name the property name (must not be {@code null})
+     * @param value the property value (must not be {@code null})
+     */
+    <E extends Enum<E>> void add(String name, E value);
+
+    /**
+     * Add an annotation property for the given method and value.
+     *
+     * @param prop the property method (must not be {@code null})
+     * @param value the property value
+     */
+    <E extends Enum<E>> void add(EnumProperty<A, E> prop, E value);
 
     /**
      * Add an annotation property with the given name and value.
@@ -319,7 +319,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param enumClass the enum class
      * @param enumConstant the name of the enum constant
      */
-    void with(String name, ClassDesc enumClass, String enumConstant);
+    void add(String name, ClassDesc enumClass, String enumConstant);
 
     /**
      * Add an annotation property with the given name and built value.
@@ -329,7 +329,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param builder the builder for the nested annotation (must not be {@code null})
      * @param <S> the annotation type
      */
-    <S extends Annotation> void with(String name, Class<S> annotationClass, Consumer<AnnotationCreator<S>> builder);
+    <S extends Annotation> void add(String name, Class<S> annotationClass, Consumer<AnnotationCreator<S>> builder);
 
     /**
      * Add an annotation property for the given method and built value.
@@ -338,7 +338,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param builder the builder for the nested annotation (must not be {@code null})
      * @param <S> the annotation type
      */
-    <S extends Annotation> void with(AnnotationProperty<A, S> prop, Consumer<AnnotationCreator<S>> builder);
+    <S extends Annotation> void add(AnnotationProperty<A, S> prop, Consumer<AnnotationCreator<S>> builder);
 
     /**
      * Add an annotation property with the given name and built value.
@@ -347,7 +347,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param annotationClass the class of the nested annotation (must not be {@code null})
      * @param builder the builder for the nested annotation (must not be {@code null})
      */
-    void with(String name, ClassDesc annotationClass, Consumer<AnnotationCreator<Annotation>> builder);
+    void add(String name, ClassDesc annotationClass, Consumer<AnnotationCreator<Annotation>> builder);
 
     /**
      * Add an annotation property with the given name and value.
@@ -355,7 +355,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, boolean... values);
+    void addArray(String name, boolean... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -363,7 +363,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(BooleanArrayProperty<A> prop, boolean... values);
+    void addArray(BooleanArrayProperty<A> prop, boolean... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -371,7 +371,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, byte... values);
+    void addArray(String name, byte... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -379,7 +379,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(ByteArrayProperty<A> prop, byte... values);
+    void addArray(ByteArrayProperty<A> prop, byte... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -387,7 +387,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, short... values);
+    void addArray(String name, short... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -395,7 +395,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(ShortArrayProperty<A> prop, short... values);
+    void addArray(ShortArrayProperty<A> prop, short... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -403,7 +403,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, int... values);
+    void addArray(String name, int... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -411,7 +411,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(IntArrayProperty<A> prop, int... values);
+    void addArray(IntArrayProperty<A> prop, int... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -419,7 +419,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, long... values);
+    void addArray(String name, long... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -427,7 +427,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(LongArrayProperty<A> prop, long... values);
+    void addArray(LongArrayProperty<A> prop, long... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -435,7 +435,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, float... values);
+    void addArray(String name, float... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -443,7 +443,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(FloatArrayProperty<A> prop, float... values);
+    void addArray(FloatArrayProperty<A> prop, float... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -451,7 +451,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, double... values);
+    void addArray(String name, double... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -459,7 +459,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(DoubleArrayProperty<A> prop, double... values);
+    void addArray(DoubleArrayProperty<A> prop, double... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -467,7 +467,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, char... values);
+    void addArray(String name, char... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -475,7 +475,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(CharArrayProperty<A> prop, char... values);
+    void addArray(CharArrayProperty<A> prop, char... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -483,7 +483,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, String... values);
+    void addArray(String name, String... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -491,7 +491,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(StringArrayProperty<A> prop, String... values);
+    void addArray(StringArrayProperty<A> prop, String... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -499,7 +499,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, Class<?>... values);
+    void addArray(String name, Class<?>... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -507,7 +507,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(ClassArrayProperty<A> prop, Class<?>... values);
+    void addArray(ClassArrayProperty<A> prop, Class<?>... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -515,7 +515,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(String name, ClassDesc... values);
+    void addArray(String name, ClassDesc... values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -523,7 +523,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    void withArray(ClassArrayProperty<A> prop, ClassDesc... values);
+    void addArray(ClassArrayProperty<A> prop, ClassDesc... values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -531,7 +531,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param name the property name (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    <E extends Enum<E>> void withArray(String name, List<E> values);
+    <E extends Enum<E>> void addArray(String name, List<E> values);
 
     /**
      * Add an annotation property for the given method and value.
@@ -539,7 +539,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param prop the property method (must not be {@code null})
      * @param values the property values (must not be {@code null})
      */
-    <E extends Enum<E>> void withArray(EnumArrayProperty<A, E> prop, List<E> values);
+    <E extends Enum<E>> void addArray(EnumArrayProperty<A, E> prop, List<E> values);
 
     /**
      * Add an annotation property with the given name and value.
@@ -548,7 +548,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param enumClass the enum class (must not be {@code null})
      * @param enumConstants the enum constants (must not be {@code null})
      */
-    void withArray(String name, ClassDesc enumClass, String... enumConstants);
+    void addArray(String name, ClassDesc enumClass, String... enumConstants);
 
     /**
      * Add an annotation property for the given method and value.
@@ -557,7 +557,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param enumClass the enum class (must not be {@code null})
      * @param enumConstants the enum constants (must not be {@code null})
      */
-    <E extends Enum<E>> void withArray(EnumArrayProperty<A, E> prop, ClassDesc enumClass, String... enumConstants);
+    <E extends Enum<E>> void addArray(EnumArrayProperty<A, E> prop, ClassDesc enumClass, String... enumConstants);
 
     /**
      * Add an annotation property with the given name and built values.
@@ -567,7 +567,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param builders the builders for the nested annotations (must not be {@code null})
      * @param <S> the annotation type
      */
-    <S extends Annotation> void withArray(String name, Class<S> annotationClass, List<Consumer<AnnotationCreator<S>>> builders);
+    <S extends Annotation> void addArray(String name, Class<S> annotationClass, List<Consumer<AnnotationCreator<S>>> builders);
 
     /**
      * Add an annotation property for the given method and built values.
@@ -576,7 +576,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param builders the builders for the nested annotations (must not be {@code null})
      * @param <S> the annotation type
      */
-    <S extends Annotation> void withArray(AnnotationArrayProperty<A, S> prop, List<Consumer<AnnotationCreator<S>>> builders);
+    <S extends Annotation> void addArray(AnnotationArrayProperty<A, S> prop, List<Consumer<AnnotationCreator<S>>> builders);
 
     /**
      * Add an annotation property with the given name and built values.
@@ -585,7 +585,7 @@ public sealed interface AnnotationCreator<A extends Annotation> permits Annotati
      * @param annotationClass the class of the nested annotation (must not be {@code null})
      * @param builders the builders for the nested annotations (must not be {@code null})
      */
-    void withArray(String name, ClassDesc annotationClass, List<Consumer<AnnotationCreator<Annotation>>> builders);
+    void addArray(String name, ClassDesc annotationClass, List<Consumer<AnnotationCreator<Annotation>>> builders);
 
     /**
      * Maps the annotation type to a method which returns {@code boolean}.

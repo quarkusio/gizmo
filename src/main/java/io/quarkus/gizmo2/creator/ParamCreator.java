@@ -17,7 +17,7 @@ public sealed interface ParamCreator extends ModifiableCreator, GenericTyped per
      * @param type the new generic type (must not be {@code null})
      * @throws IllegalArgumentException if the new type is different from the established type
      */
-    void withType(GenericType type);
+    void setType(GenericType type);
 
     /**
      * Change the type of this parameter.
@@ -25,7 +25,7 @@ public sealed interface ParamCreator extends ModifiableCreator, GenericTyped per
      * @param type the descriptor of the new type (must not be {@code null})
      * @throws IllegalArgumentException if the new type is different from the established type
      */
-    void withType(ClassDesc type);
+    void setType(ClassDesc type);
 
     /**
      * {@return the type of this parameter (not {@code null})}
@@ -37,14 +37,14 @@ public sealed interface ParamCreator extends ModifiableCreator, GenericTyped per
      *
      * @param type the new type (must not be {@code null})
      */
-    default void withType(Class<?> type) {
-        withType(Util.classDesc(type));
+    default void setType(Class<?> type) {
+        setType(Util.classDesc(type));
     }
 
     /**
      * Add the "mandated" modifier flag to this creator.
      */
     default void mandated() {
-        withFlag(ModifierFlag.MANDATED);
+        addFlag(ModifierFlag.MANDATED);
     }
 }

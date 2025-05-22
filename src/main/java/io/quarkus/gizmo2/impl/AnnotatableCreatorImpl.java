@@ -68,7 +68,7 @@ public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreato
     public abstract ElementType annotationTargetType();
 
     @Override
-    public <A extends java.lang.annotation.Annotation> void withAnnotation(Class<A> annotationClass,
+    public <A extends java.lang.annotation.Annotation> void addAnnotation(Class<A> annotationClass,
             Consumer<AnnotationCreator<A>> builder) {
         checkNotNullParam("annotationClass", annotationClass);
         checkNotNullParam("builder", builder);
@@ -131,7 +131,7 @@ public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreato
     }
 
     @Override
-    public void withAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
+    public void addAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
             Consumer<AnnotationCreator<java.lang.annotation.Annotation>> builder) {
         checkNotNullParam("annotationClass", annotationClass);
         checkNotNullParam("retentionPolicy", retentionPolicy);

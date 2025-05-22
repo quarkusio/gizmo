@@ -34,10 +34,10 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         return isInterface ? ModifierLocation.INTERFACE_STATIC_FIELD : ModifierLocation.CLASS_STATIC_FIELD;
     }
 
-    public void withInitial(final Const initial) {
+    public void setInitial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
-        withType(initial.type());
+        setType(initial.type());
         if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {
             this.initial = initial;
         } else {
@@ -45,7 +45,7 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         }
     }
 
-    public void withInitializer(final Consumer<BlockCreator> init) {
+    public void setInitializer(final Consumer<BlockCreator> init) {
         Assert.checkNotNullParam("init", init);
         checkOneInit();
         initializer = (b0 -> {

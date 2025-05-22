@@ -26,8 +26,8 @@ public class AnnotationTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.AnnotationOnClass", cc -> {
-            cc.withAnnotation(MyAnnotation.class, ann -> {
-                ann.with(MyAnnotation::value, "annotationOnClass");
+            cc.addAnnotation(MyAnnotation.class, ann -> {
+                ann.add(MyAnnotation::value, "annotationOnClass");
             });
         });
         MyAnnotation ann = tcm.definedClass().getAnnotation(MyAnnotation.class);
@@ -40,8 +40,8 @@ public class AnnotationTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.interface_("io.quarkus.gizmo2.AnnotationOnInterface", cc -> {
-            cc.withAnnotation(MyAnnotation.class, ann -> {
-                ann.with(MyAnnotation::value, "annotationOnInterface");
+            cc.addAnnotation(MyAnnotation.class, ann -> {
+                ann.add(MyAnnotation::value, "annotationOnInterface");
             });
         });
         MyAnnotation ann = tcm.definedClass().getAnnotation(MyAnnotation.class);
@@ -55,9 +55,9 @@ public class AnnotationTest {
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassField", cc -> {
             cc.staticField("staticField", fc -> {
-                fc.withType(String.class);
-                fc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnStaticClassField");
+                fc.setType(String.class);
+                fc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnStaticClassField");
                 });
             });
         });
@@ -74,9 +74,9 @@ public class AnnotationTest {
         Gizmo g = Gizmo.create(tcm);
         g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceField", cc -> {
             cc.staticField("staticField", fc -> {
-                fc.withType(String.class);
-                fc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnStaticInterfaceField");
+                fc.setType(String.class);
+                fc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnStaticInterfaceField");
                 });
             });
         });
@@ -93,9 +93,9 @@ public class AnnotationTest {
         Gizmo g = Gizmo.create(tcm);
         g.class_("io.quarkus.gizmo2.AnnotationOnInstanceClassField", cc -> {
             cc.field("field", fc -> {
-                fc.withType(String.class);
-                fc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnInstanceClassField");
+                fc.setType(String.class);
+                fc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnInstanceClassField");
                 });
             });
         });
@@ -113,8 +113,8 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassMethod", cc -> {
             cc.staticMethod("staticMethod", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnStaticClassMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnStaticClassMethod");
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
@@ -133,8 +133,8 @@ public class AnnotationTest {
         g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceMethod", cc -> {
             cc.staticMethod("staticMethod", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnStaticInterfaceMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnStaticInterfaceMethod");
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
@@ -153,8 +153,8 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationOnAbstractClassMethod", cc -> {
             cc.abstractMethod("abstractMethod", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnAbstractClassMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnAbstractClassMethod");
                 });
             });
         });
@@ -172,8 +172,8 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationOnClassMethod", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnClassMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnClassMethod");
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
@@ -192,8 +192,8 @@ public class AnnotationTest {
         g.interface_("io.quarkus.gizmo2.AnnotationOnAbstractInterfaceMethod", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnAbstractInterfaceMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnAbstractInterfaceMethod");
                 });
             });
         });
@@ -211,8 +211,8 @@ public class AnnotationTest {
         g.interface_("io.quarkus.gizmo2.AnnotationOnDefaultInterfaceMethod", cc -> {
             cc.defaultMethod("defaultMethod", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnDefaultInterfaceMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnDefaultInterfaceMethod");
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
@@ -231,8 +231,8 @@ public class AnnotationTest {
         g.interface_("io.quarkus.gizmo2.AnnotationOnPrivateInterfaceMethod", cc -> {
             cc.privateMethod("privateMethod", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(MyAnnotation.class, ann -> {
-                    ann.with(MyAnnotation::value, "annotationOnPrivateInterfaceMethod");
+                mc.addAnnotation(MyAnnotation.class, ann -> {
+                    ann.add(MyAnnotation::value, "annotationOnPrivateInterfaceMethod");
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
@@ -252,9 +252,9 @@ public class AnnotationTest {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
-                    pc.withType(String.class);
-                    pc.withAnnotation(MyAnnotation.class, ann -> {
-                        ann.with(MyAnnotation::value, "annotationOnClassMethodParameter");
+                    pc.setType(String.class);
+                    pc.addAnnotation(MyAnnotation.class, ann -> {
+                        ann.add(MyAnnotation::value, "annotationOnClassMethodParameter");
                     });
                 });
                 mc.body(bc -> bc.return_("foobar"));
@@ -276,9 +276,9 @@ public class AnnotationTest {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
-                    pc.withType(String.class);
-                    pc.withAnnotation(MyAnnotation.class, ann -> {
-                        ann.with(MyAnnotation::value, "annotationOnInterfaceMethodParameter");
+                    pc.setType(String.class);
+                    pc.addAnnotation(MyAnnotation.class, ann -> {
+                        ann.add(MyAnnotation::value, "annotationOnInterfaceMethodParameter");
                     });
                 });
             });
@@ -298,7 +298,7 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationOnWrongThing", cc -> {
             cc.field("wrongPlace", fc -> {
                 assertThrows(IllegalArgumentException.class, () -> {
-                    fc.withAnnotation(SafeVarargs.class);
+                    fc.addAnnotation(SafeVarargs.class);
                 });
             });
         });
@@ -312,12 +312,12 @@ public class AnnotationTest {
             cc.field("notAnnotated", fc -> {
             });
             cc.field("single", fc -> {
-                fc.withAnnotation(RepeatableInner.class);
+                fc.addAnnotation(RepeatableInner.class);
             });
             cc.field("multi", fc -> {
-                fc.withAnnotation(RepeatableInner.class);
-                fc.withAnnotation(RepeatableInner.class);
-                fc.withAnnotation(RepeatableInner.class);
+                fc.addAnnotation(RepeatableInner.class);
+                fc.addAnnotation(RepeatableInner.class);
+                fc.addAnnotation(RepeatableInner.class);
             });
         });
         Field notAnnotated = tcm.definedClass().getDeclaredField("notAnnotated");
@@ -410,40 +410,40 @@ public class AnnotationTest {
         g.class_("io.quarkus.gizmo2.AnnotationCreation", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
-                mc.withAnnotation(ClassDesc.of(Deprecated.class.getName()), RetentionPolicy.RUNTIME, ac -> {
-                    ac.with("since", "1.0");
-                    ac.with("forRemoval", true);
+                mc.addAnnotation(ClassDesc.of(Deprecated.class.getName()), RetentionPolicy.RUNTIME, ac -> {
+                    ac.add("since", "1.0");
+                    ac.add("forRemoval", true);
                 });
-                mc.withAnnotation(MyComplexAnnotation.class, ac -> {
-                    ac.with(MyComplexAnnotation::bool, true);
-                    ac.with(MyComplexAnnotation::b, (byte) 1);
-                    ac.with(MyComplexAnnotation::s, (short) 2);
-                    ac.with(MyComplexAnnotation::i, 3);
-                    ac.with(MyComplexAnnotation::l, 4L);
-                    ac.with(MyComplexAnnotation::f, 5.0F);
-                    ac.with(MyComplexAnnotation::d, 6.0);
-                    ac.with(MyComplexAnnotation::ch, 'a');
-                    ac.with(MyComplexAnnotation::str, "bc");
-                    ac.with(MyComplexAnnotation::en, MyEnum.FOO);
-                    ac.with(MyComplexAnnotation::cls, Object.class);
-                    ac.with(MyComplexAnnotation::nested, nac -> {
-                        nac.with(MyAnnotation::value, "one");
+                mc.addAnnotation(MyComplexAnnotation.class, ac -> {
+                    ac.add(MyComplexAnnotation::bool, true);
+                    ac.add(MyComplexAnnotation::b, (byte) 1);
+                    ac.add(MyComplexAnnotation::s, (short) 2);
+                    ac.add(MyComplexAnnotation::i, 3);
+                    ac.add(MyComplexAnnotation::l, 4L);
+                    ac.add(MyComplexAnnotation::f, 5.0F);
+                    ac.add(MyComplexAnnotation::d, 6.0);
+                    ac.add(MyComplexAnnotation::ch, 'a');
+                    ac.add(MyComplexAnnotation::str, "bc");
+                    ac.add(MyComplexAnnotation::en, MyEnum.FOO);
+                    ac.add(MyComplexAnnotation::cls, Object.class);
+                    ac.add(MyComplexAnnotation::nested, nac -> {
+                        nac.add(MyAnnotation::value, "one");
                     });
-                    ac.withArray(MyComplexAnnotation::boolArray, true, false);
-                    ac.withArray(MyComplexAnnotation::bArray, (byte) 7, (byte) 8);
-                    ac.withArray(MyComplexAnnotation::sArray, (short) 9, (short) 10);
-                    ac.withArray(MyComplexAnnotation::iArray, 11, 12);
-                    ac.withArray(MyComplexAnnotation::lArray, 13L, 14L);
-                    ac.withArray(MyComplexAnnotation::fArray, 15.0F, 16.0F);
-                    ac.withArray(MyComplexAnnotation::dArray, 17.0, 18.0);
-                    ac.withArray(MyComplexAnnotation::chArray, 'd', 'e');
-                    ac.withArray(MyComplexAnnotation::strArray, "fg", "hi");
-                    ac.withArray(MyComplexAnnotation::enArray, List.of(MyEnum.BAR, MyEnum.BAZ));
-                    ac.withArray(MyComplexAnnotation::clsArray, String.class, void.class, Number[].class, byte[][].class);
-                    ac.withArray(MyComplexAnnotation::nestedArray, List.of(nac -> {
-                        nac.with(MyAnnotation::value, "two");
+                    ac.addArray(MyComplexAnnotation::boolArray, true, false);
+                    ac.addArray(MyComplexAnnotation::bArray, (byte) 7, (byte) 8);
+                    ac.addArray(MyComplexAnnotation::sArray, (short) 9, (short) 10);
+                    ac.addArray(MyComplexAnnotation::iArray, 11, 12);
+                    ac.addArray(MyComplexAnnotation::lArray, 13L, 14L);
+                    ac.addArray(MyComplexAnnotation::fArray, 15.0F, 16.0F);
+                    ac.addArray(MyComplexAnnotation::dArray, 17.0, 18.0);
+                    ac.addArray(MyComplexAnnotation::chArray, 'd', 'e');
+                    ac.addArray(MyComplexAnnotation::strArray, "fg", "hi");
+                    ac.addArray(MyComplexAnnotation::enArray, List.of(MyEnum.BAR, MyEnum.BAZ));
+                    ac.addArray(MyComplexAnnotation::clsArray, String.class, void.class, Number[].class, byte[][].class);
+                    ac.addArray(MyComplexAnnotation::nestedArray, List.of(nac -> {
+                        nac.add(MyAnnotation::value, "two");
                     }, nac -> {
-                        nac.with(MyAnnotation::value, "three");
+                        nac.add(MyAnnotation::value, "three");
                     }));
                 });
                 mc.body(bc -> bc.return_("foobar"));
