@@ -26,7 +26,7 @@ public class LambdaTest {
                 // }
                 smc.returning(int.class);
                 smc.body(b0 -> {
-                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    var ret = b0.declare("ret", b0.new_(AtomicInteger.class));
                     Expr runnable = b0.lambda(Runnable.class, lc -> {
                         var capturedRet = lc.capture(ret);
                         lc.body(b1 -> {
@@ -57,7 +57,7 @@ public class LambdaTest {
                 // }
                 smc.returning(int.class);
                 smc.body(b0 -> {
-                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    var ret = b0.declare("ret", b0.new_(AtomicInteger.class));
                     Expr consumer = b0.lambda(Consumer.class, lc -> {
                         var capturedRet = lc.capture(ret);
                         var input = lc.parameter("t", 0);
@@ -94,14 +94,14 @@ public class LambdaTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    var ret = bc.define("ret", bc.new_(AtomicInteger.class));
+                    var ret = bc.declare("ret", bc.new_(AtomicInteger.class));
                     var supplier = bc.declare("supplier", IntSupplier.class);
                     bc.set(supplier, bc.lambda(IntSupplier.class, lc -> {
                         lc.body(lbc -> {
                             lbc.return_(1);
                         });
                     }));
-                    var suppliedValue = bc.define("suppliedValue",
+                    var suppliedValue = bc.declare("suppliedValue",
                             bc.invokeInterface(MethodDesc.of(IntSupplier.class, "getAsInt", int.class), supplier));
                     var consumer = bc.declare("consumer", Consumer.class);
                     bc.set(consumer, bc.lambda(Consumer.class, lc -> {

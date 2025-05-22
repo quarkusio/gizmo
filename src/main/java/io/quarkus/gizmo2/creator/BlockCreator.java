@@ -122,8 +122,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     // lexical variables
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the {@linkplain Const#ofDefault(ClassDesc) default value} of given type.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
@@ -134,8 +134,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     LocalVar declare(String name, GenericType type);
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the {@linkplain Const#ofDefault(ClassDesc) default value} of given type.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
@@ -148,8 +148,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Declare a local variable, but doesn't assign it a value.
-     * Such variables may not be read before they are written.
+     * Declare a local variable with given {@code name} and {@code type}, which is initialized
+     * to the {@linkplain Const#ofDefault(Class) default value} of given type.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
@@ -162,7 +162,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Declare a local variable and define its initial value.
+     * Declare a local variable with given {@code name}, which is initialized to the given {@code value}.
+     * The type of the new variable is the type of the {@code value}.
      * <p>
      * Variable names are not strictly required to be unique, but it is a good practice.
      *
@@ -170,23 +171,22 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    default LocalVar define(String name, Expr value) {
+    default LocalVar declare(String name, Expr value) {
         LocalVar var = declare(name, value.genericType());
         set(var, value);
         return var;
     }
 
     /**
-     * Declare a local variable which is initialized to the given variable's current value.
+     * Declare a local variable, which is initialized to the given variable's current value.
+     * The name and type of the new variable are the same as the name and type of the {@code original}.
      * The given variable may be a parameter, local variable, or field variable.
-     * <p>
-     * The name of the new variable is the same as the name of the {@code original}.
      *
      * @param original the original variable (must not be {@code null})
-     * @return the new local variable (must not be {@code null})
+     * @return the new local variable (not {@code null})
      */
-    default LocalVar define(Var original) {
-        return define(original.name(), original);
+    default LocalVar declare(Var original) {
+        return declare(original.name(), original);
     }
 
     // reading memory

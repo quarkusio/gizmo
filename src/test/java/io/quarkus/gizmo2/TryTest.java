@@ -187,8 +187,8 @@ public final class TryTest {
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Const.of(1));
-                    LocalVar ran = b0.define("ran", Const.of(false));
+                    LocalVar i = b0.declare("i", Const.of(1));
+                    LocalVar ran = b0.declare("ran", Const.of(false));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
@@ -209,8 +209,8 @@ public final class TryTest {
             cc.staticMethod("test1", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Const.of(1));
-                    LocalVar ran = b0.define("ran", Const.of(false));
+                    LocalVar i = b0.declare("i", Const.of(1));
+                    LocalVar ran = b0.declare("ran", Const.of(false));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
@@ -234,7 +234,7 @@ public final class TryTest {
             });
             MethodDesc test2 = cc.staticMethod("test2body", smc -> {
                 smc.body(b0 -> {
-                    LocalVar i = b0.define("i", Const.of(1));
+                    LocalVar i = b0.declare("i", Const.of(1));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
@@ -270,8 +270,8 @@ public final class TryTest {
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar ranCatch = b0.define("ranCatch", Const.of(false));
-                    LocalVar ranFinally = b0.define("ranFinally", Const.of(false));
+                    LocalVar ranCatch = b0.declare("ranCatch", Const.of(false));
+                    LocalVar ranFinally = b0.declare("ranFinally", Const.of(false));
                     // use line numbers to make debugging stack traces more readable
                     b0.line(1);
                     b0.try_(try1 -> {
@@ -300,7 +300,7 @@ public final class TryTest {
             cc.staticMethod("test1", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
-                    LocalVar ran = b0.define("ran", Const.of(false));
+                    LocalVar ran = b0.declare("ran", Const.of(false));
                     b0.try_(try1 -> {
                         try1.body(b2 -> {
                             b2.try_(try3 -> {
