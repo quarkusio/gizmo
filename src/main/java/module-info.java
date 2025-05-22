@@ -2,7 +2,7 @@
  * A simplified bytecode generator.
  */
 module io.quarkus.gizmo2 {
-    requires transitive io.github.dmlloyd.classfile;
+    requires io.github.dmlloyd.classfile;
     requires io.smallrye.common.constraint;
 
     // for accessing serializable lambdas via ReflectionFactory
