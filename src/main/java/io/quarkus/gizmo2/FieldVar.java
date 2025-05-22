@@ -27,11 +27,4 @@ public sealed interface FieldVar extends Var permits InstanceFieldVar, StaticFie
      * {@return the descriptor of the field}
      */
     FieldDesc desc();
-
-    /**
-     * {@return {@code false} always (field variables may be reused)}
-     */
-    default boolean bound() {
-        return false;
-    }
 }
