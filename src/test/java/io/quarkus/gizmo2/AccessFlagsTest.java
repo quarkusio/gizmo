@@ -29,7 +29,7 @@ public class AccessFlagsTest {
         assertFalse(clazz.isInterface());
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
-        assertTrue(Arrays.stream(clazz.getInterfaces()).anyMatch(c -> c.equals(Function.class)));
+        assertTrue(Arrays.asList(clazz.getInterfaces()).contains(Function.class));
         assertEquals(Super.class, clazz.getSuperclass());
     }
 
@@ -48,7 +48,7 @@ public class AccessFlagsTest {
         assertFalse(Modifier.isPublic(clazz.getModifiers()));
         assertFalse(Modifier.isPrivate(clazz.getModifiers()));
         assertFalse(Modifier.isProtected(clazz.getModifiers()));
-        assertTrue(Arrays.stream(clazz.getInterfaces()).anyMatch(c -> c.equals(Function.class)));
+        assertTrue(Arrays.asList(clazz.getInterfaces()).contains(Function.class));
         assertEquals(Super.class, clazz.getSuperclass());
     }
 
@@ -64,7 +64,7 @@ public class AccessFlagsTest {
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
         assertTrue(Modifier.isAbstract(clazz.getModifiers()));
-        assertTrue(Arrays.stream(clazz.getInterfaces()).anyMatch(c -> c.equals(Consumer.class)));
+        assertTrue(Arrays.asList(clazz.getInterfaces()).contains(Consumer.class));
         assertNull(clazz.getSuperclass());
     }
 
@@ -83,7 +83,7 @@ public class AccessFlagsTest {
         assertFalse(Modifier.isPrivate(clazz.getModifiers()));
         assertFalse(Modifier.isProtected(clazz.getModifiers()));
         assertTrue(Modifier.isAbstract(clazz.getModifiers()));
-        assertTrue(Arrays.stream(clazz.getInterfaces()).anyMatch(c -> c.equals(Consumer.class)));
+        assertTrue(Arrays.asList(clazz.getInterfaces()).contains(Consumer.class));
         assertNull(clazz.getSuperclass());
     }
 

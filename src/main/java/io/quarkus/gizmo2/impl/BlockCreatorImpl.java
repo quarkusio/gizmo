@@ -565,7 +565,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 // implement the interface too
                 tc.implements_(imd.owner());
             }
-            tc.final_();
             tc.method(sam, imc -> {
                 imc.public_();
                 LambdaCreatorImpl lc = new LambdaCreatorImpl(tc, (InstanceMethodCreatorImpl) imc);

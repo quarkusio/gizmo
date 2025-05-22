@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;

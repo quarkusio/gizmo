@@ -1,7 +1,8 @@
-package io.quarkus.gizmo2;
+package io.quarkus.gizmo2.creator;
 
 import java.util.List;
 
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.impl.TypeVariableCreatorImpl;
 
 /**

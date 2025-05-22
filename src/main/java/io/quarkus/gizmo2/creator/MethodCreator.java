@@ -43,4 +43,13 @@ public sealed interface MethodCreator extends ExecutableCreator, MemberCreator
     default void returning(Class<?> type) {
         returning(Util.classDesc(type));
     }
+
+    /**
+     * Add the {@code synchronized} modifier flag to this creator.
+     *
+     * @throws IllegalArgumentException if this creator does not support the {@code synchronized} modifier flag
+     */
+    default void synchronized_() {
+        withFlag(ModifierFlag.SYNCHRONIZED);
+    }
 }

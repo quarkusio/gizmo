@@ -12,7 +12,7 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;

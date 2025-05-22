@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
@@ -7,28 +8,23 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.extras.reflect.AccessFlag;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
+import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
 
     InterfaceCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
-        super(type, output, zb, AccessFlag.INTERFACE.mask()
-                | AccessFlag.ABSTRACT.mask()
-                | AccessFlag.SYNTHETIC.mask()
-                | AccessFlag.PUBLIC.mask());
+        super(type, output, zb);
+        modifiers |= ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC | ACC_PUBLIC;
     }
 
-    public void withFlag(final AccessFlag flag) {
-        switch (flag) {
-            case INTERFACE, PUBLIC -> super.withFlag(flag);
-            default -> throw new IllegalArgumentException(flag.toString());
-        }
+    public ModifierLocation modifierLocation() {
+        return ModifierLocation.INTERFACE;
     }
 
     MethodDesc methodDesc(final String name, final MethodTypeDesc type) {

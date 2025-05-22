@@ -22,13 +22,12 @@ import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
-import io.quarkus.gizmo2.AnnotatableCreator;
+import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreator
-        permits ExecutableCreatorImpl, FieldCreatorImpl, ParamCreatorImpl, TypeAnnotatableCreatorImpl, TypeCreatorImpl,
-        TypeVariableCreatorImpl {
+        permits ModifiableCreatorImpl, TypeAnnotatableCreatorImpl, TypeVariableCreatorImpl {
     protected final String creationSite = Util.trackCaller();
 
     Map<ClassDesc, Annotation> invisible;
