@@ -29,6 +29,10 @@ public abstract non-sealed class Item implements Expr {
         return ConstantDescs.CD_void;
     }
 
+    /**
+     * {@return {@code true} if the expression is bound to a single point in the instruction list, or {@code false} otherwise}
+     * Bound expressions may not be used again.
+     */
     public boolean bound() {
         return true;
     }
