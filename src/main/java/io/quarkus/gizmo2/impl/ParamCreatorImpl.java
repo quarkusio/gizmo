@@ -38,7 +38,7 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
                 List.copyOf(visible.values()));
     }
 
-    public void withType(final GenericType genericType) {
+    public void setType(final GenericType genericType) {
         checkNotNullParam("type", genericType);
         if (genericType.desc().equals(ConstantDescs.CD_void)) {
             throw new IllegalArgumentException("Bad genericType for parameter: " + genericType);
@@ -50,9 +50,9 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
         this.genericType = genericType;
     }
 
-    public void withType(final ClassDesc type) {
+    public void setType(final ClassDesc type) {
         checkNotNullParam("type", type);
-        withType(GenericType.of(type));
+        setType(GenericType.of(type));
     }
 
     public ClassDesc type() {

@@ -31,7 +31,7 @@ public sealed interface AnnotatableCreator
         return ac -> Stream.of(element.getAnnotations())
                 .filter(a -> Set.of(Objects.requireNonNull(a.annotationType().getAnnotation(Target.class)).value())
                         .contains(((AnnotatableCreatorImpl) ac).annotationTargetType()))
-                .forEach(ac::withAnnotation);
+                .forEach(ac::addAnnotation);
     }
 
     /**
@@ -40,11 +40,11 @@ public sealed interface AnnotatableCreator
      * @param annotation the annotation object (must not be {@code null})
      * @param <A> the annotation type
      */
-    default <A extends Annotation> void withAnnotation(A annotation) {
+    default <A extends Annotation> void addAnnotation(A annotation) {
         checkNotNullParam("annotation", annotation);
         @SuppressWarnings("unchecked")
         Class<A> annotationType = (Class<A>) annotation.annotationType();
-        withAnnotation(annotationType, AnnotationCreator.from(annotation));
+        addAnnotation(annotationType, AnnotationCreator.from(annotation));
     }
 
     /**
@@ -60,9 +60,9 @@ public sealed interface AnnotatableCreator
      * @param annotationClass the class of the annotation (must not be {@code null})
      * @throws IllegalArgumentException if the annotation is not repeatable and appears more than once on this element
      */
-    default void withAnnotation(Class<? extends Annotation> annotationClass) {
+    default void addAnnotation(Class<? extends Annotation> annotationClass) {
         checkNotNullParam("annotationClass", annotationClass);
-        withAnnotation(annotationClass, builder -> {
+        addAnnotation(annotationClass, builder -> {
         });
     }
 
@@ -81,7 +81,7 @@ public sealed interface AnnotatableCreator
      * @param <A> the annotation type
      * @throws IllegalArgumentException if the annotation is not repeatable and appears more than once on this element
      */
-    <A extends Annotation> void withAnnotation(Class<A> annotationClass, Consumer<AnnotationCreator<A>> builder);
+    <A extends Annotation> void addAnnotation(Class<A> annotationClass, Consumer<AnnotationCreator<A>> builder);
 
     /**
      * Add an annotation of given class with given retention policy and with elements provided by
@@ -96,6 +96,6 @@ public sealed interface AnnotatableCreator
      * @param builder the builder which adds annotation values (must not be {@code null})
      * @throws IllegalArgumentException if the annotation appears more than once on this element
      */
-    void withAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
+    void addAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
             Consumer<AnnotationCreator<Annotation>> builder);
 }

@@ -357,7 +357,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             CD_String,
                             CD_MethodType),
                     smc -> {
-                        smc.withAccess(AccessLevel.PRIVATE);
+                        smc.setAccess(AccessLevel.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);

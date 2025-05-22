@@ -19,12 +19,12 @@ public sealed interface TypeVariableCreator extends AnnotatableCreator permits T
      *
      * @param bound the first bound (must not be {@code null})
      */
-    void withFirstBound(GenericType.OfReference bound);
+    void setFirstBound(GenericType.OfReference bound);
 
     /**
      * Establish the other (secondary) bounds for the type variable.
      *
      * @param bounds the secondary bounds (must not be {@code null})
      */
-    void withOtherBounds(List<GenericType.OfReference> bounds);
+    void setOtherBounds(List<GenericType.OfReference> bounds);
 }

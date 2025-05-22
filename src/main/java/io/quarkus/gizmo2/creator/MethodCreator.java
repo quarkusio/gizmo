@@ -50,6 +50,6 @@ public sealed interface MethodCreator extends ExecutableCreator, MemberCreator
      * @throws IllegalArgumentException if this creator does not support the {@code synchronized} modifier flag
      */
     default void synchronized_() {
-        withFlag(ModifierFlag.SYNCHRONIZED);
+        addFlag(ModifierFlag.SYNCHRONIZED);
     }
 }
