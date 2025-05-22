@@ -19,7 +19,7 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
         super(visible, invisible);
     }
 
-    public void withFlag(final ModifierFlag flag) {
+    public void addFlag(final ModifierFlag flag) {
         if (supports(flag)) {
             modifiers |= flag.mask();
         } else {
@@ -27,7 +27,7 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
         }
     }
 
-    public void withoutFlag(final ModifierFlag flag) {
+    public void removeFlag(final ModifierFlag flag) {
         if (supports(flag)) {
             modifiers &= ~flag.mask();
         } else {
@@ -35,7 +35,7 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
         }
     }
 
-    public void withAccess(final AccessLevel access) {
+    public void setAccess(final AccessLevel access) {
         if (supports(access)) {
             modifiers = modifiers & ~AccessLevel.fullMask() | access.mask();
         } else {

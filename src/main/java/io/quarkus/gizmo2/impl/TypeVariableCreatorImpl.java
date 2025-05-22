@@ -35,11 +35,11 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         return name;
     }
 
-    public void withFirstBound(final GenericType.OfReference bound) {
+    public void setFirstBound(final GenericType.OfReference bound) {
         firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
-    public void withOtherBounds(final List<GenericType.OfReference> bounds) {
+    public void setOtherBounds(final List<GenericType.OfReference> bounds) {
         this.otherBounds = List.copyOf(bounds);
     }
 

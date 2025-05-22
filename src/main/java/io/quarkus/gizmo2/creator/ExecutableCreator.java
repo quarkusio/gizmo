@@ -31,7 +31,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      * @throws IllegalArgumentException if some parameters are already defined,
      *         and their types do not match the given type descriptor
      */
-    void withType(MethodTypeDesc desc);
+    void setType(MethodTypeDesc desc);
 
     /**
      * Add a parameter.
@@ -122,7 +122,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, ClassDesc type) {
         return parameter(name, pc -> {
-            pc.withType(type);
+            pc.setType(type);
         });
     }
 
@@ -145,7 +145,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, int position, ClassDesc type) {
         return parameter(name, position, pc -> {
-            pc.withType(type);
+            pc.setType(type);
         });
     }
 
@@ -218,7 +218,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      * Add the variable arguments modifier flag to this creator.
      */
     default void varargs() {
-        withFlag(ModifierFlag.VARARGS);
+        addFlag(ModifierFlag.VARARGS);
     }
 
 }

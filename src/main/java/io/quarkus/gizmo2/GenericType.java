@@ -371,7 +371,7 @@ public abstract class GenericType {
      */
     public <A extends java.lang.annotation.Annotation> GenericType withAnnotation(Class<A> annotationType,
             Consumer<AnnotationCreator<A>> builder) {
-        return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
+        return withAnnotations(ac -> ac.addAnnotation(annotationType, builder));
     }
 
     /**

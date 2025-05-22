@@ -98,7 +98,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("list", pc -> {
-                    pc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                    pc.setType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -123,13 +123,13 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.withType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
+                    pc.setType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
             zc.staticMethod("test1", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.withType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
+                    pc.setType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -213,7 +213,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericField", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                fc.setType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -228,10 +228,10 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationField", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
+                fc.setType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
             });
             zc.field("test1", fc -> {
-                fc.withType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
+                fc.setType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -255,8 +255,8 @@ public final class GenericTypeTest {
                                 .withAnnotation(Visible.class),
                         TypeArgument.ofExact(GenericType.ofClass(Integer.class).withAnnotation(Visible.class))))),
                 TypeArgument.ofWildcard().withAnnotations(ac -> {
-                    ac.withAnnotation(Visible.class);
-                    ac.withAnnotation(Invisible.class);
+                    ac.addAnnotation(Visible.class);
+                    ac.addAnnotation(Invisible.class);
                 }))).withAnnotation(Visible.class);
         assertEquals(
                 "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String,@io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>,@io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible *>",
@@ -265,7 +265,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestComplexCase", zc -> {
             zc.field("test0", fc -> {
-                fc.withType(bigGenericType);
+                fc.setType(bigGenericType);
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -356,8 +356,8 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassTypeParameter", zc -> {
             zc.typeParameter("T", tvc -> {
-                tvc.withFirstBound(GenericType.ofClass(String.class));
-                tvc.withOtherBounds(List.of(GenericType.ofClass(Serializable.class)));
+                tvc.setFirstBound(GenericType.ofClass(String.class));
+                tvc.setOtherBounds(List.of(GenericType.ofClass(Serializable.class)));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
@@ -397,7 +397,7 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericReceiver", zc -> {
             zc.typeParameter("T", tvc -> {
-                tvc.withOtherBounds(List.of(GenericType.ofClass(CharSequence.class)));
+                tvc.setOtherBounds(List.of(GenericType.ofClass(CharSequence.class)));
             });
             zc.method("test0", mc -> {
                 mc.returning(zc.genericType());

@@ -26,10 +26,10 @@ public final class AtomicsTest {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             StaticFieldVar staticStrVal = zc.staticField("staticStrVal", sfc -> {
-                sfc.withInitial("Goodbye");
+                sfc.setInitial("Goodbye");
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -205,7 +205,7 @@ public final class AtomicsTest {
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -301,7 +301,7 @@ public final class AtomicsTest {
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -397,7 +397,7 @@ public final class AtomicsTest {
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(4095));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(4095);
+                sfc.setInitial(4095);
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -493,7 +493,7 @@ public final class AtomicsTest {
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(4095));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(4095);
+                sfc.setInitial(4095);
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -590,10 +590,10 @@ public final class AtomicsTest {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             StaticFieldVar staticStrVal = zc.staticField("staticStrVal", sfc -> {
-                sfc.withInitial("Goodbye");
+                sfc.setInitial("Goodbye");
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -705,10 +705,10 @@ public final class AtomicsTest {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             StaticFieldVar staticStrVal = zc.staticField("staticStrVal", sfc -> {
-                sfc.withInitial("Goodbye");
+                sfc.setInitial("Goodbye");
             });
             zc.sourceFile(file());
             zc.defaultConstructor();
@@ -821,10 +821,10 @@ public final class AtomicsTest {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
-                sfc.withInitial(404);
+                sfc.setInitial(404);
             });
             StaticFieldVar staticStrVal = zc.staticField("staticStrVal", sfc -> {
-                sfc.withInitial("Goodbye");
+                sfc.setInitial("Goodbye");
             });
             zc.sourceFile(file());
             zc.defaultConstructor();

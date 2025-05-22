@@ -38,11 +38,11 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         return desc;
     }
 
-    public void withType(final MethodTypeDesc desc) {
+    public void setType(final MethodTypeDesc desc) {
         if (!desc.returnType().equals(CD_void)) {
             throw new IllegalArgumentException("Constructors must return void");
         }
-        super.withType(desc);
+        super.setType(desc);
     }
 
     public String name() {

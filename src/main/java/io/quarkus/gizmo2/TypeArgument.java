@@ -226,7 +226,7 @@ public abstract class TypeArgument {
          * @param annotationType the annotation type
          */
         public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType) {
-            return withAnnotations(ac -> ac.withAnnotation(annotationType));
+            return withAnnotations(ac -> ac.addAnnotation(annotationType));
         }
 
         /**
@@ -237,7 +237,7 @@ public abstract class TypeArgument {
          */
         public <A extends java.lang.annotation.Annotation> OfAnnotated withAnnotation(final Class<A> annotationType,
                 final Consumer<AnnotationCreator<A>> builder) {
-            return withAnnotations(ac -> ac.withAnnotation(annotationType, builder));
+            return withAnnotations(ac -> ac.addAnnotation(annotationType, builder));
         }
 
         public StringBuilder toString(StringBuilder b) {
