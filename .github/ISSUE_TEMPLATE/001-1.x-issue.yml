@@ -7,4 +7,4 @@ body:
     attributes:
       label: "Issue description"
       description: "Please describe the issue below."
-      value: "## Describe the issue here"
+      value: "<!-- Describe the issue here -->"
