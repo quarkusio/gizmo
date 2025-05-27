@@ -390,7 +390,7 @@ public final class Util {
     }
 
     public static Signature.TypeVarSig signatureOf(GenericType.OfTypeVariable type) {
-        return Signature.TypeVarSig.of(type.typeVariable().name());
+        return Signature.TypeVarSig.of(type.name());
     }
 
     // Generic type argument mapping

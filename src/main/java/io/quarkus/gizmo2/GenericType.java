@@ -4,6 +4,9 @@ import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.lang.invoke.ConstantBootstraps;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.AnnotatedArrayType;
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
@@ -203,14 +206,22 @@ public abstract class GenericType {
     }
 
     /**
-     * {@return the given type variable as a generic type (not {@code null})}
+     * {@return the generic type of a type variable (not {@code null})}
+     *
+     * @param name the type variable name (must not be {@code null})
+     * @param type the type variable's erased type (must not be {@code null})
      */
-    public static OfTypeVariable ofTypeVariable(TypeVariable typeVariable) {
-        OfTypeVariable type = typeVariable.genericType;
-        if (type == null) {
-            type = typeVariable.genericType = new OfTypeVariable(List.of(), List.of(), typeVariable);
-        }
-        return type;
+    public static OfTypeVariable ofTypeVariable(String name, ClassDesc type) {
+        return OfTypeVariable.getOrMake(name, type);
+    }
+
+    /**
+     * {@return the generic type of a type variable (not {@code null})}
+     *
+     * @param name the type variable name (must not be {@code null})
+     */
+    public static OfTypeVariable ofTypeVariable(String name) {
+        return ofTypeVariable(name, CD_Object);
     }
 
     /**
@@ -482,26 +493,48 @@ public abstract class GenericType {
      * A generic type corresponding to a type variable.
      */
     public static final class OfTypeVariable extends OfThrows {
-        private final TypeVariable typeVariable;
+        private static final VarHandle cacheHandle = ConstantBootstraps.arrayVarHandle(MethodHandles.lookup(), "_",
+                VarHandle.class, OfTypeVariable[].class);
+        private static final OfTypeVariable[] cache = new OfTypeVariable[26];
 
-        OfTypeVariable(final List<Annotation> visible, final List<Annotation> invisible, final TypeVariable typeVariable) {
+        private final String name;
+        private final ClassDesc desc;
+
+        OfTypeVariable(final List<Annotation> visible, final List<Annotation> invisible, final String name,
+                final ClassDesc desc) {
             super(visible, invisible);
-            this.typeVariable = typeVariable;
+            this.name = name;
+            this.desc = desc;
+        }
+
+        static OfTypeVariable getOrMake(String name, ClassDesc desc) {
+            if (name.length() == 1 && desc.equals(CD_Object)) {
+                char c = name.charAt(0);
+                if ('A' <= c && c <= 'Z') {
+                    OfTypeVariable type = (OfTypeVariable) cacheHandle.getVolatile(cache, c - 'A');
+                    if (type == null) {
+                        type = new OfTypeVariable(List.of(), List.of(), name, CD_Object);
+                        OfTypeVariable witness = (OfTypeVariable) cacheHandle.compareAndExchange(cache, c - 'A', null, type);
+                        if (witness != null) {
+                            type = witness;
+                        }
+                    }
+                    return type;
+                }
+            }
+            return new OfTypeVariable(List.of(), List.of(), name, desc);
         }
 
         public ClassDesc desc() {
-            return typeVariable.erasure();
+            return desc;
+        }
+
+        public String name() {
+            return name;
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append(typeVariable);
-        }
-
-        /**
-         * {@return the type variable of this type}
-         */
-        public TypeVariable typeVariable() {
-            return typeVariable;
+            return super.toString(b).append(name);
         }
 
         public OfTypeVariable withAnnotations(final Consumer<AnnotatableCreator> builder) {
@@ -522,7 +555,7 @@ public abstract class GenericType {
         }
 
         OfTypeVariable copy(final List<Annotation> visible, final List<Annotation> invisible) {
-            return new OfTypeVariable(visible, invisible, typeVariable);
+            return new OfTypeVariable(visible, invisible, name, desc);
         }
 
         public boolean equals(final OfThrows other) {
@@ -533,11 +566,11 @@ public abstract class GenericType {
          * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
          */
         public boolean equals(final OfTypeVariable tvt) {
-            return this == tvt || super.equals(tvt) && typeVariable().equals(tvt.typeVariable());
+            return this == tvt || super.equals(tvt) && name.equals(tvt.name) && desc.equals(tvt.desc);
         }
 
         public int hashCode() {
-            return super.hashCode() * 19 + typeVariable().hashCode();
+            return super.hashCode() * 19 + Objects.hash(name, desc);
         }
     }
 

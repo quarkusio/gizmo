@@ -110,7 +110,7 @@ public sealed abstract class TypeVariable implements GenericTyped {
      * {@return the generic type corresponding to this type variable (not {@code null})}
      */
     public GenericType.OfTypeVariable genericType() {
-        return GenericType.ofTypeVariable(this);
+        return GenericType.ofTypeVariable(name(), type());
     }
 
     /**
