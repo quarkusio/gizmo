@@ -30,7 +30,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the run time version (must not be {@code null})
      */
-    void withVersion(Runtime.Version version);
+    void setVersion(Runtime.Version version);
 
     /**
      * Set the class file version.
@@ -38,7 +38,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the class file version (must not be {@code null})
      */
-    void withVersion(ClassVersion version);
+    void setVersion(ClassVersion version);
 
     /**
      * Set the source file name for this type.

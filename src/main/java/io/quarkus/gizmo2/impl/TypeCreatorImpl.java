@@ -132,12 +132,12 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     @Override
-    public void withVersion(final Runtime.Version version) {
+    public void setVersion(final Runtime.Version version) {
         checkNotNullParam("version", version);
         this.version = ClassFileFormatVersion.valueOf(version);
     }
 
-    public void withVersion(final ClassVersion version) {
+    public void setVersion(final ClassVersion version) {
         checkNotNullParam("version", version);
         this.version = switch (version) {
             case V17 -> ClassFileFormatVersion.RELEASE_17;
