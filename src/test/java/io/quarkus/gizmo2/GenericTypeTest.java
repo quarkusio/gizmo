@@ -419,10 +419,10 @@ public final class GenericTypeTest {
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestRecursiveType", zc -> {
             zc.typeParameter("S", tvc -> {
-                tvc.withFirstBound(GenericType.ofTypeVariable("T", CD_List));
+                tvc.setFirstBound(GenericType.ofTypeVariable("T", CD_List));
             });
             zc.typeParameter("T", tvc -> {
-                tvc.withFirstBound(GenericType.ofTypeVariable("S", CD_List));
+                tvc.setFirstBound(GenericType.ofTypeVariable("S", CD_List));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
