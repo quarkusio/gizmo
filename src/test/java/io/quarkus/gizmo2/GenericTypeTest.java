@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2;
 
+import static java.lang.constant.ConstantDescs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.Serializable;
@@ -410,5 +411,22 @@ public final class GenericTypeTest {
                 .orElseThrow();
         assertEquals("()Lio/quarkus/gizmo2/TestGenericReceiver<TT;>;",
                 test0.findAttribute(Attributes.signature()).orElseThrow().signature().stringValue());
+    }
+
+    @Test
+    public void testRecursiveType() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestRecursiveType", zc -> {
+            zc.typeParameter("S", tvc -> {
+                tvc.withFirstBound(GenericType.ofTypeVariable("T", CD_List));
+            });
+            zc.typeParameter("T", tvc -> {
+                tvc.withFirstBound(GenericType.ofTypeVariable("S", CD_List));
+            });
+        });
+        ClassModel model = tcm.forClass(desc).getModel();
+        SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
+        assertEquals("<S:TT;T:TS;>Ljava/lang/Object;", sa.signature().stringValue());
     }
 }
