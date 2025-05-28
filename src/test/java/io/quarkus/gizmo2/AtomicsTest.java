@@ -37,7 +37,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, instance.field(intVal), Const.of(123));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -88,7 +88,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -114,7 +114,7 @@ public final class AtomicsTest {
             zc.staticMethod("test3", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsL, Const.of("Hello"), instance.field(strVal));
                     // instance obj: volatile
                     b0.line(nextLine());
@@ -165,7 +165,7 @@ public final class AtomicsTest {
             zc.staticMethod("test5", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(String.class, Const.of("Goodbye")));
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class, Const.of("Goodbye")));
                     b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), array.elem(0));
                     // array obj: volatile
                     b0.line(nextLine());
@@ -213,7 +213,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, Const.of(123), instance.field(intVal));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -264,7 +264,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -309,7 +309,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, Const.of(123), instance.field(intVal));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -360,7 +360,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -405,7 +405,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, Const.of(4095), instance.field(intVal));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -456,7 +456,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(4095)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(4095)));
                     b0.invokeStatic(assertEqualsI, Const.of(4095), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -501,7 +501,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, Const.of(4095), instance.field(intVal));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -552,7 +552,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(4095)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(4095)));
                     b0.invokeStatic(assertEqualsI, Const.of(4095), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -601,7 +601,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, instance.field(intVal), Const.of(123));
                     // instance int
                     b0.line(nextLine());
@@ -630,7 +630,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int
                     b0.line(nextLine());
@@ -645,7 +645,7 @@ public final class AtomicsTest {
             zc.staticMethod("test3", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsL, Const.of("Hello"), instance.field(strVal));
                     // instance obj
                     b0.line(nextLine());
@@ -675,7 +675,7 @@ public final class AtomicsTest {
             zc.staticMethod("test5", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(String.class, Const.of("Goodbye")));
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class, Const.of("Goodbye")));
                     b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), array.elem(0));
                     // array obj
                     b0.line(nextLine());
@@ -716,7 +716,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, instance.field(intVal), Const.of(123));
                     // instance int
                     b0.line(nextLine());
@@ -745,7 +745,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int
                     b0.line(nextLine());
@@ -760,7 +760,7 @@ public final class AtomicsTest {
             zc.staticMethod("test3", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsL, Const.of("Hello"), instance.field(strVal));
                     // instance obj
                     b0.line(nextLine());
@@ -791,7 +791,7 @@ public final class AtomicsTest {
             zc.staticMethod("test5", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(String.class, Const.of("Goodbye")));
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class, Const.of("Goodbye")));
                     b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), array.elem(0));
                     // array obj
                     b0.line(nextLine());
@@ -832,7 +832,7 @@ public final class AtomicsTest {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsI, instance.field(intVal), Const.of(123));
                     // instance int: volatile
                     b0.line(nextLine());
@@ -883,7 +883,7 @@ public final class AtomicsTest {
             zc.staticMethod("test2", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(int.class, Const.of(404)));
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
                     b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
                     // array int: volatile
                     b0.line(nextLine());
@@ -909,7 +909,7 @@ public final class AtomicsTest {
             zc.staticMethod("test3", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar instance = b0.define("instance", b0.new_(desc));
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
                     b0.invokeStatic(assertEqualsL, Const.of("Hello"), instance.field(strVal));
                     // instance obj: volatile
                     b0.line(nextLine());
@@ -960,7 +960,7 @@ public final class AtomicsTest {
             zc.staticMethod("test5", mc -> {
                 mc.body(b0 -> {
                     b0.line(nextLine());
-                    LocalVar array = b0.define("array", b0.newArray(String.class, Const.of("Goodbye")));
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class, Const.of("Goodbye")));
                     b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), array.elem(0));
                     // array obj: volatile
                     b0.line(nextLine());

@@ -38,15 +38,15 @@ public class EqualsHashCodeToStringGenerator {
                 b0.if_(b0.eq(cc.this_(), other), BlockCreator::returnTrue);
                 b0.ifNotInstanceOf(other, thisClass, BlockCreator::returnFalse);
 
-                Expr otherCast = b0.define("other", b0.cast(other, thisClass));
+                Expr otherCast = b0.localVar("other", b0.cast(other, thisClass));
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
                         throw new IllegalArgumentException(
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
-                    LocalVar thisValue = b0.define("thisValue", b0.get(cc.this_().field(field)));
-                    LocalVar thatValue = b0.define("thatValue", b0.get(otherCast.field(field)));
+                    LocalVar thisValue = b0.localVar("thisValue", b0.get(cc.this_().field(field)));
+                    LocalVar thatValue = b0.localVar("thatValue", b0.get(otherCast.field(field)));
                     String fieldDesc = field.type().descriptorString();
                     switch (fieldDesc.charAt(0)) {
                         // boolean, byte, short, int, long, char
@@ -90,15 +90,15 @@ public class EqualsHashCodeToStringGenerator {
                     return;
                 }
 
-                LocalVar result = b0.define("result", Const.of(1));
+                LocalVar result = b0.localVar("result", Const.of(1));
                 for (FieldDesc field : fields) {
                     if (!field.owner().equals(thisClass)) {
                         throw new IllegalArgumentException(
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
 
-                    LocalVar value = b0.define("value", b0.get(cc.this_().field(field)));
-                    LocalVar hash = b0.define("hash",
+                    LocalVar value = b0.localVar("value", b0.get(cc.this_().field(field)));
+                    LocalVar hash = b0.localVar("hash",
                             field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value));
                     b0.set(result, b0.add(b0.mul(Const.of(31), result), hash));
                 }

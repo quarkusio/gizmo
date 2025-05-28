@@ -25,7 +25,7 @@ public class ThrowableOpsTest {
                 //    throw e;
                 // }
                 mc.body(bc -> {
-                    var e = bc.define("e", bc.new_(IllegalStateException.class, Const.of("foo")));
+                    var e = bc.localVar("e", bc.new_(IllegalStateException.class, Const.of("foo")));
                     ThrowableOps throwableOps = bc.withThrowable(e);
                     throwableOps.addSuppressed(bc.new_(NullPointerException.class, Const.of("npe")));
                     throwableOps.addSuppressed(bc.new_(IllegalArgumentException.class, Const.of("iae")));

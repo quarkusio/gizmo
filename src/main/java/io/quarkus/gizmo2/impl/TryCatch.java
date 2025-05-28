@@ -83,7 +83,7 @@ final class TryCatch extends Item {
 
         void accept(final BiConsumer<BlockCreator, ? super LocalVar> builder) {
             body().accept((b, e) -> {
-                builder.accept(b, b.define(caughtName, e));
+                builder.accept(b, b.localVar(caughtName, e));
             });
         }
     }

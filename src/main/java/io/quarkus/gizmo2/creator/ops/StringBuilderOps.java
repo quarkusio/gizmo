@@ -35,7 +35,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @param bc the block creator (must not be {@code null})
      */
     public StringBuilderOps(final BlockCreator bc) {
-        super(StringBuilder.class, bc, bc.define("stringBuilder", bc.new_(StringBuilder.class)));
+        super(StringBuilder.class, bc, bc.localVar("stringBuilder", bc.new_(StringBuilder.class)));
     }
 
     /**

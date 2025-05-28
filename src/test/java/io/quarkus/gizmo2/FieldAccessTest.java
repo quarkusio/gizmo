@@ -353,7 +353,7 @@ public class FieldAccessTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
                     bc.return_(instance.field(field));
                 });
             });
@@ -376,7 +376,7 @@ public class FieldAccessTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
                     bc.return_(bc.get(instance.field(field)));
                 });
             });
@@ -399,7 +399,7 @@ public class FieldAccessTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
                     bc.return_(bc.get(instance.field(field), MemoryOrder.Volatile));
                 });
             });
@@ -422,7 +422,7 @@ public class FieldAccessTest {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field), param);
 
@@ -450,7 +450,7 @@ public class FieldAccessTest {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
                 mc.body(bc -> {
-                    LocalVar instance = bc.define("instance", bc.new_(cc.type()));
+                    LocalVar instance = bc.localVar("instance", bc.new_(cc.type()));
 
                     bc.set(instance.field(field), param, MemoryOrder.Volatile);
 

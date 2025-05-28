@@ -51,7 +51,7 @@ public class MapOpsTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    var map = bc.define("map", bc.new_(HashMap.class));
+                    var map = bc.localVar("map", bc.new_(HashMap.class));
                     MapOps mapOps = bc.withMap(map);
                     mapOps.put(Const.of("foo"), Const.of("bar"));
                     mapOps.put(Const.of("alpha"), Const.of("bravo"));
@@ -89,7 +89,7 @@ public class MapOpsTest {
                 mc.returning(int.class);
                 mc.body(bc -> {
                     assertThrows(IllegalArgumentException.class, () -> bc.mapOf(Const.of("foo")));
-                    var map = bc.define("map", bc.mapOf(Const.of("foo"), Const.of("bar")));
+                    var map = bc.localVar("map", bc.mapOf(Const.of("foo"), Const.of("bar")));
                     MapOps mapOps = bc.withMap(map);
                     bc.ifNot(bc.exprEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
                             fail -> fail.return_(-1));

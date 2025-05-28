@@ -28,7 +28,7 @@ public class ConditionalsTest {
                 ParamVar val = mc.parameter("val", String.class);
                 mc.returning(boolean.class);
                 mc.body(bc -> {
-                    var len = bc.define("len",
+                    var len = bc.localVar("len",
                             bc.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
                     bc.if_(bc.ne(len, 5), BlockCreator::returnFalse);
                     bc.returnTrue();
@@ -55,7 +55,7 @@ public class ConditionalsTest {
                 ParamVar val = mc.parameter("val", String.class);
                 mc.returning(boolean.class);
                 mc.body(bc -> {
-                    var len = bc.define("len",
+                    var len = bc.localVar("len",
                             bc.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
                     bc.ifNot(bc.eq(len, 5), BlockCreator::returnFalse);
                     bc.returnTrue();
@@ -79,7 +79,7 @@ public class ConditionalsTest {
                 ParamVar val = mc.parameter("val", String.class);
                 mc.returning(boolean.class);
                 mc.body(b0 -> {
-                    var len = b0.define("len",
+                    var len = b0.localVar("len",
                             b0.invokeVirtual(MethodDesc.of(String.class, "length", int.class), val));
                     Expr result = b0.cond(boolean.class, b0.ne(len, 5),
                             b1 -> b1.yield(Const.of(false)),

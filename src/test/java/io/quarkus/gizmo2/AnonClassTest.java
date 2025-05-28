@@ -39,7 +39,7 @@ public final class AnonClassTest {
                 // }
                 smc.returning(int.class);
                 smc.body(b0 -> {
-                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    var ret = b0.localVar("ret", b0.new_(AtomicInteger.class));
                     Expr runnable = b0.newAnonymousClass(Runnable.class, acc -> {
                         var capturedRet = acc.capture(ret);
                         acc.method("run", imc -> {
@@ -87,7 +87,7 @@ public final class AnonClassTest {
                 // }
                 smc.returning(int.class);
                 smc.body(b0 -> {
-                    var ret = b0.define("ret", b0.new_(AtomicInteger.class));
+                    var ret = b0.localVar("ret", b0.new_(AtomicInteger.class));
                     Expr base = b0.newAnonymousClass(ConstructorDesc.of(baseDesc), List.of(), acc -> {
                         var capturedRet = acc.capture(ret);
                         acc.method("go", imc -> {

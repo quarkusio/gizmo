@@ -37,8 +37,8 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericLocalVar", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
-                    LocalVar list = b0.declare("list", GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
-                    b0.set(list, Const.ofNull(List.class));
+                    GenericType listOfString = GenericType.of(List.class, List.of(TypeArgument.of(String.class)));
+                    LocalVar list = b0.localVar("list", listOfString, Const.ofNull(List.class));
                     b0.return_();
                 });
             });
@@ -61,15 +61,15 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationLocalVar", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.body(b0 -> {
-                    LocalVar foo = b0.declare("foo", GenericType.ofClass(String.class).withAnnotation(Visible.class));
-                    b0.set(foo, Const.of("hello"));
+                    LocalVar foo = b0.localVar("foo", GenericType.ofClass(String.class).withAnnotation(Visible.class),
+                            Const.of("hello"));
                     b0.return_();
                 });
             });
             zc.staticMethod("test1", mc -> {
                 mc.body(b0 -> {
-                    LocalVar foo = b0.declare("foo", GenericType.ofClass(String.class).withAnnotation(Invisible.class));
-                    b0.set(foo, Const.of("hello"));
+                    LocalVar foo = b0.localVar("foo", GenericType.ofClass(String.class).withAnnotation(Invisible.class),
+                            Const.of("hello"));
                     b0.return_();
                 });
             });

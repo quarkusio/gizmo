@@ -35,7 +35,7 @@ public class ArraysTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    var arr = bc.define("arr", bc.newEmptyArray(String.class, Const.of(5)));
+                    var arr = bc.localVar("arr", bc.newEmptyArray(String.class, Const.of(5)));
                     bc.set(arr.elem(0), Const.of("foo"));
                     bc.set(arr.elem(Const.of(1)), Const.of("bar"));
                     bc.ifNot(bc.exprEquals(arr.elem(Integer.valueOf(1)), Const.of("bar")), fail -> fail.return_(-1));
@@ -141,15 +141,15 @@ public class ArraysTest {
             return bc.newArray(String[].class, a1, a2);
         }, "[[ab, cd], [ef, gh]]");
         testCreateArray(bc -> {
-            Expr cs1 = bc.define("cs1", bc.new_(StringBuilder.class, Const.of("ij")));
-            Expr cs2 = bc.define("cs2", bc.new_(StringBuilder.class, Const.of("mn")));
+            Expr cs1 = bc.localVar("cs1", bc.new_(StringBuilder.class, Const.of("ij")));
+            Expr cs2 = bc.localVar("cs2", bc.new_(StringBuilder.class, Const.of("mn")));
             Expr a1 = bc.newArray(CharSequence.class, cs1, Const.of("kl"), cs2);
             Expr a2 = bc.newArray(CharSequence.class);
             return bc.newArray(CharSequence[].class, a1, a2);
         }, "[[ij, kl, mn], []]");
         testCreateArray(bc -> {
-            Expr num1 = bc.define("num1", bc.new_(Integer.class, Const.of(123)));
-            Expr num2 = bc.define("num2", bc.new_(Integer.class, Const.of(456)));
+            Expr num1 = bc.localVar("num1", bc.new_(Integer.class, Const.of(123)));
+            Expr num2 = bc.localVar("num2", bc.new_(Integer.class, Const.of(456)));
             Expr a1 = bc.newArray(String.class, Const.of("op"), Const.of("qr"));
             Expr a2 = bc.newArray(CharSequence.class);
             Expr a3 = bc.newArray(Integer.class, num1, num2);
@@ -186,35 +186,35 @@ public class ArraysTest {
     @Test
     public void readPrimitiveArray() {
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(boolean.class, Const.of(true), Const.of(false)));
+            Expr arr = bc.localVar("arr", bc.newArray(boolean.class, Const.of(true), Const.of(false)));
             return bc.add(arr.elem(0), arr.elem(1));
         }, 1);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(byte.class, Const.of((byte) 1), Const.of((byte) 2)));
+            Expr arr = bc.localVar("arr", bc.newArray(byte.class, Const.of((byte) 1), Const.of((byte) 2)));
             return bc.add(arr.elem(0), arr.elem(1));
         }, 3);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(short.class, Const.of((short) 3), Const.of((short) 4)));
+            Expr arr = bc.localVar("arr", bc.newArray(short.class, Const.of((short) 3), Const.of((short) 4)));
             return bc.add(arr.elem(0), arr.elem(1));
         }, 7);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(char.class, Const.of('a'), Const.of('b')));
+            Expr arr = bc.localVar("arr", bc.newArray(char.class, Const.of('a'), Const.of('b')));
             return bc.add(arr.elem(0), arr.elem(1));
         }, 195); // a = 97, b = 98
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(int.class, Const.of(7), Const.of(8)));
+            Expr arr = bc.localVar("arr", bc.newArray(int.class, Const.of(7), Const.of(8)));
             return bc.add(arr.elem(0), arr.elem(1));
         }, 15);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(long.class, Const.of(9L), Const.of(10L)));
+            Expr arr = bc.localVar("arr", bc.newArray(long.class, Const.of(9L), Const.of(10L)));
             return bc.add(bc.cast(arr.elem(0), int.class), bc.cast(arr.elem(1), int.class));
         }, 19);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(float.class, Const.of(11.0F), Const.of(12.0F)));
+            Expr arr = bc.localVar("arr", bc.newArray(float.class, Const.of(11.0F), Const.of(12.0F)));
             return bc.add(bc.cast(arr.elem(0), int.class), bc.cast(arr.elem(1), int.class));
         }, 23);
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(double.class, Const.of(13.0), Const.of(14.0)));
+            Expr arr = bc.localVar("arr", bc.newArray(double.class, Const.of(13.0), Const.of(14.0)));
             return bc.add(bc.cast(arr.elem(0), int.class), bc.cast(arr.elem(1), int.class));
         }, 27);
     }
@@ -222,7 +222,7 @@ public class ArraysTest {
     @Test
     public void readReferenceArray() {
         testReadArray(bc -> {
-            Expr arr = bc.define("arr", bc.newArray(String.class, Const.of("ab"), Const.of("cde")));
+            Expr arr = bc.localVar("arr", bc.newArray(String.class, Const.of("ab"), Const.of("cde")));
             Expr l1 = bc.withString(arr.elem(0)).length();
             Expr l2 = bc.withString(arr.elem(1)).length();
             return bc.add(l1, l2);
@@ -273,7 +273,7 @@ public class ArraysTest {
                 // }
                 mc.returning(Object.class); // always `String`
                 mc.body(bc -> {
-                    LocalVar arr = bc.define("arr", bc.newArray(String.class, Const.of("foo"),
+                    LocalVar arr = bc.localVar("arr", bc.newArray(String.class, Const.of("foo"),
                             Const.of("bar"), Const.of("baz"), Const.of("quux")));
                     bc.return_(arr.elem(bc.add(bc.invokeStatic(one), bc.invokeStatic(two))));
                 });
@@ -312,7 +312,7 @@ public class ArraysTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    LocalVar arr = bc.define("arr", bc.newArray(int.class, Const.of(1),
+                    LocalVar arr = bc.localVar("arr", bc.newArray(int.class, Const.of(1),
                             Const.of(2), Const.of(3), Const.of(4), Const.of(5)));
                     bc.return_(bc.add(arr.elem(bc.invokeStatic(two)), arr.elem(bc.invokeStatic(three))));
                 });
@@ -378,7 +378,7 @@ public class ArraysTest {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array",
+                    LocalVar array = bc.localVar("array",
                             bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3)));
 
                     bc.set(array.elem(1), param);
@@ -401,7 +401,7 @@ public class ArraysTest {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
                 mc.body(bc -> {
-                    LocalVar array = bc.define("array",
+                    LocalVar array = bc.localVar("array",
                             bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3)));
 
                     bc.set(array.elem(1), param, MemoryOrder.Volatile);

@@ -44,9 +44,9 @@ public class OptionalOpsTest {
                 // }
                 mc.returning(int.class);
                 mc.body(bc -> {
-                    var foo = bc.define("foo", bc.optionalOf(Const.of("foo")));
-                    var bar = bc.define("bar", bc.optionalOfNullable(Const.of("bar")));
-                    var baz = bc.define("baz", bc.optionalOfNullable(Const.ofNull(String.class)));
+                    var foo = bc.localVar("foo", bc.optionalOf(Const.of("foo")));
+                    var bar = bc.localVar("bar", bc.optionalOfNullable(Const.of("bar")));
+                    var baz = bc.localVar("baz", bc.optionalOfNullable(Const.ofNull(String.class)));
                     bc.if_(bc.withOptional(foo).isEmpty(), fail -> fail.return_(1));
                     bc.ifNot(bc.withOptional(foo).isPresent(), fail -> fail.return_(2));
                     bc.ifNot(bc.exprEquals(Const.of("foo"), bc.withOptional(foo).get()), fail -> fail.return_(3));
