@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -11,11 +12,13 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
     private final Item item;
     private final FieldDesc desc;
+    private final GenericType genericType;
     private boolean bound;
 
-    FieldDeref(final Item item, final FieldDesc desc) {
+    FieldDeref(final Item item, final FieldDesc desc, final GenericType genericType) {
         this.item = item;
         this.desc = desc;
+        this.genericType = genericType;
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -39,6 +42,10 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
     @Override
     public ClassDesc type() {
         return desc.type();
+    }
+
+    public GenericType genericType() {
+        return genericType;
     }
 
     public String itemName() {

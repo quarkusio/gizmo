@@ -8,15 +8,16 @@ import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 
 public final class ArrayDeref extends AssignableImpl {
     private final Item item;
-    private final ClassDesc componentType;
+    private final GenericType componentType;
     private final Item index;
     private boolean bound;
 
-    ArrayDeref(final Item item, final ClassDesc componentType, final Expr index) {
+    ArrayDeref(final Item item, final GenericType componentType, final Expr index) {
         this.item = item;
         this.componentType = componentType;
         this.index = convert(index, CD_int);
@@ -46,12 +47,16 @@ public final class ArrayDeref extends AssignableImpl {
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return switch (mode) {
-            case AsDeclared, Plain -> new ArrayStore(item, index, value, componentType);
+            case AsDeclared, Plain -> new ArrayStore(item, index, value, type());
             default -> new ArrayStoreViaHandle(this, value, mode);
         };
     }
 
     public ClassDesc type() {
+        return componentType.desc();
+    }
+
+    public GenericType genericType() {
         return componentType;
     }
 

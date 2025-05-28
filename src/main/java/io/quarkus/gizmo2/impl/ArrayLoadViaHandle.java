@@ -8,6 +8,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
@@ -27,6 +28,10 @@ final class ArrayLoadViaHandle extends Item {
 
     public ClassDesc type() {
         return arrayDeref.type();
+    }
+
+    public GenericType genericType() {
+        return arrayDeref.genericType();
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
