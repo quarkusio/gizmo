@@ -57,7 +57,17 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    InstanceFieldVar field(FieldDesc desc);
+    default InstanceFieldVar field(FieldDesc desc) {
+        return field(desc, GenericType.of(desc.type()));
+    }
+
+    /**
+     * {@return an assignable for a field of this object}
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @param genericType the field's expected generic type (must not be {@code null})
+     */
+    InstanceFieldVar field(FieldDesc desc, GenericType genericType);
 
     /**
      * {@return an assignable for a field of this object}
@@ -71,11 +81,32 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     }
 
     /**
+     * {@return an assignable for a field of this object}
+     *
+     * @param owner the descriptor of the owner of this field (must not be {@code null})
+     * @param name the name of the field (must not be {@code null})
+     * @param type the generic type of the field (must not be {@code null})
+     */
+    default InstanceFieldVar field(ClassDesc owner, String name, GenericType type) {
+        return field(FieldDesc.of(owner, name, type.desc()), type);
+    }
+
+    /**
      * {@return an assignable for a static field}
      *
      * @param desc the field descriptor (must not be {@code null})
      */
     static StaticFieldVar staticField(FieldDesc desc) {
-        return new StaticFieldVarImpl(desc);
+        return staticField(desc, GenericType.of(desc.type()));
+    }
+
+    /**
+     * {@return an assignable for a static field}
+     *
+     * @param desc the field descriptor (must not be {@code null})
+     * @param genericType the field's expected generic type (must not be {@code null})
+     */
+    static StaticFieldVar staticField(FieldDesc desc, GenericType genericType) {
+        return new StaticFieldVarImpl(desc, genericType);
     }
 }

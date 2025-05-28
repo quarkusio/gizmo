@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.quarkus.gizmo2.GenericType;
 
 final class Dup extends Item {
     private final Item input;
@@ -14,6 +15,10 @@ final class Dup extends Item {
 
     public ClassDesc type() {
         return input.type();
+    }
+
+    public GenericType genericType() {
+        return input.genericType();
     }
 
     public Node pop(final Node node) {
