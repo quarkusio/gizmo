@@ -12,13 +12,23 @@ import java.util.Set;
  */
 public enum AccessLevel implements Modifier {
     /**
-     * The {@code public} access level.
+     * The {@code private} access level.
      */
-    PUBLIC(ACC_PUBLIC, EnumSet.of(
+    PRIVATE(ACC_PRIVATE, EnumSet.of(
             INTERFACE_CONCRETE_METHOD,
-            INTERFACE_ABSTRACT_METHOD,
-            INTERFACE_STATIC_FIELD,
             INTERFACE_STATIC_METHOD,
+            CLASS_CONSTRUCTOR,
+            CLASS_CONCRETE_METHOD,
+            CLASS_NATIVE_METHOD,
+            CLASS_STATIC_METHOD,
+            CLASS_INSTANCE_FIELD,
+            CLASS_STATIC_FIELD,
+            NESTED_CLASS,
+            NESTED_INTERFACE)),
+    /**
+     * The package-private ("default") access level.
+     */
+    PACKAGE_PRIVATE(0, EnumSet.of(
             CLASS_CONSTRUCTOR,
             CLASS_CONCRETE_METHOD,
             CLASS_ABSTRACT_METHOD,
@@ -44,9 +54,13 @@ public enum AccessLevel implements Modifier {
             NESTED_CLASS,
             NESTED_INTERFACE)),
     /**
-     * The package-private ("default") access level.
+     * The {@code public} access level.
      */
-    PACKAGE_PRIVATE(0, EnumSet.of(
+    PUBLIC(ACC_PUBLIC, EnumSet.of(
+            INTERFACE_CONCRETE_METHOD,
+            INTERFACE_ABSTRACT_METHOD,
+            INTERFACE_STATIC_FIELD,
+            INTERFACE_STATIC_METHOD,
             CLASS_CONSTRUCTOR,
             CLASS_CONCRETE_METHOD,
             CLASS_ABSTRACT_METHOD,
@@ -56,20 +70,6 @@ public enum AccessLevel implements Modifier {
             CLASS_STATIC_FIELD,
             CLASS,
             INTERFACE,
-            NESTED_CLASS,
-            NESTED_INTERFACE)),
-    /**
-     * The {@code private} access level.
-     */
-    PRIVATE(ACC_PRIVATE, EnumSet.of(
-            INTERFACE_CONCRETE_METHOD,
-            INTERFACE_STATIC_METHOD,
-            CLASS_CONSTRUCTOR,
-            CLASS_CONCRETE_METHOD,
-            CLASS_NATIVE_METHOD,
-            CLASS_STATIC_METHOD,
-            CLASS_INSTANCE_FIELD,
-            CLASS_STATIC_FIELD,
             NESTED_CLASS,
             NESTED_INTERFACE));
 
