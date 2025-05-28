@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
@@ -54,6 +55,9 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
+            if (signature != null) {
+                fb.with(SignatureAttribute.of(signature));
+            }
             addVisible(fb);
             addInvisible(fb);
         });

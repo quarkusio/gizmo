@@ -1,8 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.List;
-
-import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.ModifiableCreator;
 import io.quarkus.gizmo2.creator.Modifier;

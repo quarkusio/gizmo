@@ -106,4 +106,11 @@ public sealed interface FieldCreator extends MemberCreator, SimpleTyped
      * @param init the builder for the initializer which yields the field initial value (must not be {@code null})
      */
     void setInitializer(Consumer<BlockCreator> init);
+
+    /**
+     * Sets the generic signature of this field.
+     *
+     * @param builder the builder (must not be {@code null})
+     */
+    void signature(Consumer<FieldSignatureCreator> builder);
 }

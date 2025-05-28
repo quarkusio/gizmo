@@ -277,6 +277,13 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped
     }
 
     /**
+     * Sets the generic signature of this class.
+     *
+     * @param builder the builder (must not be {@code null})
+     */
+    void signature(Consumer<ClassSignatureCreator> builder);
+
+    /**
      * Generates a structural {@code equals} method in this class that compares given
      * {@code fields}. The generated code is similar to what IDEs would typically
      * generate from a template:

@@ -211,4 +211,10 @@ public sealed interface ExecutableCreator extends MethodTyped, ModifiableCreator
         addFlag(ModifierFlag.VARARGS);
     }
 
+    /**
+     * Sets the generic signature of this method or constructor.
+     *
+     * @param builder the builder (must not be {@code null})
+     */
+    void signature(Consumer<MethodSignatureCreator> builder);
 }

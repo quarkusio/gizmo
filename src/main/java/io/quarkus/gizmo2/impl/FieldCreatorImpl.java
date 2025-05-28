@@ -5,8 +5,11 @@ import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
+import java.util.function.Consumer;
 
+import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.creator.FieldCreator;
+import io.quarkus.gizmo2.creator.FieldSignatureCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
 public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl implements FieldCreator
@@ -15,6 +18,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     final String name;
     final TypeCreatorImpl tc;
     ClassDesc type = CD_int;
+    Signature signature;
     private FieldDesc desc;
 
     public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc) {
@@ -54,5 +58,16 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
 
     public ElementType annotationTargetType() {
         return ElementType.FIELD;
+    }
+
+    @Override
+    public void signature(Consumer<FieldSignatureCreator> builder) {
+        FieldSignatureCreatorImpl creator = new FieldSignatureCreatorImpl();
+        builder.accept(creator);
+        if (!type.equals(creator.type.erasure())) {
+            throw new IllegalArgumentException("Type in signature (" + creator.type
+                    + ") does not match " + type.displayName());
+        }
+        this.signature = SignatureUtil.of(creator.type);
     }
 }

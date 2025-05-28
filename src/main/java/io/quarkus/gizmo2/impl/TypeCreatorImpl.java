@@ -30,6 +30,8 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
+import io.github.dmlloyd.classfile.ClassSignature;
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.ClassOutput;
@@ -92,6 +94,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
+    ClassSignature signature;
     private int bootstraps;
 
     /**
@@ -227,6 +230,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     void postAccept() {
         zb.withFlags(modifiers);
+        if (signature != null) {
+            zb.with(SignatureAttribute.of(signature));
+        }
         addVisible(zb);
         addInvisible(zb);
         if (!staticInits.isEmpty()) {

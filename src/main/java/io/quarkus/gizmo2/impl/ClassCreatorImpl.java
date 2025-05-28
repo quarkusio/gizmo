@@ -5,12 +5,16 @@ import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
+import io.github.dmlloyd.classfile.ClassSignature;
+import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
+import io.quarkus.gizmo2.creator.ClassSignatureCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
@@ -111,5 +115,24 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
             throw new IllegalArgumentException("Duplicate constructor added: %s".formatted(desc));
         }
         return desc;
+    }
+
+    @Override
+    public void signature(Consumer<ClassSignatureCreator> builder) {
+        ClassSignatureCreatorImpl creator = new ClassSignatureCreatorImpl();
+        builder.accept(creator);
+        if (!superClass().equals(creator.superClassType.erasure())) {
+            throw new IllegalArgumentException("Superclass in signature (" + creator.superClassType
+                    + ") does not match " + superClass().displayName());
+        }
+        // TODO validate interfaces
+        this.signature = ClassSignature.of(
+                creator.typeParameters.isEmpty()
+                        ? List.of()
+                        : creator.typeParameters.stream().map(SignatureUtil::ofTypeParam).toList(),
+                SignatureUtil.ofClassOrParameterized(creator.superClassType),
+                creator.interfaceTypes.stream()
+                        .map(SignatureUtil::ofClassOrParameterized)
+                        .toArray(Signature.ClassTypeSig[]::new));
     }
 }

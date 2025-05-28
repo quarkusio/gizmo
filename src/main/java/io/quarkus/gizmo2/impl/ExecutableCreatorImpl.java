@@ -16,15 +16,19 @@ import java.util.stream.IntStream;
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
+import io.github.dmlloyd.classfile.MethodSignature;
+import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
 import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
 import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
+import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
+import io.quarkus.gizmo2.creator.MethodSignatureCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
 public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl implements ExecutableCreator
@@ -46,6 +50,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     List<ParamVarImpl> params = List.of();
     int state = ST_INITIAL;
     List<ClassDesc> throws_ = List.of();
+    MethodSignature signature;
 
     ExecutableCreatorImpl(final TypeCreatorImpl typeCreator) {
         this.typeCreator = typeCreator;
@@ -138,6 +143,9 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     void doBody(final Consumer<BlockCreator> builder, MethodBuilder mb) {
+        if (signature != null) {
+            mb.with(SignatureAttribute.of(signature));
+        }
         mb.withFlags(modifiers);
         addVisible(mb);
         addInvisible(mb);
@@ -286,5 +294,42 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     public ClassDesc owner() {
         return typeCreator.type();
+    }
+
+    @Override
+    public void signature(Consumer<MethodSignatureCreator> builder) {
+        MethodSignatureCreatorImpl creator = new MethodSignatureCreatorImpl();
+        builder.accept(creator);
+        if (!returnType().equals(creator.returnType.erasure())) {
+            throw new IllegalArgumentException("Return type in signature (" + creator.returnType
+                    + ") does not match " + returnType.displayName());
+        }
+        if (params.size() != creator.parameterTypes.size()) {
+            throw new IllegalArgumentException("Number of parameters in signature (" + creator.parameterTypes.size()
+                    + ") does not match " + params.size());
+        }
+        for (int i = 0; i < params.size(); i++) {
+            if (!params.get(i).type().equals(creator.parameterTypes.get(i).erasure())) {
+                throw new IllegalArgumentException("Parameter type " + i + " in signature ("
+                        + creator.parameterTypes.get(i) + ") does not match " + params.get(i).type().displayName());
+            }
+        }
+        if (!creator.exceptionTypes.isEmpty()) {
+            if (throws_.size() != creator.exceptionTypes.size()) {
+                throw new IllegalArgumentException("Number of thrown types in signature (" + creator.exceptionTypes.size()
+                        + ") does not match " + throws_.size());
+            }
+            for (int i = 0; i < throws_.size(); i++) {
+                if (!throws_.get(i).equals(creator.exceptionTypes.get(i).erasure())) {
+                    throw new IllegalArgumentException("Thrown type " + i + " in signature ("
+                            + creator.exceptionTypes.get(i) + ") does not match " + throws_.get(i).displayName());
+                }
+            }
+        }
+        this.signature = MethodSignature.of(
+                creator.typeParameters.stream().map(SignatureUtil::ofTypeParam).toList(),
+                creator.exceptionTypes.stream().map(SignatureUtil::ofThrowable).toList(),
+                SignatureUtil.of(creator.returnType),
+                creator.parameterTypes.stream().map(SignatureUtil::of).toArray(Signature[]::new));
     }
 }
