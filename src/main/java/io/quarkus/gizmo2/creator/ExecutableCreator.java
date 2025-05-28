@@ -4,7 +4,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MethodTyped;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.impl.ExecutableCreatorImpl;
@@ -13,7 +12,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for an executable (i.e. something that can be called with arguments).
  */
-public sealed interface ExecutableCreator extends MethodTyped, TypeParameterizedCreator, ModifiableCreator
+public sealed interface ExecutableCreator extends MethodTyped, ModifiableCreator
         permits InstanceExecutableCreator, MethodCreator, StaticExecutableCreator, ExecutableCreatorImpl {
     /**
      * {@return the type descriptor of this executable (not {@code null})}
@@ -194,16 +193,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      *
      * @param throwableType the generic exception type (must not be {@code null})
      */
-    void throws_(GenericType.OfThrows throwableType);
-
-    /**
-     * Declare that this method throws exceptions of the given type.
-     *
-     * @param throwableType the exception type (must not be {@code null})
-     */
-    default void throws_(ClassDesc throwableType) {
-        throws_((GenericType.OfThrows) GenericType.of(throwableType));
-    }
+    void throws_(ClassDesc throwableType);
 
     /**
      * Declare that this method throws exceptions of the given type.

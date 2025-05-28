@@ -2,23 +2,14 @@ package io.quarkus.gizmo2.creator;
 
 import java.lang.constant.ClassDesc;
 
-import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.GenericTyped;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.impl.ParamCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator interface for parameters.
  */
-public sealed interface ParamCreator extends ModifiableCreator, GenericTyped permits ParamCreatorImpl {
-    /**
-     * Change the type of this parameter.
-     *
-     * @param type the new generic type (must not be {@code null})
-     * @throws IllegalArgumentException if the new type is different from the established type
-     */
-    void setType(GenericType type);
-
+public sealed interface ParamCreator extends ModifiableCreator, SimpleTyped permits ParamCreatorImpl {
     /**
      * Change the type of this parameter.
      *

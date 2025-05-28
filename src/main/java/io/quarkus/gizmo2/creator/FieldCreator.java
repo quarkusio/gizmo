@@ -6,8 +6,7 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Const;
-import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.GenericTyped;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.FieldCreatorImpl;
 import io.quarkus.gizmo2.impl.Util;
@@ -15,7 +14,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a field.
  */
-public sealed interface FieldCreator extends MemberCreator, GenericTyped
+public sealed interface FieldCreator extends MemberCreator, SimpleTyped
         permits InstanceFieldCreator, StaticFieldCreator, FieldCreatorImpl {
     ClassDesc type();
 
@@ -23,13 +22,6 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      * {@return the field type descriptor}
      */
     FieldDesc desc();
-
-    /**
-     * Change the type of the field to the given type.
-     *
-     * @param type the generic type (must not be {@code null})
-     */
-    void setType(GenericType type);
 
     /**
      * Change the type of the field to the given type.

@@ -3,7 +3,6 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.constant.ClassDesc;
-import java.util.List;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,7 @@ public class InstanceExecutableCreatorTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
-            cc.implements_(
-                    (GenericType.OfClass) GenericType.of(Function.class,
-                            List.of(TypeArgument.of(String.class), TypeArgument.of(String.class))));
+            cc.implements_(Function.class);
             cc.constructor(con -> {
                 con.public_();
                 con.body(bc -> {

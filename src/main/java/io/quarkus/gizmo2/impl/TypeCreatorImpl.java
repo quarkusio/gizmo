@@ -10,7 +10,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
@@ -19,7 +18,6 @@ import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -32,30 +30,21 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.ClassSignature;
-import io.github.dmlloyd.classfile.Signature;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
 import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
-import io.quarkus.gizmo2.TypeArgument;
-import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -96,13 +85,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
-    private GenericType.OfClass genericType;
     private final ClassOutput output;
     private ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
-    private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
-    private List<GenericType.OfClass> interfaceSigs = List.of();
-    private List<TypeVariable> typeVariables = List.of();
     final ClassBuilder zb;
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
@@ -153,15 +138,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         zb.with(SourceFileAttribute.of(name));
     }
 
-    void extends_(final GenericType.OfClass genericType) {
-        ClassDesc desc = genericType.desc();
-        zb.withSuperclass(superType = desc);
-        superSig = genericType;
-    }
-
     void extends_(final ClassDesc desc) {
         zb.withSuperclass(superType = desc);
-        superSig = (GenericType.OfClass) GenericType.of(desc);
     }
 
     ClassDesc superClass() {
@@ -172,39 +150,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         return type;
     }
 
-    public GenericType.OfClass genericType() {
-        GenericType.OfClass genericType = this.genericType;
-        if (genericType == null) {
-            genericType = GenericType.ofClass(type());
-            if (!typeVariables.isEmpty()) {
-                genericType = genericType.withArguments(typeVariables.stream()
-                        .map(TypeVariable::genericType)
-                        .map(TypeArgument::ofExact)
-                        .map(TypeArgument.class::cast)
-                        .toList());
-            }
-            this.genericType = genericType;
-        }
-        return genericType;
-    }
-
-    ClassSignature computeSignature() {
-        return ClassSignature.of(
-                typeVariables.stream().map(Util::typeParamOf).toList(),
-                Util.signatureOf(superSig),
-                interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
-    }
-
-    public void implements_(final GenericType.OfClass genericType) {
-        zb.withInterfaceSymbols(genericType.desc());
-        if (interfaceSigs.isEmpty()) {
-            interfaceSigs = new ArrayList<>(4);
-        }
-        interfaceSigs.add(genericType);
-    }
-
     public void implements_(final ClassDesc interface_) {
-        implements_((GenericType.OfClass) GenericType.of(interface_));
+        zb.withInterfaceSymbols(interface_);
     }
 
     public void staticInitializer(final Consumer<BlockCreator> builder) {
@@ -269,7 +216,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     public This this_() {
         ThisExpr this_ = this.this_;
         if (this_ == null) {
-            this_ = this.this_ = new ThisExpr(genericType());
+            this_ = this.this_ = new ThisExpr(type());
         }
         return this_;
     }
@@ -279,43 +226,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     void postAccept() {
-        zb.withSuperclass(superSig.desc());
-        zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
         zb.withFlags(modifiers);
-        zb.with(SignatureAttribute.of(computeSignature()));
         addVisible(zb);
         addInvisible(zb);
-        ArrayList<TypeAnnotation> visible = new ArrayList<>();
-        ArrayList<TypeAnnotation> invisible = new ArrayList<>();
-        for (int i = 0; i < typeVariables.size(); i++) {
-            final TypeVariable tv = typeVariables.get(i);
-            Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
-                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
-                    visible, new ArrayDeque<>());
-            Util.computeAnnotations(tv, RetentionPolicy.CLASS,
-                    TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
-                    invisible, new ArrayDeque<>());
-        }
-        Util.computeAnnotations(superSig, RetentionPolicy.RUNTIME,
-                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
-                visible, new ArrayDeque<>());
-        Util.computeAnnotations(superSig, RetentionPolicy.CLASS,
-                TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
-                invisible, new ArrayDeque<>());
-        for (int i = 0; i < interfaceSigs.size(); i++) {
-            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.RUNTIME,
-                    TypeAnnotation.TargetInfo.ofClassExtends(i),
-                    visible, new ArrayDeque<>());
-            Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.CLASS,
-                    TypeAnnotation.TargetInfo.ofClassExtends(i),
-                    invisible, new ArrayDeque<>());
-        }
-        if (!visible.isEmpty()) {
-            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
-        }
-        if (!invisible.isEmpty()) {
-            zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(invisible));
-        }
         if (!staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), ACC_STATIC, mb -> {
                 mb.withCode(cb -> {
@@ -478,21 +391,6 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     public ElementType annotationTargetType() {
         return ElementType.TYPE;
-    }
-
-    public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
-        if (genericType != null) {
-            throw new IllegalStateException("Type has already been established");
-        }
-        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
-        builder.accept(creator);
-        TypeVariable.OfType var = creator.forType(type());
-        if (typeVariables instanceof ArrayList<TypeVariable> al) {
-            al.add(var);
-        } else {
-            typeVariables = Util.listWith(typeVariables, var);
-        }
-        return var;
     }
 
     void buildReadLineBoostrapHelper() {

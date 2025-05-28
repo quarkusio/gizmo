@@ -2,12 +2,8 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
-import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.creator.MethodCreator;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator
@@ -30,10 +26,6 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
         return desc;
     }
 
-    public void returning(final GenericType type) {
-        super.returning(type);
-    }
-
     public void returning(final ClassDesc type) {
         super.returning(type);
     }
@@ -49,11 +41,5 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
 
     public ElementType annotationTargetType() {
         return ElementType.METHOD;
-    }
-
-    public TypeVariable.OfMethod typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
-        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
-        builder.accept(creator);
-        return addTypeVariable(creator.forMethod(desc));
     }
 }

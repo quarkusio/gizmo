@@ -27,13 +27,6 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Constructo
     }
 
     /**
-     * {@return the generic return type}
-     */
-    default GenericType genericReturnType() {
-        return GenericType.of(returnType());
-    }
-
-    /**
      * {@return the type kind of the return type (not {@code null})}
      */
     default TypeKind returnTypeKind() {

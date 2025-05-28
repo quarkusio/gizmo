@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.quarkus.gizmo2.ClassOutput;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -29,10 +28,6 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
 
     public ModifierLocation modifierLocation() {
         return ModifierLocation.CLASS;
-    }
-
-    public void extends_(final GenericType.OfClass genericType) {
-        super.extends_(genericType);
     }
 
     public void extends_(final ClassDesc desc) {

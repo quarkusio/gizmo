@@ -16,13 +16,6 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
     ClassDesc type();
 
     /**
-     * {@return the generic expression type (not {@code null})}
-     */
-    default GenericType genericType() {
-        return GenericType.of(type());
-    }
-
-    /**
      * {@return an assignable for an element of this array}
      *
      * @param index the array index (must not be {@code null})

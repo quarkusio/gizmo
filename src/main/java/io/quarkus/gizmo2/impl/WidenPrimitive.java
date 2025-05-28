@@ -6,7 +6,6 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 
 // variant of `PrimitiveCast` that:
 // - only does widening conversions
@@ -16,12 +15,12 @@ final class WidenPrimitive extends Cast {
     private boolean bound;
 
     WidenPrimitive(Expr a, ClassDesc toType) {
-        super(a, GenericType.of(toType));
+        super(a, toType);
         if (!primitiveWideningExists(a.type(), toType)) {
             throw new IllegalArgumentException("No primitive widening conversion from " + a.type().displayName()
                     + " to " + toType.displayName());
         }
-        this.widening = new PrimitiveCast(a, GenericType.of(toType));
+        this.widening = new PrimitiveCast(a, toType);
     }
 
     @Override

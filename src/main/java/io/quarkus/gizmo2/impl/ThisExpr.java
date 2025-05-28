@@ -3,13 +3,12 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.This;
 
 public final class ThisExpr extends Item implements This {
-    private final GenericType type;
+    private final ClassDesc type;
 
-    public ThisExpr(final GenericType type) {
+    public ThisExpr(final ClassDesc type) {
         this.type = type;
     }
 
@@ -18,10 +17,6 @@ public final class ThisExpr extends Item implements This {
     }
 
     public ClassDesc type() {
-        return type.desc();
-    }
-
-    public GenericType genericType() {
         return type;
     }
 

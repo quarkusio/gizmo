@@ -15,10 +15,6 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
     ModifiableCreatorImpl() {
     }
 
-    ModifiableCreatorImpl(final List<Annotation> visible, final List<Annotation> invisible) {
-        super(visible, invisible);
-    }
-
     public void addFlag(final ModifierFlag flag) {
         if (supports(flag)) {
             modifiers |= flag.mask();

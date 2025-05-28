@@ -9,8 +9,7 @@ import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
-import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.GenericTyped;
+import io.quarkus.gizmo2.SimpleTyped;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -22,7 +21,7 @@ import io.quarkus.gizmo2.impl.Util;
 /**
  * A creator for a type.
  */
-public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
+public sealed interface TypeCreator extends ModifiableCreator, SimpleTyped
         permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
@@ -51,18 +50,6 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      * {@return the descriptor of the type of this class}
      */
     ClassDesc type();
-
-    /**
-     * {@return the generic type of this class}
-     */
-    GenericType.OfClass genericType();
-
-    /**
-     * Implement a generic interface.
-     *
-     * @param genericType the generic interface type (must not be {@code null})
-     */
-    void implements_(GenericType.OfClass genericType);
 
     /**
      * Implement an interface.
