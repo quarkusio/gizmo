@@ -94,21 +94,21 @@ public class AccessFlagsTest {
         g.class_("io.quarkus.gizmo2.FooFields", cc -> {
             cc.field("alpha", fc -> {
                 fc.public_();
-                fc.withType(Integer.class);
+                fc.setType(Integer.class);
             });
             cc.field("bravo", fc -> {
                 fc.packagePrivate();
-                fc.withType(Double.class);
+                fc.setType(Double.class);
             });
             cc.staticField("charlie", fc -> {
                 fc.protected_();
-                fc.withType(String.class);
-                fc.withInitial(Const.of("oops"));
+                fc.setType(String.class);
+                fc.setInitial(Const.of("oops"));
             });
             cc.field("delta", fc -> {
                 fc.private_();
                 fc.final_();
-                fc.withType(Long.class);
+                fc.setType(Long.class);
             });
         });
         Class<?> clazz = tcm.definedClass();

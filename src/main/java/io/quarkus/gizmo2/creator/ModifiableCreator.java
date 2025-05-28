@@ -21,7 +21,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flag the flag to add (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support the given flag
      */
-    void withFlag(ModifierFlag flag);
+    void addFlag(ModifierFlag flag);
 
     /**
      * Add the given modifier flags to this creator.
@@ -29,8 +29,8 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flags the flags to add (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withFlags(Collection<ModifierFlag> flags) {
-        flags.forEach(this::withFlag);
+    default void addFlags(Collection<ModifierFlag> flags) {
+        flags.forEach(this::addFlag);
     }
 
     /**
@@ -39,8 +39,8 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flags the flags to add (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withFlags(ModifierFlag... flags) {
-        withFlags(Arrays.asList(flags));
+    default void addFlags(ModifierFlag... flags) {
+        addFlags(Arrays.asList(flags));
     }
 
     /**
@@ -49,7 +49,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flag the flag to remove (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support the given flag
      */
-    void withoutFlag(ModifierFlag flag);
+    void removeFlag(ModifierFlag flag);
 
     /**
      * Remove the given modifier flags from this creator.
@@ -57,8 +57,8 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flags the flags to remove (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withoutFlags(Collection<ModifierFlag> flags) {
-        flags.forEach(this::withoutFlag);
+    default void removeFlags(Collection<ModifierFlag> flags) {
+        flags.forEach(this::removeFlag);
     }
 
     /**
@@ -67,8 +67,8 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param flags the flags to remove (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support one of the given flags
      */
-    default void withoutFlags(ModifierFlag... flags) {
-        withoutFlags(Arrays.asList(flags));
+    default void removeFlags(ModifierFlag... flags) {
+        removeFlags(Arrays.asList(flags));
     }
 
     /**
@@ -86,7 +86,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param access the access level to set (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support the given access level
      */
-    void withAccess(AccessLevel access);
+    void setAccess(AccessLevel access);
 
     /**
      * Set the access level of this creator to {@code public}.
@@ -94,7 +94,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code public} access level
      */
     default void public_() {
-        withAccess(AccessLevel.PUBLIC);
+        setAccess(AccessLevel.PUBLIC);
     }
 
     /**
@@ -103,7 +103,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code protected} access level
      */
     default void protected_() {
-        withAccess(AccessLevel.PROTECTED);
+        setAccess(AccessLevel.PROTECTED);
     }
 
     /**
@@ -112,7 +112,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the package-private access level
      */
     default void packagePrivate() {
-        withAccess(AccessLevel.PACKAGE_PRIVATE);
+        setAccess(AccessLevel.PACKAGE_PRIVATE);
     }
 
     /**
@@ -121,7 +121,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code private} access level
      */
     default void private_() {
-        withAccess(AccessLevel.PRIVATE);
+        setAccess(AccessLevel.PRIVATE);
     }
 
     /**
@@ -130,7 +130,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code final} modifier flag
      */
     default void final_() {
-        withFlag(ModifierFlag.FINAL);
+        addFlag(ModifierFlag.FINAL);
     }
 
     /**
@@ -139,6 +139,6 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the "synthetic" modifier flag
      */
     default void synthetic() {
-        withFlag(ModifierFlag.SYNTHETIC);
+        addFlag(ModifierFlag.SYNTHETIC);
     }
 }

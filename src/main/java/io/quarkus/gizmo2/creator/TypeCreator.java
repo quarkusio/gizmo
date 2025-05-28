@@ -30,7 +30,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the run time version (must not be {@code null})
      */
-    void withVersion(Runtime.Version version);
+    void setVersion(Runtime.Version version);
 
     /**
      * Set the class file version.
@@ -38,7 +38,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the class file version (must not be {@code null})
      */
-    void withVersion(ClassVersion version);
+    void setVersion(ClassVersion version);
 
     /**
      * Set the source file name for this type.
@@ -115,7 +115,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default MethodDesc staticMethod(String name, MethodTypeDesc type, Consumer<StaticMethodCreator> builder) {
         return staticMethod(name, smc -> {
-            smc.withType(type);
+            smc.setType(type);
             builder.accept(smc);
         });
     }
@@ -153,7 +153,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default StaticFieldVar staticField(String name, Const initial) {
         return staticField(name, sfc -> {
-            sfc.withInitial(initial);
+            sfc.setInitial(initial);
         });
     }
 
@@ -166,9 +166,9 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default StaticFieldVar constantField(String name, Const value) {
         return staticField(name, sfc -> {
-            sfc.withAccess(AccessLevel.PUBLIC);
-            sfc.withFlag(ModifierFlag.FINAL);
-            sfc.withInitial(value);
+            sfc.setAccess(AccessLevel.PUBLIC);
+            sfc.addFlag(ModifierFlag.FINAL);
+            sfc.setInitial(value);
         });
     }
 

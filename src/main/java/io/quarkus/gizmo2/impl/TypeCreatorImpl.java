@@ -132,12 +132,12 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     @Override
-    public void withVersion(final Runtime.Version version) {
+    public void setVersion(final Runtime.Version version) {
         checkNotNullParam("version", version);
         this.version = ClassFileFormatVersion.valueOf(version);
     }
 
-    public void withVersion(final ClassVersion version) {
+    public void setVersion(final ClassVersion version) {
         checkNotNullParam("version", version);
         this.version = switch (version) {
             case V17 -> ClassFileFormatVersion.RELEASE_17;
@@ -357,7 +357,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             CD_String,
                             CD_MethodType),
                     smc -> {
-                        smc.withAccess(AccessLevel.PRIVATE);
+                        smc.setAccess(AccessLevel.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);

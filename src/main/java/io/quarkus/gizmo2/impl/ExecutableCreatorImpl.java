@@ -71,7 +71,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         return type;
     }
 
-    public void withType(final MethodTypeDesc desc) {
+    public void setType(final MethodTypeDesc desc) {
         if (state >= ST_BODY) {
             throw new IllegalStateException("Type may no longer be changed");
         }
