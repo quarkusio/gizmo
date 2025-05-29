@@ -29,6 +29,13 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withOutput(ClassOutput outputHandler);
 
     /**
+     * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
+     *
+     * @param builder the builder for the defaults (must not be {@code null})
+     */
+    Gizmo withDefaultModifiers(Consumer<ModifierConfigurator> builder);
+
+    /**
      * Add a new class.
      *
      * @param name the fully qualified (dot-separated) binary class name (must not be {@code null})

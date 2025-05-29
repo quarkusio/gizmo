@@ -60,6 +60,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     List<GenericType.OfThrows> throws_ = List.of();
 
     ExecutableCreatorImpl(final TypeCreatorImpl typeCreator) {
+        super(typeCreator.gizmo);
         this.typeCreator = typeCreator;
     }
 
@@ -345,7 +346,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 ParamVarImpl last = params.get(size - 1);
                 slot = last.slot() + last.slotSize();
             }
-            pc = new ParamCreatorImpl();
+            pc = new ParamCreatorImpl(typeCreator.gizmo);
         } else {
             if (position < 0 || position > type.parameterCount()) {
                 throw new IndexOutOfBoundsException("Parameter position " + position + " is out of bounds for type " + type);
@@ -353,7 +354,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             if (position < params.size()) {
                 throw new IllegalStateException("Parameter already defined at position " + position);
             }
-            pc = new ParamCreatorImpl(GenericType.of(type.parameterType(position)));
+            pc = new ParamCreatorImpl(typeCreator.gizmo, GenericType.of(type.parameterType(position)));
             slot = firstSlot() + IntStream.range(0, position).mapToObj(type::parameterType).map(TypeKind::from)
                     .mapToInt(TypeKind::slotSize).sum();
         }

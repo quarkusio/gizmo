@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
@@ -8,6 +7,7 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
+import io.github.dmlloyd.classfile.ClassFile;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
@@ -18,9 +18,10 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
 
-    InterfaceCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
-        super(type, output, zb);
-        modifiers |= ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC | ACC_PUBLIC;
+    InterfaceCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+        super(gizmo, type, output, zb);
+        // not a user-visible modifier, so set it explicitly here
+        modifiers |= ClassFile.ACC_INTERFACE;
     }
 
     public ModifierLocation modifierLocation() {

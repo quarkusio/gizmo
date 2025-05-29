@@ -16,10 +16,12 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
     boolean typeEstablished;
     GenericType genericType;
 
-    public ParamCreatorImpl() {
+    public ParamCreatorImpl(final GizmoImpl gizmo) {
+        super(gizmo);
     }
 
-    public ParamCreatorImpl(final GenericType type) {
+    public ParamCreatorImpl(final GizmoImpl gizmo, final GenericType type) {
+        super(gizmo);
         this.genericType = type;
         typeEstablished = true;
     }

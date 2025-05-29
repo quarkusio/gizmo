@@ -1,10 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
@@ -15,6 +15,7 @@ import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.InstanceFieldCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -22,9 +23,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
-    public ClassCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
-        super(type, output, zb);
-        modifiers |= ACC_PUBLIC | ACC_SYNTHETIC;
+    public ClassCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+        super(gizmo, type, output, zb);
     }
 
     public ModifierLocation modifierLocation() {
@@ -89,22 +89,17 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         var mc = new NativeMethodCreatorImpl(this, name);
         mc.accept(builder);
         MethodDesc desc = mc.desc();
-        if (methods.putIfAbsent(desc, Boolean.FALSE) != null) {
+        if (methods.putIfAbsent(desc, Boolean.valueOf(Modifier.isStatic(mc.modifiers))) != null) {
             throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
         }
         return desc;
     }
 
     public MethodDesc staticNativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
-        checkNotNullParam("name", name);
-        checkNotNullParam("builder", builder);
-        var mc = new StaticNativeMethodCreatorImpl(this, name);
-        mc.accept(builder);
-        MethodDesc desc = mc.desc();
-        if (methods.putIfAbsent(desc, Boolean.TRUE) != null) {
-            throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
-        }
-        return desc;
+        return nativeMethod(name, mc -> {
+            mc.addFlag(ModifierFlag.STATIC);
+            builder.accept(mc);
+        });
     }
 
     public ConstructorDesc constructor(final Consumer<ConstructorCreator> builder) {

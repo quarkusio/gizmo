@@ -1,9 +1,6 @@
 package io.quarkus.gizmo2;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
@@ -14,6 +11,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
 
 public class AccessFlagsTest {
 
@@ -41,6 +42,9 @@ public class AccessFlagsTest {
             cc.packagePrivate();
             cc.implements_(Function.class);
             cc.extends_(Super.class);
+            // check some invalid flags
+            assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.STATIC));
+            assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
         });
         Class<?> clazz = tcm.definedClass();
         assertFalse(clazz.isInterface());
@@ -75,6 +79,8 @@ public class AccessFlagsTest {
         g.interface_(ClassDesc.of("io.quarkus.gizmo2.FooInterface"), cc -> {
             cc.packagePrivate();
             cc.implements_(Consumer.class);
+            assertThrows(IllegalArgumentException.class, () -> cc.setAccess(AccessLevel.PROTECTED));
+            assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
         });
         Class<?> clazz = tcm.definedClass();
         assertTrue(clazz.isInterface());
@@ -99,11 +105,18 @@ public class AccessFlagsTest {
             cc.field("bravo", fc -> {
                 fc.packagePrivate();
                 fc.setType(Double.class);
+                // should be a no-op
+                fc.removeFlag(ModifierFlag.STATIC);
+                assertThrows(IllegalArgumentException.class, () -> fc.addFlag(ModifierFlag.STATIC));
             });
             cc.staticField("charlie", fc -> {
                 fc.protected_();
                 fc.setType(String.class);
                 fc.setInitial(Const.of("oops"));
+                assertThrows(IllegalArgumentException.class, () -> fc.addFlag(ModifierFlag.TRANSIENT));
+                // should be a no-op
+                fc.addFlag(ModifierFlag.STATIC);
+                assertThrows(IllegalArgumentException.class, () -> fc.removeFlag(ModifierFlag.STATIC));
             });
             cc.field("delta", fc -> {
                 fc.private_();
@@ -145,19 +158,19 @@ public class AccessFlagsTest {
         g.class_("io.quarkus.gizmo2.FooMethods", cc -> {
             cc.method("alpha", mc -> {
                 mc.public_();
-                mc.body(bc -> bc.return_());
+                mc.body(BlockCreator::return_);
             });
             cc.method("bravo", mc -> {
                 mc.packagePrivate();
-                mc.body(bc -> bc.return_());
+                mc.body(BlockCreator::return_);
             });
             cc.staticMethod("charlie", mc -> {
                 mc.final_();
-                mc.body(bc -> bc.return_());
+                mc.body(BlockCreator::return_);
             });
             cc.method("delta", mc -> {
                 mc.protected_();
-                mc.body(bc -> bc.return_());
+                mc.body(BlockCreator::return_);
             });
         });
         Class<?> clazz = tcm.definedClass();

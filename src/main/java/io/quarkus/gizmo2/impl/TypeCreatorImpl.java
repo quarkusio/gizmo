@@ -94,6 +94,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     CD_Map,
                     CD_Map_Entry.arrayType()));
 
+    final GizmoImpl gizmo;
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
     private final ClassDesc type;
     private GenericType.OfClass genericType;
@@ -121,7 +122,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     final Map<MethodDesc, Boolean> methods = new LinkedHashMap<>();
     final Set<ConstructorDesc> constructors = new LinkedHashSet<>();
 
-    TypeCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+    TypeCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+        super(gizmo);
+        this.gizmo = gizmo;
         this.type = type;
         this.output = output;
         this.zb = zb;
@@ -257,7 +260,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         checkNotNullParam("name", name);
         checkNotNullParam("builder", builder);
         boolean isInterface = (modifiers & ACC_INTERFACE) != 0;
-        var fc = new StaticFieldCreatorImpl(this, type(), name, isInterface);
+        var fc = isInterface ? new InterfaceStaticFieldCreatorImpl(this, type(), name)
+                : new ClassStaticFieldCreatorImpl(this, type(), name);
         fc.accept(builder);
         FieldDesc desc = fc.desc();
         if (fields.putIfAbsent(desc, Boolean.TRUE) != null) {
