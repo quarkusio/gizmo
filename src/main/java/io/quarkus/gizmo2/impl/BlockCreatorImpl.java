@@ -667,9 +667,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new InstanceOf(obj, type));
     }
 
-    public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
+    public Expr new_(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
-        New new_ = new New(GenericType.of(ctor.owner()));
+        New new_ = new New(genericType);
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
         // insert New & Dup *before* the arguments
@@ -682,26 +682,28 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         Node dupNode = dup_.insert(node.next());
         new_.insert(dupNode);
         // add the invoke at tail
-        Invoke invoke = new Invoke(ctor, dup_, args);
+        Invoke invoke = new Invoke(ctor, dup_, args, genericType);
         addItem(invoke);
         // finally, add the result
         return addItem(new NewResult(new_, invoke));
     }
 
-    public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
-        return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args));
+    public Expr invokeStatic(final GenericType genericReturnType, final MethodDesc method, final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args, genericReturnType));
     }
 
-    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
-        return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args));
+    public Expr invokeVirtual(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
+            final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args, genericReturnType));
     }
 
-    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
-        return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args));
+    public Expr invokeSpecial(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
+            final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args, genericReturnType));
     }
 
     public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<? extends Expr> args) {
-        Invoke invoke = new Invoke(ctor, instance, args);
+        Invoke invoke = new Invoke(ctor, instance, args, GenericType.of(void.class));
         addItem(invoke);
         if (instance instanceof ThisExpr) {
             // self-init
@@ -712,11 +714,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invoke;
     }
 
-    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
+    public Expr invokeInterface(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
+            final List<? extends Expr> args) {
         if (!(method instanceof InterfaceMethodDesc)) {
             throw new IllegalArgumentException("Cannot emit `invokeinterface` for " + method + "; must be InterfaceMethodDesc");
         }
-        return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args));
+        return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args, genericReturnType));
     }
 
     public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {

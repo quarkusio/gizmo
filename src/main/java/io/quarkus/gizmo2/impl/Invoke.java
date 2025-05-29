@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -19,22 +20,26 @@ final class Invoke extends Item {
     private final ClassDesc owner;
     private final String name;
     private final MethodTypeDesc type;
+    private final GenericType genericType;
     private final Item instance;
     private final List<Item> args;
     private final Opcode opcode;
     private final boolean isInterface;
 
-    Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<? extends Expr> args) {
+    Invoke(final Opcode opcode, final MethodDesc desc, Expr instance, List<? extends Expr> args,
+            final GenericType genericType) {
         this(desc.owner(), desc.name(), desc.type(), opcode, desc instanceof InterfaceMethodDesc, (Item) instance,
-                Util.reinterpretCast(args));
+                Util.reinterpretCast(args), genericType);
     }
 
-    Invoke(final ConstructorDesc desc, Expr instance, List<? extends Expr> args) {
-        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, (Item) instance, Util.reinterpretCast(args));
+    Invoke(final ConstructorDesc desc, Expr instance, List<? extends Expr> args, final GenericType genericType) {
+        this(desc.owner(), "<init>", desc.type(), Opcode.INVOKESPECIAL, false, (Item) instance, Util.reinterpretCast(args),
+                genericType);
     }
 
     private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode,
-            final boolean isInterface, Item instance, final List<Item> args) {
+            final boolean isInterface, Item instance, final List<Item> args, final GenericType genericType) {
+        this.genericType = genericType;
         if (type.parameterCount() != args.size()) {
             String paramsStr = type.parameterCount() == 1 ? "1 parameter" : type.parameterCount() + " parameters";
             String argsStr = args.size() == 1 ? "1 argument was" : args.size() + " arguments were";
@@ -71,6 +76,10 @@ final class Invoke extends Item {
 
     public ClassDesc type() {
         return type.returnType();
+    }
+
+    public GenericType genericType() {
+        return genericType;
     }
 
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
