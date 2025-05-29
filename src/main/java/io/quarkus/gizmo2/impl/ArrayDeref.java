@@ -47,7 +47,7 @@ public final class ArrayDeref extends AssignableImpl {
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return switch (mode) {
             case AsDeclared, Plain -> new ArrayStore(item, index, value, componentType);
-            default -> new ArrayStoreViaHandle(this, value);
+            default -> new ArrayStoreViaHandle(this, value, mode);
         };
     }
 

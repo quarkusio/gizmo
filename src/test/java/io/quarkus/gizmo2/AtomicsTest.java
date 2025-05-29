@@ -992,6 +992,204 @@ public final class AtomicsTest {
         tcm.staticMethod("test5", Runnable.class).run();
     }
 
+    @Test
+    public void testGetAndSetSeparately() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndSetSeparately");
+        g.class_(desc, zc -> {
+            FieldDesc intVal = zc.field("intVal", Const.of(123));
+            FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
+            StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
+                sfc.setInitial(404);
+            });
+            StaticFieldVar staticStrVal = zc.staticField("staticStrVal", sfc -> {
+                sfc.setInitial("Goodbye");
+            });
+            zc.sourceFile(file());
+            zc.defaultConstructor();
+            // test methods
+            zc.staticMethod("test0", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
+                    b0.invokeStatic(assertEqualsI, instance.field(intVal), Const.of(123));
+                    // instance int: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(123),
+                            b0.get(instance.field(intVal), MemoryOrder.Volatile));
+                    b0.set(instance.field(intVal), Const.of(234), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(234), instance.field(intVal));
+                    // instance int: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(234),
+                            b0.get(instance.field(intVal), MemoryOrder.Acquire));
+                    b0.set(instance.field(intVal), Const.of(432), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(432), instance.field(intVal));
+                    // instance int: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(432),
+                            b0.get(instance.field(intVal), MemoryOrder.Opaque));
+                    b0.set(instance.field(intVal), Const.of(333), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(333), instance.field(intVal));
+                    b0.return_();
+                });
+            });
+            zc.staticMethod("test1", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(404), staticIntVal);
+                    // static int: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(404),
+                            b0.get(staticIntVal, MemoryOrder.Volatile));
+                    b0.set(staticIntVal, Const.of(111), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(111), staticIntVal);
+                    // static int: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(111),
+                            b0.get(staticIntVal, MemoryOrder.Acquire));
+                    b0.getAndSet(staticIntVal, Const.of(200), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(200), staticIntVal);
+                    // static int: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(200),
+                            b0.get(staticIntVal, MemoryOrder.Opaque));
+                    b0.set(staticIntVal, Const.of(999), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(999), staticIntVal);
+                    b0.return_();
+                });
+            });
+            zc.staticMethod("test2", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    LocalVar array = b0.localVar("array", b0.newArray(int.class, Const.of(404)));
+                    b0.invokeStatic(assertEqualsI, Const.of(404), array.elem(0));
+                    // array int: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(404),
+                            b0.get(array.elem(0), MemoryOrder.Volatile));
+                    b0.set(array.elem(0), Const.of(111), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(111), array.elem(0));
+                    // array int: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(111),
+                            b0.get(array.elem(0), MemoryOrder.Acquire));
+                    b0.set(array.elem(0), Const.of(200), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(200), array.elem(0));
+                    // array int: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(200),
+                            b0.get(array.elem(0), MemoryOrder.Opaque));
+                    b0.set(array.elem(0), Const.of(999), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsI, Const.of(999), array.elem(0));
+                    b0.return_();
+                });
+            });
+            zc.staticMethod("test3", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    LocalVar instance = b0.localVar("instance", b0.new_(desc));
+                    b0.invokeStatic(assertEqualsL, Const.of("Hello"), instance.field(strVal));
+                    // instance obj: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Hello"),
+                            b0.get(instance.field(strVal), MemoryOrder.Volatile));
+                    b0.set(instance.field(strVal), Const.of("Meow"), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Meow"), instance.field(strVal));
+                    // instance obj: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Meow"),
+                            b0.get(instance.field(strVal), MemoryOrder.Acquire));
+                    b0.set(instance.field(strVal), Const.of("Arf"), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Arf"), instance.field(strVal));
+                    // instance obj: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Arf"),
+                            b0.get(instance.field(strVal), MemoryOrder.Opaque));
+                    b0.set(instance.field(strVal), Const.of("Moo"), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Moo"), instance.field(strVal));
+                    b0.return_();
+                });
+            });
+            zc.staticMethod("test4", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), staticStrVal);
+                    // static obj: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Goodbye"),
+                            b0.get(staticStrVal, MemoryOrder.Volatile));
+                    b0.set(staticStrVal, Const.of("Apple"), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Apple"), staticStrVal);
+                    // static obj: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Apple"),
+                            b0.get(staticStrVal, MemoryOrder.Acquire));
+                    b0.set(staticStrVal, Const.of("Banana"), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Banana"), staticStrVal);
+                    // static obj: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Banana"),
+                            b0.get(staticStrVal, MemoryOrder.Opaque));
+                    b0.set(staticStrVal, Const.of("Pear"), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Pear"), staticStrVal);
+                    b0.return_();
+                });
+            });
+            zc.staticMethod("test5", mc -> {
+                mc.body(b0 -> {
+                    b0.line(nextLine());
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class, Const.of("Goodbye")));
+                    b0.invokeStatic(assertEqualsL, Const.of("Goodbye"), array.elem(0));
+                    // array obj: volatile
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Goodbye"),
+                            b0.get(array.elem(0), MemoryOrder.Volatile));
+                    b0.set(array.elem(0), Const.of("Apple"), MemoryOrder.Volatile);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Apple"), array.elem(0));
+                    // array obj: acquire/release
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Apple"),
+                            b0.get(array.elem(0), MemoryOrder.Acquire));
+                    b0.set(array.elem(0), Const.of("Banana"), MemoryOrder.Release);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Banana"), array.elem(0));
+                    // array obj: opaque
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Banana"),
+                            b0.get(array.elem(0), MemoryOrder.Opaque));
+                    b0.set(array.elem(0), Const.of("Pear"), MemoryOrder.Opaque);
+                    b0.line(nextLine());
+                    b0.invokeStatic(assertEqualsL, Const.of("Pear"), array.elem(0));
+                    b0.return_();
+                });
+            });
+        });
+        tcm.staticMethod("test0", Runnable.class).run();
+        tcm.staticMethod("test1", Runnable.class).run();
+        tcm.staticMethod("test2", Runnable.class).run();
+        tcm.staticMethod("test3", Runnable.class).run();
+        tcm.staticMethod("test4", Runnable.class).run();
+        tcm.staticMethod("test5", Runnable.class).run();
+    }
+
     private static final StackWalker SW = StackWalker.getInstance();
 
     // get the line # after the call to this method
