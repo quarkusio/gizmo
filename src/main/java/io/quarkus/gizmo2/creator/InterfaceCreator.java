@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.impl.InterfaceCreatorImpl;
 /**
  * A creator for an interface type.
  */
-public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedCreator permits InterfaceCreatorImpl {
+public sealed interface InterfaceCreator extends TypeCreator permits InterfaceCreatorImpl {
 
     /**
      * Add a default method to the interface.
@@ -121,4 +121,11 @@ public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedC
     default MethodDesc method(MethodDesc desc, Consumer<AbstractMethodCreator> builder) {
         return method(desc.name(), desc.type(), builder);
     }
+
+    /**
+     * Sets the generic signature of this interface.
+     *
+     * @param builder the builder (must not be {@code null})
+     */
+    void signature(Consumer<InterfaceSignatureCreator> builder);
 }

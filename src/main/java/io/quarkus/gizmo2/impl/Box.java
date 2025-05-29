@@ -9,7 +9,6 @@ import java.util.List;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 
 final class Box extends Cast {
@@ -30,7 +29,7 @@ final class Box extends Cast {
     }
 
     Box(Expr a, ClassDesc toType) {
-        super(a, GenericType.of(toType));
+        super(a, toType);
         ClassDesc boxType = boxing(a.type());
         this.boxing = new Invoke(Opcode.INVOKESTATIC,
                 ClassMethodDesc.of(boxType, "valueOf", MethodTypeDesc.of(boxType, a.type())),

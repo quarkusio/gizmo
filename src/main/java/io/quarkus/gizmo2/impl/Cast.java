@@ -4,13 +4,12 @@ import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 
 abstract class Cast extends Item {
     final Item a;
-    final GenericType toType;
+    final ClassDesc toType;
 
-    public Cast(final Expr a, final GenericType toType) {
+    public Cast(final Expr a, final ClassDesc toType) {
         this.a = (Item) a;
         this.toType = toType;
     }
@@ -19,11 +18,7 @@ abstract class Cast extends Item {
         return a.process(node.prev(), op);
     }
 
-    public GenericType genericType() {
-        return toType;
-    }
-
     public ClassDesc type() {
-        return toType.desc();
+        return toType;
     }
 }

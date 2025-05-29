@@ -5,19 +5,23 @@ import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.List;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassBuilder;
+import io.github.dmlloyd.classfile.ClassSignature;
+import io.github.dmlloyd.classfile.Signature;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
+import io.quarkus.gizmo2.creator.GenericType;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
+import io.quarkus.gizmo2.creator.InterfaceSignatureCreator;
 import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
-
     InterfaceCreatorImpl(final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         super(type, output, zb);
         modifiers |= ACC_INTERFACE | ACC_ABSTRACT | ACC_SYNTHETIC | ACC_PUBLIC;
@@ -65,6 +69,21 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
             throw new IllegalArgumentException("Duplicate method added: %s".formatted(desc));
         }
         return desc;
+    }
+
+    @Override
+    public void signature(Consumer<InterfaceSignatureCreator> builder) {
+        InterfaceSignatureCreatorImpl creator = new InterfaceSignatureCreatorImpl();
+        builder.accept(creator);
+        // TODO validate interfaces
+        this.signature = ClassSignature.of(
+                creator.typeParameters.isEmpty()
+                        ? List.of()
+                        : creator.typeParameters.stream().map(SignatureUtil::ofTypeParam).toList(),
+                SignatureUtil.ofClass(GenericType.ClassType.OBJECT),
+                creator.interfaceTypes.stream()
+                        .map(SignatureUtil::ofClassOrParameterized)
+                        .toArray(Signature.ClassTypeSig[]::new));
     }
 
     void accept(final Consumer<InterfaceCreator> builder) {

@@ -11,7 +11,6 @@ import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
 import java.io.PrintStream;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.DynamicCallSiteDesc;
@@ -38,14 +37,12 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.MethodModel;
 import io.github.dmlloyd.classfile.Opcode;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
 import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
 import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -215,7 +212,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return this == other || parent != null && parent.isContainedBy(other);
     }
 
-    public LocalVar localVar(final String name, final GenericType type, final Expr value) {
+    @Override
+    public LocalVar localVar(final String name, final ClassDesc type, final Expr value) {
         LocalVarImpl lv = new LocalVarImpl(this, name, type);
         addItem(lv.allocator());
         set(lv, value);
@@ -628,11 +626,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 Stream.concat(args.stream(), captureExprs.stream()).toList());
     }
 
-    public Expr cast(final Expr a, final GenericType toGenType) {
-        ClassDesc toType = toGenType.desc();
+    public Expr cast(final Expr a, final ClassDesc toType) {
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
-                return addItem(new PrimitiveCast(a, toGenType));
+                return addItem(new PrimitiveCast(a, toType));
             } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
                 return box(a);
             } else {
@@ -646,29 +643,29 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
                         + "' to primitive type '" + toType.displayName() + "'");
             } else {
-                return addItem(new CheckCast(a, toGenType));
+                return addItem(new CheckCast(a, toType));
             }
         }
     }
 
-    public Expr uncheckedCast(final Expr a, final GenericType toType) {
+    public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
         if (a.type().isPrimitive()) {
             throw new IllegalArgumentException("Cannot apply unchecked cast to primitive value: " + a.type().displayName());
         }
-        if (toType.desc().isPrimitive()) {
-            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.desc().displayName());
+        if (toType.isPrimitive()) {
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.displayName());
         }
         return addItem(new UncheckedCast(a, toType));
     }
 
-    public Expr instanceOf(final Expr obj, final GenericType type) {
+    public Expr instanceOf(final Expr obj, final ClassDesc type) {
         Assert.checkNotNullParam("type", type);
         return addItem(new InstanceOf(obj, type));
     }
 
     public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
-        New new_ = new New(GenericType.of(ctor.owner()));
+        New new_ = new New(ctor.owner());
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
         // insert New & Dup *before* the arguments
@@ -1225,14 +1222,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             }
             bcb.labelBinding(endLabel);
         });
-    }
-
-    public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-        Node node = head;
-        while (node != null) {
-            node.item().writeAnnotations(retention, annotations);
-            node = node.next();
-        }
     }
 
     // non-public

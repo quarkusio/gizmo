@@ -67,7 +67,9 @@ public final class StaticFieldCreatorImpl extends FieldCreatorImpl implements St
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
-            fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
+            if (signature != null) {
+                fb.with(SignatureAttribute.of(signature));
+            }
             addVisible(fb);
             addInvisible(fb);
             if (initial != null) {

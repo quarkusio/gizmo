@@ -55,10 +55,11 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
-            fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
+            if (signature != null) {
+                fb.with(SignatureAttribute.of(signature));
+            }
             addVisible(fb);
             addInvisible(fb);
-            addTypeAnnotations(fb);
         });
     }
 }

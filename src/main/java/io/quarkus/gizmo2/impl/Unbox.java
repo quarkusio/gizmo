@@ -10,7 +10,6 @@ import java.util.List;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 
@@ -28,9 +27,9 @@ final class Unbox extends Cast {
     }
 
     Unbox(Expr a) {
-        super(a, GenericType.of(unboxing(a.type())));
+        super(a, unboxing(a.type()));
         this.unboxing = new Invoke(Opcode.INVOKEVIRTUAL,
-                ClassMethodDesc.of(a.type(), switch (TypeKind.from(toType.desc())) {
+                ClassMethodDesc.of(a.type(), switch (TypeKind.from(toType)) {
                     case BOOLEAN -> "booleanValue";
                     case BYTE -> "byteValue";
                     case CHAR -> "charValue";
@@ -39,8 +38,8 @@ final class Unbox extends Cast {
                     case LONG -> "longValue";
                     case FLOAT -> "floatValue";
                     case DOUBLE -> "doubleValue";
-                    default -> throw impossibleSwitchCase(TypeKind.from(toType.desc()));
-                }, MethodTypeDesc.of(toType.desc(), Util.NO_DESCS)),
+                    default -> throw impossibleSwitchCase(TypeKind.from(toType));
+                }, MethodTypeDesc.of(toType, Util.NO_DESCS)),
                 a, List.of());
     }
 
