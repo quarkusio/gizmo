@@ -18,7 +18,8 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
             // ignore (it's always set)
             return;
         } else if (supports(flag)) {
-            modifiers = modifiers & ~flag.clearMask() | flag.mask();
+            flag.forEachExclusive(this::removeFlag);
+            modifiers |= flag.mask();
         } else {
             throw cannotAdd(flag);
         }

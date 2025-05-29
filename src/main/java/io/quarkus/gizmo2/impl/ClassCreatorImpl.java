@@ -98,6 +98,7 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
     public MethodDesc staticNativeMethod(final String name, final Consumer<AbstractMethodCreator> builder) {
         return nativeMethod(name, mc -> {
             mc.addFlag(ModifierFlag.STATIC);
+            builder.accept(mc);
         });
     }
 

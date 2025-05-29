@@ -50,7 +50,7 @@ public final class GizmoImpl implements Gizmo {
                     throw new IllegalArgumentException(
                             "Flag %s cannot be set for location %s".formatted(modifierFlag, location));
                 }
-                flags[location.ordinal()] &= ~modifierFlag.clearMask();
+                modifierFlag.forEachExclusive(f -> remove(location, f));
                 flags[location.ordinal()] |= modifierFlag.mask();
             }
 

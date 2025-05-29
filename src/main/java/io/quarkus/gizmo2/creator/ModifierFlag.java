@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.creator;
 import static io.github.dmlloyd.classfile.ClassFile.*;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * A modifier for a type or member.
@@ -11,7 +12,11 @@ public enum ModifierFlag implements Modifier {
     /**
      * The {@code abstract} modifier.
      */
-    ABSTRACT(ACC_ABSTRACT, ACC_FINAL),
+    ABSTRACT(ACC_ABSTRACT) {
+        public void forEachExclusive(final Consumer<ModifierFlag> action) {
+            action.accept(FINAL);
+        }
+    },
     /**
      * The "bridge" modifier.
      */
@@ -19,7 +24,12 @@ public enum ModifierFlag implements Modifier {
     /**
      * The {@code final} modifier.
      */
-    FINAL(ACC_FINAL, ACC_ABSTRACT | ACC_VOLATILE),
+    FINAL(ACC_FINAL) {
+        public void forEachExclusive(final Consumer<ModifierFlag> action) {
+            action.accept(ABSTRACT);
+            action.accept(VOLATILE);
+        }
+    },
     /**
      * The "mandated" modifier.
      */
@@ -47,7 +57,11 @@ public enum ModifierFlag implements Modifier {
     /**
      * The {@code volatile} modifier.
      */
-    VOLATILE(ACC_VOLATILE, ACC_FINAL),
+    VOLATILE(ACC_VOLATILE) {
+        public void forEachExclusive(final Consumer<ModifierFlag> action) {
+            action.accept(FINAL);
+        }
+    },
     ;
 
     /**
@@ -56,15 +70,9 @@ public enum ModifierFlag implements Modifier {
     public static final List<ModifierFlag> values = List.of(values());
 
     private final int sets;
-    private final int clears;
 
     ModifierFlag(final int sets) {
-        this(sets, 0);
-    }
-
-    ModifierFlag(final int sets, final int clears) {
         this.sets = sets;
-        this.clears = clears;
     }
 
     public boolean validIn(final ModifierLocation location) {
@@ -76,9 +84,10 @@ public enum ModifierFlag implements Modifier {
     }
 
     /**
-     * {@return the mask of bits that are cleared when this modifier flag is set}
+     * Process the given action for each flag which is mutually exclusive with this one.
+     *
+     * @param action the action to process (must not be {@code null})
      */
-    public int clearMask() {
-        return clears;
+    public void forEachExclusive(Consumer<ModifierFlag> action) {
     }
 }
