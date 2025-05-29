@@ -31,6 +31,7 @@ final class ArrayLoadViaHandle extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.invokevirtual(CD_VarHandle, switch (mode) {
+            case Plain -> "get";
             case Opaque -> "getOpaque";
             case Acquire -> "getAcquire";
             case Volatile -> "getVolatile";
