@@ -1,15 +1,43 @@
 package io.quarkus.gizmo2.creator;
 
+import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.InterfaceCreatorImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator for an interface type.
  */
 public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedCreator permits InterfaceCreatorImpl {
+    /**
+     * Extend a generic interface.
+     *
+     * @param genericType the generic interface type (must not be {@code null})
+     */
+    void extends_(GenericType.OfClass genericType);
+
+    /**
+     * Extend an interface.
+     *
+     * @param interface_ the descriptor of the interface (must not be {@code null})
+     */
+    void extends_(ClassDesc interface_);
+
+    /**
+     * Extend an interface.
+     *
+     * @param interface_ the interface (must not be {@code null})
+     */
+    default void extends_(Class<?> interface_) {
+        if (!interface_.isInterface()) {
+            throw new IllegalArgumentException("Only interfaces may be implemented");
+        }
+        extends_(Util.classDesc(interface_));
+    }
 
     /**
      * Add a default method to the interface.

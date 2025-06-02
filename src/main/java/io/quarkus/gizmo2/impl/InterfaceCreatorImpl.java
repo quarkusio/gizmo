@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.ClassFile;
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
 import io.quarkus.gizmo2.creator.InstanceMethodCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
@@ -26,6 +27,16 @@ public final class InterfaceCreatorImpl extends TypeCreatorImpl implements Inter
 
     public ModifierLocation modifierLocation() {
         return ModifierLocation.INTERFACE;
+    }
+
+    @Override
+    public void extends_(GenericType.OfClass genericType) {
+        super.implements_(genericType);
+    }
+
+    @Override
+    public void extends_(ClassDesc interface_) {
+        super.implements_(interface_);
     }
 
     MethodDesc methodDesc(final String name, final MethodTypeDesc type) {

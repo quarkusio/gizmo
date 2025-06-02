@@ -17,7 +17,6 @@ import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.TypeCreatorImpl;
-import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A creator for a type.
@@ -56,32 +55,6 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      * {@return the generic type of this class}
      */
     GenericType.OfClass genericType();
-
-    /**
-     * Implement a generic interface.
-     *
-     * @param genericType the generic interface type (must not be {@code null})
-     */
-    void implements_(GenericType.OfClass genericType);
-
-    /**
-     * Implement an interface.
-     *
-     * @param interface_ the descriptor of the interface (must not be {@code null})
-     */
-    void implements_(ClassDesc interface_);
-
-    /**
-     * Implement an interface.
-     *
-     * @param interface_ the interface (must not be {@code null})
-     */
-    default void implements_(Class<?> interface_) {
-        if (!interface_.isInterface()) {
-            throw new IllegalArgumentException("Only interfaces may be implemented");
-        }
-        implements_(Util.classDesc(interface_));
-    }
 
     /**
      * Add a general static initializer block to the type.

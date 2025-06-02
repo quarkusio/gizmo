@@ -198,7 +198,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                 interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
     }
 
-    public void implements_(final GenericType.OfClass genericType) {
+    void implements_(final GenericType.OfClass genericType) {
         zb.withInterfaceSymbols(genericType.desc());
         if (interfaceSigs.isEmpty()) {
             interfaceSigs = new ArrayList<>(4);
@@ -206,7 +206,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         interfaceSigs.add(genericType);
     }
 
-    public void implements_(final ClassDesc interface_) {
+    void implements_(final ClassDesc interface_) {
         implements_((GenericType.OfClass) GenericType.of(interface_));
     }
 

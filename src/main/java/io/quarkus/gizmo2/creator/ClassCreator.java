@@ -42,6 +42,32 @@ public sealed interface ClassCreator extends TypeCreator, SimpleTyped, TypeParam
     void extends_(ClassDesc desc);
 
     /**
+     * Implement a generic interface.
+     *
+     * @param genericType the generic interface type (must not be {@code null})
+     */
+    void implements_(GenericType.OfClass genericType);
+
+    /**
+     * Implement an interface.
+     *
+     * @param interface_ the descriptor of the interface (must not be {@code null})
+     */
+    void implements_(ClassDesc interface_);
+
+    /**
+     * Implement an interface.
+     *
+     * @param interface_ the interface (must not be {@code null})
+     */
+    default void implements_(Class<?> interface_) {
+        if (!interface_.isInterface()) {
+            throw new IllegalArgumentException("Only interfaces may be implemented");
+        }
+        implements_(Util.classDesc(interface_));
+    }
+
+    /**
      * Extend the given class.
      *
      * @param clazz the class (must not be {@code null})
