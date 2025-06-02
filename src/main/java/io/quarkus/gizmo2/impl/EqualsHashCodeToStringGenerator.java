@@ -138,7 +138,7 @@ public class EqualsHashCodeToStringGenerator {
                 }
 
                 result.append(')');
-                b0.return_(result.objToString());
+                b0.return_(result.toString_());
             });
         });
     }

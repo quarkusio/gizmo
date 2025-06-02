@@ -9,7 +9,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
  * <ol>
  * <li>Create an instance using {@link BlockCreator#withNewStringBuilder()}</li>
  * <li>Append to it using {@link #append(Expr)}</li>
- * <li>Create the final string using {@link #objToString()}</li>
+ * <li>Create the final string using {@link #toString_()}</li>
  * </ol>
  * If you need to perform other operations on the {@code StringBuilder}
  * that this class doesn't provide, you should create an instance

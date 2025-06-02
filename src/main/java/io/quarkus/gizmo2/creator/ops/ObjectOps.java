@@ -152,7 +152,7 @@ public class ObjectOps {
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objGetClass() {
+    public Expr getClass_() {
         return invokeInstance(Class.class, "getClass");
     }
 
@@ -162,7 +162,7 @@ public class ObjectOps {
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objToString() {
+    public Expr toString_() {
         return invokeInstance(String.class, "toString");
     }
 
@@ -173,7 +173,7 @@ public class ObjectOps {
      * @param otherObj the object to compare (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
-    public Expr objEquals(Expr otherObj) {
+    public Expr equals_(Expr otherObj) {
         return invokeInstance(boolean.class, "equals", Object.class, otherObj);
     }
 
@@ -183,7 +183,7 @@ public class ObjectOps {
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objHashCode() {
+    public Expr hashCode_() {
         return invokeInstance(int.class, "hashCode");
     }
 }

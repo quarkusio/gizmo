@@ -516,7 +516,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // check for newline
                             b2.if_(b2.eq(a, '\n'), b3 -> {
                                 // end of string
-                                Expr toString = b3.withObject(sb).objToString();
+                                Expr toString = b3.withObject(sb).toString_();
                                 // this is safe because this statement does not use or leave anything on the stack
                                 b3.withStringBuilder(sb).setLength(0);
                                 b3.return_(toString);

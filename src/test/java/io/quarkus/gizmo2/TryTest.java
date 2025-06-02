@@ -41,31 +41,31 @@ public final class TryTest {
                 smc.returning(String.class);
                 smc.body(b0 -> {
                     b0.try_(try0 -> {
-                        try0.body(b1 -> b1.withObject(foo).objEquals(bar));
+                        try0.body(b1 -> b1.withObject(foo).equals_(bar));
                         try0.finally_(b1 -> b1.try_(try1 -> {
-                            try1.body(b2 -> b2.withObject(foo).objEquals(bar));
+                            try1.body(b2 -> b2.withObject(foo).equals_(bar));
                             try1.finally_(b2 -> b2.try_(try2 -> {
-                                try2.body(b3 -> b3.withObject(foo).objEquals(bar));
+                                try2.body(b3 -> b3.withObject(foo).equals_(bar));
                                 try2.finally_(b3 -> b3.try_(try3 -> {
-                                    try3.body(b4 -> b4.withObject(foo).objEquals(bar));
+                                    try3.body(b4 -> b4.withObject(foo).equals_(bar));
                                     try3.finally_(b4 -> b4.try_(try4 -> {
-                                        try4.body(b5 -> b5.withObject(foo).objEquals(bar));
+                                        try4.body(b5 -> b5.withObject(foo).equals_(bar));
                                         try4.finally_(b5 -> b5.try_(try5 -> {
-                                            try5.body(b6 -> b6.withObject(foo).objEquals(bar));
+                                            try5.body(b6 -> b6.withObject(foo).equals_(bar));
                                             try5.finally_(b6 -> b6.try_(try6 -> {
-                                                try6.body(b7 -> b7.withObject(foo).objEquals(bar));
+                                                try6.body(b7 -> b7.withObject(foo).equals_(bar));
                                                 try6.finally_(b7 -> b7.try_(try7 -> {
-                                                    try7.body(b8 -> b8.withObject(foo).objEquals(bar));
+                                                    try7.body(b8 -> b8.withObject(foo).equals_(bar));
                                                     try7.finally_(b8 -> b8.try_(try8 -> {
-                                                        try8.body(b9 -> b9.withObject(foo).objEquals(bar));
+                                                        try8.body(b9 -> b9.withObject(foo).equals_(bar));
                                                         try8.finally_(b9 -> b9.try_(try9 -> {
-                                                            try9.body(b10 -> b10.withObject(foo).objEquals(bar));
+                                                            try9.body(b10 -> b10.withObject(foo).equals_(bar));
                                                             try9.finally_(b10 -> b10.try_(try10 -> {
-                                                                try10.body(b11 -> b11.withObject(foo).objEquals(bar));
+                                                                try10.body(b11 -> b11.withObject(foo).equals_(bar));
                                                                 try10.finally_(b11 -> b11.try_(try11 -> {
-                                                                    try11.body(b12 -> b12.withObject(foo).objEquals(bar));
+                                                                    try11.body(b12 -> b12.withObject(foo).equals_(bar));
                                                                     try11.finally_(b12 -> b12.try_(try12 -> {
-                                                                        try12.body(b13 -> b13.withObject(foo).objEquals(bar));
+                                                                        try12.body(b13 -> b13.withObject(foo).equals_(bar));
                                                                         try12.finally_(b13 -> b13.return_(
                                                                                 b13.withString(foo).concat(bar)));
                                                                     }));

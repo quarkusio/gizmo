@@ -60,7 +60,7 @@ public class LoopTest {
                             isEqual.break_(loop);
                         });
                     });
-                    bc.return_(bc.withObject(ret).objToString());
+                    bc.return_(bc.withObject(ret).toString_());
                 });
             });
         });
@@ -95,7 +95,7 @@ public class LoopTest {
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);
                         loop.invokeVirtual(append, ret, loop.cast(item, String.class));
                     });
-                    bc.return_(bc.withObject(ret).objToString());
+                    bc.return_(bc.withObject(ret).toString_());
                 });
             });
         });
