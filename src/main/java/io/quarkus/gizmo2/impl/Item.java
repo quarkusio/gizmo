@@ -249,6 +249,10 @@ public abstract non-sealed class Item implements Expr {
     public InstanceFieldVar field(final FieldDesc desc, final GenericType genericType) {
         checkNotNullParam("desc", desc);
         checkNotNullParam("genericType", genericType);
+        if (!desc.type().equals(genericType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match field type %s".formatted(genericType, desc.type()));
+        }
         return new FieldDeref(this, desc, genericType);
     }
 

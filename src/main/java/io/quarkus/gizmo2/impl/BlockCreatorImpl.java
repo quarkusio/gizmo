@@ -669,6 +669,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr new_(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
         checkActive();
+        if (!ctor.owner().equals(genericType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match constructor type %s".formatted(genericType, ctor.owner()));
+        }
         New new_ = new New(genericType);
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
@@ -689,16 +693,28 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr invokeStatic(final GenericType genericReturnType, final MethodDesc method, final List<? extends Expr> args) {
+        if (!method.returnType().equals(genericReturnType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
+        }
         return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args, genericReturnType));
     }
 
     public Expr invokeVirtual(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
             final List<? extends Expr> args) {
+        if (!method.returnType().equals(genericReturnType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
+        }
         return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args, genericReturnType));
     }
 
     public Expr invokeSpecial(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
             final List<? extends Expr> args) {
+        if (!method.returnType().equals(genericReturnType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
+        }
         return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args, genericReturnType));
     }
 
@@ -718,6 +734,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             final List<? extends Expr> args) {
         if (!(method instanceof InterfaceMethodDesc)) {
             throw new IllegalArgumentException("Cannot emit `invokeinterface` for " + method + "; must be InterfaceMethodDesc");
+        }
+        if (!method.returnType().equals(genericReturnType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args, genericReturnType));
     }
