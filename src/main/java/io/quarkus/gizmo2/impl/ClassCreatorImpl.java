@@ -39,6 +39,16 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         super.extends_(desc);
     }
 
+    @Override
+    public void implements_(GenericType.OfClass genericType) {
+        super.implements_(genericType);
+    }
+
+    @Override
+    public void implements_(ClassDesc interface_) {
+        super.implements_(interface_);
+    }
+
     public ClassDesc superClass() {
         return super.superClass();
     }

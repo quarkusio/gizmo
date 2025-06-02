@@ -61,7 +61,7 @@ public class AccessFlagsTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         g.interface_("io.quarkus.gizmo2.FooInterface", cc -> {
-            cc.implements_(Consumer.class);
+            cc.extends_(Consumer.class);
         });
         Class<?> clazz = tcm.definedClass();
         assertTrue(clazz.isInterface());
@@ -78,7 +78,7 @@ public class AccessFlagsTest {
         Gizmo g = Gizmo.create(tcm);
         g.interface_(ClassDesc.of("io.quarkus.gizmo2.FooInterface"), cc -> {
             cc.packagePrivate();
-            cc.implements_(Consumer.class);
+            cc.extends_(Consumer.class);
             assertThrows(IllegalArgumentException.class, () -> cc.setAccess(AccessLevel.PROTECTED));
             assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
         });
