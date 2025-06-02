@@ -12,6 +12,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
@@ -235,7 +236,7 @@ public abstract non-sealed class Item implements Expr {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new ArrayDeref(this, type().componentType(), index);
+        return new ArrayDeref(this, ((GenericType.OfArray) genericType()).componentType(), index);
     }
 
     public Expr length() {
@@ -245,9 +246,14 @@ public abstract non-sealed class Item implements Expr {
         return new ArrayLength(this);
     }
 
-    public InstanceFieldVar field(final FieldDesc desc) {
+    public InstanceFieldVar field(final FieldDesc desc, final GenericType genericType) {
         checkNotNullParam("desc", desc);
-        return new FieldDeref(this, desc);
+        checkNotNullParam("genericType", genericType);
+        if (!desc.type().equals(genericType.desc())) {
+            throw new IllegalArgumentException(
+                    "Generic type %s does not match field type %s".formatted(genericType, desc.type()));
+        }
+        return new FieldDeref(this, desc, genericType);
     }
 
     Item asBound() {

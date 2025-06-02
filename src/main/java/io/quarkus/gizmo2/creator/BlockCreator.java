@@ -2494,11 +2494,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Construct a new instance.
      *
+     * @param genericType the generic type of the new object (must not be {@code null})
      * @param ctor the constructor to call (must not be {@code null})
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
-    Expr new_(ConstructorDesc ctor, List<? extends Expr> args);
+    Expr new_(GenericType genericType, ConstructorDesc ctor, List<? extends Expr> args);
+
+    /**
+     * Construct a new instance.
+     *
+     * @param ctor the constructor to call (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
+    default Expr new_(ConstructorDesc ctor, List<? extends Expr> args) {
+        return new_(GenericType.of(ctor.owner()), ctor, args);
+    }
 
     /**
      * Construct a new instance.
@@ -2540,6 +2552,28 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
+    default Expr new_(GenericType type, List<? extends Expr> args) {
+        return new_(ConstructorDesc.of(type.desc(), args.stream().map(Expr::type).toList()), args);
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
+    default Expr new_(GenericType type, Expr... args) {
+        return new_(type, List.of(args));
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param type the type to construct (must not be {@code null})
+     * @param args the arguments to pass to the constructor (must not be {@code null})
+     * @return the new object (not {@code null})
+     */
     default Expr new_(Class<?> type, List<? extends Expr> args) {
         return new_(Util.classDesc(type), args);
     }
@@ -2560,11 +2594,23 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Invoke a static method.
      *
+     * @param genericReturnType the generic return type (must not be {@code null})
      * @param method the method to call (must not be {@code null})
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeStatic(MethodDesc method, List<? extends Expr> args);
+    Expr invokeStatic(GenericType genericReturnType, MethodDesc method, List<? extends Expr> args);
+
+    /**
+     * Invoke a static method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
+    default Expr invokeStatic(MethodDesc method, List<? extends Expr> args) {
+        return invokeStatic(GenericType.of(method.returnType()), method, args);
+    }
 
     /**
      * Invoke a static method.
@@ -2580,12 +2626,25 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Invoke a virtual method.
      *
+     * @param genericReturnType the generic return type (must not be {@code null})
      * @param method the method to call (must not be {@code null})
      * @param instance the invocation target (must not be {@code null})
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeVirtual(MethodDesc method, Expr instance, List<? extends Expr> args);
+    Expr invokeVirtual(GenericType genericReturnType, MethodDesc method, Expr instance, List<? extends Expr> args);
+
+    /**
+     * Invoke a virtual method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
+    default Expr invokeVirtual(MethodDesc method, Expr instance, List<? extends Expr> args) {
+        return invokeVirtual(GenericType.of(method.returnType()), method, instance, args);
+    }
 
     /**
      * Invoke a virtual method.
@@ -2602,12 +2661,25 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Invoke a method using "special" semantics.
      *
+     * @param genericReturnType the generic return type (must not be {@code null})
      * @param method the method to call (must not be {@code null})
      * @param instance the invocation target (must not be {@code null})
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeSpecial(MethodDesc method, Expr instance, List<? extends Expr> args);
+    Expr invokeSpecial(GenericType genericReturnType, MethodDesc method, Expr instance, List<? extends Expr> args);
+
+    /**
+     * Invoke a method using "special" semantics.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
+    default Expr invokeSpecial(MethodDesc method, Expr instance, List<? extends Expr> args) {
+        return invokeSpecial(GenericType.of(method.returnType()), method, instance, args);
+    }
 
     /**
      * Invoke a method using "special" semantics.
@@ -2646,12 +2718,25 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Invoke an interface method.
      *
+     * @param genericReturnType the generic return type (must not be {@code null})
      * @param method the method to call (must not be {@code null})
      * @param instance the invocation target (must not be {@code null})
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args);
+    Expr invokeInterface(GenericType genericReturnType, MethodDesc method, Expr instance, List<? extends Expr> args);
+
+    /**
+     * Invoke an interface method.
+     *
+     * @param method the method to call (must not be {@code null})
+     * @param instance the invocation target (must not be {@code null})
+     * @param args the arguments to pass to the method (must not be {@code null})
+     * @return the method call result (not {@code null})
+     */
+    default Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args) {
+        return invokeInterface(GenericType.of(method.returnType()), method, instance, args);
+    }
 
     /**
      * Invoke an interface method.
