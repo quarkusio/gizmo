@@ -158,7 +158,7 @@ public class ObjectOps {
 
     /**
      * Generate a call to {@link Object#toString()}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprToString(Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objToString(Expr)}.
      *
      * @return the expression of the result (not {@code null})
      */
@@ -168,7 +168,7 @@ public class ObjectOps {
 
     /**
      * Generate a call to {@link Object#equals(Object)}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprEquals(Expr, Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objEquals(Expr, Expr)}.
      *
      * @param otherObj the object to compare (must not be {@code null})
      * @return the expression of the result (not {@code null})
@@ -179,7 +179,7 @@ public class ObjectOps {
 
     /**
      * Generate a call to {@link Object#hashCode()}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprHashCode(Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objHashCode(Expr)}.
      *
      * @return the expression of the result (not {@code null})
      */

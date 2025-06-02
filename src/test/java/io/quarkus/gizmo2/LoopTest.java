@@ -56,7 +56,7 @@ public class LoopTest {
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);
                         loop.invokeVirtual(append, ret, loop.cast(item, String.class));
                         // if(item.equals("bar")) break;
-                        loop.if_(loop.exprEquals(item, Const.of("bar")), isEqual -> {
+                        loop.if_(loop.objEquals(item, Const.of("bar")), isEqual -> {
                             isEqual.break_(loop);
                         });
                     });
@@ -89,7 +89,7 @@ public class LoopTest {
                 mc.body(bc -> {
                     var ret = bc.localVar("ret", bc.new_(StringBuilder.class));
                     bc.forEach(p, (loop, item) -> {
-                        loop.if_(loop.exprEquals(item, Const.of("bar")), isEqual -> {
+                        loop.if_(loop.objEquals(item, Const.of("bar")), isEqual -> {
                             isEqual.continue_(loop);
                         });
                         MethodDesc append = MethodDesc.of(StringBuilder.class, "append", StringBuilder.class, String.class);

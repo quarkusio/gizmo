@@ -66,7 +66,7 @@ public class EqualsHashCodeToStringGenerator {
                             b0.if_(b0.ne(thisBits, thatBits), BlockCreator::returnFalse);
                         }
                         // Object
-                        case 'L' -> b0.ifNot(b0.exprEquals(thisValue, thatValue), BlockCreator::returnFalse);
+                        case 'L' -> b0.ifNot(b0.objEquals(thisValue, thatValue), BlockCreator::returnFalse);
                         // array
                         case '[' -> b0.ifNot(b0.arrayEquals(thisValue, thatValue), BlockCreator::returnFalse);
                         default -> throw impossibleSwitchCase(field);
@@ -99,7 +99,7 @@ public class EqualsHashCodeToStringGenerator {
 
                     LocalVar value = b0.localVar("value", b0.get(cc.this_().field(field)));
                     LocalVar hash = b0.localVar("hash",
-                            field.type().isArray() ? b0.arrayHashCode(value) : b0.exprHashCode(value));
+                            field.type().isArray() ? b0.arrayHashCode(value) : b0.objHashCode(value));
                     b0.set(result, b0.add(b0.mul(Const.of(31), result), hash));
                 }
 
