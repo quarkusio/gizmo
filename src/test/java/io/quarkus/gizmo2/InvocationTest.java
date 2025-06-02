@@ -36,7 +36,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
 
@@ -71,7 +71,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
 
@@ -114,7 +114,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
         });
@@ -181,7 +181,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
 
@@ -220,7 +220,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
         });
@@ -264,7 +264,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
         });
@@ -343,7 +343,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
 
@@ -371,7 +371,7 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").objToString());
+                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
                 });
             });
 

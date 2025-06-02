@@ -1064,7 +1064,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         replaceLastItem(val.equals(Const.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
-    public Expr exprHashCode(final Expr expr) {
+    public Expr objHashCode(final Expr expr) {
         return switch (expr.typeKind()) {
             case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), expr);
             case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), expr);
@@ -1079,21 +1079,21 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         };
     }
 
-    public Expr exprEquals(final Expr a, final Expr b) {
+    public Expr objEquals(final Expr a, final Expr b) {
         return switch (a.typeKind()) {
             case REFERENCE -> switch (b.typeKind()) {
                 case REFERENCE ->
                     invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
-                default -> exprEquals(a, box(b));
+                default -> objEquals(a, box(b));
             };
             default -> switch (b.typeKind()) {
-                case REFERENCE -> exprEquals(box(a), b);
+                case REFERENCE -> objEquals(box(a), b);
                 default -> eq(a, b);
             };
         };
     }
 
-    public Expr exprToString(final Expr expr) {
+    public Expr objToString(final Expr expr) {
         return invokeStatic(MethodDesc.of(String.class, "valueOf", String.class, switch (expr.typeKind()) {
             case BOOLEAN -> boolean.class;
             case BYTE, SHORT, INT -> int.class;

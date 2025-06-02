@@ -50,7 +50,7 @@ public class AutoConversionTest {
                 mc.returning(String.class);
                 mc.body(bc -> {
                     bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).append("_").append(c)
-                            .append("_").append(d).objToString());
+                            .append("_").append(d).toString_());
                 });
             });
 
@@ -82,7 +82,7 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).objToString());
+                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
                 });
             });
 
@@ -113,7 +113,7 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).objToString());
+                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
                 });
             });
 
@@ -145,7 +145,7 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", Double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).objToString());
+                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
                 });
             });
 

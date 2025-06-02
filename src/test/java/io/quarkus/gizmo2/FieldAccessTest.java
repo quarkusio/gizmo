@@ -139,7 +139,7 @@ public class FieldAccessTest {
                 smc.public_();
                 smc.body(b0 -> {
                     Expr instance = b0.new_(ClassDesc.of(className));
-                    b0.return_(b0.exprEquals(instance.field(field1), Const.of("Hello world")));
+                    b0.return_(b0.objEquals(instance.field(field1), Const.of("Hello world")));
                 });
             });
         });
@@ -174,7 +174,7 @@ public class FieldAccessTest {
                 smc.public_();
                 smc.body(b0 -> {
                     Expr instance = b0.new_(ClassDesc.of(className));
-                    b0.return_(b0.exprEquals(instance.field(field1), Const.of("Hello world")));
+                    b0.return_(b0.objEquals(instance.field(field1), Const.of("Hello world")));
                 });
             });
         });
@@ -199,7 +199,7 @@ public class FieldAccessTest {
                 mc.returning(boolean.class);
                 mc.public_();
                 mc.body(bc -> {
-                    bc.return_(bc.exprEquals(fieldVar, Const.of("Hello world")));
+                    bc.return_(bc.objEquals(fieldVar, Const.of("Hello world")));
                 });
             });
         });

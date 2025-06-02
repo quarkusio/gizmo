@@ -152,38 +152,38 @@ public class ObjectOps {
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objGetClass() {
+    public Expr getClass_() {
         return invokeInstance(Class.class, "getClass");
     }
 
     /**
      * Generate a call to {@link Object#toString()}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprToString(Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objToString(Expr)}.
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objToString() {
+    public Expr toString_() {
         return invokeInstance(String.class, "toString");
     }
 
     /**
      * Generate a call to {@link Object#equals(Object)}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprEquals(Expr, Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objEquals(Expr, Expr)}.
      *
      * @param otherObj the object to compare (must not be {@code null})
      * @return the expression of the result (not {@code null})
      */
-    public Expr objEquals(Expr otherObj) {
+    public Expr equals_(Expr otherObj) {
         return invokeInstance(boolean.class, "equals", Object.class, otherObj);
     }
 
     /**
      * Generate a call to {@link Object#hashCode()}.
-     * For a {@code null}-safe variation, use {@link BlockCreator#exprHashCode(Expr)}.
+     * For a {@code null}-safe variation, use {@link BlockCreator#objHashCode(Expr)}.
      *
      * @return the expression of the result (not {@code null})
      */
-    public Expr objHashCode() {
+    public Expr hashCode_() {
         return invokeInstance(int.class, "hashCode");
     }
 }

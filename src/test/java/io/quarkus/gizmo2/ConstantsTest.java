@@ -58,7 +58,7 @@ public class ConstantsTest {
                 mc.body(bc -> {
                     Const c = bytecode.get();
                     bc.return_(bc.withNewStringBuilder().append(c).append('|')
-                            .append(c.type().descriptorString()).objToString());
+                            .append(c.type().descriptorString()).toString_());
                 });
             });
         });

@@ -49,7 +49,7 @@ public class StringBuilderOpsTest {
                     strBuilder.append(Const.ofNull(Object.class));
                     strBuilder.append("...");
                     strBuilder.append('!');
-                    bc.return_(strBuilder.objToString());
+                    bc.return_(strBuilder.toString_());
                 });
             });
         });
