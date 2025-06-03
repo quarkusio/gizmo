@@ -47,7 +47,6 @@ public sealed abstract class TypeVariable implements GenericTyped {
     }
 
     static TypeVariable of(final java.lang.reflect.TypeVariable<?> typeVar) {
-        GenericDeclaration decl = typeVar.getGenericDeclaration();
         List<GenericType.OfThrows> allBounds = Stream.of(typeVar.getAnnotatedBounds())
                 .map(GenericType::of)
                 .map(GenericType.OfThrows.class::cast)
@@ -70,6 +69,7 @@ public sealed abstract class TypeVariable implements GenericTyped {
         }
         TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl();
         AnnotatableCreator.from(typeVar).accept(tac);
+        GenericDeclaration decl = typeVar.getGenericDeclaration();
         if (decl instanceof Class<?> c) {
             return new OfType(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds, Util.classDesc(c));
         } else if (decl instanceof Method m) {
@@ -169,7 +169,8 @@ public sealed abstract class TypeVariable implements GenericTyped {
      * {@return the erased type of this type variable (not {@code null})}
      */
     public ClassDesc erasure() {
-        return firstBound.map(GenericType::desc).orElse(CD_Object);
+        return firstBound.map(GenericType::desc)
+                .orElseGet(() -> otherBounds.stream().map(GenericType::desc).findFirst().orElse(CD_Object));
     }
 
     @SuppressWarnings("unused") // called from Util reflectively
@@ -337,7 +338,7 @@ public sealed abstract class TypeVariable implements GenericTyped {
         }
 
         public boolean equals(final TypeVariable other) {
-            return other instanceof OfConstructor om && equals(om);
+            return other instanceof OfConstructor oc && equals(oc);
         }
 
         /**
