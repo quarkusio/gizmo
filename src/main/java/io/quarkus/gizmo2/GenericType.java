@@ -822,17 +822,17 @@ public abstract class GenericType {
             for (int i = 0; i < size; i++) {
                 path.addLast(TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, i));
                 TypeArgument arg = typeArguments.get(i);
-                if (arg instanceof TypeArgument.OfAnnotated ann) {
+                if (arg instanceof TypeArgument.OfWildcard wld) {
                     List<Annotation> argAnnotations = switch (retention) {
-                        case RUNTIME -> ann.visible();
-                        case CLASS -> ann.invisible();
+                        case RUNTIME -> wld.visible();
+                        case CLASS -> wld.invisible();
                         default -> throw Assert.impossibleSwitchCase(retention);
                     };
                     pathSnapshot = List.copyOf(path);
                     for (Annotation annotation : argAnnotations) {
                         list.add(TypeAnnotation.of(targetInfo, pathSnapshot, annotation));
                     }
-                    if (ann instanceof TypeArgument.OfBounded bnd) {
+                    if (wld instanceof TypeArgument.OfBounded bnd) {
                         // extends or super; add the inner annotations
                         path.addLast(TypeAnnotation.TypePathComponent.WILDCARD);
                         bnd.bound().computeAnnotations(retention, targetInfo, list, path);
@@ -840,7 +840,7 @@ public abstract class GenericType {
                     }
                 } else if (arg instanceof TypeArgument.OfExact exact) {
                     // exact
-                    exact.bound().computeAnnotations(retention, targetInfo, list, path);
+                    exact.type().computeAnnotations(retention, targetInfo, list, path);
                 } else {
                     throw Assert.unreachableCode();
                 }
