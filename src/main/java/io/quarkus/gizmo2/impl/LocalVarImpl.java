@@ -56,10 +56,12 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         if (slot == -1) {
             if (creationSite == null) {
                 throw new IllegalStateException("Local variable '" + name + "' was not allocated (check if it was"
-                        + " declared on the correct BlockCreator)" + Util.trackingMessage);
+                        + " declared on the correct BlockCreator or if it was captured if you're generating a lambda)"
+                        + Util.trackingMessage);
             } else {
                 throw new IllegalStateException("Local variable '" + name + "' created at " + creationSite
-                        + " was not allocated (check if it was declared on the correct BlockCreator)");
+                        + " was not allocated (check if it was declared on the correct BlockCreator or if it was"
+                        + " captured if you're generating a lambda)");
             }
         }
     }

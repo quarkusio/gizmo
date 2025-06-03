@@ -368,7 +368,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                         smc.body(b0 -> {
                             var decoder = b0.localVar("decoder", b0.invokeStatic(MethodDesc.of(
                                     Base64.class,
-                                    "getDecoder",
+                                    "getUrlDecoder",
                                     Base64.Decoder.class)));
                             var bytes = b0.localVar("bytes", b0.invokeVirtual(MethodDesc.of(
                                     Base64.Decoder.class,

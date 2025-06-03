@@ -579,7 +579,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             });
         });
         owner.buildLambdaBootstrap();
-        String encoded = Base64.getEncoder().encodeToString(bytes);
+        String encoded = Base64.getUrlEncoder().encodeToString(bytes);
         MethodTypeDesc ctorType = MethodTypeDesc.of(
                 samOwner,
                 captureExprs.stream().map(Expr::type).toArray(ClassDesc[]::new));
