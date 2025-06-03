@@ -866,7 +866,7 @@ public abstract class GenericType {
                 b.append('<');
                 iter.next().toString(b);
                 while (iter.hasNext()) {
-                    b.append(',');
+                    b.append(", ");
                     iter.next().toString(b);
                 }
                 b.append('>');

@@ -259,7 +259,7 @@ public final class GenericTypeTest {
                     ac.addAnnotation(Invisible.class);
                 }))).withAnnotation(Visible.class);
         assertEquals(
-                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String,@io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>,@io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible ?>",
+                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String, @io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>, @io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible ?>",
                 bigGenericType.toString());
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
