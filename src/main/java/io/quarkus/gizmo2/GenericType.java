@@ -343,7 +343,23 @@ public abstract class GenericType {
      * @param type the type variable (must not be {@code null})
      */
     public static OfTypeVariable of(java.lang.reflect.TypeVariable<?> type) {
-        return TypeVariable.of(type).genericType();
+        return ofTypeVariable(type.getName(), erase(type));
+    }
+
+    private static ClassDesc erase(Type type) {
+        if (type instanceof Class<?> c) {
+            return Util.classDesc(c);
+        } else if (type instanceof ParameterizedType pt) {
+            return Util.classDesc((Class<?>) pt.getRawType());
+        } else if (type instanceof java.lang.reflect.TypeVariable<?> tv) {
+            return tv.getBounds().length == 0 ? CD_Object : erase(tv.getBounds()[0]);
+        } else if (type instanceof WildcardType wt) {
+            return wt.getUpperBounds().length == 0 ? CD_Object : erase(wt.getUpperBounds()[0]);
+        } else if (type instanceof GenericArrayType gat) {
+            return erase(gat.getGenericComponentType()).arrayType();
+        } else {
+            throw new IllegalArgumentException("Unknown type: " + type);
+        }
     }
 
     /**
@@ -403,8 +419,8 @@ public abstract class GenericType {
      * @param type the type variable (must not be {@code null})
      */
     public static OfTypeVariable of(AnnotatedTypeVariable type) {
-        TypeVariable tv = TypeVariable.of((java.lang.reflect.TypeVariable<?>) type.getType());
-        return tv.genericType().withAnnotations(AnnotatableCreator.from(type));
+        java.lang.reflect.TypeVariable<?> typeVar = (java.lang.reflect.TypeVariable<?>) type.getType();
+        return ofTypeVariable(typeVar.getName(), erase(typeVar)).withAnnotations(AnnotatableCreator.from(type));
     }
 
     /**
