@@ -16,6 +16,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -319,7 +320,7 @@ public abstract class GenericType {
             return of(gat);
         } else if (type instanceof ParameterizedType pt) {
             return of(pt);
-        } else if (type instanceof java.lang.reflect.TypeVariable<?> tv) {
+        } else if (type instanceof TypeVariable<?> tv) {
             return of(tv);
         } else if (type instanceof WildcardType) {
             throw noWildcards();
@@ -342,7 +343,7 @@ public abstract class GenericType {
      *
      * @param type the type variable (must not be {@code null})
      */
-    public static OfTypeVariable of(java.lang.reflect.TypeVariable<?> type) {
+    public static OfTypeVariable of(TypeVariable<?> type) {
         return ofTypeVariable(type.getName(), erase(type));
     }
 
@@ -351,7 +352,7 @@ public abstract class GenericType {
             return Util.classDesc(c);
         } else if (type instanceof ParameterizedType pt) {
             return Util.classDesc((Class<?>) pt.getRawType());
-        } else if (type instanceof java.lang.reflect.TypeVariable<?> tv) {
+        } else if (type instanceof TypeVariable<?> tv) {
             return tv.getBounds().length == 0 ? CD_Object : erase(tv.getBounds()[0]);
         } else if (type instanceof WildcardType wt) {
             return wt.getUpperBounds().length == 0 ? CD_Object : erase(wt.getUpperBounds()[0]);
@@ -419,7 +420,7 @@ public abstract class GenericType {
      * @param type the type variable (must not be {@code null})
      */
     public static OfTypeVariable of(AnnotatedTypeVariable type) {
-        java.lang.reflect.TypeVariable<?> typeVar = (java.lang.reflect.TypeVariable<?>) type.getType();
+        TypeVariable<?> typeVar = (TypeVariable<?>) type.getType();
         return ofTypeVariable(typeVar.getName(), erase(typeVar)).withAnnotations(AnnotatableCreator.from(type));
     }
 

@@ -5,9 +5,8 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.TypeVariable;
 import io.quarkus.gizmo2.creator.MethodCreator;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl implements MethodCreator
@@ -51,9 +50,10 @@ public abstract sealed class MethodCreatorImpl extends ExecutableCreatorImpl imp
         return ElementType.METHOD;
     }
 
-    public TypeVariable.OfMethod typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
-        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+    @Override
+    public GenericType.OfTypeVariable typeParameter(final String name, final Consumer<TypeParameterCreator> builder) {
+        TypeParameterCreatorImpl creator = new TypeParameterCreatorImpl(name);
         builder.accept(creator);
-        return addTypeVariable(creator.forMethod(desc));
+        return addTypeParameter(creator.forMethod(desc)).genericType();
     }
 }

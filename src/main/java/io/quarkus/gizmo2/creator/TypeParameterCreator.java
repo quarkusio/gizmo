@@ -3,12 +3,12 @@ package io.quarkus.gizmo2.creator;
 import java.util.List;
 
 import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.impl.TypeVariableCreatorImpl;
+import io.quarkus.gizmo2.impl.TypeParameterCreatorImpl;
 
 /**
- * A creator for a type variable.
+ * A creator for a type parameter.
  */
-public sealed interface TypeVariableCreator extends AnnotatableCreator permits TypeVariableCreatorImpl {
+public sealed interface TypeParameterCreator extends AnnotatableCreator permits TypeParameterCreatorImpl {
     /**
      * {@return the name of the type variable being created (not {@code null})}
      */

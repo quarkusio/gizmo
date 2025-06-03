@@ -49,13 +49,13 @@ import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.TypeArgument;
-import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
@@ -103,7 +103,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private ClassDesc superType = ConstantDescs.CD_Object;
     private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
     private List<GenericType.OfClass> interfaceSigs = List.of();
-    private List<TypeVariable> typeVariables = List.of();
+    private List<TypeParameter> typeParameters = List.of();
     final ClassBuilder zb;
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
@@ -179,9 +179,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         GenericType.OfClass genericType = this.genericType;
         if (genericType == null) {
             genericType = GenericType.ofClass(type());
-            if (!typeVariables.isEmpty()) {
-                genericType = genericType.withArguments(typeVariables.stream()
-                        .map(TypeVariable::genericType)
+            if (!typeParameters.isEmpty()) {
+                genericType = genericType.withArguments(typeParameters.stream()
+                        .map(TypeParameter::genericType)
                         .map(TypeArgument::ofExact)
                         .map(TypeArgument.class::cast)
                         .toList());
@@ -193,7 +193,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     ClassSignature computeSignature() {
         return ClassSignature.of(
-                typeVariables.stream().map(Util::typeParamOf).toList(),
+                typeParameters.stream().map(Util::typeParamOf).toList(),
                 Util.signatureOf(superSig),
                 interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
     }
@@ -291,8 +291,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         addInvisible(zb);
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
-        for (int i = 0; i < typeVariables.size(); i++) {
-            final TypeVariable tv = typeVariables.get(i);
+        for (int i = 0; i < typeParameters.size(); i++) {
+            final TypeParameter tv = typeParameters.get(i);
             Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
                     visible, new ArrayDeque<>());
@@ -484,19 +484,19 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         return ElementType.TYPE;
     }
 
-    public TypeVariable typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
+    public GenericType.OfTypeVariable typeParameter(final String name, final Consumer<TypeParameterCreator> builder) {
         if (genericType != null) {
             throw new IllegalStateException("Type has already been established");
         }
-        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+        TypeParameterCreatorImpl creator = new TypeParameterCreatorImpl(name);
         builder.accept(creator);
-        TypeVariable.OfType var = creator.forType(type());
-        if (typeVariables instanceof ArrayList<TypeVariable> al) {
+        TypeParameter.OfType var = creator.forType(type());
+        if (typeParameters instanceof ArrayList<TypeParameter> al) {
             al.add(var);
         } else {
-            typeVariables = Util.listWith(typeVariables, var);
+            typeParameters = Util.listWith(typeParameters, var);
         }
-        return var;
+        return var.genericType();
     }
 
     void buildReadLineBoostrapHelper() {

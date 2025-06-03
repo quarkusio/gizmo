@@ -30,7 +30,7 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
-import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
@@ -69,7 +69,7 @@ public final class Util {
 
     private static final MethodHandle actualKind;
     private static final MethodHandle GenericType_computeAnnotations;
-    private static final MethodHandle TypeVariable_computeAnnotations;
+    private static final MethodHandle TypeParameter_computeAnnotations;
 
     static {
         try {
@@ -83,8 +83,8 @@ public final class Util {
                             TypeAnnotation.TargetInfo.class,
                             ArrayList.class,
                             ArrayDeque.class));
-            TypeVariable_computeAnnotations = genericTypeLookup.findVirtual(
-                    TypeVariable.class, "computeAnnotations", MethodType.methodType(
+            TypeParameter_computeAnnotations = genericTypeLookup.findVirtual(
+                    TypeParameter.class, "computeAnnotations", MethodType.methodType(
                             List.class,
                             RetentionPolicy.class,
                             TypeAnnotation.TargetInfo.class,
@@ -437,11 +437,11 @@ public final class Util {
         return Signature.TypeArg.unbounded();
     }
 
-    public static Signature.TypeParam typeParamOf(TypeVariable tv) {
+    public static Signature.TypeParam typeParamOf(TypeParameter tp) {
         return Signature.TypeParam.of(
-                tv.name(),
-                tv.firstBound().map(Util::signatureOf),
-                tv.otherBounds().stream().map(Util::signatureOf)
+                tp.name(),
+                tp.firstBound().map(Util::signatureOf),
+                tp.otherBounds().stream().map(Util::signatureOf)
                         .toArray(Signature.RefTypeSig[]::new));
     }
 
@@ -459,12 +459,12 @@ public final class Util {
         }
     }
 
-    public static List<TypeAnnotation> computeAnnotations(TypeVariable tv, RetentionPolicy retention,
+    public static List<TypeAnnotation> computeAnnotations(TypeParameter tp, RetentionPolicy retention,
             TypeAnnotation.TargetInfo targetInfo,
             ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
         try {
-            var ignored = (List<?>) TypeVariable_computeAnnotations.invokeExact(
-                    tv, retention, targetInfo, list, path);
+            var ignored = (List<?>) TypeParameter_computeAnnotations.invokeExact(
+                    tp, retention, targetInfo, list, path);
             return list;
         } catch (RuntimeException | Error e) {
             throw e;

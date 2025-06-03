@@ -32,7 +32,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttrib
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
-import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
@@ -50,7 +50,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     final BitSet locals = new BitSet();
     final TypeCreatorImpl typeCreator;
 
-    private List<TypeVariable> typeVariables = List.of();
+    private List<TypeParameter> typeParameters = List.of();
 
     GenericType genericReturnType;
     boolean typeEstablished;
@@ -205,8 +205,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         Util.computeAnnotations(genericReturnType(), RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReturn(),
                 invisible, new ArrayDeque<>());
         // todo: `this` type annotations and generic type
-        for (int i = 0; i < typeVariables.size(); i++) {
-            final TypeVariable tv = typeVariables.get(i);
+        for (int i = 0; i < typeParameters.size(); i++) {
+            final TypeParameter tv = typeParameters.get(i);
             Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER, i),
                     visible, new ArrayDeque<>());
@@ -229,7 +229,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     MethodSignature computeSignature() {
         return MethodSignature.of(
-                typeVariables.stream().map(Util::typeParamOf).toList(),
+                typeParameters.stream().map(Util::typeParamOf).toList(),
                 throws_.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
                 Util.signatureOf(genericReturnType()),
                 params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
@@ -396,11 +396,11 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         return typeCreator.type();
     }
 
-    <T extends TypeVariable> T addTypeVariable(T var) {
-        if (typeVariables instanceof ArrayList<TypeVariable> al) {
+    <T extends TypeParameter> T addTypeParameter(T var) {
+        if (typeParameters instanceof ArrayList<TypeParameter> al) {
             al.add(var);
         } else {
-            typeVariables = Util.listWith(typeVariables, var);
+            typeParameters = Util.listWith(typeParameters, var);
         }
         return var;
     }

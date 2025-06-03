@@ -420,13 +420,13 @@ public final class GenericTypeTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestRecursiveType", zc -> {
-            zc.typeParameter("S", tvc -> {
-                tvc.setFirstBound(
+            GenericType.OfTypeVariable S = zc.typeParameter("S", tpc -> {
+                // `T` doesn't exist yet, so have to specify it in full
+                tpc.setFirstBound(
                         GenericType.ofClass(List.class, TypeArgument.ofExact(GenericType.ofTypeVariable("T", CD_List))));
             });
             zc.typeParameter("T", tvc -> {
-                tvc.setFirstBound(
-                        GenericType.ofClass(List.class, TypeArgument.ofExact(GenericType.ofTypeVariable("S", CD_List))));
+                tvc.setFirstBound(GenericType.ofClass(List.class, TypeArgument.ofExact(S)));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();

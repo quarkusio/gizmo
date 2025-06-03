@@ -20,7 +20,7 @@ import io.quarkus.gizmo2.impl.AnnotatableCreatorImpl;
  * An element that can be annotated.
  */
 public sealed interface AnnotatableCreator
-        permits ModifiableCreator, TypeVariableCreator, AnnotatableCreatorImpl {
+        permits ModifiableCreator, TypeParameterCreator, AnnotatableCreatorImpl {
     /**
      * Copy all of the annotations from the given annotated element.
      *
