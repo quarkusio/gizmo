@@ -4,25 +4,17 @@ import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Method;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
-import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.impl.TypeAnnotatableCreatorImpl;
-import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
 
 /**
@@ -47,43 +39,6 @@ public sealed abstract class TypeParameter implements GenericTyped {
         this.otherBounds = List.copyOf(otherBounds);
         this.visible = visible;
         this.invisible = invisible;
-    }
-
-    static TypeParameter of(final TypeVariable<?> typeVar) {
-        List<GenericType.OfThrows> allBounds = Stream.of(typeVar.getAnnotatedBounds())
-                .map(GenericType::of)
-                .map(GenericType.OfThrows.class::cast)
-                .toList();
-        Optional<GenericType.OfThrows> firstBound;
-        List<GenericType.OfThrows> otherBounds;
-        // make a best-effort guess to populate this stuff as correctly as possible
-        if (allBounds.isEmpty() || allBounds.size() == 1 && allBounds.get(0).equals(GenericType.ofClass(Object.class))) {
-            firstBound = Optional.empty();
-            otherBounds = List.of();
-        } else if (typeVar.getBounds()[0] instanceof Class<?> c && !c.isInterface()) {
-            firstBound = Optional.of(allBounds.get(0));
-            otherBounds = allBounds.subList(1, allBounds.size());
-        } else if (allBounds.size() == 1 && allBounds.get(0) instanceof GenericType.OfTypeVariable) {
-            firstBound = Optional.of(allBounds.get(0));
-            otherBounds = List.of();
-        } else {
-            firstBound = Optional.empty();
-            otherBounds = allBounds;
-        }
-        TypeAnnotatableCreatorImpl tac = new TypeAnnotatableCreatorImpl();
-        AnnotatableCreator.from(typeVar).accept(tac);
-        GenericDeclaration decl = typeVar.getGenericDeclaration();
-        if (decl instanceof Class<?> c) {
-            return new OfType(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds, Util.classDesc(c));
-        } else if (decl instanceof Method m) {
-            return new OfMethod(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds, MethodDesc.of(m));
-        } else if (decl instanceof Constructor<?> c) {
-            return new OfConstructor(tac.visible(), List.of(), typeVar.getName(), firstBound, otherBounds,
-                    ConstructorDesc.of(c));
-        } else {
-            // should be impossible, actually
-            throw new IllegalStateException("Unexpected declaration " + decl);
-        }
     }
 
     /**

@@ -6,13 +6,8 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
-import java.lang.reflect.AnnotatedElement;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import io.quarkus.gizmo2.impl.AnnotatableCreatorImpl;
 
@@ -21,18 +16,6 @@ import io.quarkus.gizmo2.impl.AnnotatableCreatorImpl;
  */
 public sealed interface AnnotatableCreator
         permits ModifiableCreator, TypeParameterCreator, AnnotatableCreatorImpl {
-    /**
-     * Copy all of the annotations from the given annotated element.
-     *
-     * @param element the annotated element (must not be {@code null})
-     * @return a consumer which copies the annotations (not {@code null})
-     */
-    static Consumer<AnnotatableCreator> from(AnnotatedElement element) {
-        return ac -> Stream.of(element.getAnnotations())
-                .filter(a -> Set.of(Objects.requireNonNull(a.annotationType().getAnnotation(Target.class)).value())
-                        .contains(((AnnotatableCreatorImpl) ac).annotationTargetType()))
-                .forEach(ac::addAnnotation);
-    }
 
     /**
      * Add the given annotation object to this creator.

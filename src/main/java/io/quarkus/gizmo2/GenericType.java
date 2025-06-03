@@ -7,17 +7,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.invoke.ConstantBootstraps;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import java.lang.reflect.AnnotatedArrayType;
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.AnnotatedTypeVariable;
-import java.lang.reflect.AnnotatedWildcardType;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -305,123 +295,6 @@ public abstract class GenericType {
                 Assert.checkNotNullParam("outerClass", outerClass),
                 Assert.checkNotNullParam("name", name),
                 List.of());
-    }
-
-    /**
-     * {@return the given reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     * @throws IllegalArgumentException if the given type is a wildcard type or is not recognized
-     */
-    public static GenericType of(Type type) {
-        if (type instanceof Class<?> c) {
-            return of(c);
-        } else if (type instanceof GenericArrayType gat) {
-            return of(gat);
-        } else if (type instanceof ParameterizedType pt) {
-            return of(pt);
-        } else if (type instanceof TypeVariable<?> tv) {
-            return of(tv);
-        } else if (type instanceof WildcardType) {
-            throw noWildcards();
-        } else {
-            throw new IllegalArgumentException("Invalid type " + type.getClass());
-        }
-    }
-
-    /**
-     * {@return the given array reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     */
-    public static OfArray of(GenericArrayType type) {
-        return of(type.getGenericComponentType()).arrayType();
-    }
-
-    /**
-     * {@return the given type variable reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type variable (must not be {@code null})
-     */
-    public static OfTypeVariable of(TypeVariable<?> type) {
-        return ofTypeVariable(type.getName(), erase(type));
-    }
-
-    private static ClassDesc erase(Type type) {
-        if (type instanceof Class<?> c) {
-            return Util.classDesc(c);
-        } else if (type instanceof ParameterizedType pt) {
-            return Util.classDesc((Class<?>) pt.getRawType());
-        } else if (type instanceof TypeVariable<?> tv) {
-            return tv.getBounds().length == 0 ? CD_Object : erase(tv.getBounds()[0]);
-        } else if (type instanceof WildcardType wt) {
-            return wt.getUpperBounds().length == 0 ? CD_Object : erase(wt.getUpperBounds()[0]);
-        } else if (type instanceof GenericArrayType gat) {
-            return erase(gat.getGenericComponentType()).arrayType();
-        } else {
-            throw new IllegalArgumentException("Unknown type: " + type);
-        }
-    }
-
-    /**
-     * {@return the given parameterized reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     */
-    public static OfClass of(ParameterizedType type) {
-        return ((OfClass) of(type.getRawType())).withArguments(
-                Stream.of(type.getActualTypeArguments()).map(TypeArgument::of).toList());
-    }
-
-    /**
-     * {@return the given annotated reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     * @throws IllegalArgumentException if the given type is a wildcard type or is not recognized
-     */
-    public static GenericType of(AnnotatedType type) {
-        if (type instanceof AnnotatedArrayType aat) {
-            return of(aat);
-        } else if (type instanceof AnnotatedParameterizedType apt) {
-            return of(apt);
-        } else if (type instanceof AnnotatedTypeVariable atv) {
-            return of(atv);
-        } else if (type instanceof AnnotatedWildcardType) {
-            throw noWildcards();
-        } else {
-            // annotated plain type
-            return of(type.getType()).withAnnotations(AnnotatableCreator.from(type));
-        }
-    }
-
-    /**
-     * {@return the given annotated array reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     */
-    public static OfArray of(AnnotatedArrayType type) {
-        return of(type.getAnnotatedGenericComponentType()).arrayType().withAnnotations(AnnotatableCreator.from(type));
-    }
-
-    /**
-     * {@return the given annotated parameterized type as a generic type (not {@code null})}
-     *
-     * @param type the type (must not be {@code null})
-     */
-    public static GenericType of(AnnotatedParameterizedType type) {
-        List<TypeArgument> typeArgs = Stream.of(type.getAnnotatedActualTypeArguments()).map(TypeArgument::of).toList();
-        ParameterizedType pt = (ParameterizedType) type.getType();
-        return of((Class<?>) pt.getRawType(), typeArgs).withAnnotations(AnnotatableCreator.from(type));
-    }
-
-    /**
-     * {@return the given type variable annotated reflection type as a generic type (not {@code null})}
-     *
-     * @param type the type variable (must not be {@code null})
-     */
-    public static OfTypeVariable of(AnnotatedTypeVariable type) {
-        TypeVariable<?> typeVar = (TypeVariable<?>) type.getType();
-        return ofTypeVariable(typeVar.getName(), erase(typeVar)).withAnnotations(AnnotatableCreator.from(type));
     }
 
     /**
@@ -1187,9 +1060,5 @@ public abstract class GenericType {
         public ClassDesc desc() {
             return type;
         }
-    }
-
-    private static IllegalArgumentException noWildcards() {
-        return new IllegalArgumentException("Wildcard types cannot be used here (see `TypeArgument.of(AnnotatedType)`)");
     }
 }

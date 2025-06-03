@@ -1,9 +1,6 @@
 package io.quarkus.gizmo2;
 
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.AnnotatedWildcardType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
+import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -26,66 +23,27 @@ public abstract sealed class TypeArgument {
     }
 
     /**
-     * {@return a type argument for the given generic reflection type}
+     * {@return a type argument representing exactly the given type}
      *
      * @param type the argument type (must not be {@code null})
      */
-    public static TypeArgument of(final Type type) {
-        if (type instanceof WildcardType wt) {
-            return of(wt);
+    public static TypeArgument.OfExact of(Class<?> type) {
+        if (type.isPrimitive()) {
+            throw new IllegalArgumentException("Primitive types cannot be type arguments");
         }
         return ofExact((GenericType.OfReference) GenericType.of(type));
     }
 
     /**
-     * {@return a type argument for the given annotated generic reflection type}
-     * If the type is an annotated wildcard type, then the type argument will be a wildcard type
-     * with any annotations attached to the given type.
-     * Otherwise, the result will be an exact type argument whose {@linkplain OfExact#type() type}
-     * will have any annotations attached to the given type.
+     * {@return a type argument representing exactly the given type}
      *
      * @param type the argument type (must not be {@code null})
      */
-    public static TypeArgument of(final AnnotatedType type) {
-        if (type instanceof AnnotatedWildcardType wt) {
-            return of(wt);
+    public static TypeArgument.OfExact of(ClassDesc type) {
+        if (type.isPrimitive()) {
+            throw new IllegalArgumentException("Primitive types cannot be type arguments");
         }
         return ofExact((GenericType.OfReference) GenericType.of(type));
-    }
-
-    /**
-     * {@return a type argument for the given reflection wildcard type}
-     *
-     * @param type the argument type (must not be {@code null})
-     */
-    public static OfWildcard of(final WildcardType type) {
-        List<Type> ub = List.of(type.getUpperBounds());
-        List<Type> lb = List.of(type.getLowerBounds());
-        if (!lb.isEmpty()) {
-            return ofSuper((GenericType.OfReference) GenericType.of(lb.get(0)));
-        } else if (ub.isEmpty() || ub.size() == 1 && ub.get(0).equals(Object.class)) {
-            return ofUnbounded();
-        } else {
-            return ofExtends((GenericType.OfReference) GenericType.of(ub.get(0)));
-        }
-    }
-
-    /**
-     * {@return a type argument for the given annotated reflection wildcard type}
-     *
-     * @param type the argument type (must not be {@code null})
-     */
-    public static OfWildcard of(final AnnotatedWildcardType type) {
-        List<AnnotatedType> aub = List.of(type.getAnnotatedUpperBounds());
-        List<AnnotatedType> alb = List.of(type.getAnnotatedLowerBounds());
-        if (!alb.isEmpty()) {
-            return ofSuper((GenericType.OfReference) GenericType.of(alb.get(0))).withAnnotations(AnnotatableCreator.from(type));
-        }
-        if (aub.isEmpty() || aub.size() == 1 && aub.get(0).getType().equals(Object.class)
-                && aub.get(0).getAnnotations().length == 0) {
-            return ofUnbounded().withAnnotations(AnnotatableCreator.from(type));
-        }
-        return ofExtends((GenericType.OfReference) GenericType.of(aub.get(0))).withAnnotations(AnnotatableCreator.from(type));
     }
 
     /**
