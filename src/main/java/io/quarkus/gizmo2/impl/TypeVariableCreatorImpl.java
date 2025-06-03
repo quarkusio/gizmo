@@ -35,16 +35,25 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         return name;
     }
 
-    public void setFirstBound(final GenericType.OfReference bound) {
+    @Override
+    public void setFirstBound(final GenericType.OfClass bound) {
         firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
-    public void setOtherBounds(final List<GenericType.OfReference> bounds) {
-        this.otherBounds = List.copyOf(bounds);
+    @Override
+    public void setFirstBound(final GenericType.OfTypeVariable bound) {
+        if (!otherBounds.isEmpty()) {
+            throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
+        }
+        firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
-    public List<GenericType.OfReference> bounds() {
-        return otherBounds;
+    @Override
+    public void setOtherBounds(final List<GenericType.OfClass> bounds) {
+        if (firstBound instanceof GenericType.OfTypeVariable) {
+            throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
+        }
+        otherBounds = List.copyOf(bounds);
     }
 
     public ElementType annotationTargetType() {

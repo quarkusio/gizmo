@@ -16,15 +16,44 @@ public sealed interface TypeVariableCreator extends AnnotatableCreator permits T
 
     /**
      * Establish the (optional) first bound for the type variable.
+     * The first bound is a class type.
      *
      * @param bound the first bound (must not be {@code null})
      */
-    void setFirstBound(GenericType.OfReference bound);
+    void setFirstBound(GenericType.OfClass bound);
+
+    /**
+     * Establish the (optional) first bound for the type variable.
+     * The first bound is a type variable.
+     * In this case, no other bounds may be present.
+     *
+     * @param bound the first bound (must not be {@code null})
+     */
+    void setFirstBound(GenericType.OfTypeVariable bound);
 
     /**
      * Establish the other (secondary) bounds for the type variable.
+     * The other bounds must all be interface types.
+     * If the first bound is a type variable, there may be no other bounds.
+     * <p>
+     * It is possible to set the other bounds <em>without</em> setting the first bound.
+     * In this case, all bounds are interface types.
      *
      * @param bounds the secondary bounds (must not be {@code null})
      */
-    void setOtherBounds(List<GenericType.OfReference> bounds);
+    void setOtherBounds(List<GenericType.OfClass> bounds);
+
+    /**
+     * Establish the other (secondary) bounds for the type variable.
+     * The other bounds must all be interface types.
+     * If the first bound is a type variable, there may be no other bounds.
+     * <p>
+     * It is possible to set the other bounds <em>without</em> setting the first bound.
+     * In this case, all bounds are interface types.
+     *
+     * @param bounds the secondary bounds (must not be {@code null})
+     */
+    default void setOtherBounds(GenericType.OfClass... bounds) {
+        setOtherBounds(List.of(bounds));
+    }
 }
