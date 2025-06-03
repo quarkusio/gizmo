@@ -66,9 +66,10 @@ public abstract class GenericType {
      * @param type the type (must not be {@code null})
      */
     public static GenericType of(Class<?> type) {
-        if (type.isMemberClass()) {
-            Class<?> enclosingClass = type.getEnclosingClass();
-            if (Modifier.isStatic(type.getModifiers()) || type.isInterface() || type.isEnum() || type.isRecord()) {
+        Class<?> enclosingClass = type.getEnclosingClass();
+        if (enclosingClass != null) {
+            if (Modifier.isStatic(type.getModifiers())) {
+                // "root" class (nested interfaces, annotations, enums or records are always `static`)
                 return of(Util.classDesc(type));
             } else {
                 return ofInnerClass(ofClass(enclosingClass), type.getSimpleName());
@@ -124,7 +125,7 @@ public abstract class GenericType {
      */
     public static OfClass ofClass(ClassDesc desc) {
         if (!desc.isClassOrInterface()) {
-            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(desc));
+            throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(desc.displayName()));
         }
         return (OfClass) of(desc);
     }
@@ -143,12 +144,34 @@ public abstract class GenericType {
     /**
      * {@return a generic type for the given class or interface type}
      *
+     * @param type the class object for the class or interface (must not be {@code null})
+     * @param typeArguments the type arguments for the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static OfClass ofClass(Class<?> type, TypeArgument... typeArguments) {
+        return ofClass(type, List.of(typeArguments));
+    }
+
+    /**
+     * {@return a generic type for the given class or interface type}
+     *
      * @param desc the descriptor for the class or interface (must not be {@code null})
      * @param typeArguments the type arguments for the type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
     public static OfClass ofClass(ClassDesc desc, List<TypeArgument> typeArguments) {
         return ofClass(desc).withArguments(typeArguments);
+    }
+
+    /**
+     * {@return a generic type for the given class or interface type}
+     *
+     * @param desc the descriptor for the class or interface (must not be {@code null})
+     * @param typeArguments the type arguments for the type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type class object does not represent a class or interface
+     */
+    public static OfClass ofClass(ClassDesc desc, TypeArgument... typeArguments) {
+        return ofClass(desc, List.of(typeArguments));
     }
 
     /**
@@ -165,12 +188,38 @@ public abstract class GenericType {
     }
 
     /**
+     * {@return a generic type for the given array type}
+     *
+     * @param type the array type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type does not represent an array type
+     */
+    public static OfArray ofArray(ClassDesc type) {
+        if (!type.isArray()) {
+            throw new IllegalArgumentException("Type %s does not represent an array type".formatted(type));
+        }
+        return (OfArray) of(type);
+    }
+
+    /**
      * {@return a generic type for the given primitive class}
      *
      * @param type the class object for the primitive type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a primitive type
      */
     public static OfPrimitive ofPrimitive(Class<?> type) {
+        if (!type.isPrimitive()) {
+            throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
+        }
+        return (OfPrimitive) of(type);
+    }
+
+    /**
+     * {@return a generic type for the given primitive type}
+     *
+     * @param type the primitive type (must not be {@code null})
+     * @throws IllegalArgumentException if the given type does not represent a primitive type
+     */
+    public static OfPrimitive ofPrimitive(ClassDesc type) {
         if (!type.isPrimitive()) {
             throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
         }
@@ -205,11 +254,21 @@ public abstract class GenericType {
         GenericType genericType = of(desc);
         if (typeArguments.isEmpty()) {
             return genericType;
-        } else if (genericType instanceof OfRootClass oc) {
+        } else if (genericType instanceof OfClass oc) {
             return oc.withArguments(typeArguments);
         } else {
-            throw new IllegalArgumentException("Type %s cannot have type arguments".formatted(desc));
+            throw new IllegalArgumentException("Type %s cannot have type arguments".formatted(desc.displayName()));
         }
+    }
+
+    /**
+     * {@return the generic type of a type variable (not {@code null})}
+     *
+     * @param name the type variable name (must not be {@code null})
+     * @param bound the type variable's erased bound (must not be {@code null})
+     */
+    public static OfTypeVariable ofTypeVariable(String name, Class<?> bound) {
+        return ofTypeVariable(name, Util.classDesc(bound));
     }
 
     /**
