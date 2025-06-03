@@ -41,6 +41,14 @@ import io.smallrye.common.constraint.Assert;
  * <p>
  * This class models types for the purpose of code generation, and is not generally suitable
  * for usage in any kind of type-checking system.
+ * <p>
+ * Generic types are {@linkplain OfPrimitive primitive types} (including {@code void})
+ * and {@linkplain OfReference reference types}. Reference types are {@linkplain OfArray array types}
+ * and {@linkplain OfThrows throwable types}. Throwable types are {@linkplain OfClass class types}
+ * (including {@linkplain OfRootClass "root" classes} and {@linkplain OfInnerClass inner classes})
+ * and {@linkplain OfTypeVariable type variables}. Note that in this model, class types represent
+ * all of non-generic class types, parameterized types (generic class types with type arguments)
+ * and raw types (generic class types without type arguments).
  */
 public abstract class GenericType {
     final List<Annotation> visible;
@@ -83,7 +91,7 @@ public abstract class GenericType {
         int taSize = typeArguments.size();
         if (tpCount != taSize && taSize != 0) {
             throw new IllegalArgumentException("Invalid number of type arguments (expected %d but got %d)"
-                    .formatted(Integer.valueOf(tpCount), Integer.valueOf(taSize)));
+                    .formatted(tpCount, taSize));
         }
         GenericType base = of(type);
         if (base instanceof OfClass oc) {
@@ -92,8 +100,7 @@ public abstract class GenericType {
         if (typeArguments.isEmpty()) {
             return base;
         }
-        throw new IllegalArgumentException("Invalid number of type arguments (expected 0 but got %d)"
-                .formatted(Integer.valueOf(taSize)));
+        throw new IllegalArgumentException("Invalid number of type arguments (expected 0 but got %d)".formatted(taSize));
     }
 
     /**
@@ -102,7 +109,7 @@ public abstract class GenericType {
      * @param type the class object for the class or interface (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
-    public static GenericType.OfClass ofClass(Class<?> type) {
+    public static OfClass ofClass(Class<?> type) {
         if (type.isPrimitive() || type.isArray()) {
             throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(type));
         }
@@ -115,7 +122,7 @@ public abstract class GenericType {
      * @param desc the descriptor for the class or interface (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
-    public static GenericType.OfClass ofClass(ClassDesc desc) {
+    public static OfClass ofClass(ClassDesc desc) {
         if (!desc.isClassOrInterface()) {
             throw new IllegalArgumentException("Type %s does not represent a class or interface".formatted(desc));
         }
@@ -129,7 +136,7 @@ public abstract class GenericType {
      * @param typeArguments the type arguments for the type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
-    public static GenericType.OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
+    public static OfClass ofClass(Class<?> type, List<TypeArgument> typeArguments) {
         return ofClass(type).withArguments(typeArguments);
     }
 
@@ -140,7 +147,7 @@ public abstract class GenericType {
      * @param typeArguments the type arguments for the type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a class or interface
      */
-    public static GenericType.OfClass ofClass(ClassDesc desc, List<TypeArgument> typeArguments) {
+    public static OfClass ofClass(ClassDesc desc, List<TypeArgument> typeArguments) {
         return ofClass(desc).withArguments(typeArguments);
     }
 
@@ -150,7 +157,7 @@ public abstract class GenericType {
      * @param type the class object for the array type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent an array type
      */
-    public static GenericType.OfArray ofArray(Class<?> type) {
+    public static OfArray ofArray(Class<?> type) {
         if (!type.isArray()) {
             throw new IllegalArgumentException("Type %s does not represent an array type".formatted(type));
         }
@@ -163,7 +170,7 @@ public abstract class GenericType {
      * @param type the class object for the primitive type (must not be {@code null})
      * @throws IllegalArgumentException if the given type class object does not represent a primitive type
      */
-    public static GenericType.OfPrimitive ofPrimitive(Class<?> type) {
+    public static OfPrimitive ofPrimitive(Class<?> type) {
         if (!type.isPrimitive()) {
             throw new IllegalArgumentException("Type %s does not represent a primitive type".formatted(type));
         }
@@ -209,14 +216,15 @@ public abstract class GenericType {
      * {@return the generic type of a type variable (not {@code null})}
      *
      * @param name the type variable name (must not be {@code null})
-     * @param type the type variable's erased type (must not be {@code null})
+     * @param bound the type variable's erased bound (must not be {@code null})
      */
-    public static OfTypeVariable ofTypeVariable(String name, ClassDesc type) {
-        return OfTypeVariable.getOrMake(name, type);
+    public static OfTypeVariable ofTypeVariable(String name, ClassDesc bound) {
+        return OfTypeVariable.getOrMake(name, bound);
     }
 
     /**
      * {@return the generic type of a type variable (not {@code null})}
+     * The bound of the type variable is assumed to be {@code java.lang.Object}.
      *
      * @param name the type variable name (must not be {@code null})
      */
@@ -225,7 +233,9 @@ public abstract class GenericType {
     }
 
     /**
-     * {@return a generic type representing an inner (non-static nested) class of another class (not {@code null})}
+     * {@return a generic type representing an inner class of another class (not {@code null})}
+     * Note that {@code static} member classes are <em>not</em> inner classes and are represented
+     * by {@link OfRootClass}.
      *
      * @param outerClass the enclosing class generic type (must not be {@code null})
      * @param name the inner class name (must not be {@code null})
@@ -375,13 +385,13 @@ public abstract class GenericType {
     }
 
     /**
-     * {@return {@code true} if this type has no arguments, or {@code false} if it has arguments}
+     * {@return {@code true} if this type has no type arguments, or {@code false} if it has type arguments}
      */
     public abstract boolean isRaw();
 
     /**
-     * {@return {@code true} if this type has annotations corresponding to the given retention policy, or {@code false} if it
-     * does not}
+     * {@return {@code true} if this type has type annotations with given retention policy,
+     * or {@code false} if it does not}
      *
      * @param retention the retention policy (must not be {@code null})
      */
@@ -394,28 +404,28 @@ public abstract class GenericType {
     }
 
     /**
-     * {@return {@code true} if this type has runtime-visible annotations, or {@code false} if it does not}
+     * {@return {@code true} if this type has runtime-visible type annotations, or {@code false} if it does not}
      */
     public boolean hasVisibleAnnotations() {
         return !visible.isEmpty();
     }
 
     /**
-     * {@return {@code true} if this type has runtime-invisible annotations, or {@code false} if it does not}
+     * {@return {@code true} if this type has runtime-invisible type annotations, or {@code false} if it does not}
      */
     public boolean hasInvisibleAnnotations() {
         return !invisible.isEmpty();
     }
 
     /**
-     * {@return {@code true} if this type has any annotations, or {@code false} if it does not}
+     * {@return {@code true} if this type has any type annotations, or {@code false} if it does not}
      */
     public final boolean hasAnnotations() {
         return hasVisibleAnnotations() || hasInvisibleAnnotations();
     }
 
     /**
-     * {@return the array type which can contain this type}
+     * {@return the array type whose component type is this type}
      */
     public OfArray arrayType() {
         OfArray arrayType = this.arrayType;
@@ -575,7 +585,7 @@ public abstract class GenericType {
     }
 
     /**
-     * A generic type corresponding to some reference type.
+     * A generic type corresponding to a reference type.
      */
     public static abstract class OfReference extends GenericType {
         TypeArgument.OfExact exactArg;
@@ -731,8 +741,9 @@ public abstract class GenericType {
     }
 
     /**
-     * A generic type of a class or interface.
-     * There is no separate type for non-{@code class} object types such as interfaces or annotations.
+     * A generic type of a class or interface (including specialized cases: enums, records, or annotations).
+     * Includes all of non-generic class types, parameterized types (generic class types with type arguments)
+     * and raw types (generic class types without type arguments).
      */
     public static abstract class OfClass extends OfThrows {
         final List<TypeArgument> typeArguments;
@@ -791,7 +802,7 @@ public abstract class GenericType {
                 return copy(visible, invisible, newArguments);
             } else {
                 throw new IllegalArgumentException("Invalid number of type arguments (expected %d but got %d)"
-                        .formatted(Integer.valueOf(naSize), Integer.valueOf(taSize)));
+                        .formatted(naSize, taSize));
             }
         }
 
@@ -866,6 +877,7 @@ public abstract class GenericType {
 
     /**
      * A generic type corresponding to a "root" (non-inner) class.
+     * "Root" classes are top-level classes and {@code static} member classes.
      */
     public static final class OfRootClass extends OfClass {
         private final ClassDesc desc;
@@ -929,6 +941,12 @@ public abstract class GenericType {
         }
     }
 
+    /**
+     * A generic type corresponding to an inner class.
+     * <p>
+     * Note that {@code static} member classes are <em>not</em> inner classes
+     * and are represented by {@link OfRootClass}.
+     */
     public static final class OfInnerClass extends OfClass {
         private final OfClass outerType;
         private final String name;
@@ -949,6 +967,9 @@ public abstract class GenericType {
             return desc;
         }
 
+        /**
+         * {@return the enclosing class of this inner class}
+         */
         public OfClass outerType() {
             return outerType;
         }
@@ -1020,6 +1041,9 @@ public abstract class GenericType {
         }
     }
 
+    /**
+     * A generic type corresponding to a primitive type, including {@code void}.
+     */
     public static final class OfPrimitive extends GenericType {
         private static final Map<ClassDesc, OfPrimitive> baseItems = Stream.of(
                 CD_boolean,
