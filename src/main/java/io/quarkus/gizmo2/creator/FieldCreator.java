@@ -114,4 +114,11 @@ public sealed interface FieldCreator extends MemberCreator, GenericTyped
      * @param init the builder for the initializer which yields the field initial value (must not be {@code null})
      */
     void setInitializer(Consumer<BlockCreator> init);
+
+    /**
+     * Add the {@code volatile} modifier flag to this creator.
+     */
+    default void volatile_() {
+        addFlag(ModifierFlag.VOLATILE);
+    }
 }
