@@ -1,8 +1,10 @@
 package io.quarkus.gizmo2;
 
+import static io.quarkus.gizmo2.Reflection2Gizmo.genericTypeOf;
 import static java.lang.constant.ConstantDescs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.Externalizable;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,6 +13,7 @@ import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
 import java.util.AbstractList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -254,12 +257,12 @@ public final class GenericTypeTest {
                         TypeArgument.ofSuper(GenericType.ofClass(String.class).withAnnotation(Invisible.class))
                                 .withAnnotation(Visible.class),
                         TypeArgument.ofExact(GenericType.ofClass(Integer.class).withAnnotation(Visible.class))))),
-                TypeArgument.ofWildcard().withAnnotations(ac -> {
+                TypeArgument.ofUnbounded().withAnnotations(ac -> {
                     ac.addAnnotation(Visible.class);
                     ac.addAnnotation(Invisible.class);
                 }))).withAnnotation(Visible.class);
         assertEquals(
-                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String,@io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>,@io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible *>",
+                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String, @io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>, @io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible ?>",
                 bigGenericType.toString());
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
@@ -418,15 +421,102 @@ public final class GenericTypeTest {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestRecursiveType", zc -> {
-            zc.typeParameter("S", tvc -> {
-                tvc.setFirstBound(GenericType.ofTypeVariable("T", CD_List));
+            GenericType.OfTypeVariable S = zc.typeParameter("S", tpc -> {
+                // `T` doesn't exist yet, so have to specify it in full
+                tpc.setFirstBound(
+                        GenericType.ofClass(List.class, TypeArgument.ofExact(GenericType.ofTypeVariable("T", CD_List))));
             });
             zc.typeParameter("T", tvc -> {
-                tvc.setFirstBound(GenericType.ofTypeVariable("S", CD_List));
+                tvc.setFirstBound(GenericType.ofClass(List.class, TypeArgument.ofExact(S)));
             });
         });
         ClassModel model = tcm.forClass(desc).getModel();
         SignatureAttribute sa = model.findAttribute(Attributes.signature()).orElseThrow();
-        assertEquals("<S:TT;T:TS;>Ljava/lang/Object;", sa.signature().stringValue());
+        assertEquals("<S:Ljava/util/List<TT;>;T:Ljava/util/List<TS;>;>Ljava/lang/Object;", sa.signature().stringValue());
+    }
+
+    interface TestMethods {
+        void nothing();
+
+        int primitive();
+
+        String clazz();
+
+        int[] arrayOfPrimitive();
+
+        String[][] arrayOfClass();
+
+        List<String> parameterized();
+
+        Map<String, List<String>>[] arrayOfParameterized();
+
+        <T> T typeVariable();
+
+        <T> T[] arrayOfTypeVariable();
+
+        <T> List<T> typeVariableAsTypeArgument();
+
+        <T extends Number> T typeVariableWithClassBound();
+
+        <T extends Number & Externalizable> T typeVariableWithClassAndInterfaceBounds();
+
+        <T extends CharSequence & Serializable> T typeVariableWithOnlyInterfaceBounds();
+
+        <T extends Number, U extends T> U typeVariableWithTypeVariableBound();
+
+        <T extends Comparable<T>> T recursiveTypeVariable();
+
+        <T extends List<U>, U extends List<T>> T mutuallyRecursiveTypeVariables();
+
+        List<?> parameterizedWithUnboundedWildcard();
+
+        List<? extends Number> parameterizedWithClassWildcard();
+
+        <T> List<? super T> parameterizedWithTypeVariableWildcard();
+    }
+
+    @Test
+    public void testConstruction() throws NoSuchMethodException {
+        Class<TestMethods> clazz = TestMethods.class;
+
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("nothing").getGenericReturnType()),
+                GenericType.of(void.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("primitive").getGenericReturnType()),
+                GenericType.of(int.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("clazz").getGenericReturnType()),
+                GenericType.of(String.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("arrayOfPrimitive").getGenericReturnType()),
+                GenericType.of(int.class).arrayType());
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("arrayOfClass").getGenericReturnType()),
+                GenericType.of(String.class).arrayType().arrayType());
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("parameterized").getGenericReturnType()),
+                GenericType.ofClass(List.class, TypeArgument.of(String.class)));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("arrayOfParameterized").getGenericReturnType()),
+                GenericType.ofClass(Map.class, TypeArgument.of(String.class),
+                        TypeArgument.ofExact(GenericType.ofClass(List.class, TypeArgument.of(String.class)))).arrayType());
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariable").getGenericReturnType()),
+                GenericType.ofTypeVariable("T"));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("arrayOfTypeVariable").getGenericReturnType()),
+                GenericType.ofTypeVariable("T").arrayType());
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariableAsTypeArgument").getGenericReturnType()),
+                GenericType.ofClass(List.class, TypeArgument.ofExact(GenericType.ofTypeVariable("T"))));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariableWithClassBound").getGenericReturnType()),
+                GenericType.ofTypeVariable("T", Number.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariableWithClassAndInterfaceBounds").getGenericReturnType()),
+                GenericType.ofTypeVariable("T", Number.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariableWithOnlyInterfaceBounds").getGenericReturnType()),
+                GenericType.ofTypeVariable("T", CharSequence.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("typeVariableWithTypeVariableBound").getGenericReturnType()),
+                GenericType.ofTypeVariable("U", Number.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("recursiveTypeVariable").getGenericReturnType()),
+                GenericType.ofTypeVariable("T", Comparable.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("mutuallyRecursiveTypeVariables").getGenericReturnType()),
+                GenericType.ofTypeVariable("T", List.class));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("parameterizedWithUnboundedWildcard").getGenericReturnType()),
+                GenericType.ofClass(List.class, TypeArgument.ofUnbounded()));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("parameterizedWithClassWildcard").getGenericReturnType()),
+                GenericType.ofClass(List.class, TypeArgument.ofExtends(GenericType.ofClass(Number.class))));
+        assertEquals(genericTypeOf(clazz.getDeclaredMethod("parameterizedWithTypeVariableWildcard").getGenericReturnType()),
+                GenericType.ofClass(List.class, TypeArgument.ofSuper(GenericType.ofTypeVariable("T"))));
     }
 }

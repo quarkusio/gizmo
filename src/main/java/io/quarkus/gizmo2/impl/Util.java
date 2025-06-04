@@ -30,7 +30,7 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
-import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
@@ -69,7 +69,7 @@ public final class Util {
 
     private static final MethodHandle actualKind;
     private static final MethodHandle GenericType_computeAnnotations;
-    private static final MethodHandle TypeVariable_computeAnnotations;
+    private static final MethodHandle TypeParameter_computeAnnotations;
 
     static {
         try {
@@ -83,8 +83,8 @@ public final class Util {
                             TypeAnnotation.TargetInfo.class,
                             ArrayList.class,
                             ArrayDeque.class));
-            TypeVariable_computeAnnotations = genericTypeLookup.findVirtual(
-                    TypeVariable.class, "computeAnnotations", MethodType.methodType(
+            TypeParameter_computeAnnotations = genericTypeLookup.findVirtual(
+                    TypeParameter.class, "computeAnnotations", MethodType.methodType(
                             List.class,
                             RetentionPolicy.class,
                             TypeAnnotation.TargetInfo.class,
@@ -357,6 +357,10 @@ public final class Util {
         }
     }
 
+    public static Signature.ArrayTypeSig signatureOf(GenericType.OfArray type) {
+        return Signature.ArrayTypeSig.of(1, signatureOf(type.componentType()));
+    }
+
     public static Signature.RefTypeSig signatureOf(GenericType.OfThrows type) {
         if (type instanceof GenericType.OfClass oc) {
             return signatureOf(oc);
@@ -367,26 +371,22 @@ public final class Util {
         }
     }
 
-    public static Signature.ArrayTypeSig signatureOf(GenericType.OfArray type) {
-        return Signature.ArrayTypeSig.of(1, signatureOf(type.componentType()));
-    }
-
     public static Signature.ClassTypeSig signatureOf(GenericType.OfClass type) {
-        if (type instanceof GenericType.OfInnerClass ic) {
-            return signatureOf(ic);
-        } else if (type instanceof GenericType.OfRootClass oc) {
+        if (type instanceof GenericType.OfRootClass oc) {
             return signatureOf(oc);
+        } else if (type instanceof GenericType.OfInnerClass ic) {
+            return signatureOf(ic);
         } else {
             throw invalidType(type);
         }
     }
 
-    public static Signature.ClassTypeSig signatureOf(GenericType.OfInnerClass type) {
-        return Signature.ClassTypeSig.of(signatureOf(type.outerType()), type.name(), typeArgsOf(type.typeArguments()));
-    }
-
     public static Signature.ClassTypeSig signatureOf(GenericType.OfRootClass type) {
         return Signature.ClassTypeSig.of(type.desc(), typeArgsOf(type.typeArguments()));
+    }
+
+    public static Signature.ClassTypeSig signatureOf(GenericType.OfInnerClass type) {
+        return Signature.ClassTypeSig.of(signatureOf(type.outerType()), type.name(), typeArgsOf(type.typeArguments()));
     }
 
     public static Signature.TypeVarSig signatureOf(GenericType.OfTypeVariable type) {
@@ -400,36 +400,28 @@ public final class Util {
     }
 
     public static Signature.TypeArg typeArgOf(TypeArgument arg) {
-        if (arg instanceof TypeArgument.OfAnnotated oa) {
-            return typeArgOf(oa);
-        } else if (arg instanceof TypeArgument.OfExact ex) {
+        if (arg instanceof TypeArgument.OfExact ex) {
             return typeArgOf(ex);
+        } else if (arg instanceof TypeArgument.OfWildcard wld) {
+            return typeArgOf(wld);
         } else {
             throw invalidType(arg);
         }
     }
 
-    public static Signature.TypeArg typeArgOf(TypeArgument.OfAnnotated arg) {
+    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfExact arg) {
+        return Signature.TypeArg.of(signatureOf(arg.type()));
+    }
+
+    public static Signature.TypeArg typeArgOf(TypeArgument.OfWildcard arg) {
         if (arg instanceof TypeArgument.OfExtends oe) {
             return typeArgOf(oe);
         } else if (arg instanceof TypeArgument.OfSuper os) {
             return typeArgOf(os);
-        } else if (arg instanceof TypeArgument.Wildcard wc) {
+        } else if (arg instanceof TypeArgument.OfUnbounded wc) {
             return typeArgOf(wc);
         } else {
             throw invalidType(arg);
-        }
-    }
-
-    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfBounded arg) {
-        if (arg instanceof TypeArgument.OfExtends oe) {
-            return typeArgOf(oe);
-        } else if (arg instanceof TypeArgument.OfSuper os) {
-            return typeArgOf(os);
-        } else if (arg instanceof TypeArgument.OfExact ex) {
-            return typeArgOf(ex);
-        } else {
-            throw new IllegalArgumentException(arg.getClass().toString());
         }
     }
 
@@ -441,19 +433,15 @@ public final class Util {
         return Signature.TypeArg.superOf(signatureOf(arg.bound()));
     }
 
-    public static Signature.TypeArg.Bounded typeArgOf(TypeArgument.OfExact arg) {
-        return Signature.TypeArg.of(signatureOf(arg.bound()));
-    }
-
-    public static Signature.TypeArg.Unbounded typeArgOf(TypeArgument.Wildcard arg) {
+    public static Signature.TypeArg.Unbounded typeArgOf(TypeArgument.OfUnbounded arg) {
         return Signature.TypeArg.unbounded();
     }
 
-    public static Signature.TypeParam typeParamOf(TypeVariable tv) {
+    public static Signature.TypeParam typeParamOf(TypeParameter tp) {
         return Signature.TypeParam.of(
-                tv.name(),
-                tv.firstBound().map(Util::signatureOf),
-                tv.otherBounds().stream().map(Util::signatureOf)
+                tp.name(),
+                tp.firstBound().map(Util::signatureOf),
+                tp.otherBounds().stream().map(Util::signatureOf)
                         .toArray(Signature.RefTypeSig[]::new));
     }
 
@@ -471,12 +459,12 @@ public final class Util {
         }
     }
 
-    public static List<TypeAnnotation> computeAnnotations(TypeVariable tv, RetentionPolicy retention,
+    public static List<TypeAnnotation> computeAnnotations(TypeParameter tp, RetentionPolicy retention,
             TypeAnnotation.TargetInfo targetInfo,
             ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
         try {
-            var ignored = (List<?>) TypeVariable_computeAnnotations.invokeExact(
-                    tv, retention, targetInfo, list, path);
+            var ignored = (List<?>) TypeParameter_computeAnnotations.invokeExact(
+                    tp, retention, targetInfo, list, path);
             return list;
         } catch (RuntimeException | Error e) {
             throw e;

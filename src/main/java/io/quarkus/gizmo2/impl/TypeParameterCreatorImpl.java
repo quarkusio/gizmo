@@ -11,22 +11,22 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.TypeVariable;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
+import io.quarkus.gizmo2.TypeParameter;
+import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 
-public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implements TypeVariableCreator {
+public final class TypeParameterCreatorImpl extends AnnotatableCreatorImpl implements TypeParameterCreator {
     private final String name;
     private GenericType.OfReference firstBound;
     private List<GenericType.OfReference> otherBounds = List.of();
 
-    public TypeVariableCreatorImpl(final String name) {
+    public TypeParameterCreatorImpl(final String name) {
         this.name = name;
     }
 
-    public TypeVariableCreatorImpl(final List<Annotation> visible, final List<Annotation> invisible, final String name) {
+    public TypeParameterCreatorImpl(final List<Annotation> visible, final List<Annotation> invisible, final String name) {
         super(visible, invisible);
         this.name = name;
     }
@@ -35,16 +35,25 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         return name;
     }
 
-    public void setFirstBound(final GenericType.OfReference bound) {
+    @Override
+    public void setFirstBound(final GenericType.OfClass bound) {
         firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
-    public void setOtherBounds(final List<GenericType.OfReference> bounds) {
-        this.otherBounds = List.copyOf(bounds);
+    @Override
+    public void setFirstBound(final GenericType.OfTypeVariable bound) {
+        if (!otherBounds.isEmpty()) {
+            throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
+        }
+        firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
-    public List<GenericType.OfReference> bounds() {
-        return otherBounds;
+    @Override
+    public void setOtherBounds(final List<GenericType.OfClass> bounds) {
+        if (firstBound instanceof GenericType.OfTypeVariable) {
+            throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
+        }
+        otherBounds = List.copyOf(bounds);
     }
 
     public ElementType annotationTargetType() {
@@ -57,14 +66,14 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
 
     static {
         try {
-            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(TypeVariable.class, MethodHandles.lookup());
-            ofType = lookup.findConstructor(TypeVariable.OfType.class, MethodType.methodType(
+            MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(TypeParameter.class, MethodHandles.lookup());
+            ofType = lookup.findConstructor(TypeParameter.OfType.class, MethodType.methodType(
                     void.class,
                     List.class, List.class, String.class, Optional.class, List.class, ClassDesc.class));
-            ofConstructor = lookup.findConstructor(TypeVariable.OfConstructor.class, MethodType.methodType(
+            ofConstructor = lookup.findConstructor(TypeParameter.OfConstructor.class, MethodType.methodType(
                     void.class,
                     List.class, List.class, String.class, Optional.class, List.class, ConstructorDesc.class));
-            ofMethod = lookup.findConstructor(TypeVariable.OfMethod.class, MethodType.methodType(
+            ofMethod = lookup.findConstructor(TypeParameter.OfMethod.class, MethodType.methodType(
                     void.class,
                     List.class, List.class, String.class, Optional.class, List.class, MethodDesc.class));
         } catch (IllegalAccessException e) {
@@ -74,9 +83,9 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         }
     }
 
-    TypeVariable.OfConstructor forConstructor(ConstructorDesc desc) {
+    TypeParameter.OfConstructor forConstructor(ConstructorDesc desc) {
         try {
-            return (TypeVariable.OfConstructor) ofConstructor.invokeExact(
+            return (TypeParameter.OfConstructor) ofConstructor.invokeExact(
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,
@@ -90,9 +99,9 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         }
     }
 
-    TypeVariable.OfMethod forMethod(MethodDesc desc) {
+    TypeParameter.OfMethod forMethod(MethodDesc desc) {
         try {
-            return (TypeVariable.OfMethod) ofMethod.invokeExact(
+            return (TypeParameter.OfMethod) ofMethod.invokeExact(
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,
@@ -106,9 +115,9 @@ public final class TypeVariableCreatorImpl extends AnnotatableCreatorImpl implem
         }
     }
 
-    TypeVariable.OfType forType(ClassDesc desc) {
+    TypeParameter.OfType forType(ClassDesc desc) {
         try {
-            return (TypeVariable.OfType) ofType.invokeExact(
+            return (TypeParameter.OfType) ofType.invokeExact(
                     List.copyOf(visible.values()),
                     List.copyOf(invisible.values()),
                     name,

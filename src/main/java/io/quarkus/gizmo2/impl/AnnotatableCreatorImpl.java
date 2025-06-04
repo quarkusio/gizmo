@@ -27,7 +27,7 @@ import io.quarkus.gizmo2.creator.AnnotationCreator;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreator
-        permits ModifiableCreatorImpl, TypeAnnotatableCreatorImpl, TypeVariableCreatorImpl {
+        permits ModifiableCreatorImpl, TypeAnnotatableCreatorImpl, TypeParameterCreatorImpl {
     protected final String creationSite = Util.trackCaller();
 
     Map<ClassDesc, Annotation> invisible;

@@ -7,11 +7,11 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo2.TypeVariable;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.ModifierLocation;
-import io.quarkus.gizmo2.creator.TypeVariableCreator;
+import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implements ConstructorCreator {
@@ -72,9 +72,10 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
         return ElementType.CONSTRUCTOR;
     }
 
-    public TypeVariable.OfConstructor typeParameter(final String name, final Consumer<TypeVariableCreator> builder) {
-        TypeVariableCreatorImpl creator = new TypeVariableCreatorImpl(name);
+    @Override
+    public GenericType.OfTypeVariable typeParameter(final String name, final Consumer<TypeParameterCreator> builder) {
+        TypeParameterCreatorImpl creator = new TypeParameterCreatorImpl(name);
         builder.accept(creator);
-        return addTypeVariable(creator.forConstructor(desc));
+        return addTypeParameter(creator.forConstructor(desc)).genericType();
     }
 }
