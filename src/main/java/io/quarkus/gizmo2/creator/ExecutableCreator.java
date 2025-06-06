@@ -120,6 +120,50 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
      *         type, or if the number of parameters exceeds the number of parameters in the established type
      */
+    default ParamVar parameter(String name, GenericType type) {
+        return parameter(name, pc -> {
+            pc.setType(type);
+        });
+    }
+
+    /**
+     * Add a parameter.
+     * If the method type has not yet been established,
+     * it is changed to include the new parameter,
+     * and the position must correspond to the next unset parameter.
+     * If the method type is already set,
+     * then the given type must match the type of the corresponding parameter of the method type.
+     *
+     * @param name the parameter name (must not be {@code null})
+     * @param type the parameter type (must not be {@code null})
+     * @return the parameter variable (not {@code null})
+     * @throws IllegalStateException if the type of this executable has not yet been established,
+     *         or if the parameter with the given position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
+     * @throws IndexOutOfBoundsException if the parameter position is out of range
+     */
+    default ParamVar parameter(String name, int position, GenericType type) {
+        return parameter(name, position, pc -> {
+            pc.setType(type);
+        });
+    }
+
+    /**
+     * Add a parameter.
+     * If the method type has not yet been established,
+     * it is changed to include the new parameter.
+     * If the method type is already set,
+     * then the given type must match the type of the next parameter of the method type.
+     *
+     * @param name the parameter name (must not be {@code null})
+     * @param type the parameter type (must not be {@code null})
+     * @return the parameter variable (not {@code null})
+     * @throws IllegalStateException if the type of this executable has not yet been established,
+     *         or if the parameter with the next position has already been declared
+     * @throws IllegalArgumentException if the type does not match the corresponding parameter type in the established method
+     *         type, or if the number of parameters exceeds the number of parameters in the established type
+     */
     default ParamVar parameter(String name, ClassDesc type) {
         return parameter(name, pc -> {
             pc.setType(type);
