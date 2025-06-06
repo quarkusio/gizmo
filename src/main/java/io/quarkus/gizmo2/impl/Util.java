@@ -42,9 +42,9 @@ public final class Util {
     public static final ClassDesc[] NO_DESCS = new ClassDesc[0];
 
     // set system property means enabled, even with an empty value, except if the value is `false`
-    private static final boolean trackingEnabled = !"false".equals(System.getProperty("gizmo.enableTracking", "false"));
+    public static final boolean debug = !"false".equals(System.getProperty("gizmo.debug", "false"));
 
-    public static final String trackingMessage = "\nTo track callers and get an improved exception message, add the system property `gizmo.enableTracking`";
+    public static final String trackingMessage = "\nTo track callers and get an improved exception message, add the system property `gizmo.debug`";
 
     private Util() {
     }
@@ -147,7 +147,7 @@ public final class Util {
     }
 
     public static String trackCaller() {
-        return trackingEnabled ? callerOutsideGizmo() : null;
+        return debug ? callerOutsideGizmo() : null;
     }
 
     private static String callerOutsideGizmo() {
