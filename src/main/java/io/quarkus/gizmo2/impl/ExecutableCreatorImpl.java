@@ -337,8 +337,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             // all parameters not established
             int size = params.size();
             if (position != size) {
-                throw new IllegalStateException(
-                        "Cannot define positional parameter with index " + position + " before the type has been established");
+                throw new IllegalStateException("The method type was not established upfront and so parameters"
+                        + " must be declared in order: expected parameter " + size + ", but got " + position);
             }
             if (size == 0) {
                 slot = firstSlot();
@@ -348,7 +348,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
             pc = new ParamCreatorImpl(typeCreator.gizmo);
         } else {
-            if (position < 0 || position > type.parameterCount()) {
+            if (position < 0 || position >= type.parameterCount()) {
                 throw new IndexOutOfBoundsException("Parameter position " + position + " is out of bounds for type " + type);
             }
             if (position < params.size()) {
