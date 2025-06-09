@@ -104,7 +104,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private String nestSite;
     private String finishSite;
 
-    private int anonClassCount;
     private List<Consumer<BlockCreator>> postInits;
 
     BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
@@ -603,7 +602,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<? extends Expr> args,
             final Consumer<AnonymousClassCreator> builder) {
         ClassDesc ownerDesc = owner.type();
-        int idx = ++anonClassCount;
+        int idx = owner.lambdaAndAnonClassCounter++;
         String ds = ownerDesc.descriptorString();
         ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$" + idx + ";");
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);

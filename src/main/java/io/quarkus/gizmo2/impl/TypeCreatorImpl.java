@@ -122,6 +122,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     final Map<MethodDesc, Boolean> methods = new LinkedHashMap<>();
     final Set<ConstructorDesc> constructors = new LinkedHashSet<>();
 
+    int lambdaAndAnonClassCounter;
+
     TypeCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         super(gizmo);
         this.gizmo = gizmo;
