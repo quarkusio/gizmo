@@ -9,11 +9,11 @@ import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 
-public final class LambdaCreatorImpl implements LambdaCreator {
+public final class LambdaAsAnonClassCreatorImpl implements LambdaCreator {
     private final AnonymousClassCreatorImpl acc;
     private final InstanceMethodCreatorImpl sam;
 
-    public LambdaCreatorImpl(final AnonymousClassCreatorImpl acc, final InstanceMethodCreatorImpl sam) {
+    public LambdaAsAnonClassCreatorImpl(final AnonymousClassCreatorImpl acc, final InstanceMethodCreatorImpl sam) {
         this.acc = acc;
         this.sam = sam;
     }
