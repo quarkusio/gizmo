@@ -341,7 +341,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr currentThread() {
-        return invokeStatic(MethodDesc.of(Thread.class, "currentThread", void.class));
+        return invokeStatic(MethodDesc.of(Thread.class, "currentThread", Thread.class));
     }
 
     public void close(final Expr closeable) {
