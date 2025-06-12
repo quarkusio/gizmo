@@ -1,6 +1,8 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -93,5 +95,32 @@ public class MapOps extends ObjectOps {
      */
     public void clear() {
         invokeInstance(void.class, "clear");
+    }
+
+    /**
+     * Generate a call to {@link Map#keySet()}.
+     *
+     * @return the expression of the result (not {@code null})
+     */
+    public Expr keySet() {
+        return invokeInstance(Set.class, "keySet");
+    }
+
+    /**
+     * Generate a call to {@link Map#values()}.
+     *
+     * @return the expression of the result (not {@code null})
+     */
+    public Expr values() {
+        return invokeInstance(Collection.class, "values");
+    }
+
+    /**
+     * Generate a call to {@link Map#entrySet()}.
+     *
+     * @return the expression of the result (not {@code null})
+     */
+    public Expr entrySet() {
+        return invokeInstance(Set.class, "entrySet");
     }
 }
