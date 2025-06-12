@@ -3436,7 +3436,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * StringBuilderOps str = bc.withNewStringBuilder();
      * str.append("constant");
      * str.append(someExpr);
-     * Expr result = str.objToString();
+     * Expr result = str.toString_();
      * </pre>
      *
      * The {@code append} method mimics the regular {@code StringBuilder.append}, so
@@ -3472,7 +3472,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * StringBuilderOps str = bc.withNewStringBuilder(16);
      * str.append("constant");
      * str.append(someExpr);
-     * Expr result = str.objToString();
+     * Expr result = str.toString_();
      * </pre>
      *
      * The {@code append} method mimics the regular {@code StringBuilder.append}, so
@@ -3509,7 +3509,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * StringBuilderOps str = bc.withStringBuilder(theStringBuilder);
      * str.append("constant");
      * str.append(someExpr);
-     * Expr result = str.objToString();
+     * Expr result = str.toString_();
      * </pre>
      *
      * The {@code append} method mimics the regular {@code StringBuilder.append}, so
