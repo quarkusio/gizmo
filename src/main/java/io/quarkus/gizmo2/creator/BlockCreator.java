@@ -2914,6 +2914,18 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr switchEnum(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
 
     /**
+     * Construct a {@code switch} expression for {@code enum} constants.
+     *
+     * @param outputType the output type of this {@code switch} (must not be {@code null})
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder for the {@code switch} statement (must not be {@code null})
+     * @return the switch expression result (not {@code null})
+     */
+    default Expr switchEnum(Class<?> outputType, Expr val, Consumer<SwitchCreator> builder) {
+        return switchEnum(Util.classDesc(outputType), val, builder);
+    }
+
+    /**
      * Construct a {@code switch} statement.
      * The type of the switch value must be of one of these supported types:
      * <ul>
@@ -2933,7 +2945,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Construct a {@code switch} statement.
+     * Construct a {@code switch} expression.
      * The type of the switch value must be of one of these supported types:
      * <ul>
      * <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
@@ -2950,6 +2962,27 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the switch expression result (not {@code null})
      */
     Expr switch_(ClassDesc outputType, Expr val, Consumer<SwitchCreator> builder);
+
+    /**
+     * Construct a {@code switch} expression.
+     * The type of the switch value must be of one of these supported types:
+     * <ul>
+     * <li>{@code int} (which includes {@code byte}, {@code char}, {@code short}, and {@code boolean})</li>
+     * <li>{@code long}</li>
+     * <li>{@code java.lang.String}</li>
+     * <li>{@code java.lang.Class}</li>
+     * </ul>
+     * The type of the {@code switch} creator depends on the type of the value.
+     * For {@code enum} switches, use {@link #switchEnum(Expr, Consumer)}.
+     *
+     * @param outputType the output type of this {@code switch} (must not be {@code null})
+     * @param val the value to switch on (must not be {@code null})
+     * @param builder the builder for the {@code switch} statement (must not be {@code null})
+     * @return the switch expression result (not {@code null})
+     */
+    default Expr switch_(Class<?> outputType, Expr val, Consumer<SwitchCreator> builder) {
+        return switch_(Util.classDesc(outputType), val, builder);
+    }
 
     /**
      * Exit the given enclosing block.

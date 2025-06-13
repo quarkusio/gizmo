@@ -68,39 +68,41 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
             cb.lookupswitch(nonMatching, switchCases);
         }
 
-        // now write the cases
-        Iterator<Map.Entry<C, CaseCreatorImpl>> iterator = sortedCases.iterator();
-        assert iterator.hasNext();
-        Map.Entry<C, CaseCreatorImpl> entry = iterator.next();
-        int hashIdx = 0;
-        int hash = staticHash(entry.getKey());
-        assert hash == hashes[hashIdx];
-        // start the initial series
-        cb.labelBinding(caseLabels[hashIdx++]);
-        cb.loadLocal(tk, idx);
-        equaller(cb, entry.getKey(), entry.getValue().body.startLabel());
-        while (iterator.hasNext()) {
-            entry = iterator.next();
-            int nextHash = staticHash(entry.getKey());
-            if (hash != nextHash) {
-                // end the current series
-                cb.goto_(nonMatching);
-                // start the new series
-                cb.labelBinding(caseLabels[hashIdx++]);
-                hash = nextHash;
-            }
-
+        if (!casesByConstant.isEmpty()) {
+            // now write the cases
+            Iterator<Map.Entry<C, CaseCreatorImpl>> iterator = sortedCases.iterator();
+            assert iterator.hasNext();
+            Map.Entry<C, CaseCreatorImpl> entry = iterator.next();
+            int hashIdx = 0;
+            int hash = staticHash(entry.getKey());
+            assert hash == hashes[hashIdx];
+            // start the initial series
+            cb.labelBinding(caseLabels[hashIdx++]);
             cb.loadLocal(tk, idx);
             equaller(cb, entry.getKey(), entry.getValue().body.startLabel());
-        }
-        // end the final series
-        cb.goto_(nonMatching);
+            while (iterator.hasNext()) {
+                entry = iterator.next();
+                int nextHash = staticHash(entry.getKey());
+                if (hash != nextHash) {
+                    // end the current series
+                    cb.goto_(nonMatching);
+                    // start the new series
+                    cb.labelBinding(caseLabels[hashIdx++]);
+                    hash = nextHash;
+                }
 
-        // now the case blocks themselves
-        for (CaseCreatorImpl case_ : cases) {
-            case_.body.writeCode(cb, block);
-            if (case_.body.mayFallThrough()) {
-                cb.goto_(fallOut);
+                cb.loadLocal(tk, idx);
+                equaller(cb, entry.getKey(), entry.getValue().body.startLabel());
+            }
+            // end the final series
+            cb.goto_(nonMatching);
+
+            // now the case blocks themselves
+            for (CaseCreatorImpl case_ : cases) {
+                case_.body.writeCode(cb, block);
+                if (case_.body.mayFallThrough()) {
+                    cb.goto_(fallOut);
+                }
             }
         }
 
