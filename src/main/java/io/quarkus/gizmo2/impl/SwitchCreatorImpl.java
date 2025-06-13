@@ -65,6 +65,12 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
         this.switchVal = (Item) switchVal;
         this.type = type;
         this.constantType = constantType;
+
+        if (!type.equals(CD_void)) {
+            // switch expressions may always fall through, even if all branches actually may not
+            // this allows (and, in fact, requires) using them as actual expressions
+            fallThrough = true;
+        }
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
@@ -99,6 +105,9 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
                     fallThrough = true;
                 } else {
                     throw new IllegalStateException("Missing default branch on switch expression");
+                }
+                if (cases.isEmpty()) {
+                    throw new IllegalStateException("No case branch and no default branch on switch");
                 }
             }
         } finally {

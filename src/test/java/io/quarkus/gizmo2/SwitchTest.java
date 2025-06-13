@@ -168,4 +168,95 @@ public final class SwitchTest {
     public interface NumberParser {
         int get(String name);
     }
+
+    @Test
+    public void testIntSwitchWithNoCase() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitchExpr"), zc -> {
+            zc.staticMethod("frobnicate", mc -> {
+                mc.returning(int.class);
+                ParamVar cp = mc.parameter("cp", int.class);
+                mc.body(b0 -> {
+                    b0.return_(b0.switch_(CD_int, cp, sc -> {
+                        sc.default_(b1 -> b1.yield(cp));
+                    }));
+                });
+            });
+        });
+        IntUnaryOperator frobnicate = tcm.staticMethod("frobnicate", IntUnaryOperator.class);
+        assertEquals('a', frobnicate.applyAsInt('a'));
+        assertEquals('q', frobnicate.applyAsInt('q'));
+        assertEquals('e', frobnicate.applyAsInt('e'));
+    }
+
+    @Test
+    public void testStringSwitchWithNoCase() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+            zc.staticMethod("nameToNumber", mc -> {
+                mc.returning(int.class);
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    b0.return_(b0.switch_(CD_int, name, sc -> {
+                        sc.default_(b1 -> b1.yield(Const.of(-1)));
+                    }));
+                });
+            });
+        });
+        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        assertEquals(-1, nameToNumber.get("zero"));
+        assertEquals(-1, nameToNumber.get("one"));
+        assertEquals(-1, nameToNumber.get("two"));
+    }
+
+    @Test
+    public void testSwitchExpressionFallsThrough() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+            zc.staticMethod("nameToNumber", mc -> {
+                mc.returning(int.class);
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    // no branch in the `switch` may fall through, but the entire `switch`
+                    // may, because it's an expression and is supposed to be used as such
+                    b0.return_(b0.switch_(CD_int, name, sc -> {
+                        sc.default_(b1 -> b1.throw_(IllegalArgumentException.class));
+                    }));
+                });
+            });
+        });
+        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("zero"));
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("one"));
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("two"));
+    }
+
+    @Test
+    public void testSwitchStatementDoesNotFallThrough() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+            zc.staticMethod("nameToNumber", mc -> {
+                mc.returning(int.class);
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    // no branch in the `switch` may fall through, so the entire `switch`
+                    // may not either
+                    b0.switch_(name, sc -> {
+                        sc.default_(b1 -> b1.throw_(IllegalArgumentException.class));
+                    });
+                    // note that attempting to add the following statement would fail
+                    // with "This block has already been finished"
+                    //b0.return_(Const.of(0));
+                });
+            });
+        });
+        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("zero"));
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("one"));
+        assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("two"));
+    }
 }
