@@ -179,11 +179,6 @@ final class Conversions {
         if (b.isClassOrInterface()) {
             b = unboxTypes.getOrDefault(b, b);
         }
-        if (a.equals(b)) {
-            // also covers the case when both `a` and `b` are `boolean`,
-            // which may occur in case of `Rel` with `If.Kind.EQ` and `NE`
-            return Optional.of(a);
-        }
         if (a.isPrimitive() && b.isPrimitive()) {
             TypeKind aKind = TypeKind.from(a);
             TypeKind bKind = TypeKind.from(b);
@@ -198,5 +193,24 @@ final class Conversions {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * {@return whether a logical operation of given {@code kind} with given argument types {@code a} and {@code b}
+     * requires numeric promotion}
+     *
+     * @param kind the kind of the logical operation (must not be {@code null})
+     * @param a the type of the first argument (must not be {@code null})
+     * @param b the type of the second argument (must not be {@code null})
+     */
+    static boolean numericPromotionRequired(If.Kind kind, ClassDesc a, ClassDesc b) {
+        if (kind != If.Kind.EQ && kind != If.Kind.NE) {
+            // non-equality operations (<, <=, >, >=) all require numeric promotion
+            return true;
+        }
+
+        // equality operations only require promotion if performed on numeric types
+        // that is, all primitive types except `boolean` (and `void`, but that never occurs here)
+        return a.isPrimitive() && !CD_boolean.equals(a) || b.isPrimitive() && !CD_boolean.equals(b);
     }
 }

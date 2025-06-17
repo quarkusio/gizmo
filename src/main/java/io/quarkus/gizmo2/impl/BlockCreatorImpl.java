@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static io.quarkus.gizmo2.impl.Conversions.boxingConversion;
 import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
+import static io.quarkus.gizmo2.impl.Conversions.numericPromotionRequired;
 import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
 import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
 import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
@@ -421,7 +422,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private Expr rel(Expr a, Expr b, final If.Kind kind) {
         ClassDesc operandType = a.type();
-        Optional<ClassDesc> promotedType = numericPromotion(a.type(), b.type());
+        Optional<ClassDesc> promotedType = numericPromotionRequired(kind, a.type(), b.type())
+                ? numericPromotion(a.type(), b.type())
+                : Optional.empty();
         if (promotedType.isPresent()) {
             operandType = promotedType.get();
             a = convert(a, operandType);
