@@ -1616,4 +1616,84 @@ public class AutoConversionTest {
         assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
     }
+
+    @Test
+    public void eq_noConversion() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.EQ", cc -> {
+            cc.staticMethod("test1", mc -> {
+                // static boolean test1() {
+                //     return new Integer(5) == null;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.eq(bc.new_(Integer.class, Const.of(5)), Const.ofNull(Integer.class)));
+                });
+            });
+            cc.staticMethod("test2", mc -> {
+                // static boolean test2() {
+                //     return new Integer(5) == new Integer(7);
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.eq(bc.new_(Integer.class, Const.of(5)), bc.new_(Integer.class, Const.of(7))));
+                });
+            });
+            cc.staticMethod("test3", mc -> {
+                // static boolean test3() {
+                //     Integer i = new Integer(5);
+                //     return i == i;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    LocalVar i = bc.localVar("i", bc.new_(Integer.class, Const.of(5)));
+                    bc.return_(bc.eq(i, i));
+                });
+            });
+        });
+        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void ne_noConversion() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.NE", cc -> {
+            cc.staticMethod("test1", mc -> {
+                // static boolean test1() {
+                //     return new Integer(5) != null;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ne(bc.new_(Integer.class, Const.of(5)), Const.ofNull(Integer.class)));
+                });
+            });
+            cc.staticMethod("test2", mc -> {
+                // static boolean test2() {
+                //     return new Integer(5) != new Integer(7);
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ne(bc.new_(Integer.class, Const.of(5)), bc.new_(Integer.class, Const.of(7))));
+                });
+            });
+            cc.staticMethod("test3", mc -> {
+                // static boolean test3() {
+                //     Integer i = new Integer(5);
+                //     return i != i;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    LocalVar i = bc.localVar("i", bc.new_(Integer.class, Const.of(5)));
+                    bc.return_(bc.ne(i, i));
+                });
+            });
+        });
+        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+    }
 }
