@@ -7,6 +7,9 @@ import java.util.stream.Stream;
  * The possible locations where a modifier flag or an access level may be specified.
  */
 public enum ModifierLocation {
+    // by default, we only put the `synthetic` flag on classes/interfaces and not their members,
+    // because synthetic members are ignored by (at least) the IntelliJ IDEA decompiler
+
     /**
      * A public (default) interface instance method.
      */
@@ -14,7 +17,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC),
             bitsOf(ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             0,
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A private interface instance method.
      */
@@ -22,7 +25,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PRIVATE),
             bitsOf(ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             0,
-            AccessLevel.PRIVATE, ModifierFlag.SYNTHETIC),
+            AccessLevel.PRIVATE),
     /**
      * A regular (abstract) interface instance method.
      */
@@ -30,7 +33,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC),
             bitsOf(ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             bitsOf(ModifierFlag.ABSTRACT),
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A static field on an interface.
      */
@@ -38,7 +41,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC),
             bitsOf(ModifierFlag.SYNTHETIC, ModifierFlag.VOLATILE),
             bitsOf(ModifierFlag.STATIC, ModifierFlag.FINAL),
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A static method on an interface.
      */
@@ -46,7 +49,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC),
             bitsOf(ModifierFlag.FINAL, ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             bitsOf(ModifierFlag.STATIC),
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A constructor of a class.
      */
@@ -54,7 +57,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
             bitsOf(ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             0,
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A non-native instance method of a class.
      */
@@ -63,7 +66,7 @@ public enum ModifierLocation {
             bitsOf(ModifierFlag.BRIDGE, ModifierFlag.FINAL, ModifierFlag.SYNCHRONIZED, ModifierFlag.SYNTHETIC,
                     ModifierFlag.VARARGS),
             0,
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * An abstract instance method of a class.
      */
@@ -71,7 +74,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE),
             bitsOf(ModifierFlag.BRIDGE, ModifierFlag.SYNCHRONIZED, ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             bitsOf(ModifierFlag.ABSTRACT),
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * A native method of a class.
      */
@@ -79,7 +82,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
             bitsOf(ModifierFlag.BRIDGE, ModifierFlag.STATIC, ModifierFlag.SYNTHETIC, ModifierFlag.VARARGS),
             0,
-            AccessLevel.PRIVATE, ModifierFlag.SYNTHETIC),
+            AccessLevel.PRIVATE),
     /**
      * A non-native static method of a class.
      */
@@ -88,7 +91,7 @@ public enum ModifierLocation {
             bitsOf(ModifierFlag.BRIDGE, ModifierFlag.FINAL, ModifierFlag.SYNCHRONIZED, ModifierFlag.SYNTHETIC,
                     ModifierFlag.VARARGS),
             bitsOf(ModifierFlag.STATIC),
-            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+            AccessLevel.PUBLIC),
     /**
      * An instance field of a class.
      */
@@ -96,7 +99,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
             bitsOf(ModifierFlag.FINAL, ModifierFlag.TRANSIENT, ModifierFlag.VOLATILE, ModifierFlag.SYNTHETIC),
             0,
-            AccessLevel.PRIVATE, ModifierFlag.SYNTHETIC),
+            AccessLevel.PRIVATE),
     /**
      * A static field of a class.
      */
@@ -104,7 +107,7 @@ public enum ModifierLocation {
             bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
             bitsOf(ModifierFlag.FINAL, ModifierFlag.VOLATILE, ModifierFlag.SYNTHETIC),
             bitsOf(ModifierFlag.STATIC),
-            AccessLevel.PRIVATE, ModifierFlag.SYNTHETIC),
+            AccessLevel.PRIVATE),
     /**
      * A top-level class.
      */
@@ -135,8 +138,7 @@ public enum ModifierLocation {
     PARAMETER(
             0,
             bitsOf(ModifierFlag.FINAL, ModifierFlag.SYNTHETIC, ModifierFlag.MANDATED),
-            0,
-            ModifierFlag.SYNTHETIC),
+            0),
     /**
      * A local variable.
      */
@@ -155,7 +157,6 @@ public enum ModifierLocation {
     // the fixed flags
     private final byte requiredFlags;
     // the initial modifier bits
-    @SuppressWarnings("unused") // reflection
     private final int defaultModifierBits;
 
     ModifierLocation(final int validAccesses, final int validFlags, final int requiredFlags,
