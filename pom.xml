@@ -44,7 +44,7 @@
         
         <version.classfile>24.0</version.classfile>
         <version.junit>5.13.1</version.junit>
-        <version.smallrye-common>2.12.0</version.smallrye-common>
+        <version.smallrye-common>2.12.2</version.smallrye-common>
 
         <version.formatter-maven-plugin>2.26.0</version.formatter-maven-plugin>
         <version.impsort-maven-plugin>1.12.0</version.impsort-maven-plugin>
