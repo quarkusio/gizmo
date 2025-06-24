@@ -14,10 +14,12 @@ import static java.util.Collections.*;
 import java.io.PrintStream;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
 import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.DynamicCallSiteDesc;
 import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -104,7 +106,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private String nestSite;
     private String finishSite;
 
-    private int anonClassCount;
     private List<Consumer<BlockCreator>> postInits;
 
     BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
@@ -556,6 +557,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr lambda(final MethodDesc sam, final ClassDesc samOwner, final Consumer<LambdaCreator> builder) {
+        if (Util.debug) {
+            return lambdaDebug(sam, samOwner, builder);
+        }
+
         ClassDesc ownerDesc = owner.type();
         String ds = ownerDesc.descriptorString();
         ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$lambda;");
@@ -565,13 +570,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             zb.withVersion(owner.version().major(), 0);
             AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb,
                     ConstructorDesc.of(Object.class), captureExprs);
-            if (sam instanceof InterfaceMethodDesc imd) {
+            if (sam instanceof InterfaceMethodDesc) {
                 // implement the interface too
-                tc.implements_(imd.owner());
+                tc.implements_(sam.owner());
             }
             tc.method(sam, imc -> {
                 imc.public_();
-                LambdaCreatorImpl lc = new LambdaCreatorImpl(tc, (InstanceMethodCreatorImpl) imc);
+                LambdaAsAnonClassCreatorImpl lc = new LambdaAsAnonClassCreatorImpl(tc, (InstanceMethodCreatorImpl) imc);
                 tc.preAccept();
                 builder.accept(lc);
                 tc.freezeCaptures();
@@ -600,10 +605,33 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 ctorType), captureExprs);
     }
 
+    private Expr lambdaDebug(MethodDesc sam, ClassDesc samOwner, Consumer<LambdaCreator> builder) {
+        // TODO serializable lambdas not (yet) supported
+        MethodTypeDesc samType = sam.type();
+        String name = "$$lambda$" + owner.lambdaAndAnonClassCounter++;
+        List<Expr> captures = new ArrayList<>();
+        // always generating `static` methods is fine, because users have to capture `this` explicitly
+        MethodDesc lambdaMethod = owner.staticMethod(name, mc -> {
+            mc.private_();
+            mc.synthetic();
+            mc.returning(samType.returnType());
+            builder.accept(new LambdaAsMethodCreatorImpl(samOwner, samType, (MethodCreatorImpl) mc, captures));
+        });
+        return invokeDynamic(DynamicCallSiteDesc.of(
+                ConstantDescs.ofCallsiteBootstrap(Util.classDesc(LambdaMetafactory.class), "metafactory",
+                        CD_CallSite, CD_MethodType, CD_MethodHandle, CD_MethodType),
+                sam.name(),
+                MethodTypeDesc.of(samOwner, captures.stream().map(Expr::type).toArray(ClassDesc[]::new)),
+                samType,
+                MethodHandleDesc.ofMethod(DirectMethodHandleDesc.Kind.STATIC, lambdaMethod.owner(), lambdaMethod.name(),
+                        lambdaMethod.type()),
+                samType), captures);
+    }
+
     public Expr newAnonymousClass(final ConstructorDesc superCtor, final List<? extends Expr> args,
             final Consumer<AnonymousClassCreator> builder) {
         ClassDesc ownerDesc = owner.type();
-        int idx = ++anonClassCount;
+        int idx = owner.lambdaAndAnonClassCounter++;
         String ds = ownerDesc.descriptorString();
         ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$" + idx + ";");
         ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);

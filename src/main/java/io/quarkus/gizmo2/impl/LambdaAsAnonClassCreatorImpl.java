@@ -9,11 +9,13 @@ import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 
-public final class LambdaCreatorImpl implements LambdaCreator {
+public final class LambdaAsAnonClassCreatorImpl implements LambdaCreator {
     private final AnonymousClassCreatorImpl acc;
     private final InstanceMethodCreatorImpl sam;
 
-    public LambdaCreatorImpl(final AnonymousClassCreatorImpl acc, final InstanceMethodCreatorImpl sam) {
+    private boolean parametersDefined;
+
+    public LambdaAsAnonClassCreatorImpl(final AnonymousClassCreatorImpl acc, final InstanceMethodCreatorImpl sam) {
         this.acc = acc;
         this.sam = sam;
     }
@@ -23,6 +25,7 @@ public final class LambdaCreatorImpl implements LambdaCreator {
     }
 
     public ParamVar parameter(final String name, final int position) {
+        parametersDefined = true;
         return sam.parameter(name, position);
     }
 
@@ -31,6 +34,9 @@ public final class LambdaCreatorImpl implements LambdaCreator {
     }
 
     public Var capture(final String name, final Expr value) {
+        if (parametersDefined) {
+            throw new IllegalStateException("All captures must be defined before parameters are defined");
+        }
         return acc.capture(name, value);
     }
 }

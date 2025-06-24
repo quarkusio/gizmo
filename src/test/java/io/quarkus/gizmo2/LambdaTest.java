@@ -2,15 +2,43 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.constant.ClassDesc;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class LambdaTest {
+
+    @Test
+    public void testSupplierLambda() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.SupplierLambda", cc -> {
+            cc.staticMethod("runTest", smc -> {
+                // static Object runTest() {
+                //    Supplier supplier = () -> "foobar";
+                //    return supplier.get();
+                // }
+                smc.returning(Object.class); // always `String`
+                smc.body(b0 -> {
+                    Expr supplier = b0.lambda(Supplier.class, lc -> {
+                        lc.body(b1 -> {
+                            b1.return_("foobar");
+                        });
+                    });
+                    b0.return_(b0.invokeInterface(MethodDesc.of(Supplier.class, "get", Object.class), supplier));
+                });
+            });
+        });
+        assertEquals("foobar", tcm.staticMethod("runTest", Supplier.class).get());
+    }
 
     @Test
     public void testRunnableLambda() {
@@ -122,6 +150,182 @@ public class LambdaTest {
             });
         });
         assertEquals(1, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+    }
+
+    @Test
+    public void testLambdaCapturingThis() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.LambdaCapturingThis", cc -> {
+            cc.defaultConstructor();
+
+            MethodDesc returnString = cc.method("returnString", mc -> {
+                // String returnString() {
+                //     return "foobar";
+                // }
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_("foobar");
+                });
+            });
+
+            MethodDesc lambda = cc.method("lambda", mc -> {
+                // Supplier<String> lambda() {
+                //     String next = "_next";
+                //     return () -> this.returnString() + next;
+                // }
+                mc.returning(Supplier.class);
+                mc.body(b0 -> {
+                    LocalVar next = b0.localVar("next", Const.of("_next"));
+                    b0.return_(b0.lambda(Supplier.class, lc -> {
+                        Var this_ = lc.capture("this_", cc.this_());
+                        Var next_ = lc.capture(next);
+                        lc.body(b1 -> {
+                            b1.return_(b1.withNewStringBuilder()
+                                    .append(b1.invokeVirtual(returnString, this_))
+                                    .append(next_)
+                                    .toString_());
+                        });
+                    }));
+                });
+            });
+
+            cc.staticMethod("runTest", smc -> {
+                // static Object runTest() {
+                //     LambdaCapturingThis instance = new LambdaCapturingThis();
+                //     return instance.lambda().get();
+                // }
+                smc.returning(Object.class); // always `String`
+                smc.body(b0 -> {
+                    LocalVar instance = b0.localVar("instance", b0.new_(cc.type()));
+                    Expr lambdaInstance = b0.invokeVirtual(lambda, instance);
+                    Expr result = b0.invokeInterface(MethodDesc.of(Supplier.class, "get", Object.class), lambdaInstance);
+                    b0.return_(result);
+                });
+            });
+        });
+        assertEquals("foobar_next", tcm.staticMethod("runTest", Supplier.class).get());
+    }
+
+    @Test
+    public void testLambdaWithManyParametersAndCaptures() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc lambdaType = g.interface_("io.quarkus.gizmo2.LambdaType", cc -> {
+            cc.addAnnotation(FunctionalInterface.class);
+            cc.method("get", mc -> {
+                mc.returning(String.class);
+                mc.parameter("i", int.class);
+                mc.parameter("l", long.class);
+                mc.parameter("f", float.class);
+                mc.parameter("d", double.class);
+                mc.parameter("s", String.class);
+            });
+        });
+        MethodDesc lambdaMethod = InterfaceMethodDesc.of(lambdaType, "get", String.class,
+                int.class, long.class, float.class, double.class, String.class);
+        g.class_("io.quarkus.gizmo2.LambdaWithManyParametersAndCaptures", cc -> {
+            cc.staticMethod("runTest", mc -> {
+                // static Object runTest() {
+                //     int ai = 1;
+                //     long al = 2L;
+                //     float af = 3.0F;
+                //     double ad = 4.0;
+                //     String as = "5-6-7";
+                //     LambdaWithManyParameters l = (i, l, f, d, s) -> ""
+                //         + ai + '_'
+                //         + al + '_'
+                //         + af + '_'
+                //         + ad + '_'
+                //         + as + '_'
+                //         + i + '_'
+                //         + l + '_'
+                //         + f + '_'
+                //         + d + '_'
+                //         + s;
+                //     return l.get(8, 9L, 10.0F, 11.0, "12-13-14");
+                // }
+                mc.returning(Object.class); // always `String`
+                mc.body(b0 -> {
+                    LocalVar ai = b0.localVar("ai", Const.of(1));
+                    LocalVar al = b0.localVar("al", Const.of(2L));
+                    LocalVar af = b0.localVar("af", Const.of(3.0F));
+                    LocalVar ad = b0.localVar("ad", Const.of(4.0));
+                    LocalVar as = b0.localVar("as", Const.of("5-6-7"));
+                    Expr lambda = b0.lambda(lambdaMethod, lc -> {
+                        Var ai_ = lc.capture(ai);
+                        Var al_ = lc.capture(al);
+                        Var af_ = lc.capture(af);
+                        Var ad_ = lc.capture(ad);
+                        Var as_ = lc.capture(as);
+                        ParamVar i = lc.parameter("i", 0);
+                        ParamVar l = lc.parameter("l", 1);
+                        ParamVar f = lc.parameter("f", 2);
+                        ParamVar d = lc.parameter("d", 3);
+                        ParamVar s = lc.parameter("s", 4);
+                        lc.body(b1 -> {
+                            b1.return_(b1.withNewStringBuilder()
+                                    .append(ai_).append('_')
+                                    .append(al_).append('_')
+                                    .append(af_).append('_')
+                                    .append(ad_).append('_')
+                                    .append(as_).append('_')
+                                    .append(i).append('_')
+                                    .append(l).append('_')
+                                    .append(f).append('_')
+                                    .append(d).append('_')
+                                    .append(s)
+                                    .toString_());
+                        });
+                    });
+                    b0.return_(b0.invokeInterface(lambdaMethod, lambda,
+                            Const.of(8),
+                            Const.of(9L),
+                            Const.of(10.0F),
+                            Const.of(11.0),
+                            Const.of("12-13-14")));
+                });
+            });
+        });
+        assertEquals("1_2_3.0_4.0_5-6-7_8_9_10.0_11.0_12-13-14", tcm.staticMethod("runTest", Supplier.class).get());
+    }
+
+    @Test
+    public void testConsumerLambdaAssigningToItsParameter() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.ConsumerLambdaAssigningToItsParameter", cc -> {
+            cc.staticMethod("runTest", smc -> {
+                // static int runTest() {
+                //    AtomicInteger ret = new AtomicInteger();
+                //    IntConsumer consumer = val -> {
+                //        val += 3;
+                //        ret.set(val);
+                //    }
+                //    consumer.accept(10);
+                //    return ret.get();
+                // }
+                smc.returning(int.class);
+                smc.body(b0 -> {
+                    var ret = b0.localVar("ret", b0.new_(AtomicInteger.class));
+                    Expr consumer = b0.lambda(IntConsumer.class, lc -> {
+                        var capturedRet = lc.capture(ret);
+                        var input = lc.parameter("t", 0);
+                        lc.body(b1 -> {
+                            b1.inc(input, 3);
+                            b1.invokeVirtual(MethodDesc.of(AtomicInteger.class, "set", void.class, int.class),
+                                    capturedRet, input);
+                            b1.return_();
+                        });
+                    });
+                    b0.invokeInterface(MethodDesc.of(IntConsumer.class, "accept", void.class, int.class),
+                            consumer, Const.of(10));
+                    var retVal = b0.invokeVirtual(MethodDesc.of(AtomicInteger.class, "get", int.class), ret);
+                    b0.return_(retVal);
+                });
+            });
+        });
+        assertEquals(13, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
     }
 
 }
