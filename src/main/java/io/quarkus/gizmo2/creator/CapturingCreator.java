@@ -15,6 +15,8 @@ public sealed interface CapturingCreator permits AnonymousClassCreator, LambdaCr
      * <p>
      * If the given expression is a variable, the given name overrides the variable's name
      * within the scope of the lambda.
+     * <p>
+     * Names of captured variables must be unique for each anonymous class / lambda.
      *
      * @param name the name of the variable (must not be {@code null})
      * @param value the capture value (must not be {@code null})
@@ -24,6 +26,9 @@ public sealed interface CapturingCreator permits AnonymousClassCreator, LambdaCr
 
     /**
      * Capture an enclosing variable so that it may be used in the lambda body.
+     * <p>
+     * Name of the variable is used unchanged. Note that names of captured variables
+     * must be unique for each anonymous class / lambda.
      *
      * @param outer the enclosing variable to capture (must not be {@code null})
      * @return the captured variable (not {@code null})

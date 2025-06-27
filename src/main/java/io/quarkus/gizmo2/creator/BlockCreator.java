@@ -3707,6 +3707,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Iterate the given target.
+     * In other words, generate a call to {@link Iterable#iterator()}.
      *
      * @param items the iterable object expression (must not be {@code null})
      * @return the iterator expression (not {@code null})
