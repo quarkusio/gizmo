@@ -13,8 +13,6 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Unbox extends Cast {
-    private boolean bound;
-
     private static ClassDesc unboxing(ClassDesc boxType) {
         ClassDesc unboxType = Conversions.unboxingConversion(boxType)
                 .orElseThrow(() -> new IllegalArgumentException("No unbox type for " + boxType.displayName()));
@@ -26,16 +24,6 @@ final class Unbox extends Cast {
 
     Unbox(Expr a) {
         super(a, GenericType.of(unboxing(a.type())));
-    }
-
-    @Override
-    public boolean bound() {
-        return bound;
-    }
-
-    @Override
-    protected void bind() {
-        bound = true;
     }
 
     @Override

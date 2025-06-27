@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Conversions {
@@ -107,10 +108,6 @@ final class Conversions {
         return Optional.ofNullable(unboxTypes.get(type));
     }
 
-    static boolean primitiveWideningExists(ClassDesc fromType, ClassDesc toType) {
-        return fromType.isPrimitive() && primitiveWideningConversions.get(fromType).contains(toType);
-    }
-
     /**
      * {@return the given {@code expr} converted to given {@code toType}}
      * If no conversion is possible, returns the {@code expr} unchanged after verifying
@@ -119,18 +116,18 @@ final class Conversions {
      * The conversions applied are:
      * <ul>
      * <li>identity conversion</li>
-     * <li>boxing conversion</li>
-     * <li>unboxing conversion</li>
+     * <li>boxing conversion (Boxing conversion is supposed to exist from any primitive
+     * type to the corresponding wrapper class and all its superclasses and superinterfaces,
+     * as existing in Java 17.)</li>
+     * <li>unboxing conversion (Unboxing conversion is supposed to exist from any primitive
+     * wrapper class to the corresponding primitive type.)</li>
      * <li>primitive widening conversion</li>
      * <li>unboxing conversion followed by primitive widening conversion</li>
      * <li>primitive widening conversion followed by boxing conversion</li>
+     * <li>reference widening conversion (Reference widening conversion is supposed to exist
+     * from any reference type only to {@code java.lang.Object}. Gizmo does not have a type
+     * system and so does not know which class is assignable to which.)</li>
      * </ul>
-     * <p>
-     * Boxing conversion is supposed to exist from any primitive type to the corresponding
-     * wrapper class and all its superclasses and superinterfaces (as existing in Java 17).
-     * <p>
-     * Unboxing conversion is supposed to exist from any primitive wrapper class to
-     * the corresponding primitive type.
      */
     static Item convert(Expr expr, ClassDesc toType) {
         Item item = (Item) expr;
@@ -148,7 +145,7 @@ final class Conversions {
             // primitive widening + boxing
             ClassDesc widerType = unboxTypes.get(toType);
             if (primitiveWideningConversions.get(fromType).contains(widerType)) {
-                return new Box(new WidenPrimitive(item, widerType));
+                return new Box(new PrimitiveCast(item, GenericType.of(widerType)));
             }
         } else if (toType.equals(unboxTypes.get(fromType))) {
             // unboxing
@@ -156,11 +153,13 @@ final class Conversions {
         } else if (toType.isPrimitive() && unboxTypes.containsKey(fromType)
                 && primitiveWideningConversions.get(unboxTypes.get(fromType)).contains(toType)) {
             // unboxing + primitive widening
-            return new WidenPrimitive(new Unbox(item), toType);
+            return new PrimitiveCast(new Unbox(item), GenericType.of(toType));
         } else if (fromType.isPrimitive() && toType.isPrimitive()
                 && primitiveWideningConversions.get(fromType).contains(toType)) {
             // primitive widening
-            return new WidenPrimitive(item, toType);
+            return new PrimitiveCast(item, GenericType.of(toType));
+        } else if (!fromType.isPrimitive() && CD_Object.equals(toType)) {
+            return new UncheckedCast(item, GenericType.of(toType));
         }
 
         requireSameLoadableTypeKind(fromType, toType);

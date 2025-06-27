@@ -11,8 +11,6 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
 
 final class Box extends Cast {
-    private boolean bound;
-
     private static ClassDesc boxing(ClassDesc unboxType) {
         ClassDesc boxType = Conversions.boxingConversion(unboxType)
                 .orElseThrow(() -> new IllegalArgumentException("No box type for " + unboxType.displayName()));
@@ -28,16 +26,6 @@ final class Box extends Cast {
 
     Box(Expr a, ClassDesc toType) {
         super(a, GenericType.of(toType));
-    }
-
-    @Override
-    public boolean bound() {
-        return bound;
-    }
-
-    @Override
-    protected void bind() {
-        bound = true;
     }
 
     @Override
