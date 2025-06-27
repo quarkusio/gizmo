@@ -33,6 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.ClassFile;
@@ -385,14 +386,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr newArray(final ClassDesc componentType, final List<? extends Expr> values) {
+    @Override
+    public <T> Expr newArray(final ClassDesc componentType, final List<T> values, final Function<T, ? extends Expr> mapper) {
         checkActive();
         // build the object graph
         int size = values.size();
         List<ArrayStore> stores = new ArrayList<>(size);
         NewEmptyArray nea = new NewEmptyArray(componentType, ConstImpl.of(size));
         for (int i = 0; i < size; i++) {
-            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) values.get(i), componentType));
+            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) mapper.apply(values.get(i)), componentType));
         }
         // stitch the object graph into our list
         insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
@@ -1202,21 +1204,33 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 
-    public Expr listOf(final List<? extends Expr> items) {
-        int size = items.size();
+    @Override
+    public <T> Expr listOf(final List<T> items, final Function<T, ? extends Expr> mapper) {
+        List<Expr> exprs = new ArrayList<>();
+        for (T item : items) {
+            exprs.add(mapper.apply(item));
+        }
+
+        int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), items);
+            return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, items));
+            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, exprs));
         }
     }
 
-    public Expr setOf(final List<? extends Expr> items) {
-        int size = items.size();
+    @Override
+    public <T> Expr setOf(final List<T> items, final Function<T, ? extends Expr> mapper) {
+        List<Expr> exprs = new ArrayList<>();
+        for (T item : items) {
+            exprs.add(mapper.apply(item));
+        }
+
+        int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
+            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, items));
+            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, exprs));
         }
     }
 

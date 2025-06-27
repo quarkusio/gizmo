@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
@@ -938,10 +939,22 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Create a new array with the given type, initialized with the given values.
      *
      * @param componentType the component type (must not be {@code null})
+     * @param values the values to assign into the array after mapping (must not be {@code null})
+     * @param mapper function that turns values into expressions (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
+    <T> Expr newArray(ClassDesc componentType, List<T> values, Function<T, ? extends Expr> mapper);
+
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
-    Expr newArray(ClassDesc componentType, List<? extends Expr> values);
+    default Expr newArray(ClassDesc componentType, List<? extends Expr> values) {
+        return newArray(componentType, values, Function.identity());
+    };
 
     /**
      * Create a new array with the given type, initialized with the given values.
@@ -3582,11 +3595,24 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
      *
+     * @param items the items to add to the list after mapping (must not be {@code null})
+     * @param mapper function that turns values of type {@code T} into expressions (must not be {@code null}
+     *        and must not produce {@code null})
+     * @return the list expression (not {@code null})
+     * @see #withList(Expr)
+     */
+    <T> Expr listOf(List<T> items, Function<T, ? extends Expr> mapper);
+
+    /**
+     * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
+     *
      * @param items the items to add to the list (must not be {@code null})
      * @return the list expression (not {@code null})
      * @see #withList(Expr)
      */
-    Expr listOf(List<? extends Expr> items);
+    default Expr listOf(List<? extends Expr> items) {
+        return listOf(items, Function.identity());
+    }
 
     /**
      * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
@@ -3602,17 +3628,30 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
      *
-     * @param items the items to add to the list (must not be {@code null})
+     * @param items the items to add to the set after mapping (must not be {@code null})
+     * @param mapper function that turns values of type {@code T} into expressions (must not be {@code null}
+     *        and must not produce {@code null})
      * @return the list expression (not {@code null})
      * @see #withSet(Expr)
      */
-    Expr setOf(List<? extends Expr> items);
+    <T> Expr setOf(List<T> items, Function<T, ? extends Expr> mapper);
 
     /**
      * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
      *
      * @param items the items to add to the list (must not be {@code null})
-     * @return the list expression (not {@code null})
+     * @return the set expression (not {@code null})
+     * @see #withSet(Expr)
+     */
+    default Expr setOf(List<? extends Expr> items) {
+        return setOf(items, Function.identity());
+    }
+
+    /**
+     * Generate a call to {@link Set#of()} or one of its variants, based on the number of arguments.
+     *
+     * @param items the items to add to the set (must not be {@code null})
+     * @return the set expression (not {@code null})
      * @see #withSet(Expr)
      */
     default Expr setOf(Expr... items) {
