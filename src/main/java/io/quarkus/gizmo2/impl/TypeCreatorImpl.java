@@ -325,7 +325,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         if (!staticInits.isEmpty()) {
             zb.withMethod("<clinit>", MethodTypeDesc.of(CD_void), ACC_STATIC, mb -> {
                 mb.withCode(cb -> {
-                    BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void);
+                    BlockCreatorImpl bc = new BlockCreatorImpl(this, cb, CD_void, "static");
                     bc.accept(b0 -> {
                         for (Consumer<BlockCreator> init : staticInits) {
                             b0.block(init);

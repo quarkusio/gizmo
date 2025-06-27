@@ -87,6 +87,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final BlockCreatorImpl parent;
     private final int depth;
     /**
+     * Name of the method to which this block belongs. This is used to create better names
+     * of lambda methods in debug mode, so it follows the javac convention: lambdas created
+     * in a static initializer use the name {@code static} and lambdas created in a constructor
+     * use the name {@code new}.
+     */
+    private final String methodNameForLambdas;
+    /**
      * All the items to emit, in order.
      */
     private final Node head;
@@ -109,8 +116,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private List<Consumer<BlockCreator>> postInits;
 
-    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
-        this(owner, outerCodeBuilder, null, CD_void, ConstImpl.ofVoid(), CD_void, returnType);
+    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType,
+            final String methodNameForLambdas) {
+        this(owner, outerCodeBuilder, null, CD_void, ConstImpl.ofVoid(), CD_void, returnType, methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent) {
@@ -118,23 +126,28 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), CD_void, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), CD_void, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final Item input, final ClassDesc outputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType, final ClassDesc outputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), outputType, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), outputType, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent,
-            final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
+            final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType,
+            final String methodNameForLambdas) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
         depth = parent == null ? 0 : parent.depth + 1;
+        this.methodNameForLambdas = methodNameForLambdas;
         tryFinally = parent == null ? null : parent.tryFinally;
         postInits = parent == null ? List.of() : parent.postInits;
         startLabel = newLabel();
@@ -610,7 +623,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private Expr lambdaDebug(MethodDesc sam, ClassDesc samOwner, Consumer<LambdaCreator> builder) {
         // TODO serializable lambdas not (yet) supported
         MethodTypeDesc samType = sam.type();
-        String name = "$$lambda$" + owner.lambdaAndAnonClassCounter++;
+        String name = "lambda$" + methodNameForLambdas + "$" + owner.lambdaAndAnonClassCounter++;
         List<Expr> captures = new ArrayList<>();
         // always generating `static` methods is fine, because users have to capture `this` explicitly
         MethodDesc lambdaMethod = owner.staticMethod(name, mc -> {
