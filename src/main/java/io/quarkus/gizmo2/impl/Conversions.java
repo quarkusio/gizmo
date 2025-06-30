@@ -127,6 +127,9 @@ final class Conversions {
      * <li>reference widening conversion (Reference widening conversion is supposed to exist
      * from any reference type only to {@code java.lang.Object}. Gizmo does not have a type
      * system and so does not know which class is assignable to which.)</li>
+     * <li>reference narrowing conversion (Reference narrowing conversion is supposed to exist
+     * only from {@code java.lang.Object} to any reference type.)</li>
+     * <li>reference narrowing conversion followed by unboxing conversion</li>
      * </ul>
      */
     static Item convert(Expr expr, ClassDesc toType) {
@@ -160,6 +163,10 @@ final class Conversions {
             return new PrimitiveCast(item, GenericType.of(toType));
         } else if (!fromType.isPrimitive() && CD_Object.equals(toType)) {
             return new UncheckedCast(item, GenericType.of(toType));
+        } else if (CD_Object.equals(fromType) && !toType.isPrimitive()) {
+            return new CheckCast(item, GenericType.of(toType));
+        } else if (CD_Object.equals(fromType) && toType.isPrimitive()) {
+            return new Unbox(new CheckCast(item, GenericType.of(boxTypes.get(toType))));
         }
 
         requireSameLoadableTypeKind(fromType, toType);
