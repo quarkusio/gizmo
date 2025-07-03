@@ -1176,7 +1176,7 @@ public class AutoConversionTest {
                 //     double[] array = new double[] { 13, 42L, 5.0F };
                 //     return array;
                 // }
-                mc.returning(Object.class); // always `int[]`
+                mc.returning(Object.class); // always `double[]`
                 mc.body(bc -> {
                     Expr array = bc.newArray(double.class,
                             Const.of(13),

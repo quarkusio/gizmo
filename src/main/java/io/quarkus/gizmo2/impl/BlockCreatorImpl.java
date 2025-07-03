@@ -33,6 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.ClassFile;
@@ -86,6 +87,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final BlockCreatorImpl parent;
     private final int depth;
     /**
+     * Name of the method to which this block belongs. This is used to create better names
+     * of lambda methods in debug mode, so it follows the javac convention: lambdas created
+     * in a static initializer use the name {@code static} and lambdas created in a constructor
+     * use the name {@code new}.
+     */
+    private final String methodNameForLambdas;
+    /**
      * All the items to emit, in order.
      */
     private final Node head;
@@ -108,8 +116,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     private List<Consumer<BlockCreator>> postInits;
 
-    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType) {
-        this(owner, outerCodeBuilder, null, CD_void, ConstImpl.ofVoid(), CD_void, returnType);
+    BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final ClassDesc returnType,
+            final String methodNameForLambdas) {
+        this(owner, outerCodeBuilder, null, CD_void, ConstImpl.ofVoid(), CD_void, returnType, methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent) {
@@ -117,23 +126,28 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), CD_void, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), CD_void, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final Item input, final ClassDesc outputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, input.type(), input, outputType, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     BlockCreatorImpl(final BlockCreatorImpl parent, final ClassDesc inputType, final ClassDesc outputType) {
-        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), outputType, parent.returnType);
+        this(parent.owner, parent.outerCodeBuilder, parent, inputType, ConstImpl.ofVoid(), outputType, parent.returnType,
+                parent.methodNameForLambdas);
     }
 
     private BlockCreatorImpl(final TypeCreatorImpl owner, final CodeBuilder outerCodeBuilder, final BlockCreatorImpl parent,
-            final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType) {
+            final ClassDesc inputType, final Item input, final ClassDesc outputType, final ClassDesc returnType,
+            final String methodNameForLambdas) {
         this.outerCodeBuilder = outerCodeBuilder;
         this.parent = parent;
         this.owner = owner;
         depth = parent == null ? 0 : parent.depth + 1;
+        this.methodNameForLambdas = methodNameForLambdas;
         tryFinally = parent == null ? null : parent.tryFinally;
         postInits = parent == null ? List.of() : parent.postInits;
         startLabel = newLabel();
@@ -385,14 +399,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public Expr newArray(final ClassDesc componentType, final List<? extends Expr> values) {
+    @Override
+    public <T> Expr newArray(final ClassDesc componentType, final List<T> values, final Function<T, ? extends Expr> mapper) {
         checkActive();
         // build the object graph
         int size = values.size();
         List<ArrayStore> stores = new ArrayList<>(size);
         NewEmptyArray nea = new NewEmptyArray(componentType, ConstImpl.of(size));
         for (int i = 0; i < size; i++) {
-            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) values.get(i), componentType));
+            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) mapper.apply(values.get(i)), componentType));
         }
         // stitch the object graph into our list
         insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
@@ -608,7 +623,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private Expr lambdaDebug(MethodDesc sam, ClassDesc samOwner, Consumer<LambdaCreator> builder) {
         // TODO serializable lambdas not (yet) supported
         MethodTypeDesc samType = sam.type();
-        String name = "$$lambda$" + owner.lambdaAndAnonClassCounter++;
+        String name = "lambda$" + methodNameForLambdas + "$" + owner.lambdaAndAnonClassCounter++;
         List<Expr> captures = new ArrayList<>();
         // always generating `static` methods is fine, because users have to capture `this` explicitly
         MethodDesc lambdaMethod = owner.staticMethod(name, mc -> {
@@ -1202,21 +1217,33 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
     }
 
-    public Expr listOf(final List<? extends Expr> items) {
-        int size = items.size();
+    @Override
+    public <T> Expr listOf(final List<T> items, final Function<T, ? extends Expr> mapper) {
+        List<Expr> exprs = new ArrayList<>();
+        for (T item : items) {
+            exprs.add(mapper.apply(item));
+        }
+
+        int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), items);
+            return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, items));
+            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, exprs));
         }
     }
 
-    public Expr setOf(final List<? extends Expr> items) {
-        int size = items.size();
+    @Override
+    public <T> Expr setOf(final List<T> items, final Function<T, ? extends Expr> mapper) {
+        List<Expr> exprs = new ArrayList<>();
+        for (T item : items) {
+            exprs.add(mapper.apply(item));
+        }
+
+        int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), items);
+            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, items));
+            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, exprs));
         }
     }
 

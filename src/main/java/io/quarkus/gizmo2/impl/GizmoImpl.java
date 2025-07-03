@@ -68,7 +68,7 @@ public final class GizmoImpl implements Gizmo {
     }
 
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler);
+        return new GizmoImpl(outputHandler, modifiersByLocation);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {

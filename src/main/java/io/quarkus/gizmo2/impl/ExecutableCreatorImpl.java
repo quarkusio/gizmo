@@ -34,6 +34,7 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
 
@@ -238,7 +239,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
-        BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType());
+        BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType(),
+                this instanceof ConstructorCreator ? "new" : name());
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
