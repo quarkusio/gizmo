@@ -67,17 +67,139 @@ The `ClassOutput.fileWriter(Path)` static factory method returns a `ClassWriter`
 [id=descriptors]
 == Descriptors
 
+The class file format itself encodes types and members using "descriptors", which are strings which unambiguously identify them.
+Gizmo 2 uses object abstractions of these strings for convenience and safety.
+Some of these object types are provided by the JDK, and others are defined by Gizmo.
+
 [id=classdesc]
 === The `ClassDesc` interface
+
+Types (primitives, classes and interfaces and their variations, and arrays) are identified using the `ClassDesc` interface, which is provided by the JDK as part of the `java.lang.constant` package.
+Instances can be created using the various factory methods of that class.
+
+.Example of creating a class descriptor for `java.lang.String`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+public static class ClassDescExample {
+    public static void main(String[] args) {
+        System.out.printf("The descriptor of String is: %s%n", ClassDesc.of("java.lang.String"));
+    }
+}
+----
+
+A class descriptor can also be derived from a `Class<?>` object by calling its `describeConstable` method.
+Note that https://openjdk.org/jeps/371[hidden classes] will return an empty `Optional` from this method.
+
+Since hidden classes are uncommon, the `Reflection2Gizmo.classDescOf(...)` method takes a `Class` and returns a `ClassDesc` directly.
+In case of a hidden class (if you can obtain its `Class` object), this method throws an exception.
 
 [id=fielddesc]
 === The `FieldDesc` interface
 
+Fields are identified by the combination of the "owner" type (represented as a <<classdesc,`ClassDesc`>>), the field name (a `String`), and the field's type (another `ClassDesc`).
+This is true for both static and instance fields, which therefore share an overall namespace.
+In Gizmo, these identifiers are represented using the `FieldDesc` interface, which contains several factory methods for easy usage.
+
+.Examples of various field descriptors
+[source,java]
+----
+import java.io.PrintStream;
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.desc.FieldDesc;
+
+public class FieldDescExample {
+    public static void main(String[] args) {
+        FieldDesc sysOut = FieldDesc.of(System.class, "out"); // the type is detected via reflection
+        FieldDesc sysErr = FieldDesc.of(
+            ClassDesc.of("java.lang.System"),
+            "err",
+            PrintStream.class
+        );
+        FieldDesc sysIn = FieldDesc.of(
+            ClassDesc.of("java.lang.System"),
+            "in",
+            ClassDesc.of("java.io.InputStream")
+        );
+    }
+}
+
+----
+
 [id=methoddesc]
 === `MethodDesc` and `ConstructorDesc`
 
+Within the JVM, methods and constructors are represented the same way (the latter bearing the special name `<init>` and always returning `void`, but otherwise having the same structure).
+Methods and constructors are uniquely identified by the combination of the "owner" type (a <<classdesc,`ClassDesc`>>), the member name (a `String`), and the type (a <<methodtypedesc,`MethodTypeDesc`>>).
+
+Gizmo 2 represents these identifiers using the `MethodDesc` and `ConstructorDesc` interfaces.
+Furthermore, the JVM makes a distinction between methods which exist on interfaces (and their derived types) versus methods which exist on classes (and their derived types).
+This distinction is represented using the `ClassMethodDesc` and `InterfaceMethodDesc` sub-interfaces.
+
+A `MethodDesc` can be constructed using reflection-based factory methods on the base `MethodDesc` interface.
+These methods will automatically determine whether a `ClassMethodDesc` or `InterfaceMethodDesc` should be returned, based on the owner `Class` instance that is provided to these methods.
+
+If the owner's `Class` instance is not readily available (for example, if it is a generated class or one not visible to the generator's class loader), then the factory methods on `ClassMethodDesc` and `InterfaceMethodDesc` may be used to return an instance of that type.
+
+Since a `ConstructorDesc` always returns `void`, any attempt to create a `ConstructorDesc` with a non-`void` return type will result in an exception.
+
+There are a wide variety of factory methods available for these types.
+A few of the common ones are illustrated below.
+
+.Examples of various method and constructor descriptors
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+
+public class MethodDescExample {
+    public static void main(String[] args) {
+        ConstructorDesc stringCtor = ConstructorDesc.of(String.class, char[].class);
+
+        MethodDesc hashCodeDesc = MethodDesc.of(Object.class, "hashCode", int.class);
+        MethodDesc runDesc = InterfaceMethodDesc.of(
+            ClassDesc.of("java.lang.Runnable"),
+            "run",
+            void.class
+        );
+        MethodDesc toStringDesc = ClassMethodDesc.of(
+            ClassDesc.of("java.lang.Object"),
+            "toString",
+            String.class
+        );
+    }
+}
+----
+
 [id=methodtypedesc]
 === The `MethodTypeDesc` interface
+
+The type of a method or constructor is determined by its return and parameter types.
+The JDK represents this type using the `MethodTypeDesc` interface in the `java.lang.constant` package.
+This interface contains a factory method to compose instances from constituent <<classdesc,ClassDesc>> instances.
+
+.Example of creating a `MethodTypeDesc`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+
+public class MethodTypeDescExample {
+    public static void main(String[] args) {
+        ClassDesc stringArray = ClassDesc.of("java.lang.String").arrayType();
+        MethodTypeDesc mainType = MethodTypeDesc.of(
+            ClassDesc.ofDescriptor("V"), // void
+            stringArray
+        );
+    }
+}
+----
 
 [id=creating-types]
 == Creating types
