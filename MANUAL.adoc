@@ -9,6 +9,33 @@
 [id=quick-start]
 == Quick start
 
+To get started quickly, include the `io.quarkus.gizmo:gizmo2` artifact in your project build. The following code blob shows how to generate a simple class:
+
+."Hello world" example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("HelloWorldGenerated", cc -> {
+            zc.staticMethod("main", mc -> {
+                mc.public_();
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Hello world!%n");
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=gizmo-interface]
 == The `Gizmo` interface
 
