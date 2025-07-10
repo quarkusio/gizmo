@@ -6,6 +6,17 @@
 [id=introduction]
 == Introduction
 
+Gizmo 2 is a library whose purpose is to make it relatively easy to generate reasonably efficient class files.
+
+The API is loosely modeled after the https://openjdk.org/jeps/484[JDK class file API], in that elements are modeled using lexical scoping.
+In contrast however, many things which would otherwise be subtly confusing or difficult are simplified considerably.
+
+Since this library is used to build programs in a way that approximates the Java language itself, it contains many method names that conflict with Java keywords.
+In these cases, the method name has a `\_` character appended to the method name (for example, `class_`, `switch_`, or `goto_`).
+
+This library is an evolution of the earlier Gizmo 1 library with further conceptual simplifications and capabilities.
+While Gizmo 2 is not source- or binary-compatible with Gizmo 1, it resides in a non-conflicting package space, so the two can coexist during a transition period of migrating from 1 to 2.
+
 [id=quick-start]
 == Quick start
 
