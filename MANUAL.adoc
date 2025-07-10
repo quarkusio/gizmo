@@ -50,6 +50,11 @@ public class HelloWorld {
 [id=gizmo-interface]
 == The `Gizmo` interface
 
+The `Gizmo` interface is the primary entry point into the API.
+Instances are created using the `Gizmo.create(...)` method, which accepts a <<classoutput>> instance.
+
+The `Gizmo` instance can be used to create classes and interfaces, and can also be used to create derived `Gizmo` instances which have different defaults for access modifiers or a different <<classoutput>>.
+
 [id=classoutput]
 === `ClassOutput`
 
