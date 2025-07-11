@@ -1,0 +1,425 @@
+= Gizmo User's Manual
+:preface-title: introduction
+:docname: user-manual
+:toc:
+
+[id=introduction]
+== Introduction
+
+Gizmo 2 is a library whose purpose is to make it relatively easy to generate reasonably efficient class files.
+
+The API is loosely modeled after the https://openjdk.org/jeps/484[JDK class file API], in that elements are modeled using lexical scoping.
+In contrast however, many things which are subtly confusing or difficult are simplified considerably.
+
+This library is an evolution of the earlier Gizmo 1 library with further conceptual simplifications and capabilities.
+While Gizmo 2 is not source- or binary-compatible with Gizmo 1, it resides in a non-conflicting package space, so the two can coexist during a transition period of migrating from 1 to 2.
+
+[id=quick-start]
+== Quick start
+
+To get started quickly, include the `io.quarkus.gizmo:gizmo2` artifact in your project build. The following code blob shows how to get started quickly with generating classes:
+
+."Hello world" example
+[source,java]
+----
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("HelloWorldGenerated", cc -> {
+            zc.staticMethod("main", mc -> {
+                mc.public_();
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Hello world!%n");
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=gizmo-interface]
+== The `Gizmo` interface
+
+The `Gizmo` interface is the primary entry point into the API.
+Instances are created using the `Gizmo.create(...)` method, which accepts a <<classoutput>> instance.
+
+The `Gizmo` instance can be used to create classes and interfaces, and can also be used to create derived `Gizmo` instances which have different defaults for access modifiers or a different <<classoutput>>.
+
+[id=classoutput]
+=== `ClassOutput`
+
+Implementations of the `ClassOutput` interface receive the bytes of the generated classes and resources.
+
+Users may implement this interface directly or use a provided implementation.
+
+The `ClassOutput.fileWriter(Path)` static factory method returns a `ClassWriter` which writes classes and resources under the given target path.
+
+[id=descriptors]
+== Descriptors
+
+The class file format itself encodes types and members using "descriptors", which are strings which unambiguously identify them.
+Gizmo 2 uses object abstractions of these strings for convenience and safety.
+Some of these object types are provided by the JDK, and others are defined by Gizmo.
+
+[id=classdesc]
+=== The `ClassDesc` interface
+
+Types (primitives, classes and interfaces and their variations, and arrays) are identified using the `ClassDesc` interface, which is provided by the JDK as part of the `java.lang.constant` package.
+Instances can be created using the various factory methods of that class.
+
+.Example of creating a class descriptor for `java.lang.String`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+// ...
+// then, inside some method body:
+ClassDesc stringDesc = ClassDesc.of("java.lang.String");
+----
+
+A class descriptor can also be derived from a `Class<?>` object by calling its `describeConstable` method.
+Note that https://openjdk.org/jeps/371[hidden classes] will return an empty `Optional` from this method.
+
+Since hidden classes are uncommon, the `Reflection2Gizmo.classDescOf(...)` method takes a `Class` and returns a `ClassDesc` directly.
+In case of a hidden class (if you can obtain its `Class` object), this method throws an exception.
+
+[id=fielddesc]
+=== The `FieldDesc` interface
+
+Fields are identified by the combination of the "owner" type (represented as a <<classdesc,ClassDesc>>), the field name (a `String`), and the field's type (another `ClassDesc`).
+This is true for both static and instance fields, which therefore share an overall namespace.
+In Gizmo, these identifiers are represented using the `FieldDesc` interface, which contains several factory methods for easy usage.
+
+.Examples of various field descriptors
+[source,java]
+----
+import io.quarkus.gizmo2.desc.FieldDesc;
+// for the example:
+import java.io.PrintStream;
+// ...
+// then, inside some method body:
+FieldDesc sysOut = FieldDesc.of(System.class, "out"); // the type is detected via reflection
+FieldDesc sysErr = FieldDesc.of(
+    ClassDesc.of("java.lang.System"),
+    "err",
+    PrintStream.class
+);
+FieldDesc sysIn = FieldDesc.of(
+    ClassDesc.of("java.lang.System"),
+    "in",
+    ClassDesc.of("java.io.InputStream")
+);
+----
+
+[id=methoddesc]
+=== `MethodDesc` and `ConstructorDesc`
+
+Within the JVM, methods and constructors are represented the same way (the latter bearing the special name `<init>` and always returning `void`, but otherwise having the same structure).
+Methods and constructors are uniquely identified by the combination of the "owner" type (a <<classdesc,ClassDesc>>), the member name (a `String`), and the type (a <<methodtypedesc,MethodTypeDesc>>).
+
+Gizmo 2 represents these identifiers using the `MethodDesc` and `ConstructorDesc` interfaces.
+Furthermore, the JVM makes a distinction between methods which exist on interfaces (and their derived types) versus methods which exist on classes (and their derived types).
+This distinction is represented using the `ClassMethodDesc` and `InterfaceMethodDesc` sub-interfaces.
+
+A `MethodDesc` can be constructed using reflection-based factory methods on the base `MethodDesc` interface.
+These methods will automatically determine whether a `ClassMethodDesc` or `InterfaceMethodDesc` should be returned, based on the owner `Class` instance that is provided to these methods.
+
+If the owner's `Class` instance is not readily available (for example, if it is a generated class or one not visible to the generator's class loader), then the factory methods on `ClassMethodDesc` and `InterfaceMethodDesc` may be used to return an instance of that type.
+
+Since a `ConstructorDesc` always returns `void`, any attempt to create a `ConstructorDesc` with a non-`void` return type will result in an exception.
+
+There are a wide variety of factory methods available for these types.
+A few of the common ones are illustrated below.
+
+.Examples of various method and constructor descriptors
+[source,java]
+----
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+// ...
+// then, inside some method body:
+ConstructorDesc stringCtor = ConstructorDesc.of(String.class, char[].class);
+
+MethodDesc hashCodeDesc = MethodDesc.of(Object.class, "hashCode", int.class);
+MethodDesc runDesc = InterfaceMethodDesc.of(
+    ClassDesc.of("java.lang.Runnable"),
+    "run",
+    void.class
+);
+MethodDesc toStringDesc = ClassMethodDesc.of(
+    ClassDesc.of("java.lang.Object"),
+    "toString",
+    String.class
+);
+----
+
+[id=methodtypedesc]
+=== The `MethodTypeDesc` interface
+
+The type of a method or constructor is determined by its return and parameter types.
+The JDK represents this type using the `MethodTypeDesc` interface in the `java.lang.constant` package.
+This interface contains a factory method to compose instances from constituent <<classdesc,ClassDesc>> instances.
+
+.Example of creating a `MethodTypeDesc`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+// ...
+// then, inside some method body:
+ClassDesc stringArray = ClassDesc.of("java.lang.String").arrayType();
+MethodTypeDesc mainType = MethodTypeDesc.of(
+    ClassDesc.ofDescriptor("V"), // void
+    stringArray
+);
+----
+
+[id=creating-types]
+== Creating types
+
+[id=creating-fields]
+== Creating fields
+
+[id=creating-methods]
+== Creating methods and constructors
+
+[id=modifiers]
+== Access levels and modifiers
+
+[id=writing-instructions]
+=== Writing instructions
+
+[id=blocks]
+== Blocks
+
+[id=scoping]
+=== Scoping
+
+[id=expressions]
+== Expressions
+
+[id=expressions-use]
+=== How to use expressions correctly
+
+[id=types]
+=== Types
+
+[id=constants]
+=== Constants
+
+[id=const]
+==== The `Const` interface
+
+[id=jdk-const]
+==== The `ConstantDesc` and `Constable` interfaces
+
+[id=condy]
+==== Dynamic constants
+
+[id=this]
+=== The special `this` expression
+
+[id=assignable]
+=== Assignable expressions
+
+[id=local-vars]
+==== Local variables
+
+[id=fields]
+==== Field expressions
+
+[id=array-elements]
+==== Array element expressions
+
+[id=variable-use]
+==== Using variable values
+
+[id=variable-mutate]
+==== Mutating variables
+
+[id=variable-atomics]
+==== Atomic operations on variables
+
+[id=void-expr]
+=== Void expressions
+
+[id=yielding]
+=== Yielding values from blocks
+
+[id=arithmetic]
+=== Arithmetic expressions
+
+xxx: `add`/`sub`/`mul`/`div`/`mod`/`neg`
+
+[id=bitwise-logic]
+=== Bitwise logical expressions
+
+xxx: `and`/`or`/`xor`/`complement`
+
+[id=bitwise-shift]
+=== Bitwise shifting expressions
+
+xxx: `shl`/`shr`/`ushr`
+
+[id=relational]
+=== Relational expressions
+
+[id=equality]
+==== Equality/inequality
+
+xxx: `eq`/`ne`
+
+[id=numerical-relations]
+==== Numerical relations
+
+xxx: `lt`/`le`/`gt`/`ge`
+
+[id=comparator-like]
+==== Comparator-like operations
+
+xxx: `cmp`/`cmpl`/`cmpg`
+
+[id=invocation]
+=== Invocation expressions
+
+[id=invoke-static]
+==== `invokeStatic`
+
+[id=invoke-virtual]
+==== `invokeVirtual`
+
+[id=invoke-interface]
+==== `invokeInterface`
+
+[id=invoke-special]
+==== `invokeSpecial`
+
+[id=new]
+=== `new` expression
+
+[id=new-array]
+=== `newArray` expression
+
+[id=anonymous]
+=== Anonymous class expressions
+
+[id=lambdas]
+=== Lambda expressions
+
+[id=control]
+== Control flow
+
+[id=block]
+=== `block`
+
+[id=break]
+=== `break`
+
+[id=goto]
+=== `goto`/`gotoStart`
+
+[id=if]
+=== `if`/`cond`
+
+[id=logical]
+=== `logicalAnd`/`logicalOr`
+
+[id=switch]
+=== `switch` and `switchEnum`
+
+[id=goto-case]
+==== `gotoCase`/`gotoDefault`
+
+[id=loop]
+=== `loop`
+
+[id=while]
+=== `while`/`doWhile`
+
+[id=for-each]
+=== `forEach`
+
+[id=continue]
+=== `continue_`
+
+[id=try]
+=== `try_`
+
+[id=synchronized]
+=== `synchronized_`
+
+[id=auto-close]
+=== `autoClose`
+
+[id=annotations]
+== Adding annotations
+
+(TODO more detail)
+
+[id=helpers]
+== Helper methods
+
+[id=assertions]
+=== Assertions
+
+[id=expr-equals]
+=== `exprEquals`/`exprHashCode`/`exprToString`
+
+[id=array-equals]
+=== `arrayEquals`/`arrayHashCode`/`arrayToString`
+
+[id=class-for-name]
+=== `classForName`
+
+[id=close]
+=== `close`/`autoClose`
+
+[id=iterate]
+=== `iterate`
+
+[id=current-thread]
+=== `currentThread`
+
+[id=optional]
+=== `optionalOf`/`optionalOfNullable`
+
+[id=collection-of]
+=== `mapOf`/`setOf`/`listOf`/`mapEntryOf`
+
+[id=swap]
+=== `swap`/`rotate`
+
+[id=boxing]
+=== `box`/`unbox`
+
+[id=locked]
+=== `locked`
+
+[id=fences]
+=== Fences
+
+[id=wrappers]
+== Object wrappers
+
+(TODO list them)
+
+[id=generic-type]
+== Generic types and type annotations
+
+[id=building-generic-types]
+=== Building generic types
+
+[id=type-variables]
+=== Adding type variables
+
+[id=debugging]
+== Debugging tips
+
+[id=source-file-line]
+=== Adding source file name and line numbers
