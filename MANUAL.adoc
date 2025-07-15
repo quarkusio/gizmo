@@ -204,6 +204,87 @@ public class MethodTypeDescExample {
 [id=creating-types]
 == Creating types
 
+Types may be created directly using methods on the <<gizmo-interface,`Gizmo`>> interface.
+The general form of these methods accepts a consumer of a `ClassCreator` or `InterfaceCreator` instance, which is then used to construct the type and its constituent members.
+Normally, an in-line lambda expression is used for this argument, which creates a lexical structure which is similar to that of a type definition in Java.
+By convention, the parameter name `cc` is typically used for the `ClassCreator` or `InterfaceCreator` instance.
+
+The creator instance passed to the consumer may add or remove flags, set the access level, modify the class version, extend interfaces or a base class, and add members to the type.
+
+.Example of creating a simple class
+[source,java]
+----
+import java.io.Serializable;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.ClassVersion;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class SimpleClassExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new class using the given lambda
+        gizmo.class_("com.mycompany.SomeClass", cc -> {
+            // we can implement interfaces
+            cc.implements_(Serializable.class);
+            // we can extend base classes
+            cc.extends_(RuntimeException.class);
+            // we can set flags
+            cc.final_();
+            // or...
+            cc.addFlags(ModifierFlag.FINAL);
+            // we can remove flags
+            cc.removeFlag(ModifierFlag.SYNTHETIC);
+            // we can set the access level
+            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            // or...
+            cc.packagePrivate();
+            // we can set the class version
+            cc.setVersion(ClassVersion.V17);
+        });
+        // at this point, the class has been written to the output
+    }
+}
+----
+
+.Example of creating a simple interface
+[source,java]
+----
+import java.io.Serializable;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.ClassVersion;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class SimpleInterfaceExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new interface using the given lambda
+        gizmo.interface_("com.mycompany.SomeInterface", cc -> {
+            // we can extend other interfaces
+            cc.extends_(Serializable.class);
+            cc.extends_(Cloneable.class);
+            // we can set flags
+            cc.addFlags(ModifierFlag.SYNTHETIC);
+            // we can remove flags
+            cc.removeFlag(ModifierFlag.SYNTHETIC);
+            // we can set the access level
+            cc.public_();
+            // or...
+            cc.setAccess(AccessLevel.PUBLIC);
+            // we can set the class version
+            cc.setVersion(ClassVersion.V17);
+        });
+    }
+}
+----
+
 [id=creating-fields]
 == Creating fields
 
