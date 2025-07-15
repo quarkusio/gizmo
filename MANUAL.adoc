@@ -288,6 +288,81 @@ public class SimpleInterfaceExample {
 [id=creating-fields]
 == Creating fields
 
+Fields may be added to types using the `field`, `staticField`, and `constantField` methods.
+These methods accept a consumer for a `StaticFieldCreator` or `InstanceFieldCreator` instance.
+The `field` method returns a <<fielddesc,`FieldDesc`>> for the newly created field.
+The `staticField` and `constantField` methods return a <<fields,`StaticFieldVar`>> which may be used directly in expressions.
+
+Fields may be initialized directly with a constant value at the time the field is defined by using the `setInitial` method.
+For more complex initializers, the `setInitializer` method may be used, which accepts a <<blocks,code block creator>> which must yield a value for the field.
+Initializers are automatically emitted into constructors or static initializers in the order that they are established.
+
+By convention, the parameter name `fc` is typically used for the `FieldCreator` instance.
+
+.Example of creating a class with some fields
+[source,java]
+----
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ClassWithFieldsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new class using the given lambda
+        gizmo.class_("com.mycompany.ClassWithFields", cc -> {
+            // implicitly `int` because of the constant initializer
+            cc.field("count", Const.of(123));
+            // a more complex field
+            cc.field("name", fc -> {
+                fc.public_();
+                fc.final_();
+                fc.addFlag(ModifierFlag.TRANSIENT);
+                // implicitly a `String` because of the initializer
+                fc.setInitial("A more complex field");
+            });
+            // a field with a specified type and no initializer
+            cc.field("problem", fc -> {
+                fc.private_();
+                fc.setType(Throwable.class);
+            });
+            // a public static final constant field
+            cc.constantField("KIBI", Const.of(1024));
+            // a regular static field
+            cc.staticField("closed", fc -> {
+                fc.volatile_();
+                fc.setType(boolean.class);
+            });
+            // static fields may be final as well
+            var nameArray = cc.staticField("nameArray", fc -> {
+                fc.setType(String[].class);
+                fc.final_();
+                // initialize here or separately
+            });
+            // a more complex initializer example
+            cc.field("namesAsList", fc -> {
+                fc.setType(List.class);
+                // blocks and expressions are covered elsewhere
+                fc.setInitializer(b0 -> {
+                    b0.yield(
+                        b0.invokeStatic(
+                            MethodDesc.of(Arrays.class, "asList", List.class, Object[].class),
+                            b0.get(nameArray)
+                        )
+                    );
+                });
+            });
+        });
+    }
+}
+----
+
 [id=creating-methods]
 == Creating methods and constructors
 
