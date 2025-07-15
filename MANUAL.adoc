@@ -366,6 +366,169 @@ public class ClassWithFieldsExample {
 [id=creating-methods]
 == Creating methods and constructors
 
+Methods and constructors are created using one of several methods on the type creator instance.
+The method used depends on the properties of the constructor or method being built, and the kind of type that the method or constructor belongs to.
+They are as follows:
+
+* `staticMethod(...)` creates a static method on a class or interface
+* `ClassCreator.method(...)` creates a concrete instance method on a class
+* `ClassCreator.abstractMethod(...)` creates an abstract instance method on a class
+* `ClassCreator.staticNativeMethod(...)` creates a static native method on a class
+* `ClassCreator.nativeMethod(...)` creates an instance native method on a class
+* `ClassCreator.constructor(...)` creates a constructor on a class
+* `ClassCreator.defaultConstructor()` causes the default no-argument constructor to be generated
+* `InterfaceCreator.method(...)` creates an abstract instance method on an interface
+* `InterfaceCreator.defaultMethod(...)` creates a default instance method on an interface
+* `InterfaceCreator.privateMethod(...)` creates a private instance method on an interface
+
+In some cases, there may be an implicit modifier or access level that cannot be changed on that particular member.
+For example, interface private methods are always `private`, and abstract methods are always `abstract`.
+It is not possible to change these modifier flags or access levels.
+See <<modifiers>> for more information.
+
+The method and constructor factory methods generally follow three different forms:
+
+* A form which accepts <<methoddesc,a descriptor>> plus a creator consumer
+* A form which accepts a name plus a creator consumer
+* A form which accepts a name and a <<methodtypedesc,type descriptor>> plus a creator consumer
+
+Note that the constructor factory methods do not accept a name argument.
+
+If the type is given (either by giving the constructor/method descriptor or by giving the type descriptor), then the constructor's or method's <<parameters,parameter definitions>> (if any) must conform to the type given; otherwise, an error will be produced when the constructor or method is defined.
+
+If the type is not given, it will be computed based on the types of the parameter definitions (if any) plus the return type (which defaults to `void`, and which cannot be changed for constructors).
+
+The following is an example of defining constructors and methods.
+Note that constructors and some types of methods have bodies containing program code, which is covered in more detail in the <<blocks>> section, and other features such as <<annotations,annotations>> and <<modifiers,access levels and modifiers>> which are explained in their respective sections.
+
+.Example of defining constructors and methods
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class TypesWithMethodsAndConstructorsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // an interface to implement
+        ClassDesc nh = gizmo.interface_("org.numberifier.NumberHolder", cc -> {
+            cc.method("incrementNumber", mc -> {
+                mc.public_();
+                mc.returning(int.class);
+                // no body on interface method
+            });
+            cc.defaultMethod("setNumber", mc -> {
+                ParamVar newNumber = mc.parameter("newNumber", int.class);
+                // returns void by default; just return without doing anything
+                mc.body(BlockCreator::return_);
+            });
+            cc.staticMethod("newInstance", mc -> {
+                // return an instance of this interface
+                mc.returning(cc.type());
+                mc.public_();
+                mc.body(b0 -> {
+                    b0.return_(
+                        b0.new_(ClassDesc.of("org.numberifier.NumberHolderImpl"))
+);
+                });
+            });
+        });
+
+        // a base class to extend
+        ClassDesc anh = gizmo.class_("org.numberifier.AbstractNumberHolder", cc -> {
+            cc.implements_(nh);
+            cc.abstract_();
+            cc.abstractMethod("incrementNumber", mc -> {
+                mc.addAnnotation(Override.class);
+                mc.public_();
+                mc.returning(void.class);
+            });
+        });
+
+        // the leaf class
+        gizmo.class_("org.numberifier.NumberHolderImpl", cc -> {
+            cc.extends_(anh);
+            // add some fields for context
+            FieldDesc numberDesc = cc.field("number", Const.of(100));
+            // add a default ctor
+            cc.defaultConstructor();
+            // we need this in order for our instance methods to do something interesting
+            This this_ = cc.this_();
+            // add a non-public ctor with an implicitly defined type
+            cc.constructor(mc -> {
+                mc.packagePrivate();
+                ParamVar number = mc.parameter("number", int.class);
+                mc.body(b0 -> {
+                    b0.set(this_.field(numberDesc), number);
+                    b0.return_();
+                });
+            });
+            // method with implicitly defined type
+            cc.method("incrementNumber", mc -> {
+                mc.addAnnotation(Override.class);
+                mc.public_();
+                mc.returning(int.class);
+                mc.body(b0 -> {
+                    b0.inc(this_.field(numberDesc));
+                    b0.return_(this_.field(numberDesc));
+                });
+            });
+            // method with explicitly defined type
+            cc.method("setNumber", MethodTypeDesc.of(
+                ClassDesc.ofDescriptor("V"),
+                ClassDesc.ofDescriptor("I")
+            ), mc -> {
+                mc.addAnnotation(Override.class);
+                // parameters must match
+                ParamVar newNumber = mc.parameter("newNumber");
+                mc.body(b0 -> {
+                    b0.set(this_.field(numberDesc), newNumber);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+Conventionally, we use `mc` as the name of the lambda parameter which accepts the method or constructor builder.
+Since `cc` is conventionally used for classes, we use `mc` even for constructors.
+
+[id=parameters]
+=== Parameters
+
+Methods and constructors may optionally accept parameters.
+Parameters are declared using the `parameter(...)` method as shown in the example above.
+The return value of the `parameter(...)` method is an object of type `ParamVar` which may be used as a variable (see <<local-vars>> for information about accessing variable values).
+
+All parameters must be defined before defining the body of the method or constructor.
+If the method or constructor was defined with a type, the defined parameters must match the number and type of parameters in the type.
+Otherwise, the type of the method or constructor is derived from the parameters (and the return type, in the case of constructors).
+
+[id=initializers]
+=== Initializers
+
+As a special case of constructors, static and instance initializers may be added to types as well.
+Static initializers may be added to classes or interfaces using the `staticInitializer(...)` method.
+Instance initializers only apply to classes, and may be defined using the `initializer(...)` method.
+
+All defined static initializers and static field initializers are assembled into a single static initializer analogously to how the Java compiler does so, in order of definition.
+
+Instance initializers and instance field initializers are all assembled into a single code block, which is then automatically replicated into each instance constructor.
+
 [id=modifiers]
 == Access levels and modifiers
 
