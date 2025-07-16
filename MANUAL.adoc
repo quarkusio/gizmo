@@ -532,8 +532,170 @@ Instance initializers and instance field initializers are all assembled into a s
 [id=modifiers]
 == Access levels and modifiers
 
-[id=writing-instructions]
-=== Writing instructions
+Types, members, and variables in Java have an access level (specifically, `private`, package-private, `protected`, or `public`) as well as modifier flags (e.g. `volatile`, `final`, `synchronized`, etc.).
+
+Access levels are represented using the `AccessLevel` enumeration.
+Generally speaking, any type, member, or variable which is being built can have its access level set using the `setAccess(...)` method on its creator instance.
+In most cases, there will also be convenience methods to set the valid access levels (`public_()`, `private_()`, etc.) which are equivalent to calling `setAccess(...)` with the corresponding access level as an argument.
+
+Most things default to `PUBLIC`, other than (for example) fields or native methods, which generally default to `PRIVATE`.
+The detailed breakdown of initial default modifiers is described <<default-modifiers,below>>.
+
+Not every item supports every access level.
+Attempting to set an access level which is not valid for the given target will result in an exception.
+To determine if an access level is valid for the item, the `supports(...)` method may be used, passing in the `AccessLevel` as an argument.
+
+Modifier flags are represented using the `ModifierFlag` enumeration.
+Modifier flags may be added using the `addFlag(...)` method and removed using the `removeFlag(...)` method.
+
+Like access levels, modifier flags are not always valid for every kind of creator.
+Unlike access levels, there are some cases where a modifier flag is always present (for example, `static` when <<creating-methods,creating a static method>>).
+Attempting to remove such flags will result in an exception; however, redundantly adding flags that are already present is allowed.
+Likewise, removing a flag which it not allowed on the given type, member, or variable is always allowed.
+
+The `ModifierLocation` enumeration lists all of the places where an access level or modifier flag may appear.
+The constants in this enumeration may also be used to test whether a modifier is allowed or is forbidden on the corresponding location.
+
+Any creator which accepts a modifier or access level extends the `ModifiableCreator` interface.
+This interface can be used to determine the modifier location of the creator by way of the `modifierLocation()` method.
+The `supports(...)` method can also be used to determine whether a modifier flag or access level may be used on that creator.
+
+.Example of access levels and modifier flags
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class ModifiersAndAccessLevelsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("org.example.ModifiersAndAccessLevels", cc -> {
+            // set the access level by enumeration
+            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            // or by direct method call
+            cc.packagePrivate();
+            // last one written "wins"
+            cc.public_();
+            // flags can be added by enumeration
+            cc.addFlag(ModifierFlag.FINAL);
+            // or by method call
+            cc.final_();
+            // flags can be removed even if they are not supported here
+            cc.removeFlag(ModifierFlag.STATIC);
+            cc.field("exampleField", fc -> {
+                fc.setType(String.class);
+                // set access by enumeration
+                fc.setAccess(AccessLevel.PROTECTED);
+                // or method call
+                fc.protected_();
+                // flags by enumeration
+                fc.addFlag(ModifierFlag.TRANSIENT);
+                // or call
+                fc.volatile_();
+            });
+
+            cc.staticField("staticField", fc -> {
+                fc.setType(int.class);
+                fc.setInitial(12345);
+                // set access
+                fc.private_();
+                // and flags
+                fc.final_();
+                // we can add redundant flags
+                fc.addFlag(ModifierFlag.STATIC);
+                // but we cannot remove them
+            });
+
+            cc.method("exampleMethod", mc -> {
+                // add flag by enumeration
+                mc.addFlag(ModifierFlag.BRIDGE);
+                // or by method call
+                mc.final_();
+                // set access level by enumeration
+                mc.setAccess(AccessLevel.PUBLIC);
+                // or method call
+                mc.public_();
+                mc.parameter("aFinalInt", pc -> {
+                    pc.setType(int.class);
+                    // no access levels are supported on parameters!
+                    /* pc.setAccess(xxx); */
+                    // flags can be added to parameters
+                    pc.addFlag(ModifierFlag.FINAL);
+                    // by method call too
+                    pc.final_();
+                    // but note that "final" doesn't have any practical
+                    // effect on parameters or local variables
+                });
+                // stub an empty body that returns nothing
+                mc.body(BlockCreator::return_);
+            });
+        });
+    }
+}
+----
+
+[id=default-modifiers]
+=== Changing default access levels and modifiers
+
+Instances of <<gizmo-interface,the `Gizmo` interface>> are configured with the set of default modifiers and access levels for the different `ModifierLocation` instances.
+Instances of `Gizmo` are immutable; however, it is possible to create a derived `Gizmo` instance with a different configuration of default access levels and/or modifier flags using the `withDefaultModifiers` method.
+
+.Changing the default modifiers
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.creator.ModifierLocation;
+
+public class DefaultModifiersExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // the `newGizmo` has updated defaults
+        Gizmo newGizmo = gizmo.withDefaultModifiers(mc -> {
+            // add the `synthetic` flag to all interfaces
+            mc.add(ModifierLocation.INTERFACE, ModifierFlag.SYNTHETIC);
+            // make all abstract methods be `protected`
+            mc.set(ModifierLocation.CLASS_ABSTRACT_METHOD, AccessLevel.PROTECTED);
+            // remove the `synthetic` flag from all classes
+            mc.remove(ModifierLocation.CLASS, ModifierFlag.SYNTHETIC);
+        });
+    }
+}
+----
+
+By default, the following modifier flags and access levels are used if none is given:
+
+[%header,cols=*]
+|===
+|Location|Access Level|Modifier Flags
+|`INTERFACE_DEFAULT_METHOD`|`PUBLIC`|(none)
+|`INTERFACE_PRIVATE_INSTANCE_METHOD`|`PRIVATE`|(none)
+|`INTERFACE_ABSTRACT_METHOD`|`PUBLIC`|`ABSTRACT`
+|`INTERFACE_STATIC_FIELD`|`PUBLIC`|`STATIC`
+|`INTERFACE_STATIC_METHOD`|`PUBLIC`|`STATIC`
+|`CLASS_CONSTRUCTOR`|`PUBLIC`|(none)
+|`CLASS_INSTANCE_METHOD`|`PUBLIC`|(none)
+|`CLASS_ABSTRACT_METHOD`|`PUBLIC`|`ABSTRACT`
+|`CLASS_NATIVE_METHOD`|`PRIVATE`|(none)
+|`CLASS_STATIC_METHOD`|`PUBLIC`|`STATIC`
+|`CLASS_INSTANCE_FIELD`|`PRIVATE`|(none)
+|`CLASS_STATIC_FIELD`|`PRIVATE`|`STATIC`
+|`CLASS`|`PUBLIC`|`SYNTHETIC`
+|`INTERFACE`|`PUBLIC`|`SYNTHETIC`, `ABSTRACT`
+|`ANONYMOUS_CLASS`|`PRIVATE`|`SYNTHETIC`
+|`PARAMETER`|(none)|(none)
+|`LOCAL_VARIABLE`|(none)|(none)
+|===
 
 [id=blocks]
 == Blocks
