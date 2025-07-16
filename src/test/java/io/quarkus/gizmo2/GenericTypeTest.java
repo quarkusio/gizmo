@@ -262,7 +262,7 @@ public final class GenericTypeTest {
                     ac.addAnnotation(Invisible.class);
                 }))).withAnnotation(Visible.class);
         assertEquals(
-                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super @io.quarkus.gizmo2.GenericTypeTest$Invisible java.lang.String, @io.quarkus.gizmo2.GenericTypeTest$Visible java.lang.Integer>, @io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible ?>",
+                "io.quarkus.gizmo2.GenericTypeTest.@io.quarkus.gizmo2.GenericTypeTest$Visible Generic<? extends io.quarkus.gizmo2.GenericTypeTest$GenericStatic<@io.quarkus.gizmo2.GenericTypeTest$Visible ? super java.lang.@io.quarkus.gizmo2.GenericTypeTest$Invisible String, java.lang.@io.quarkus.gizmo2.GenericTypeTest$Visible Integer>, @io.quarkus.gizmo2.GenericTypeTest$Visible @io.quarkus.gizmo2.GenericTypeTest$Invisible ?>",
                 bigGenericType.toString());
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
@@ -333,6 +333,48 @@ public final class GenericTypeTest {
                 TypeAnnotation.TypePathComponent.INNER_TYPE,
                 TypeAnnotation.TypePathComponent.of(TypeAnnotation.TypePathComponent.Kind.TYPE_ARGUMENT, 1)),
                 typeAnn.targetPath());
+    }
+
+    @Test
+    public void testAnnotatedPrimitiveType() {
+        GenericType type = GenericType.of(int.class).withAnnotation(Visible.class);
+        assertEquals("@io.quarkus.gizmo2.GenericTypeTest$Visible int", type.toString());
+    }
+
+    @Test
+    public void testAnnotatedClassType() {
+        GenericType type = GenericType.of(String.class).withAnnotation(Visible.class);
+        assertEquals("java.lang.@io.quarkus.gizmo2.GenericTypeTest$Visible String", type.toString());
+    }
+
+    @Test
+    public void testAnnotatedParameterizedType() {
+        GenericType type = GenericType.of(Map.class, List.of(
+                TypeArgument.ofExact(GenericType.ofClass(String.class).withAnnotation(Invisible.class)),
+                TypeArgument.ofExact(GenericType.ofClass(Integer.class).withAnnotation(Invisible.class))))
+                .withAnnotation(Visible.class);
+        assertEquals(
+                "java.util.@io.quarkus.gizmo2.GenericTypeTest$Visible Map<java.lang.@io.quarkus.gizmo2.GenericTypeTest$Invisible String, java.lang.@io.quarkus.gizmo2.GenericTypeTest$Invisible Integer>",
+                type.toString());
+    }
+
+    @Test
+    public void testAnnotatedArrayType() {
+        GenericType type = GenericType.of(String.class).withAnnotation(Visible.class)
+                .arrayType().withAnnotation(Invisible.class)
+                .arrayType();
+        assertEquals(
+                "java.lang.@io.quarkus.gizmo2.GenericTypeTest$Visible String[] @io.quarkus.gizmo2.GenericTypeTest$Invisible []",
+                type.toString());
+    }
+
+    @Test
+    public void testAnnotatedInnerType() {
+        GenericType.OfClass outerType = GenericType.ofClass(ClassDesc.of("com.example.Foo")).withAnnotation(Visible.class);
+        GenericType innerType = GenericType.ofInnerClass(outerType, "Bar").withAnnotation(Invisible.class);
+        assertEquals(
+                "com.example.@io.quarkus.gizmo2.GenericTypeTest$Visible Foo.@io.quarkus.gizmo2.GenericTypeTest$Invisible Bar",
+                innerType.toString());
     }
 
     @SuppressWarnings({ "InnerClassMayBeStatic", "unused" })

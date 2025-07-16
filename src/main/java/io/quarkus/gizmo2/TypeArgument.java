@@ -210,9 +210,7 @@ public abstract sealed class TypeArgument {
             return invisible;
         }
 
-        OfWildcard copy(final List<Annotation> visible, final List<Annotation> invisible) {
-            return null;
-        }
+        abstract OfWildcard copy(final List<Annotation> visible, final List<Annotation> invisible);
 
         public boolean hasVisibleAnnotations() {
             return !visible.isEmpty();
