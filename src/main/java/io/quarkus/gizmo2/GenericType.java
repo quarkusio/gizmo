@@ -669,8 +669,25 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            // supertype annotations []
-            return super.toString(componentType.toString(b)).append("[]");
+            GenericType element = this;
+            while (element instanceof OfArray arr) {
+                element = arr.componentType;
+            }
+            element.toString(b);
+            appendComponent(b);
+            return b;
+        }
+
+        private void appendComponent(StringBuilder b) {
+            // cannot use just `hasAnnotations()`, because that delegates to `has{Visible,Invisible}Annotations()`,
+            // which are both overridden in this class to also check the component type
+            if (super.hasVisibleAnnotations() || super.hasInvisibleAnnotations()) {
+                b.append(' ');
+            }
+            super.toString(b).append("[]");
+            if (componentType instanceof OfArray arr) {
+                arr.appendComponent(b);
+            }
         }
 
         public boolean equals(final OfReference other) {
@@ -886,7 +903,11 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return typeArgumentsToString(super.toString(b).append(Util.binaryName(desc)));
+            String pkgName = desc.packageName();
+            if (!pkgName.isEmpty()) {
+                b.append(pkgName).append('.');
+            }
+            return typeArgumentsToString(super.toString(b).append(desc.displayName()));
         }
     }
 
@@ -1054,7 +1075,7 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append(Util.binaryName(type));
+            return super.toString(b).append(type.displayName());
         }
 
         public ClassDesc desc() {
