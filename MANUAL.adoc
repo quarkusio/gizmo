@@ -700,8 +700,58 @@ By default, the following modifier flags and access levels are used if none is g
 [id=blocks]
 == Blocks
 
+Blocks are created using instances of the `BlockCreator` interface.
+This interface is not instantiated directly.
+Rather, instances will be passed in to callbacks which build the block within contexts that require bytecode, such as initializers or method bodies.
+
+Blocks are executed from the first instruction (top) to the last instruction of the block (bottom).
+Normally, control leaves a block by falling through the bottom;
+however, there are two main exceptions to this rule.
+The first is when control is abruptly terminated (for example, a call to a method which throws an exception, or a `return_` within a nested conditional).
+The second is certain control flow constructs, like <<if,`if_`>> or <<switch,`switch_`>>, where control flow might follow only one of several possible branches, and control would then resume with the next instruction after the control flow construct.
+
+Additionally, there are some cases where control flow is _forbidden_ from falling through the bottom of the block.
+Specifically, it is an error for the outermost block of a method or constructor to terminate in any way other than <<return,returning a value>> or <<throw,throwing an exception>>.
+
+If Gizmo detects an instruction which is added to a block in an impossible-to-reach location (for example, immediately after a `return_`), an exception is thrown.
+Use the `done()` method on `BlockCreator` to determine whether it has been terminated in cases where it cannot be easily known.
+
 [id=scoping]
 === Scoping
+
+In Gizmo 2, the code of methods and constructors is organized into lexically scoped _blocks_.
+These scopes mirror the way that blocks are constructed by the API.
+<<local-vars,Local variables>> are confined to the lexical scope in which they are declared.
+<<parameters,Method and constructor parameters>> are always declared outside the outermost block, and thus they are accessible throughout the code of the method or constructor.
+
+Since blocks are thus nested hierarchically, it is conventional to use the variable names `b0`, `b1`, `b2`, etc. to represent the nesting level.
+
+.Example of simple block nesting
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+
+public class BlockNestingExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NestingExample", cc -> {
+            cc.staticInitializer(b0 -> {
+                // we're in the outermost block
+                b0.block(b1 -> {
+                    // this is a nested block
+                    b1.block(b2 -> {
+                        // nested even deeper
+                    });
+                });
+            });
+        });
+    }
+}
+----
 
 [id=expressions]
 == Expressions
@@ -822,6 +872,12 @@ xxx: `cmp`/`cmpl`/`cmpg`
 
 [id=break]
 === `break`
+
+[id=return]
+=== `return_`
+
+[id=throw]
+=== `throw_`
 
 [id=goto]
 === `goto`/`gotoStart`
