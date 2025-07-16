@@ -19,7 +19,7 @@
         <url>https://github.com/quarkusio/gizmo</url>
         <connection>scm:git:git@github.com:quarkusio/gizmo.git</connection>
         <developerConnection>scm:git:git@github.com:quarkusio/gizmo.git</developerConnection>
-        <tag>1.8.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
