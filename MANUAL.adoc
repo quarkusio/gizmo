@@ -1347,6 +1347,11 @@ The values of this enumeration are `Plain`, `Opaque`, `Acquire`, `Release`, and 
 [id=void-expr]
 === Void expressions
 
+Some expressions may be `void`-typed (for instance, a method call to a `void`-returning method).
+Most operations will not accept a `void`-typed value, however they may be useful in certain circumstances.
+Returning the `void` constant (`return_(Const.ofVoid())`) is the same as a no-argument `return` (`return_()`).
+This means that it is always safe to directly return the result of a method invocation, as long as the callee method's return type is the same as the calling method's return type (even if it is `void`).
+
 [id=yielding]
 === Yielding values from blocks
 
