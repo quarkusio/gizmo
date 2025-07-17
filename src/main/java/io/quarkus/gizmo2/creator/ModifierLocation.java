@@ -10,6 +10,7 @@ public enum ModifierLocation {
     // by default, we only put the `synthetic` flag on classes/interfaces and not their members,
     // because synthetic members are ignored by (at least) the IntelliJ IDEA decompiler
 
+    // IMPORTANT: If any changes are made here, the table in `MANUAL.adoc` should be updated as well
     /**
      * A public (default) interface instance method.
      */

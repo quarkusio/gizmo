@@ -1,0 +1,1518 @@
+= Gizmo User's Manual
+:preface-title: introduction
+:docname: user-manual
+:toc:
+
+[id=introduction]
+== Introduction
+
+Gizmo 2 is a library whose purpose is to make it relatively easy to generate reasonably efficient class files.
+
+The API is loosely modeled after the https://openjdk.org/jeps/484[JDK class file API], in that elements are modeled using lexical scoping.
+In contrast however, many things which would otherwise be subtly confusing or difficult are simplified considerably.
+
+Since this library is used to build programs in a way that approximates the Java language itself, it contains many method names that conflict with Java keywords.
+In these cases, the method name has a `\_` character appended to the method name (for example, `class_`, `switch_`, or `goto_`).
+
+This library is an evolution of the earlier Gizmo 1 library with further conceptual simplifications and capabilities.
+While Gizmo 2 is not source- or binary-compatible with Gizmo 1, it resides in a non-conflicting package space, so the two can coexist during a transition period of migrating from 1 to 2.
+
+[id=quick-start]
+== Quick start
+
+To get started quickly, include the `io.quarkus.gizmo:gizmo2` artifact in your project build. The following code blob shows how to generate a simple class:
+
+."Hello world" example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+
+public class HelloWorld {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("HelloWorldGenerated", cc -> {
+            zc.staticMethod("main", mc -> {
+                mc.public_();
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Hello world!%n");
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=gizmo-interface]
+== The `Gizmo` interface
+
+The `Gizmo` interface is the primary entry point into the API.
+Instances are created using the `Gizmo.create(...)` method, which accepts a <<classoutput>> instance.
+
+The `Gizmo` instance can be used to create classes and interfaces, and can also be used to create derived `Gizmo` instances which have different defaults for access modifiers or a different <<classoutput>>.
+
+[id=classoutput]
+=== `ClassOutput`
+
+Implementations of the `ClassOutput` interface receive the bytes of the generated classes and resources.
+
+Users may implement this interface directly or use a provided implementation.
+
+The `ClassOutput.fileWriter(Path)` static factory method returns a `ClassWriter` which writes classes and resources under the given target path.
+
+[id=descriptors]
+== Descriptors
+
+The class file format itself encodes types and members using "descriptors", which are strings which unambiguously identify them.
+Gizmo 2 uses object abstractions of these strings for convenience and safety.
+Some of these object types are provided by the JDK, and others are defined by Gizmo.
+
+[id=classdesc]
+=== The `ClassDesc` interface
+
+Types (primitives, classes and interfaces and their variations, and arrays) are identified using the `ClassDesc` interface, which is provided by the JDK as part of the `java.lang.constant` package.
+Instances can be created using the various factory methods of that class.
+
+.Example of creating a class descriptor for `java.lang.String`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+// ...
+// then, inside some method body:
+ClassDesc stringDesc = ClassDesc.of("java.lang.String");
+----
+
+A class descriptor can also be derived from a `Class<?>` object by calling its `describeConstable` method.
+Note that https://openjdk.org/jeps/371[hidden classes] will return an empty `Optional` from this method.
+
+Since hidden classes are uncommon, the `Reflection2Gizmo.classDescOf(...)` method takes a `Class` and returns a `ClassDesc` directly.
+In case of a hidden class (if you can obtain its `Class` object), this method throws an exception.
+
+[id=fielddesc]
+=== The `FieldDesc` interface
+
+Fields are identified by the combination of the "owner" type (represented as a <<classdesc,`ClassDesc`>>), the field name (a `String`), and the field's type (another `ClassDesc`).
+This is true for both static and instance fields, which therefore share an overall namespace.
+In Gizmo, these identifiers are represented using the `FieldDesc` interface, which contains several factory methods for easy usage.
+
+.Examples of various field descriptors
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.desc.FieldDesc;
+
+// for the example:
+import java.io.PrintStream;
+// ...
+// then, inside some method body:
+FieldDesc sysOut = FieldDesc.of(System.class, "out"); // the type is detected via reflection
+FieldDesc sysErr = FieldDesc.of(
+    ClassDesc.of("java.lang.System"),
+    "err",
+    PrintStream.class
+);
+FieldDesc sysIn = FieldDesc.of(
+    ClassDesc.of("java.lang.System"),
+    "in",
+    ClassDesc.of("java.io.InputStream")
+);
+----
+
+[id=methoddesc]
+=== `MethodDesc` and `ConstructorDesc`
+
+Within the JVM, methods and constructors are represented the same way (the latter bearing the special name `<init>` and always returning `void`, but otherwise having the same structure).
+Methods and constructors are uniquely identified by the combination of the "owner" type (a <<classdesc,`ClassDesc`>>), the member name (a `String`), and the type (a <<methodtypedesc,`MethodTypeDesc`>>).
+
+Gizmo 2 represents these identifiers using the `MethodDesc` and `ConstructorDesc` interfaces.
+Furthermore, the JVM makes a distinction between methods which exist on interfaces (and their derived types) versus methods which exist on classes (and their derived types).
+This distinction is represented using the `ClassMethodDesc` and `InterfaceMethodDesc` sub-interfaces.
+
+A `MethodDesc` can be constructed using reflection-based factory methods on the base `MethodDesc` interface.
+These methods will automatically determine whether a `ClassMethodDesc` or `InterfaceMethodDesc` should be returned, based on the owner `Class` instance that is provided to these methods.
+
+If the owner's `Class` instance is not readily available (for example, if it is a generated class or one not visible to the generator's class loader), then the factory methods on `ClassMethodDesc` and `InterfaceMethodDesc` may be used to return an instance of that type.
+
+Since a `ConstructorDesc` always returns `void`, any attempt to create a `ConstructorDesc` with a non-`void` return type will result in an exception.
+
+There are a wide variety of factory methods available for these types.
+A few of the common ones are illustrated below.
+
+.Examples of various method and constructor descriptors
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+// ...
+// then, inside some method body:
+ConstructorDesc stringCtor = ConstructorDesc.of(String.class, char[].class);
+
+MethodDesc hashCodeDesc = MethodDesc.of(Object.class, "hashCode", int.class);
+MethodDesc runDesc = InterfaceMethodDesc.of(
+    ClassDesc.of("java.lang.Runnable"),
+    "run",
+    void.class
+);
+MethodDesc toStringDesc = ClassMethodDesc.of(
+    ClassDesc.of("java.lang.Object"),
+    "toString",
+    String.class
+);
+----
+
+[id=methodtypedesc]
+=== The `MethodTypeDesc` interface
+
+The type of a method or constructor is determined by its return and parameter types.
+The JDK represents this type using the `MethodTypeDesc` interface in the `java.lang.constant` package.
+This interface contains a factory method to compose instances from constituent <<classdesc,ClassDesc>> instances.
+
+.Example of creating a `MethodTypeDesc`
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+// ...
+// then, inside some method body:
+ClassDesc stringArray = ClassDesc.of("java.lang.String").arrayType();
+MethodTypeDesc mainType = MethodTypeDesc.of(
+    ClassDesc.ofDescriptor("V"), // void
+    stringArray
+);
+----
+
+[id=creating-types]
+== Creating types
+
+Types may be created directly using methods on the <<gizmo-interface,`Gizmo`>> interface.
+The general form of these methods accepts a consumer of a `ClassCreator` or `InterfaceCreator` instance, which is then used to construct the type and its constituent members.
+Normally, an in-line lambda expression is used for this argument, which creates a lexical structure which is similar to that of a type definition in Java.
+By convention, the parameter name `cc` is typically used for the `ClassCreator` or `InterfaceCreator` instance.
+
+The creator instance passed to the consumer may add or remove flags, set the access level, modify the class version, extend interfaces or a base class, and add members to the type.
+
+.Example of creating a simple class
+[source,java]
+----
+import java.io.Serializable;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.ClassVersion;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class SimpleClassExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new class using the given lambda
+        gizmo.class_("com.mycompany.SomeClass", cc -> {
+            // we can implement interfaces
+            cc.implements_(Serializable.class);
+            // we can extend base classes
+            cc.extends_(RuntimeException.class);
+            // we can set flags
+            cc.final_();
+            // or...
+            cc.addFlags(ModifierFlag.FINAL);
+            // we can remove flags
+            cc.removeFlag(ModifierFlag.SYNTHETIC);
+            // we can set the access level
+            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            // or...
+            cc.packagePrivate();
+            // we can set the class version
+            cc.setVersion(ClassVersion.V17);
+        });
+        // at this point, the class has been written to the output
+    }
+}
+----
+
+.Example of creating a simple interface
+[source,java]
+----
+import java.io.Serializable;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.ClassVersion;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class SimpleInterfaceExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new interface using the given lambda
+        gizmo.interface_("com.mycompany.SomeInterface", cc -> {
+            // we can extend other interfaces
+            cc.extends_(Serializable.class);
+            cc.extends_(Cloneable.class);
+            // we can set flags
+            cc.addFlags(ModifierFlag.SYNTHETIC);
+            // we can remove flags
+            cc.removeFlag(ModifierFlag.SYNTHETIC);
+            // we can set the access level
+            cc.public_();
+            // or...
+            cc.setAccess(AccessLevel.PUBLIC);
+            // we can set the class version
+            cc.setVersion(ClassVersion.V17);
+        });
+    }
+}
+----
+
+[id=creating-fields]
+== Creating fields
+
+Fields may be added to types using the `field`, `staticField`, and `constantField` methods.
+These methods accept a consumer for a `StaticFieldCreator` or `InstanceFieldCreator` instance.
+The `field` method returns a <<fielddesc,`FieldDesc`>> for the newly created field.
+The `staticField` and `constantField` methods return a <<fields,`StaticFieldVar`>> which may be used directly in expressions.
+
+Fields may be initialized directly with a constant value at the time the field is defined by using the `setInitial` method.
+For more complex initializers, the `setInitializer` method may be used, which accepts a <<blocks,code block creator>> which must yield a value for the field.
+Initializers are automatically emitted into constructors or static initializers in the order that they are established.
+
+By convention, the parameter name `fc` is typically used for the `FieldCreator` instance.
+
+.Example of creating a class with some fields
+[source,java]
+----
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ClassWithFieldsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // create a new class using the given lambda
+        gizmo.class_("com.mycompany.ClassWithFields", cc -> {
+            // implicitly `int` because of the constant initializer
+            cc.field("count", Const.of(123));
+            // a more complex field
+            cc.field("name", fc -> {
+                fc.public_();
+                fc.final_();
+                fc.addFlag(ModifierFlag.TRANSIENT);
+                // implicitly a `String` because of the initializer
+                fc.setInitial("A more complex field");
+            });
+            // a field with a specified type and no initializer
+            cc.field("problem", fc -> {
+                fc.private_();
+                fc.setType(Throwable.class);
+            });
+            // a public static final constant field
+            cc.constantField("KIBI", Const.of(1024));
+            // a regular static field
+            cc.staticField("closed", fc -> {
+                fc.volatile_();
+                fc.setType(boolean.class);
+            });
+            // static fields may be final as well
+            var nameArray = cc.staticField("nameArray", fc -> {
+                fc.setType(String[].class);
+                fc.final_();
+                // initialize here or separately
+            });
+            // a more complex initializer example
+            cc.field("namesAsList", fc -> {
+                fc.setType(List.class);
+                // blocks and expressions are covered elsewhere
+                fc.setInitializer(b0 -> {
+                    b0.yield(
+                        b0.invokeStatic(
+                            MethodDesc.of(Arrays.class, "asList", List.class, Object[].class),
+                            b0.get(nameArray)
+                        )
+                    );
+                });
+            });
+        });
+    }
+}
+----
+
+[id=creating-methods]
+== Creating methods and constructors
+
+Methods and constructors are created using one of several methods on the type creator instance.
+The method used depends on the properties of the constructor or method being built, and the kind of type that the method or constructor belongs to.
+They are as follows:
+
+* `staticMethod(...)` creates a static method on a class or interface
+* `ClassCreator.method(...)` creates a concrete instance method on a class
+* `ClassCreator.abstractMethod(...)` creates an abstract instance method on a class
+* `ClassCreator.staticNativeMethod(...)` creates a static native method on a class
+* `ClassCreator.nativeMethod(...)` creates an instance native method on a class
+* `ClassCreator.constructor(...)` creates a constructor on a class
+* `ClassCreator.defaultConstructor()` causes the default no-argument constructor to be generated
+* `InterfaceCreator.method(...)` creates an abstract instance method on an interface
+* `InterfaceCreator.defaultMethod(...)` creates a default instance method on an interface
+* `InterfaceCreator.privateMethod(...)` creates a private instance method on an interface
+
+In some cases, there may be an implicit modifier or access level that cannot be changed on that particular member.
+For example, interface private methods are always `private`, and abstract methods are always `abstract`.
+It is not possible to change these modifier flags or access levels.
+See <<modifiers>> for more information.
+
+The method and constructor factory methods generally follow three different forms:
+
+* A form which accepts <<methoddesc,a descriptor>> plus a creator consumer
+* A form which accepts a name plus a creator consumer
+* A form which accepts a name and a <<methodtypedesc,type descriptor>> plus a creator consumer
+
+Note that the constructor factory methods do not accept a name argument.
+
+If the type is given (either by giving the constructor/method descriptor or by giving the type descriptor), then the constructor's or method's <<parameters,parameter definitions>> (if any) must conform to the type given; otherwise, an error will be produced when the constructor or method is defined.
+
+If the type is not given, it will be computed based on the types of the parameter definitions (if any) plus the return type (which defaults to `void`, and which cannot be changed for constructors).
+
+The following is an example of defining constructors and methods.
+Note that constructors and some types of methods have bodies containing program code, which is covered in more detail in the <<blocks>> section, and other features such as <<annotations,annotations>> and <<modifiers,access levels and modifiers>> which are explained in their respective sections.
+
+.Example of defining constructors and methods
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class TypesWithMethodsAndConstructorsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // an interface to implement
+        ClassDesc nh = gizmo.interface_("org.numberifier.NumberHolder", cc -> {
+            cc.method("incrementNumber", mc -> {
+                mc.public_();
+                mc.returning(int.class);
+                // no body on interface method
+            });
+            cc.defaultMethod("setNumber", mc -> {
+                ParamVar newNumber = mc.parameter("newNumber", int.class);
+                // returns void by default; just return without doing anything
+                mc.body(BlockCreator::return_);
+            });
+            cc.staticMethod("newInstance", mc -> {
+                // return an instance of this interface
+                mc.returning(cc.type());
+                mc.public_();
+                mc.body(b0 -> {
+                    b0.return_(
+                        b0.new_(ClassDesc.of("org.numberifier.NumberHolderImpl"))
+);
+                });
+            });
+        });
+
+        // a base class to extend
+        ClassDesc anh = gizmo.class_("org.numberifier.AbstractNumberHolder", cc -> {
+            cc.implements_(nh);
+            cc.abstract_();
+            cc.abstractMethod("incrementNumber", mc -> {
+                mc.addAnnotation(Override.class);
+                mc.public_();
+                mc.returning(void.class);
+            });
+        });
+
+        // the leaf class
+        gizmo.class_("org.numberifier.NumberHolderImpl", cc -> {
+            cc.extends_(anh);
+            // add some fields for context
+            FieldDesc numberDesc = cc.field("number", Const.of(100));
+            // add a default ctor
+            cc.defaultConstructor();
+            // we need this in order for our instance methods to do something interesting
+            This this_ = cc.this_();
+            // add a non-public ctor with an implicitly defined type
+            cc.constructor(mc -> {
+                mc.packagePrivate();
+                ParamVar number = mc.parameter("number", int.class);
+                mc.body(b0 -> {
+                    b0.set(this_.field(numberDesc), number);
+                    b0.return_();
+                });
+            });
+            // method with implicitly defined type
+            cc.method("incrementNumber", mc -> {
+                mc.addAnnotation(Override.class);
+                mc.public_();
+                mc.returning(int.class);
+                mc.body(b0 -> {
+                    b0.inc(this_.field(numberDesc));
+                    b0.return_(this_.field(numberDesc));
+                });
+            });
+            // method with explicitly defined type
+            cc.method("setNumber", MethodTypeDesc.of(
+                ClassDesc.ofDescriptor("V"),
+                ClassDesc.ofDescriptor("I")
+            ), mc -> {
+                mc.addAnnotation(Override.class);
+                // parameters must match
+                ParamVar newNumber = mc.parameter("newNumber");
+                mc.body(b0 -> {
+                    b0.set(this_.field(numberDesc), newNumber);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+Conventionally, we use `mc` as the name of the lambda parameter which accepts the method or constructor builder.
+Since `cc` is conventionally used for classes, we use `mc` even for constructors.
+
+[id=parameters]
+=== Parameters
+
+Methods and constructors may optionally accept parameters.
+Parameters are declared using the `parameter(...)` method as shown in the example above.
+The return value of the `parameter(...)` method is an object of type `ParamVar` which may be used as a variable (see <<local-vars>> for information about accessing variable values).
+
+All parameters must be defined before defining the body of the method or constructor.
+If the method or constructor was defined with a type, the defined parameters must match the number and type of parameters in the type.
+Otherwise, the type of the method or constructor is derived from the parameters (and the return type, in the case of constructors).
+
+[id=initializers]
+=== Initializers
+
+As a special case of constructors, static and instance initializers may be added to types as well.
+Static initializers may be added to classes or interfaces using the `staticInitializer(...)` method.
+Instance initializers only apply to classes, and may be defined using the `initializer(...)` method.
+
+All defined static initializers and static field initializers are assembled into a single static initializer analogously to how the Java compiler does so, in order of definition.
+
+Instance initializers and instance field initializers are all assembled into a single code block, which is then automatically replicated into each instance constructor.
+
+[id=modifiers]
+== Access levels and modifiers
+
+Types, members, and variables in Java have an access level (specifically, `private`, package-private, `protected`, or `public`) as well as modifier flags (e.g. `volatile`, `final`, `synchronized`, etc.).
+
+Access levels are represented using the `AccessLevel` enumeration.
+Generally speaking, any type, member, or variable which is being built can have its access level set using the `setAccess(...)` method on its creator instance.
+In most cases, there will also be convenience methods to set the valid access levels (`public_()`, `private_()`, etc.) which are equivalent to calling `setAccess(...)` with the corresponding access level as an argument.
+
+Most things default to `PUBLIC`, other than (for example) fields or native methods, which generally default to `PRIVATE`.
+The detailed breakdown of initial default modifiers is described <<default-modifiers,below>>.
+
+Not every item supports every access level.
+Attempting to set an access level which is not valid for the given target will result in an exception.
+To determine if an access level is valid for the item, the `supports(...)` method may be used, passing in the `AccessLevel` as an argument.
+
+Modifier flags are represented using the `ModifierFlag` enumeration.
+Modifier flags may be added using the `addFlag(...)` method and removed using the `removeFlag(...)` method.
+
+Like access levels, modifier flags are not always valid for every kind of creator.
+Unlike access levels, there are some cases where a modifier flag is always present (for example, `static` when <<creating-methods,creating a static method>>).
+Attempting to remove such flags will result in an exception; however, redundantly adding flags that are already present is allowed.
+Likewise, removing a flag which it not allowed on the given type, member, or variable is always allowed.
+
+The `ModifierLocation` enumeration lists all of the places where an access level or modifier flag may appear.
+The constants in this enumeration may also be used to test whether a modifier is allowed or is forbidden on the corresponding location.
+
+Any creator which accepts a modifier or access level extends the `ModifiableCreator` interface.
+This interface can be used to determine the modifier location of the creator by way of the `modifierLocation()` method.
+The `supports(...)` method can also be used to determine whether a modifier flag or access level may be used on that creator.
+
+.Example of access levels and modifier flags
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+
+public class ModifiersAndAccessLevelsExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("org.example.ModifiersAndAccessLevels", cc -> {
+            // set the access level by enumeration
+            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            // or by direct method call
+            cc.packagePrivate();
+            // last one written "wins"
+            cc.public_();
+            // flags can be added by enumeration
+            cc.addFlag(ModifierFlag.FINAL);
+            // or by method call
+            cc.final_();
+            // flags can be removed even if they are not supported here
+            cc.removeFlag(ModifierFlag.STATIC);
+            cc.field("exampleField", fc -> {
+                fc.setType(String.class);
+                // set access by enumeration
+                fc.setAccess(AccessLevel.PROTECTED);
+                // or method call
+                fc.protected_();
+                // flags by enumeration
+                fc.addFlag(ModifierFlag.TRANSIENT);
+                // or call
+                fc.volatile_();
+            });
+
+            cc.staticField("staticField", fc -> {
+                fc.setType(int.class);
+                fc.setInitial(12345);
+                // set access
+                fc.private_();
+                // and flags
+                fc.final_();
+                // we can add redundant flags
+                fc.addFlag(ModifierFlag.STATIC);
+                // but we cannot remove them
+            });
+
+            cc.method("exampleMethod", mc -> {
+                // add flag by enumeration
+                mc.addFlag(ModifierFlag.BRIDGE);
+                // or by method call
+                mc.final_();
+                // set access level by enumeration
+                mc.setAccess(AccessLevel.PUBLIC);
+                // or method call
+                mc.public_();
+                mc.parameter("aFinalInt", pc -> {
+                    pc.setType(int.class);
+                    // no access levels are supported on parameters!
+                    /* pc.setAccess(xxx); */
+                    // flags can be added to parameters
+                    pc.addFlag(ModifierFlag.FINAL);
+                    // by method call too
+                    pc.final_();
+                    // but note that "final" doesn't have any practical
+                    // effect on parameters or local variables
+                });
+                // stub an empty body that returns nothing
+                mc.body(BlockCreator::return_);
+            });
+        });
+    }
+}
+----
+
+[id=default-modifiers]
+=== Changing default access levels and modifiers
+
+Instances of <<gizmo-interface,the `Gizmo` interface>> are configured with the set of default modifiers and access levels for the different `ModifierLocation` instances.
+Instances of `Gizmo` are immutable; however, it is possible to create a derived `Gizmo` instance with a different configuration of default access levels and/or modifier flags using the `withDefaultModifiers` method.
+
+.Changing the default modifiers
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.creator.AccessLevel;
+import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.creator.ModifierLocation;
+
+public class DefaultModifiersExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        // the `newGizmo` has updated defaults
+        Gizmo newGizmo = gizmo.withDefaultModifiers(mc -> {
+            // add the `synthetic` flag to all interfaces
+            mc.add(ModifierLocation.INTERFACE, ModifierFlag.SYNTHETIC);
+            // make all abstract methods be `protected`
+            mc.set(ModifierLocation.CLASS_ABSTRACT_METHOD, AccessLevel.PROTECTED);
+            // remove the `synthetic` flag from all classes
+            mc.remove(ModifierLocation.CLASS, ModifierFlag.SYNTHETIC);
+        });
+    }
+}
+----
+
+By default, the following modifier flags and access levels are used if none is given:
+
+[%header,cols=*]
+|===
+|Location|Access Level|Modifier Flags
+|`INTERFACE_DEFAULT_METHOD`|`PUBLIC`|(none)
+|`INTERFACE_PRIVATE_INSTANCE_METHOD`|`PRIVATE`|(none)
+|`INTERFACE_ABSTRACT_METHOD`|`PUBLIC`|`ABSTRACT`
+|`INTERFACE_STATIC_FIELD`|`PUBLIC`|`STATIC`
+|`INTERFACE_STATIC_METHOD`|`PUBLIC`|`STATIC`
+|`CLASS_CONSTRUCTOR`|`PUBLIC`|(none)
+|`CLASS_INSTANCE_METHOD`|`PUBLIC`|(none)
+|`CLASS_ABSTRACT_METHOD`|`PUBLIC`|`ABSTRACT`
+|`CLASS_NATIVE_METHOD`|`PRIVATE`|(none)
+|`CLASS_STATIC_METHOD`|`PUBLIC`|`STATIC`
+|`CLASS_INSTANCE_FIELD`|`PRIVATE`|(none)
+|`CLASS_STATIC_FIELD`|`PRIVATE`|`STATIC`
+|`CLASS`|`PUBLIC`|`SYNTHETIC`
+|`INTERFACE`|`PUBLIC`|`SYNTHETIC`, `ABSTRACT`
+|`ANONYMOUS_CLASS`|`PRIVATE`|`SYNTHETIC`
+|`PARAMETER`|(none)|(none)
+|`LOCAL_VARIABLE`|(none)|(none)
+|===
+
+[id=blocks]
+== Blocks
+
+Blocks are created using instances of the `BlockCreator` interface.
+This interface is not instantiated directly.
+Rather, instances will be passed in to callbacks which build the block within contexts that require bytecode, such as initializers or method bodies.
+
+Blocks are executed from the first instruction (top) to the last instruction of the block (bottom).
+Normally, control leaves a block by falling through the bottom;
+however, there are two main exceptions to this rule.
+The first is when control is abruptly terminated (for example, a call to a method which throws an exception, or a `return_` within a nested conditional).
+The second is certain control flow constructs, like <<if,`if_`>> or <<switch,`switch_`>>, where control flow might follow only one of several possible branches, and control would then resume with the next instruction after the control flow construct.
+
+Additionally, there are some cases where control flow is _forbidden_ from falling through the bottom of the block.
+Specifically, it is an error for the outermost block of a method or constructor to terminate in any way other than <<return,returning a value>> or <<throw,throwing an exception>>.
+
+If Gizmo detects an instruction which is added to a block in an impossible-to-reach location (for example, immediately after a `return_`), an exception is thrown.
+Use the `done()` method on `BlockCreator` to determine whether it has been terminated in cases where it cannot be easily known.
+
+[id=scoping]
+=== Scoping
+
+In Gizmo 2, the code of methods and constructors is organized into lexically scoped _blocks_.
+These scopes mirror the way that blocks are constructed by the API.
+<<local-vars,Local variables>> are confined to the lexical scope in which they are declared.
+<<parameters,Method and constructor parameters>> are always declared outside the outermost block, and thus they are accessible throughout the code of the method or constructor.
+
+Since blocks are thus nested hierarchically, it is conventional to use the variable names `b0`, `b1`, `b2`, etc. to represent the nesting level.
+
+.Example of simple block nesting
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+
+public class BlockNestingExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NestingExample", cc -> {
+            cc.staticInitializer(b0 -> {
+                // we're in the outermost block
+                b0.block(b1 -> {
+                    // this is a nested block
+                    b1.block(b2 -> {
+                        // nested even deeper
+                    });
+                });
+            });
+        });
+    }
+}
+----
+
+[id=expressions]
+== Expressions
+
+Every operation yields an _expression_ which represents the result of that operation, represented by instances of the `Expr` interface.
+Expressions may then be used as inputs to other operations.
+Each expression has <<types,a type>> (which may be `void`).
+Some expressions are also <<assignable,assignable>>, and some are <<constants,constants>>.
+These expression types have special properties which are described below.
+
+[id=expressions-use]
+=== How to use expressions correctly
+
+Expressions which are not <<constants,constants>> or <<assignable,variables>> may only be used once, and must be used in the same order in which they were created.
+Gizmo _may_ make some minimal effort to order expressions correctly, however this should not be relied on.
+Normally, correct ordering is a consequence of writing an expression in the natural way (left to right, innermost to outermost) so most of the time this is not a concern.
+Violating this rule will result in an exception with a message like `Item is not at its expected location`.
+
+A good rule of thumb is that if you ever create or extract a Java variable whose type is `Expr`, it should be stored into a <<local-vars,local variable>>.
+Variables, like constants, can be used multiple times and in any position.
+
+Here's an example:
+
+.Example of natural expression ordering
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+
+public class NaturalOrderingExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NaturalOrdering", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.public_();
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // each arithmetic op yields an expression
+                    b0.printf("The answer is: %d%n",
+                        b0.add(
+                            b0.mul(
+                                Const.of(100),
+                                Const.of(23)
+                            ),
+                            b0.div(
+                                Const.of(512),
+                                Const.of(8)
+                            )
+                        )
+                    );
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=types]
+=== Types
+
+Every expression has a _type_.
+The type of an expression is generally represented by a <<classdesc,`ClassDesc` descriptor>>.
+The type may be primitive such as `int` or `boolean`, an object type like `java.lang.Object`, or `void`.
+Operations generally cannot use `void`-typed expressions as inputs.
+
+In many cases, the type of operations can be _inferred_ based on their inputs.
+In some cases, like method invocations or field accesses, the type of the expression is derived from the type of the member.
+In other cases, the type must be specified explicitly.
+In these cases, there will usually be an overloaded variation of the operation which accepts `Class<?>` instead of `ClassDesc` (or a list thereof).
+
+The type of an expression can be queried using the `type()` method of `Expr` and other typed entities (which are all subtypes of `SimpleTyped`).
+
+It is sometimes useful to categorize types as either being primitive or non-primitive.
+This is done using the `typeKind()` method, which is also found on `SimpleTyped` and its subtypes, including `Expr`.
+The return type of this method is `TypeKind`, an enumeration which contains constants for each of the eight primitive types, one for object types, and one for `void`.
+
+.Examining types of a simple expression
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.TypeKind;
+
+public class ExaminingTypesOfExpressions {
+    public static void main(String[] args) {
+        Const theConst = Const.of(true);
+        ClassDesc type = theConst.type();
+        TypeKind kind = theConst.typeKind();
+        System.out.printf("The type and kind of the constant is: %s and %s%n", type.displayName(), kind);
+    }
+}
+----
+
+[id=constants]
+=== Constants
+
+A _constant_ is a simple expression whose value cannot change.
+Most constants can be created once and reused as many times as needed.
+
+[id=const]
+==== The `Const` interface
+
+The `Const` interface is used to represent expressions which are constant.
+This interface also contains factory methods to create new constants, including (but not limited to):
+
+* Primitive values (e.g. integers, booleans)
+* Primitive wrapper type instances (e.g. `Long`, `Double`)
+* `enum` constants (as <<jdk-const,`Constable`>> instances)
+* Strings
+* Classes (as `Class<?>` or as `ClassDesc`)
+* `null`
+* The value of a static final field
+* Lists of other object-typed constants (as an immutable `List`)
+* Maps of other object-typed constants (as an immutable `Map`)
+* Other <<jdk-const,JDK constant types>> such as method handles or dynamic constants
+
+[NOTE]
+====
+Be aware that list and map constants should only be used for relatively small numbers of entries.
+While there is a theoretical limit of up to around 254 entries for these constants, it is advisable to keep the number of entries below 50 or so.
+The maximum size of the class file constant pool (65,535 entries) creates a hard upper bound which can be hit easily when large collection constants are used, especially when each constant requires multiple constant table entries, which is sometimes the case.
+====
+
+[id=jdk-const]
+==== The `ConstantDesc` and `Constable` interfaces
+
+The JDK has the concept of classes which _are_ constants (such as primitive wrapper types, or `Class`) which implement the `ConstantDesc` interface in the `java.lang.constant` package, and classes which _may reduce to_ a constant (such as `enum` constants or `MethodHandle` instances) which implement the `Constable` interface.
+Since constants are defined by the JVM specification, the `ConstantDesc` interface is sealed and thus can only be implemented in the JDK.
+
+Any object of a class which implements either of these types may be used directly as a constant in Gizmo by way of `Const.of(...)` methods for those two types, or in certain cases, by way of method overloads which accept these types in addition to `Const` or `Expr`.
+
+The `Constable` interface may be implemented by any class.
+This provides a useful mechanism to allow objects to be serialized directly into class files (but also typically requires use of <<condy,dynamic constants>>, which is an advanced usage).
+If a `Constable` is given to `Const.of(Constable)` which cannot be reduced to a constant, an exception is immediately thrown.
+
+[id=condy]
+==== Advanced use case: Dynamic constants
+
+The JVM supports a special category of constants that cannot be directly accessed from programs written in Java source code called _dynamic constants_.
+Dynamic constants are lazily initialized based on a _bootstrap method_ which computes the initial value of the constant.
+
+Many kinds of useful dynamic constants are automatically created by the factory methods on `Const` without any special user intervention, including (but not limited to):
+
+* `VarHandle` instances
+* `Class` objects for primitive types
+* `null` constants
+* Method handles
+* `enum` constants
+* `List` and `Map` instances
+
+To create other kinds of dynamic constants, the JDK class `DynamicConstantDesc` in the `java.lang.constant` package may be used through the `Const.of(ConstantDesc)` method described above.
+For more information, see the JDK documentation for that class.
+
+[NOTE]
+====
+The JVM specification does not guarantee that dynamic constants are only initialized one time.
+In practical terms, this means that two threads which happen upon an uninitialized dynamic constant may simultaneously initialize it, possibly causing one thread to resolve an "ephemeral" value which is not seen after the constant is initialized.
+Therefore, dynamic constants which return objects should not rely on _identity comparison_; since even something as simple as `eq(myConst, myConst)` is allowed to return `false` in this case.
+====
+
+[id=this]
+=== The special `this` expression
+
+It is common to need access to the _receiver object_, which in Java is referenced by the `this` keyword.
+The `this_()` method may be used on a class or interface creator to yield an expression whose type is `This`, which may be used within instance methods, constructors, and initializers to refer to the receiver object.
+The resultant expression may not be used from a static context (such as a static method or initializer); such usages will result in an exception.
+
+By convention, it is typical to call `this_()` once near the top of your class builder lambda, and reuse the same instance.
+Calling `this_()` multiple times is not harmful, however.
+
+.Example of accessing `this`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ThisAccessExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ThisAccess", cc -> {
+            // get "this" where it can be used by all members
+            This this_ = cc.this_();
+            cc.defaultConstructor();
+            MethodDesc showThis = cc.method("showThis", mc -> {
+                mc.body(b0 -> {
+                    b0.printf("This is %s%n", this_);
+                    b0.return_();
+                });
+            });
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    Expr instance = b0.new_(cc.type());
+                    b0.invokeVirtual(showThis, instance);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=assignable]
+=== Assignable expressions
+
+Some expressions are _assignable_, which means that in addition to being usable as inputs for operations, they also may be written to or modified so that subsequent uses will see the modified value.
+
+[id=local-vars]
+==== Local variables
+
+Local variables may be defined within any <<blocks,block>> using the `localVar(...)` method.
+Every local variable must have a name (as a `String`) and an initial value.
+Local variable values are observable in debuggers when single-stepping through programs.
+
+Note that unlike the Java language, local variables in Gizmo must be explicitly initialized; thus, in most cases it is better to define them later rather than earlier.
+This does not incur any performance penalty at run time; on the contrary, it allows Gizmo to emit only a single local variable table entry per variable.
+
+Once defined, a local variable can be referenced or updated as many times as needed within the <<scoping,scope>> in which it was defined (or a nested scope thereof).
+
+By convention, the `LocalVar` variable's name matches the name given to `localVar(...)`.
+This is strongly encouraged for readability.
+
+.Local variable example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+
+public class LocalVarExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("LocalVar", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar one = b0.localVar("one", 1);
+                    b0.block(b1 -> {
+                        LocalVar two = b1.localVar("two", "Two");
+                        b1.printf("One is %d and two is %s%n", one, two);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=fields]
+==== Field expressions
+
+[id=array-elements]
+==== Array element expressions
+
+[id=variable-mutate]
+==== Mutating assignable expressions
+
+There are several operations which can be used to mutate assignable expressions.
+Note that `final` variables generally cannot be mutated outside of initialization.
+
+===== `set(...)`
+
+The `set(...)` method on the `BlockCreator` interface may be used to modify the value of an assignable expression.
+This is equivalent to using the assignment (`=`) operator in Java.
+
+.Variable mutation using `set(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class SetExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Set", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // replace the `args` parameter variable value
+                    b0.set(args, b0.newArray(String.class, Const.of("Hello!")));
+                    b0.printf("I changed args[0] to %s%n", args.elem(0));
+                    // now change just element 0
+                    b0.set(args.elem(0), "New string!");
+                    b0.printf("I changed args[0] to %s%n", args.elem(0));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=swap]
+===== `swap`
+
+The `swap(...)` method exchanges values between two assignable expressions without using a temporary variable.
+This operation can not be <<variable-atomics,atomic>> because it acts on two separate memory locations.
+
+.Swapping variable values using `swap(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.desc.FieldDesc;
+
+public class SwapExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Pet", cc -> {
+            cc.defaultConstructor();
+            This this_ = cc.this_();
+            FieldDesc name = cc.field("name", fc -> {
+                fc.setType(String.class);
+                fc.private_();
+            });
+            // fluent style accessors
+            cc.method("name", mc -> {
+                mc.returning(String.class);
+                mc.body(b0 -> b0.return_(this_.field(name)));
+            });
+            cc.method("name", mc -> {
+                ParamVar newName = mc.parameter("newName", String.class);
+                mc.returning(String.class);
+                mc.body(b0 -> {
+                    b0.swap(this_.field(name), newName);
+                    // now `newName` contains the old name
+                    b0.return_(newName);
+                });
+            });
+        });
+    }
+}
+----
+
+[id=rotate]
+===== `rotate`
+
+The `rotate(...)` method moves all the values given as arguments one position to the right, and the rightmost value to the leftmost position, without requiring an intermediate temporary variable.
+This operation can not be <<variable-atomics,atomic>> because it acts on multiple memory locations.
+
+.Rotating variable values using `rotate(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class RotateExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Rotate", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.ne(args.length(), 4), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected 4 arguments");
+                    });
+                    b0.printf("The initial order is: %s %s %s %sn",
+                        args.elem(0),
+                        args.elem(1),
+                        args.elem(2),
+                        args.elem(3)
+                    );
+                    b0.rotate(args.elem(0), args.elem(1), args.elem(2), args.elem(3));
+                    b0.printf("The new order is: %s %s %s %sn",
+                        args.elem(0),
+                        args.elem(1),
+                        args.elem(2),
+                        args.elem(3)
+                    );
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=arith-assign]
+===== Arithmetic assignment operators
+
+In Java, the `+=`, `-=`, `*=`, `/=`, and `%=` operators may be used to perform an <<arithmetic,arithmetic operation>> on a variable and a value, and assign the result back to the variable.
+The `BlockCreator` interface has corresponding methods for each of these operations: `addAssign`, `subAssign`, `mulAssign`, `divAssign`, and `remAssign`.
+Each of these methods accepts the assignable expression and the value to operate on.
+
+.Arithmetic assignment example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ArithmeticAssignmentExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class, "parseInt", int.class, String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ArithmeticAssignment", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
+                    b0.printf("n = %d%n", n);
+                    b0.addAssign(n, 10);
+                    b0.printf("+ 10 = %d%n", n);
+                    b0.subAssign(n, 5);
+                    b0.printf("- 5 = %d%n", n);
+                    b0.mulAssign(n, 5);
+                    b0.printf("* 4 = %d%n", n);
+                    b0.divAssign(n, 2);
+                    b0.printf("/ 2 = %d%n", n);
+                    b0.remAssign(n, 17);
+                    b0.printf("% 17 = %d%n", n);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=inc-and-dec]
+===== Increment and decrement
+
+If the amount being added to or subtracted from a value is <<constants,constant>>, the `inc(...)` and `dec(...)` methods on `BlockCreator` may be used.
+In certain cases, this may generate more compact method bodies.
+For <<loop,loops>> in particular, this can aid readability.
+
+.Increment and decrement example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class IncDecExample {
+    private static final MethodDesc isLetter = MethodDesc.of(
+        Character.class, "isLetter", boolean.class, char.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("IncDec", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar i = b0.localVar("i", 0);
+                    LocalVar str = b0.localVar("str", args.elem(0));
+                    LocalVar len = b0.localVar("len", b0.withString(str).length());
+                    LocalVar letters = b0.localVar("letters", 0);
+                    LocalVar nonLetters = b0.localVar("nonLetters", len);
+                    b0.while_(b1 -> b1.yield(b1.lt(i, len)), b1 -> {
+                        LocalVar ch = b1.withString(str).charAt(i);
+                        b1.ifElse(b1.invokeStatic(isLetter, ch), b1 -> {
+                            // is a letter
+                            b1.inc(letters);
+                        }, b1 -> {
+                            // is not a letter
+                            b1.dec(nonLetters);
+                        });
+                        // next character
+                        b1.inc(i);
+                    });
+                    b0.printf("The string has %d letters and %d non-letters%n", letters, nonLetters);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=bitwise-assign]
+===== Bitwise assignment operators
+
+Corresponding to Java's <<bitwise-logic,bitwise>> assignment operators, specifically `&=`, `|=`, and `^=`, and <<bitwise-shift,shift>> operators `<\<=`, `>>=`, and `>>>=`, there are methods on `BlockCreator` to implement these operations. They are `andAssign(...)`, `orAssign(...)`, `xorAssign(...)`, `shlAssign(...)`, `shrAssign(...)`, and `ushrAssign(...)`.
+
+Like the <<arith-assign,arithmetic assignment operators>>, these methods accept an <<assignable,assignable expression>> along with a value which may be any expression.
+
+.Example of bitwise assignment operations
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class BitwiseAssignmentExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class, "parseInt", int.class, String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("BitwiseAssignment", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
+                    // pass `n` through a gauntlet of various bitwise operations
+                    b0.printf("n = 0x%x%n", n);
+                    b0.andAssign(n, 0x5555);
+                    b0.printf(" & 0x5555 = 0x%x%n", n);
+                    b0.orAssign(n, 0xa0a0);
+                    b0.printf(" | 0xa0a0 = 0x%x%n", n);
+                    b0.xorAssign(n, 0x9999);
+                    b0.printf(" ^ 0x9999 = 0x%x%n", n);
+                    b0.shlAssign(n, 16);
+                    b0.printf(" << 16 = 0x%x%n", n);
+                    b0.shrAssign(n, 8);
+                    b0.printf(" >> 8 = 0x%x%n", n);
+                    b0.ushrAssign(n, 8);
+                    b0.printf(" >>> 8 = 0x%x%n", n);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=variable-atomics]
+==== Advanced use case: Atomic operations on variables
+
+To perform atomic operations on variables in Java, a `VarHandle` is generally used.
+The type of `VarHandle`, and the means of acquiring it, vary depending on what is being accessed.
+
+Gizmo provides methods to perform atomic variable operations on any <<assignable,assignable expression>>, managing the `VarHandle` automatically behind the scenes as a <<condy,dynamic constant>>.
+
+The basic operations `get(...)` and `set(...)` also have variations which accept an atomic <<memory-orders,memory order>>, which allows for memory access semantics which differ from that on the variable's declaration (if any).
+
+There are operations for atomic get-and-set (`getAndSet(...)`) and get-modify-set (`getAndAdd(...)`, `getAndBitwiseAnd(...)`, `getAndBitwiseOr(...)`, and `getAndBitwiseXor(...)`), which accept an assignable expression, an argument, and an optional <<memory-orders,memory order>> which defaults to `Volatile` if not given.
+
+The last group of atomic operations are compare-and-set (`compareAndSet(...)` and `weakCompareAndSet(...)`) and compare-and-exchange (`compareAndExchange(...)`).
+These operations accept an assignable expression, an expected value, and an update value.
+The `compareAndSet(...)` and `weakCompareAndSet(...)` methods return a `boolean`-typed expression that is `true` if the exchange succeeded or `false` if it did not succeed.
+The `compareAndExchange(...)` methods return a "witness" value that was observed before the operation.
+If the witness value is equal to the expected value, then the exchange has succeeded.
+Additionally, the `weakCompareAndSet(...)` and `compareAndExchange(...)` methods optionally accept a <<memory-orders,memory order>> argument which defaults to `Volatile` if not given.
+
+[id=memory-orders]
+===== Memory orders
+
+The memory order for atomic operations are defined by the JVM specification.
+Choosing a memory order for an operation in Gizmo is done using values from the `MemoryOrder` enumeration.
+
+The values of this enumeration are `Plain`, `Opaque`, `Acquire`, `Release`, and `Volatile`, and the special mode `AsDeclared`, which will use `Plain` unless the variable being operated on was declared `volatile`, in which case `Volatile` is used.
+
+[id=void-expr]
+=== Void expressions
+
+Some expressions may be `void`-typed (for instance, a method call to a `void`-returning method).
+Most operations will not accept a `void`-typed value, however they may be useful in certain circumstances.
+Returning the `void` constant (`return_(Const.ofVoid())`) is the same as a no-argument `return` (`return_()`).
+This means that it is always safe to directly return the result of a method invocation, as long as the callee method's return type is the same as the calling method's return type (even if it is `void`).
+
+[id=yielding]
+=== Yielding values from blocks
+
+[id=arithmetic]
+=== Arithmetic expressions
+
+xxx: `add`/`sub`/`mul`/`div`/`mod`/`neg`
+
+[id=bitwise-logic]
+=== Bitwise logical expressions
+
+xxx: `and`/`or`/`xor`/`complement`
+
+[id=bitwise-shift]
+=== Bitwise shifting expressions
+
+xxx: `shl`/`shr`/`ushr`
+
+[id=relational]
+=== Relational expressions
+
+[id=equality]
+==== Equality/inequality
+
+xxx: `eq`/`ne`
+
+[id=numerical-relations]
+==== Numerical relations
+
+xxx: `lt`/`le`/`gt`/`ge`
+
+[id=comparator-like]
+==== Comparator-like operations
+
+xxx: `cmp`/`cmpl`/`cmpg`
+
+[id=invocation]
+=== Invocation expressions
+
+[id=invoke-static]
+==== `invokeStatic`
+
+[id=invoke-virtual]
+==== `invokeVirtual`
+
+[id=invoke-interface]
+==== `invokeInterface`
+
+[id=invoke-special]
+==== `invokeSpecial`
+
+[id=new]
+=== `new` expression
+
+[id=new-array]
+=== `newArray` expression
+
+[id=anonymous]
+=== Anonymous class expressions
+
+[id=lambdas]
+=== Lambda expressions
+
+[id=control]
+== Control flow
+
+[id=block]
+=== `block`
+
+[id=break]
+=== `break`
+
+[id=return]
+=== `return_`
+
+[id=throw]
+=== `throw_`
+
+[id=goto]
+=== `goto`/`gotoStart`
+
+[id=if]
+=== `if`/`cond`
+
+[id=logical]
+=== `logicalAnd`/`logicalOr`
+
+[id=switch]
+=== `switch` and `switchEnum`
+
+[id=goto-case]
+==== `gotoCase`/`gotoDefault`
+
+[id=loop]
+=== `loop`
+
+[id=while]
+=== `while`/`doWhile`
+
+[id=for-each]
+=== `forEach`
+
+[id=continue]
+=== `continue_`
+
+[id=try]
+=== `try_`
+
+[id=synchronized]
+=== `synchronized_`
+
+[id=auto-close]
+=== `autoClose`
+
+[id=annotations]
+== Adding annotations
+
+(TODO more detail)
+
+[id=helpers]
+== Helper methods
+
+[id=assertions]
+=== Assertions
+
+[id=expr-equals]
+=== `exprEquals`/`exprHashCode`/`exprToString`
+
+[id=array-equals]
+=== `arrayEquals`/`arrayHashCode`/`arrayToString`
+
+[id=class-for-name]
+=== `classForName`
+
+[id=close]
+=== `close`/`autoClose`
+
+[id=iterate]
+=== `iterate`
+
+[id=current-thread]
+=== `currentThread`
+
+[id=optional]
+=== `optionalOf`/`optionalOfNullable`
+
+[id=collection-of]
+=== `mapOf`/`setOf`/`listOf`/`mapEntryOf`
+
+[id=boxing]
+=== `box`/`unbox`
+
+[id=locked]
+=== `locked`
+
+[id=fences]
+=== Fences
+
+[id=wrappers]
+== Object wrappers
+
+(TODO list them)
+
+[id=generic-type]
+== Generic types and type annotations
+
+[id=building-generic-types]
+=== Building generic types
+
+[id=type-variables]
+=== Adding type variables
+
+[id=debugging]
+== Debugging tips
+
+[id=source-file-line]
+=== Adding source file name and line numbers

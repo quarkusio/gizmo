@@ -18,6 +18,10 @@ Gizmo is available on Maven Central but you can build it locally:
 mvn clean install
 ```
 
+## Documentation
+
+The manual can be found [here](MANUAL.adoc).
+
 ## Release
 
 To release a new version of Gizmo, follow these steps:
