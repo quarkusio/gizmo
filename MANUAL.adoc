@@ -860,6 +860,29 @@ Most constants can be created once and reused as many times as needed.
 [id=const]
 ==== The `Const` interface
 
+The `Const` interface is used to represent expressions which are constant.
+This interface also contains factory methods to create new constants, including (but not limited to):
+
+* Primitive values (e.g. integers, booleans)
+* `enum` constants (as <<jdk-const,`Constable`>> instances)
+* Strings
+* Classes (as `Class<?>` or as `ClassDesc`)
+* `null`
+* The value of a static final field
+* Lists of other constants (as an immutable `List`)
+* Maps of other constants (as an immutable `Map`)
+* Other <<jdk-const,JDK constant types>> such as method handles or dynamic constants
+
+[NOTE]
+====
+Be aware that list and map constants should only be used for relatively small numbers of entries.
+While there is a theoretical limit of up to around 254 entries for these constants, it is advisable to keep the number of entries below 50 or so.
+The maximum size of the class file constant pool (65,535 entries) creates a hard upper bound which can be hit easily when large collection constants are used, especially when each constant requires multiple constant table entries, which is sometimes the case.
+====
+
+It is also possible to create a constant for the default value of a given type using the `Const.ofDefault(...)` method.
+The default value for a type is the value that would be assigned to a field of that type if no initializer is given (generally zero, `false`, or `null`).
+
 [id=jdk-const]
 ==== The `ConstantDesc` and `Constable` interfaces
 
