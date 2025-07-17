@@ -765,6 +765,55 @@ These expression types have special properties which are described below.
 [id=expressions-use]
 === How to use expressions correctly
 
+Expressions which are not <<constants,constants>> or <<assignable,variables>> may only be used once, and must be used in the same order in which they were created.
+Gizmo _may_ make some minimal effort to order expressions correctly, however this should not be relied on.
+Normally, correct ordering is a consequence of writing an expression in the natural way (left to right, innermost to outermost) so most of the time this is not a concern.
+Violating this rule will result in an exception with a message like `Item is not at its expected location`.
+
+A good rule of thumb is that if you ever create or extract a Java variable whose type is `Expr`, it should be stored into a <<local-vars,local variable>>.
+Variables, like constants, can be used multiple times and in any position.
+
+Here's an example:
+
+.Example of natural expression ordering
+[source,java]
+----
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+
+public class NaturalOrderingExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NaturalOrdering", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.public_();
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // each arithmetic op yields an expression
+                    b0.printf("The answer is: %d%n",
+                        b0.add(
+                            b0.mul(
+                                Const.of(100),
+                                Const.of(23)
+                            ),
+                            b0.div(
+                                Const.of(512),
+                                Const.of(8)
+                            )
+                        )
+                    );
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=types]
 === Types
 
