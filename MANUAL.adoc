@@ -896,7 +896,29 @@ This provides a useful mechanism to allow objects to be serialized directly into
 If a `Constable` is given to `Const.of(Constable)` which cannot be reduced to a constant, an exception is immediately thrown.
 
 [id=condy]
-==== Dynamic constants
+==== Advanced use case: Dynamic constants
+
+The JVM supports a special category of constants that cannot be directly accessed from programs written in Java source code called _dynamic constants_.
+Dynamic constants are lazily initialized based on a _bootstrap method_ which computes the initial value of the constant.
+
+Many kinds of useful dynamic constants are automatically created by the factory methods on `Const` without any special user intervention, including (but not limited to):
+
+* `VarHandle` instances
+* `Class` objects for primitive types
+* `null` constants
+* Method handles
+* `enum` constants
+* `List` and `Map` instances
+
+To create other kinds of dynamic constants, the JDK class `DynamicConstantDesc` in the `java.lang.constant` package may be used through the `Const.of(ConstantDesc)` method described above.
+For more information, see the JDK documentation for that class.
+
+[NOTE]
+====
+The JVM specification does not guarantee that dynamic constants are only initialized one time.
+In practical terms, this means that two threads which happen upon an uninitialized dynamic constant may simultaneously initialize it, possibly causing one thread to resolve an "ephemeral" value which is not seen after the constant is initialized.
+Therefore, dynamic constants which return objects should not rely on _identity comparison_; since even something as simple as `eq(myConst, myConst)` is allowed to return `false` in this case.
+====
 
 [id=this]
 === The special `this` expression
