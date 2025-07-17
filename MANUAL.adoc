@@ -970,17 +970,57 @@ public class ThisAccessExample {
 [id=assignable]
 === Assignable expressions
 
+Some expressions are _assignable_, which means that in addition to being usable as inputs for operations, they also may be written to or modified so that subsequent uses will see the modified value.
+
 [id=local-vars]
 ==== Local variables
+
+Local variables may be defined within any <<blocks,block>> using the `localVar(...)` method.
+Every local variable must have a name (as a `String`) and an initial value.
+Local variable values are observable in debuggers when single-stepping through programs.
+
+Note that unlike the Java language, local variables in Gizmo must be explicitly initialized; thus, in most cases it is better to define them later rather than earlier.
+This does not incur any performance penalty at run time; on the contrary, it allows Gizmo to emit only a single local variable table entry per variable.
+
+Once defined, a local variable can be referenced or updated as many times as needed within the <<scoping,scope>> in which it was defined (or a nested scope thereof).
+
+By convention, the `LocalVar` variable's name matches the name given to `localVar(...)`.
+This is strongly encouraged for readability.
+
+.Local variable example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+
+public class LocalVarExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("LocalVar", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar one = b0.localVar("one", 1);
+                    b0.block(b1 -> {
+                        LocalVar two = b1.localVar("two", "Two");
+                        b1.printf("One is %d and two is %s%n", one, two);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=fields]
 ==== Field expressions
 
 [id=array-elements]
 ==== Array element expressions
-
-[id=variable-use]
-==== Using variable values
 
 [id=variable-mutate]
 ==== Mutating variables
@@ -1139,9 +1179,6 @@ xxx: `cmp`/`cmpl`/`cmpg`
 
 [id=collection-of]
 === `mapOf`/`setOf`/`listOf`/`mapEntryOf`
-
-[id=swap]
-=== `swap`/`rotate`
 
 [id=boxing]
 === `box`/`unbox`
