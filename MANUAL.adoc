@@ -1318,7 +1318,31 @@ public class BitwiseAssignmentExample {
 ----
 
 [id=variable-atomics]
-==== Atomic operations on variables
+==== Advanced use case: Atomic operations on variables
+
+To perform atomic operations on variables in Java, a `VarHandle` is generally used.
+The type of `VarHandle`, and the means of acquiring it, vary depending on what is being accessed.
+
+Gizmo provides methods to perform atomic variable operations on any <<assignable,assignable expression>>, managing the `VarHandle` automatically behind the scenes as a <<condy,dynamic constant>>.
+
+The basic operations `get(...)` and `set(...)` also have variations which accept an atomic <<memory-orders,memory order>>, which allows for memory access semantics which differ from that on the variable's declaration (if any).
+
+There are operations for atomic get-and-set (`getAndSet(...)`) and get-modify-set (`getAndAdd(...)`, `getAndBitwiseAnd(...)`, `getAndBitwiseOr(...)`, and `getAndBitwiseXor(...)`), which accept an assignable expression, an argument, and an optional <<memory-orders,memory order>> which defaults to `Volatile` if not given.
+
+The last group of atomic operations are compare-and-set (`compareAndSet(...)` and `weakCompareAndSet(...)`) and compare-and-exchange (`compareAndExchange(...)`).
+These operations accept an assignable expression, an expected value, and an update value.
+The `compareAndSet(...)` and `weakCompareAndSet(...)` methods return a `boolean`-typed expression that is `true` if the exchange succeeded or `false` if it did not succeed.
+The `compareAndExchange(...)` methods return a "witness" value that was observed before the operation.
+If the witness value is equal to the expected value, then the exchange has succeeded.
+Additionally, the `weakCompareAndSet(...)` and `compareAndExchange(...)` methods optionally accept a <<memory-orders,memory order>> argument which defaults to `Volatile` if not given.
+
+[id=memory-orders]
+===== Memory orders
+
+The memory order for atomic operations are defined by the JVM specification.
+Choosing a memory order for an operation in Gizmo is done using values from the `MemoryOrder` enumeration.
+
+The values of this enumeration are `Plain`, `Opaque`, `Acquire`, `Release`, and `Volatile`, and the special mode `AsDeclared`, which will use `Plain` unless the variable being operated on was declared `volatile`, in which case `Volatile` is used.
 
 [id=void-expr]
 === Void expressions
