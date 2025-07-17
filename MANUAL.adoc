@@ -756,6 +756,12 @@ public class BlockNestingExample {
 [id=expressions]
 == Expressions
 
+Every operation yields an _expression_ which represents the result of that operation, represented by instances of the `Expr` interface.
+Expressions may then be used as inputs to other operations.
+Each expression has <<types,a type>> (which may be `void`).
+Some expressions are also <<assignable,assignable>>, and some are <<constants,constants>>.
+These expression types have special properties which are described below.
+
 [id=expressions-use]
 === How to use expressions correctly
 
