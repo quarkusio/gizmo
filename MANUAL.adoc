@@ -854,6 +854,9 @@ public class ExaminingTypesOfExpressions {
 [id=constants]
 === Constants
 
+A _constant_ is a simple expression whose value cannot change.
+Most constants can be created once and reused as many times as needed.
+
 [id=const]
 ==== The `Const` interface
 
