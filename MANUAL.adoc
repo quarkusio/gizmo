@@ -817,6 +817,40 @@ public class NaturalOrderingExample {
 [id=types]
 === Types
 
+Every expression has a _type_.
+The type of an expression is generally represented by a <<classdesc,`ClassDesc` descriptor>>.
+The type may be primitive such as `int` or `boolean`, an object type like `java.lang.Object`, an array type like `int[]` or `java.lang.String[]`, or `void`.
+Operations generally cannot use `void`-typed expressions as inputs.
+
+In many cases, the type of operations can be _inferred_ based on their inputs.
+In some cases, like method invocations or field accesses, the type of the expression is derived from the type of the member.
+In other cases, the type must be specified explicitly.
+In these cases, there will usually be an overloaded variation of the operation which accepts `Class<?>` instead of `ClassDesc` (or a list thereof).
+
+The type of an expression can be queried using the `type()` method of `Expr` and other typed entities (which are all subtypes of `SimpleTyped`).
+
+It is sometimes useful to categorize types as either being primitive or non-primitive.
+This is done using the `typeKind()` method, which is also found on `SimpleTyped` and its subtypes, including `Expr`.
+The return type of this method is `TypeKind`, an enumeration which contains constants for each of the eight primitive types, one for reference types, and one for `void`.
+
+.Examining types of a simple expression
+[source,java]
+----
+import java.lang.constant.ClassDesc;
+
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.TypeKind;
+
+public class ExaminingTypesOfExpressions {
+    public static void main(String[] args) {
+        Const theConst = Const.of(true);
+        ClassDesc type = theConst.type();
+        TypeKind kind = theConst.typeKind();
+        System.out.printf("The type and kind of the constant is: %s and %s%n", type.displayName(), kind);
+    }
+}
+----
+
 [id=constants]
 === Constants
 
