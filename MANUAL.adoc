@@ -886,6 +886,15 @@ The default value for a type is the value that would be assigned to a field of t
 [id=jdk-const]
 ==== The `ConstantDesc` and `Constable` interfaces
 
+The JDK has the concept of classes which _are_ constants (such as primitive wrapper types, or `Class`) which implement the `ConstantDesc` interface in the `java.lang.constant` package, and classes which _may reduce to_ a constant (such as `enum` constants or `MethodHandle` instances) which implement the `Constable` interface.
+Since constants are defined by the JVM specification, the `ConstantDesc` interface is sealed and thus can only be implemented in the JDK.
+
+Any object of a class which implements either of these types may be used directly as a constant in Gizmo by way of `Const.of(...)` methods for those two types, or in certain cases, by way of method overloads which accept these types in addition to `Const` or `Expr`.
+
+The `Constable` interface may be implemented by any class.
+This provides a useful mechanism to allow objects to be serialized directly into class files (but also typically requires use of <<condy,dynamic constants>>, which is an advanced usage).
+If a `Constable` is given to `Const.of(Constable)` which cannot be reduced to a constant, an exception is immediately thrown.
+
 [id=condy]
 ==== Dynamic constants
 
