@@ -923,6 +923,50 @@ Therefore, dynamic constants which return objects should not rely on _identity c
 [id=this]
 === The special `this` expression
 
+It is common to need access to the _receiver object_, which in Java is referenced by the `this` keyword.
+The `this_()` method may be used on a class or interface creator to yield an expression whose type is `This`, which may be used within instance methods, constructors, and initializers to refer to the receiver object.
+The resultant expression may not be used from a static context (such as a static method or initializer); such usages will result in an exception.
+
+By convention, it is typical to call `this_()` once near the top of your class builder lambda, and reuse the same instance.
+Calling `this_()` multiple times is not harmful, however.
+
+.Example of accessing `this`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ThisAccessExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ThisAccess", cc -> {
+            // get "this" where it can be used by all members
+            This this_ = cc.this_();
+            cc.defaultConstructor();
+            MethodDesc showThis = cc.method("showThis", mc -> {
+                mc.body(b0 -> {
+                    b0.printf("This is %s%n", this_);
+                    b0.return_();
+                });
+            });
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    Expr instance = b0.new_(cc.type());
+                    b0.invokeVirtual(showThis, instance);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=assignable]
 === Assignable expressions
 
