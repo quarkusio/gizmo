@@ -1023,7 +1023,299 @@ public class LocalVarExample {
 ==== Array element expressions
 
 [id=variable-mutate]
-==== Mutating variables
+==== Mutating assignable expressions
+
+There are several operations which can be used to mutate assignable expressions.
+Note that `final` variables generally cannot be mutated outside of initialization.
+
+===== `set(...)`
+
+The `set(...)` method on the `BlockCreator` interface may be used to modify the value of an assignable expression.
+This is equivalent to using the assignment (`=`) operator in Java.
+
+.Variable mutation using `set(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class SetExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Set", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // replace the `args` parameter variable value
+                    b0.set(args, b0.newArray(String.class, Const.of("Hello!")));
+                    b0.printf("I changed args to %s%n", b0.arrayToString(args));
+                    // now change just element 0
+                    b0.set(args.elem(0), "New string!");
+                    b0.printf("I changed args[0] to %s%n", args.elem(0));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=swap]
+===== `swap`
+
+The `swap(...)` method exchanges values between two assignable expressions without using a temporary variable.
+This operation can not be <<variable-atomics,atomic>> because it acts on two separate memory locations.
+
+.Swapping variable values using `swap(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.desc.FieldDesc;
+
+public class SwapExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Pet", cc -> {
+            cc.defaultConstructor();
+            This this_ = cc.this_();
+            FieldDesc name = cc.field("name", fc -> {
+                fc.setType(String.class);
+                fc.private_();
+            });
+            // fluent style accessors
+            cc.method("name", mc -> {
+                mc.returning(String.class);
+                mc.body(b0 -> b0.return_(this_.field(name)));
+            });
+            cc.method("name", mc -> {
+                ParamVar newName = mc.parameter("newName", String.class);
+                mc.returning(String.class);
+                mc.body(b0 -> {
+                    b0.swap(this_.field(name), newName);
+                    // now `newName` contains the old name
+                    b0.return_(newName);
+                });
+            });
+        });
+    }
+}
+----
+
+[id=rotate]
+===== `rotate`
+
+The `rotate(...)` method moves all the values given as arguments one position to the right, and the rightmost value to the leftmost position, without requiring an intermediate temporary variable.
+This operation can not be <<variable-atomics,atomic>> because it acts on multiple memory locations.
+
+.Rotating variable values using `rotate(...)`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class RotateExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Rotate", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.ne(args.length(), 4), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected 4 arguments");
+                    });
+                    b0.printf("The initial order is: %s %s %s %sn",
+                        args.elem(0),
+                        args.elem(1),
+                        args.elem(2),
+                        args.elem(3)
+                    );
+                    b0.rotate(args.elem(0), args.elem(1), args.elem(2), args.elem(3));
+                    b0.printf("The new order is: %s %s %s %sn",
+                        args.elem(0),
+                        args.elem(1),
+                        args.elem(2),
+                        args.elem(3)
+                    );
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=arith-assign]
+===== Arithmetic assignment operators
+
+In Java, the `+=`, `-=`, `*=`, `/=`, and `%=` operators may be used to perform an <<arithmetic,arithmetic operation>> on a variable and a value, and assign the result back to the variable.
+The `BlockCreator` interface has corresponding methods for each of these operations: `addAssign`, `subAssign`, `mulAssign`, `divAssign`, and `remAssign`.
+Each of these methods accepts the assignable expression and the value to operate on.
+
+.Arithmetic assignment example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ArithmeticAssignmentExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class, "parseInt", int.class, String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ArithmeticAssignment", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
+                    b0.printf("n = %d%n", n);
+                    b0.addAssign(n, 10);
+                    b0.printf("+ 10 = %d%n", n);
+                    b0.subAssign(n, 5);
+                    b0.printf("- 5 = %d%n", n);
+                    b0.mulAssign(n, 5);
+                    b0.printf("* 4 = %d%n", n);
+                    b0.divAssign(n, 2);
+                    b0.printf("/ 2 = %d%n", n);
+                    b0.remAssign(n, 17);
+                    b0.printf("% 17 = %d%n", n);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=inc-and-dec]
+===== Increment and decrement
+
+If the amount being added to or subtracted from a value is <<constants,constant>>, the `inc(...)` and `dec(...)` methods on `BlockCreator` may be used.
+In certain cases, this may generate more compact method bodies.
+For <<loop,loops>> in particular, this can aid readability.
+
+.Increment and decrement example
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class IncDecExample {
+    private static final MethodDesc isLetter = MethodDesc.of(
+        Character.class, "isLetter", boolean.class, char.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("IncDec", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar i = b0.localVar("i", 0);
+                    LocalVar str = b0.localVar("str", args.elem(0));
+                    LocalVar len = b0.localVar("len", b0.withString(str).length());
+                    LocalVar letters = b0.localVar("letters", 0);
+                    LocalVar nonLetters = b0.localVar("nonLetters", len);
+                    b0.while_(b1 -> b1.yield(b1.lt(i, len)), b1 -> {
+                        LocalVar ch = b1.withString(str).charAt(i);
+                        b1.ifElse(b1.invokeStatic(isLetter, ch), b1 -> {
+                            // is a letter
+                            b1.inc(letters);
+                        }, b1 -> {
+                            // is not a letter
+                            b1.dec(nonLetters);
+                        });
+                        // next character
+                        b1.inc(i);
+                    });
+                    b0.printf("The string has %d letters and %d non-letters%n", letters, nonLetters);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=bitwise-assign]
+===== Bitwise assignment operators
+
+Corresponding to Java's <<bitwise-logic,bitwise>> assignment operators, specifically `&=`, `|=`, and `^=`, and <<bitwise-shift,shift>> operators `<\<=`, `>>=`, and `>>>=`, there are methods on `BlockCreator` to implement these operations. They are `andAssign(...)`, `orAssign(...)`, `xorAssign(...)`, `shlAssign(...)`, `shrAssign(...)`, and `ushrAssign(...)`.
+
+Like the <<arith-assign,arithmetic assignment operators>>, these methods accept an <<assignable,assignable expression>> along with a value which may be any expression.
+
+.Example of bitwise assignment operations
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class BitwiseAssignmentExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class, "parseInt", int.class, String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("BitwiseAssignment", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(args.length(), 1), b1 ->
+                        b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
+                    LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
+                    // pass `n` through a gauntlet of various bitwise operations
+                    b0.printf("n = 0x%x%n", n);
+                    b0.andAssign(n, 0x5555);
+                    b0.printf(" & 0x5555 = 0x%x%n", n);
+                    b0.orAssign(n, 0xa0a0);
+                    b0.printf(" | 0xa0a0 = 0x%x%n", n);
+                    b0.xorAssign(n, 0x9999);
+                    b0.printf(" ^ 0x9999 = 0x%x%n", n);
+                    b0.shlAssign(n, 16);
+                    b0.printf(" << 16 = 0x%x%n", n);
+                    b0.shrAssign(n, 8);
+                    b0.printf(" >> 8 = 0x%x%n", n);
+                    b0.ushrAssign(n, 8);
+                    b0.printf(" >>> 8 = 0x%x%n", n);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=variable-atomics]
 ==== Atomic operations on variables
