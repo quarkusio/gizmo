@@ -1367,7 +1367,287 @@ It is permissible to yield the `void` constant (`Const.ofVoid()`) from these blo
 [id=arithmetic]
 === Arithmetic expressions
 
-xxx: `add`/`sub`/`mul`/`div`/`mod`/`neg`
+There are methods for each arithmetic operation supported by the JVM.
+Many of the methods for arithmetic operations have convenience overloads which accept primitive or object values for one argument.
+Internally, these methods will automatically wrap this argument with a constant.
+
+If an arithmetic operation is combined with assignment (e.g. `foo = foo + 9`), then <<arith-assign,arithmetic assignment>> should be used instead.
+
+Both inputs of a binary arithmetic operation must be of the same type.
+If the types differ, then Java-like widening and unboxing rules are applied if possible.
+If these rules fail, then an exception is thrown at the point where the expression is created.
+
+[id=add]
+==== `add`
+
+The `add(...)` operation adds two integers or floating-point numbers.
+The Java language equivalent of the `add(...)` operation is the binary `+` operator (when applied to integers and floating-point numbers only).
+
+.Example of `add`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AddFloatExample {
+    private static final MethodDesc parseFloat = MethodDesc.of(
+        Float.class,
+        "parseFloat",
+        float.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("AddFloat", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar f1 = b0.localVar("f1", b0.invokeStatic(parseFloat, args.elem(0)));
+                    LocalVar f2 = b0.localVar("f2", b0.invokeStatic(parseFloat, args.elem(1)));
+                    b0.printf("%f + %f = %f%n", f1, f2, b0.add(f1, f2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=sub]
+==== `sub`
+
+The `sub(...)` operation subtracts two integers or floating-point numbers.
+The Java language equivalent of the `sub(...)` operation is the binary `-` operator.
+
+.Example of `sub`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class SubLongExample {
+    private static final MethodDesc parseLong = MethodDesc.of(
+        Long.class,
+        "parseLong",
+        long.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("SubLong", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar l1 = b0.localVar("l1", b0.invokeStatic(parseLong, args.elem(0)));
+                    LocalVar l2 = b0.localVar("l2", b0.invokeStatic(parseLong, args.elem(1)));
+                    b0.printf("%d - %d = %d%n", l1, l2, b0.sub(l1, l2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=mul]
+==== `mul`
+
+The `mul(...)` operation multiplies two integers or floating-point numbers.
+The Java language equivalent of the `mul(...)` operation is the `*` operator.
+
+.Example of `mul`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class MulIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("MulInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d * %d = %d%n", i1, i2, b0.mul(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=div]
+==== `div`
+
+The `div(...)` operation divides two integers or floating-point numbers.
+The Java language equivalent of the `div(...)` operation is the `/` operator.
+Note that integer division will fail with an exception if the second argument is equal to zero.
+
+.Example of `div`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class DivIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("DivInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d / %d = %d%n", i1, i2, b0.div(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+
+[id=rem]
+==== `rem`
+
+The `rem(...)` operation performs a remainder operation of two integers or floating-point numbers.
+The Java language equivalent of the `rem(...)` operation is the `%` operator.
+Note that integer division (including the remainder operation) will fail with an exception if the second argument is equal to zero.
+
+.Example of `rem`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class RemIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("RemInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d %% %d = %d%n", i1, i2, b0.rem(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=neg]
+==== `neg`
+
+The unary `neg(...)` operation performs a negation of its integer or floating-point argument.
+The Java language equivalent of the `neg(...)` operation is the unary `-` operator.
+
+.Example of `neg`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class NegDoubleExample {
+    private static final MethodDesc parseDouble = MethodDesc.of(
+        Double.class,
+        "parseDouble",
+        double.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NegDouble", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 1), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected one argument");
+                    });
+                    LocalVar d = b0.localVar("d", b0.invokeStatic(parseDouble, args.elem(0)));
+                    b0.printf("negated %f = %f%n", d, b0.neg(d));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=bitwise-logic]
 === Bitwise logical expressions
