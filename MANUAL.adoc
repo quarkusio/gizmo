@@ -1845,7 +1845,153 @@ public class ComplementLongExample {
 [id=bitwise-shift]
 === Bitwise shifting expressions
 
-xxx: `shl`/`shr`/`ushr`
+The JVM supports three bit-shifting operations on integers.
+There is an equivalent method for each.
+The shift methods have overloads which accept an integer value for one argument.
+Internally, these overloads will wrap the argument with a constant.
+
+If a bitwise shift operation is combined with assignment (e.g. `foo = foo >> 4`), then <<bitwise-assign,bitwise assignment>> should be used instead.
+
+[id=shl]
+==== `shl`
+
+The `shl(...)` operation shifts the bits of the integer given in the first argument leftwards (towards the MSB) by the number of bits given in the integer second argument.
+New incoming low-order bits are filled with zero.
+As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
+This prevents shifting by any effective distance which is greater than this number or less than zero.
+
+.Example of `shl`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ShlExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Shl", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%1$d (0x%1$x) << %2$d (0x%2$x) = %3$d (0x%3$x)%n", i1, i2, b0.shl(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=shr]
+==== `shr`
+
+The `shr(...)` operation shifts the bits of the integer given in the first argument rightwards (towards the LSB) by the number of bits given in the integer second argument.
+New incoming high-order bits are equal to the MSB of the first argument (i.e. sign-extended).
+As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
+This prevents shifting by any effective distance which is greater than this number or less than zero.
+
+.Example of `shr`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ShrExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Shr", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%1$d (0x%1$x) >> %2$d (0x%2$x) = %3$d (0x%3$x)%n", i1, i2, b0.shr(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=ushr]
+==== `ushr`
+
+The `ushr(...)` operation shifts the bits of the integer given in the first argument rightwards (towards the LSB) by the number of bits given in the integer second argument.
+New incoming high-order bits are filled with zero.
+As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
+This prevents shifting by any effective distance which is greater than this number or less than zero.
+
+.Example of `ushr`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class UshrExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Ushr", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%1$d (0x%1$x) >>> %2$d (0x%2$x) = %3$d (0x%3$x)%n", i1, i2, b0.ushr(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=relational]
 === Relational expressions
