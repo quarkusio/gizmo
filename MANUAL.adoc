@@ -1652,7 +1652,195 @@ public class NegDoubleExample {
 [id=bitwise-logic]
 === Bitwise logical expressions
 
-xxx: `and`/`or`/`xor`/`complement`
+There are methods for each bitwise logical operation supported by the JVM.
+These operations generally only support integer types.
+Many of the methods for bitwise operations have convenience overloads which accept primitive or object values for one argument.
+Internally, these methods will automatically wrap this argument with a constant.
+
+If a bitwise logical operation is combined with assignment (e.g. `foo = foo & 0x1F`), then <<bitwise-assign,bitwise assignment>> should be used instead.
+
+Both inputs of a binary bitwise logical operation must be of the same type.
+If the types differ, then Java-like widening and unboxing rules are applied if possible.
+If these rules fail, then an exception is thrown at the point where the expression is created.
+
+[id=and]
+==== `and`
+
+The `and(...)` operation performs a bitwise-AND on the two arguments, returning the result.
+The Java language equivalent of this operation is the `&` operator.
+
+.Example of bitwise `and`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AndIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("AndInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d & %d = %d%n", i1, i2, b0.and(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=or]
+==== `or`
+
+The `or(...)` operation performs a bitwise-OR on the two arguments, returning the result.
+The Java language equivalent of this operation is the `|` operator.
+
+.Example of bitwise `or`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class OrIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("OrInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d | %d = %d%n", i1, i2, b0.or(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=xor]
+==== `xor`
+
+The `xor(...)` operation performs a bitwise-XOR on the two arguments, returning the result.
+The Java language equivalent of this operation is the `^` operator.
+
+.Example of bitwise `xor`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class XorIntExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("XorInt", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar i1 = b0.localVar("i1", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar i2 = b0.localVar("i2", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.printf("%d ^ %d = %d%n", i1, i2, b0.xor(i1, i2));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=complement]
+==== `complement`
+
+The `complement(...)` operation performs a unary bitwise-complement on the sole argument, returning the result.
+The Java language equivalent of this operation is the unary `~` operator.
+
+.Example of bitwise `complement`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ComplementLongExample {
+    private static final MethodDesc parseLong = MethodDesc.of(
+        Long.class,
+        "parseLong",
+        long.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ComplementLong", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 1), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected one argument");
+                    });
+                    LocalVar i = b0.localVar("i", b0.invokeStatic(parseLong, args.elem(0)));
+                    b0.printf("complement of %1$d (0x%1$x) = %2$d (0x%2$x)%n", d, b0.complement(i));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=bitwise-shift]
 === Bitwise shifting expressions
