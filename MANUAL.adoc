@@ -1355,6 +1355,15 @@ This means that it is always safe to directly return the result of a method invo
 [id=yielding]
 === Yielding values from blocks
 
+Sometimes, a block is treated like an expression, like the conditional part of an `if_`, or a `case_` of a `switch_` expression.
+In these cases, the block must yield a value upon exit.
+This can be done using the `yield(...)` method on `BlockCreator`.
+
+If a block has a non-`void` output type, and control leaves the bottom of the block without a `yield(...)`, an exception will be thrown.
+
+Blocks which are not treated like expressions generally have a type of `void`.
+It is permissible to yield the `void` constant (`Const.ofVoid()`) from these blocks, but it is not necessary to do so.
+
 [id=arithmetic]
 === Arithmetic expressions
 
