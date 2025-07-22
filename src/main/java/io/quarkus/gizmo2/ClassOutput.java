@@ -54,9 +54,6 @@ public interface ClassOutput {
      */
     static ClassOutput fileWriter(Path basePath) {
         Assert.checkNotNullParam("basePath", basePath);
-        if (!Files.isDirectory(basePath)) {
-            throw new IllegalArgumentException("Path does not exist or is not an accessible directory: %s".formatted(basePath));
-        }
         return (name, bytes) -> {
             try {
                 Path path = basePath.resolve(name);
