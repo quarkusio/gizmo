@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
+import io.smallrye.common.resource.ResourceUtils;
 
 /**
  * A container for created classes with a specific output strategy.
@@ -66,7 +67,7 @@ public interface ClassOutput {
         }
         return (name, bytes) -> {
             try {
-                Path path = basePath.resolve(name);
+                Path path = basePath.resolve(ResourceUtils.canonicalizeRelativePath(name));
                 Files.createDirectories(path.getParent());
                 Files.write(path, bytes);
             } catch (IOException e) {
