@@ -2425,8 +2425,92 @@ public class NewArrayExample {
 [id=anonymous]
 === Anonymous class expressions
 
+Like in Java, it is possible to define an expression which is an instance of an anonymous class.
+Anonymous class expressions may be defined to capture values from the enclosing scope, as well as to pass parameter arguments to the constructor of the base class of the anonymous class.
+Note that the base class of interface-based anonymous classes is always `java.lang.Object`, whose sole constructor does not accept any arguments.
+
+.Example of an anonymous class expression
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.Var;
+
+public class AnonymousClassExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("AnonymousClass", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar str = b0.localVar("str", "The captured string");
+                    b0.printf("The string is: %s%n", b0.newAnonymousClass(Object.class, acc -> {
+                        // capture the `str` variable from the enclosing scope
+                        Var myStr = acc.capture(str);
+                        acc.method("toString", amc -> {
+                            amc.returning(String.class);
+                            amc.body(b1 -> {
+                                // return the captured string
+                                b1.return_(myStr);
+                            });
+                        });
+                    }));
+                });
+            });
+        });
+    }
+}
+----
+
 [id=lambdas]
 === Lambda expressions
+
+.Example of a lambda expression
+[source,java]
+----
+import java.nio.file.Path;
+import java.util.function.Consumer;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AnonymousClassExample {
+    private static final MethodDesc consumerAccept = MethodDesc.of(
+        Consumer.class,
+        "accept",
+        void.class,
+        Object.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("AnonymousClass", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar printer = b0.lambda(Consumer.class, lc -> {
+                        ParamVar toPrint = lc.parameter("toPrint", String.class);
+                        lc.body(b1 -> {
+                            b1.printf(toPrint);
+                            b1.return_();
+                        });
+                    });
+                    b0.invokeInterface(consumerAccept, printer, Const.of("Print me!"));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=control]
 == Control flow
