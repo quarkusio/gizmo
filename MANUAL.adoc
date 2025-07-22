@@ -2347,8 +2347,80 @@ public class InvokeSpecialExample {
 [id=new]
 === `new` expression
 
+The `new` expression invokes a constructor and returns the resultant newly-created object instance.
+It is equivalent to `new ClassName(...)` in Java.
+The return type of a `new` expression is equal to the "owner" type of the <<methoddesc,constructor descriptor>>.
+
+As a convenience, overloads of `new_(...)` exist which accept the type to build followed by the arguments; the descriptor will automatically be constructed based on the static types of the arguments and the type to build.
+
+.Example of `new`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+
+public class NewExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("New", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // this variation builds a descriptor on the fly for us
+                    LocalVar ex = b0.localVar("ex", b0.new_(RuntimeException.class, Const.of("This is an exception I just made")));
+                    b0.throw_(ex);
+                });
+            });
+        });
+    }
+}
+----
+
 [id=new-array]
-=== `newArray` expression
+=== `newArray` and `newEmptyArray`
+
+The `newArray` expression constructs an array whose contents are then initialized to the values which are provided.
+The `newEmptyArray` expression constructs an array of a given length.
+Both methods accept the array component type to determine the type of array to construct.
+
+.Example of `newArray` and `newEmptyArray`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+
+public class NewArrayExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NewArray", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar emptyArray = b0.localVar("emptyArray", b0.newEmptyArray(String.class, 5));
+                    LocalVar fullArray = b0.localVar("fullArray", b0.newArray(String.class,
+                        Const.of("one"),
+                        Const.of("two"),
+                        Const.of("three"),
+                        Const.of("four"),
+                        Const.of("five")
+                    ));
+                    b0.printf("Empty array is: %s%n", b0.arrayToString(emptyArray));
+                    b0.printf("Full array is: %s%n", b0.arrayToString(fullArray));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=anonymous]
 === Anonymous class expressions
