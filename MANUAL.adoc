@@ -2151,17 +2151,198 @@ Both `cmpl` and `cmpg` treat `-0.0` as being equal to `0.0`.
 [id=invocation]
 === Invocation expressions
 
+Invocation expressions are used to call other methods or constructors.
+They all take a <<methoddesc,method or constructor descriptor>> representing the method or constructor to invoke.
+For instance invocations, a receiver instance object is also required.
+For all invocations, type of the invocation expression is equal to the return type of the <<methodtypedesc,method's type descriptor>> (which is always `void` if the callee is a constructor).
+
 [id=invoke-static]
 ==== `invokeStatic`
+
+The `invokeStatic` operation calls a `static` method on a class or interface.
+
+.Example of `invokeStatic`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class InvokeStaticExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("InvokeStatic", cc -> {
+            MethodDesc sayHello = cc.staticMethod("sayHello", mc -> {
+                mc.private_();
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    b0.printf("Hello, %s!%n", name);
+                    b0.return_();
+                });
+            });
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // invoke the static method
+                    b0.invokeStatic(sayHello, Const.of("User"));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=invoke-virtual]
 ==== `invokeVirtual`
 
+The `invokeVirtual` operation calls an instance method on a class using _virtual dispatch_, or to invoke `private` methods on a class or interface within the same _nest_ as the caller.
+While it can also be used to invoke public methods on an interface instance in many cases, it is generally a better practice to use <<invoke-interface,`invokeInterface`>> instead for that purpose.
+
+The class of the method which is called is determined by the class of the receiver object.
+
+.Example of `invokeVirtual`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class InvokeVirtualExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("InvokeVirtual", cc -> {
+            // create a default constructor so we can have an instance
+            ConstructorDesc ctor = cc.defaultConstructor();
+            MethodDesc sayHello = cc.method("sayHello", mc -> {
+                mc.private_();
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    b0.printf("Hello, %s!%n", name);
+                    b0.return_();
+                });
+            });
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // invoke the virtual method on an instance that we create
+                    b0.invokeVirtual(sayHello, b0.new_(ctor), Const.of("User"));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=invoke-interface]
 ==== `invokeInterface`
 
+The `invokeInterface` operation calls an instance method on an interface using _interface dispatch_.
+
+The class of the method which is called is determined by the class of the receiver object.
+
+.Example of `invokeInterface`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class InvokeInterfaceExample {
+    private static final MethodDesc length = MethodDesc.of(CharSequence.class, "length", int.class);
+
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("InvokeInterface", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    Const str = Const.of("a few words");
+                    b0.printf("The length of \"%s\" is %d%n", str,
+                        b0.invokeInterface(length, str));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=invoke-special]
 ==== `invokeSpecial`
+
+The `invokeSpecial` operation calls an instance method or constructor on the current class or interface, or on a supertype of the current class or interface, without virtual dispatch.
+
+Constructors are required to call another constructor of the current type or a constructor of the immediate supertype using `invokeSpecial` before performing any operations which may mutate or leak <<this,`this_()`>>.
+
+When calling methods, the `invokeSpecial` operation should only be used for method calls when calling a method directly present on the current type or a supertype of the current type to prevent virtual dispatch.
+For all other cases, including invocation of instance methods declared `private` or `final`, `invokevirtual` should be used instead.
+
+.Example of `invokeSpecial`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.This;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class InvokeSpecialExample {
+    private static final MethodDesc objectToString = MethodDesc.of(Object.class, "toString", String.class);
+
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("InvokeSpecial", cc -> {
+            This this_ = cc.this_();
+            // tip: we can create this constructor via cc.defaultConstructor()
+            cc.constructor(cc -> {
+                cc.body(b0 -> {
+                    // use `invokeSpecial` to call Object()
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
+                    b0.return_();
+                });
+            });
+
+            cc.method("toString", objectToString, mc -> {
+                // not necessary, but illustrative
+                mc.addAnnotation(Override.class);
+                // we don't need to redeclare the return type because the descriptor already has it
+                mc.body(b0 -> {
+                    b0.throw_(RuntimeException.class, "Called the wrong toString()");
+                });
+            });
+
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // call super.toString() on a new instance
+                    b0.printf("super.toString() == \"%s\"",
+                        b0.invokeSpecial(objectToString, b0.new_(cc.type()))
+                    );
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=new]
 === `new` expression
