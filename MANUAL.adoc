@@ -2134,9 +2134,19 @@ public class SortExample {
 ----
 
 [id=comparator-like]
-==== Comparator-like operations
+==== Comparator-like operations: `cmp`, `cmpl`, `cmpg`
 
-xxx: `cmp`/`cmpl`/`cmpg`
+Some binary comparison operations return a three-state result.
+For these operations, the two inputs are evaluated and a result is returned based on the relationship between the two values.
+These operations return a value which is less than or equal to `-1` if the first value is less than the second, exactly `0` if the two values are equal, or a value which is greater than or equal to `1` if the first value is greater than the second.
+The `cmp`, `cmpl`, and `cmpg` operations will operate on any integer or floating-point value, and any object value whose class implements `Comparable`.
+Using any of these operations on an object whose class does not implement `Comparable` will cause a verification error at run time.
+
+These operations all behave identically to one another, except for how `NaN` and signed-zero values are handled for floating-point numbers.
+
+For floating-point numbers, the `cmp` operation treats `NaN` as being greater than all other numbers, and `-0.0` as being less than `0.0`.
+The `cmpg` operation will return `1` if either operand is `NaN`, and the `cmpl` operation will return `0` if either operand is `NaN`.
+Both `cmpl` and `cmpg` treat `-0.0` as being equal to `0.0`.
 
 [id=invocation]
 === Invocation expressions
