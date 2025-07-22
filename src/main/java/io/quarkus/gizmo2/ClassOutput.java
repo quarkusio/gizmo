@@ -41,9 +41,16 @@ public interface ClassOutput {
      */
     default ClassOutput andThen(ClassOutput next) {
         Assert.checkNotNullParam("next", next);
-        return (desc, bytes) -> {
-            write(desc, bytes);
-            next.write(desc, bytes);
+        return new ClassOutput() {
+            public void write(final ClassDesc desc, final byte[] bytes) {
+                ClassOutput.this.write(desc, bytes);
+                next.write(desc, bytes);
+            }
+
+            public void write(final String path, final byte[] bytes) {
+                ClassOutput.this.write(path, bytes);
+                next.write(path, bytes);
+            }
         };
     }
 
