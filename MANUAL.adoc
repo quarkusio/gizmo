@@ -1996,15 +1996,142 @@ public class UshrExample {
 [id=relational]
 === Relational expressions
 
+The JVM combines most relational expressions directly into conditional constructs.
+However, this can be confusing for users who are familiar with the Java language but less familiar with JVM bytecode.
+Gizmo separates the two concepts, creating operators for various relational expressions which work with any conditional control construct (e.g. `if_`, `ifNot`, `ifElse`, `cond`).
+
 [id=equality]
-==== Equality/inequality
+==== Equality operators: `eq`, `ne`
 
-xxx: `eq`/`ne`
+The equality/inequality operators are implemented using the `eq(...)` and `ne(...)` methods, which return a boolean expression that contains the result of the comparison.
+The corresponding Java operators (`==` and `!=`) have differing behavior depending on whether the inputs are of integer, floating-point, or object type.
 
-[id=numerical-relations]
-==== Numerical relations
+Both inputs of an equality/inequality operation must be of the same type.
+If the types differ, then Java-like widening and unboxing rules are applied if possible.
+If these rules fail, then an exception is thrown at the point where the expression is created.
 
-xxx: `lt`/`le`/`gt`/`ge`
+.Example of `eq` and `ne`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class EqNeExample {
+    private static final MethodDesc parseInt = MethodDesc.of(
+        Integer.class,
+        "parseInt",
+        int.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("EqNe", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.ne(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected two arguments");
+                    });
+                    LocalVar a = b0.localVar("a", b0.invokeStatic(parseInt, args.elem(0)));
+                    LocalVar b = b0.localVar("b", b0.invokeStatic(parseInt, args.elem(1)));
+                    b0.ifElse(b0.eq(a, b), b1 -> {
+                        b1.printf("%d == %d%n", a, b);
+                    }, b1 -> {
+                        b1.printf("%d != %d%n", a, b);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
+[id=ordering-operators]
+==== Ordering operators: `lt`, `le`, `gt`, `ge`
+
+The Java ordering operators `<`, `\<=`, `>`, and `>=` are implemented in Gizmo using the `lt(...)`, `le(...)`, `gt(...)`, and `ge(...)` operations, respectively.
+For primitive floating-point and integer types, these operations work in the same manner as their Java counterparts.
+
+Additionally, Gizmo supports using these operations on object-typed values which statically implement the `Comparable` interface.
+If the static type of the given object values does not implement this interface, then verification of the method bytecode will fail.
+
+.Example of ordering operations
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class SortExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Sort", cc -> {
+            MethodDesc partition = cc.staticMethod("partition", mc -> {
+                mc.private_();
+                ParamVar array = mc.parameter("array", String[].class);
+                ParamVar lo = mc.parameter("lo", int.class);
+                ParamVar hi = mc.parameter("hi", int.class);
+                mc.returning(int.class);
+                mc.body(b0 -> {
+                    LocalVar pivot = b0.localVar("pivot", array.elem(hi));
+                    LocalVar i = b0.localVar("i", b0.sub(lo, 1));
+                    LocalVar j = b0.localVar("j", lo);
+                    b0.while_(b1 -> {
+                        b1.yield(b1.lt(j, hi));
+                    }, b1 -> {
+                        b1.if_(b1.le(array.elem(j), pivot), b2 -> {
+                            b2.inc(i);
+                            b2.swap(array.elem(i), array.elem(j));
+                        });
+                        b1.inc(j);
+                    });
+                    b0.inc(i);
+                    b0.swap(array.elem(i), array.elem(hi));
+                    b0.return_(i);
+                });
+            });
+            MethodDesc quicksort = cc.staticMethod("quicksort", mc -> {
+                mc.private_();
+                ParamVar array = mc.parameter("array", String[].class);
+                ParamVar lo = mc.parameter("lo", int.class);
+                ParamVar hi = mc.parameter("hi", int.class);
+                mc.body(b0 -> {
+                    b0.if_(b0.lt(lo, hi), b1 -> {
+                        LocalVar partIdx = b1.localVar("partIdx", b1.invokeStatic(partition, array, lo, hi));
+                        // self-recursion
+                        b1.invokeStatic(mc.desc(), array, lo, b1.sub(partIdx, 1));
+                        b1.invokeStatic(mc.desc(), array, b1.add(partIdx, 1), hi);
+                    });
+                    b0.return_();
+                });
+            });
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // sort the arguments
+                    b0.invokeStatic(quicksort, args, Const.of(0), b0.sub(args.length(), 1));
+                    b0.forEach(args, (b1, item) -> {
+                        b1.printf("%s%n", item);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=comparator-like]
 ==== Comparator-like operations
