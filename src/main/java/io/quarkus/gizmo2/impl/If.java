@@ -1,6 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.impl.Cmp.*;
+import static java.lang.constant.ConstantDescs.*;
+
 import java.lang.constant.ClassDesc;
+import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -23,14 +27,18 @@ abstract class If extends Item {
         return type;
     }
 
+    private static void comparable_acmp(CodeBuilder cb, Label label) {
+        cb.invokeinterface(CD_Comparable, "compareTo", MethodTypeDesc.of(CD_int, CD_Object));
+    }
+
     enum Kind {
         // IMPORTANT: preserve order!
         EQ(CodeBuilder::ifeq, CodeBuilder::if_icmpeq, CodeBuilder::ifnull, CodeBuilder::if_acmpeq),
         NE(CodeBuilder::ifne, CodeBuilder::if_icmpne, CodeBuilder::ifnonnull, CodeBuilder::if_acmpne),
-        LT(CodeBuilder::iflt, CodeBuilder::if_icmplt),
-        GE(CodeBuilder::ifge, CodeBuilder::if_icmpge),
-        LE(CodeBuilder::ifle, CodeBuilder::if_icmple),
-        GT(CodeBuilder::ifgt, CodeBuilder::if_icmpgt),
+        LT(CodeBuilder::iflt, CodeBuilder::if_icmplt, null, IfOp.of(If::comparable_acmp, CodeBuilder::iflt)),
+        GE(CodeBuilder::ifge, CodeBuilder::if_icmpge, null, IfOp.of(If::comparable_acmp, CodeBuilder::ifge)),
+        LE(CodeBuilder::ifle, CodeBuilder::if_icmple, null, IfOp.of(If::comparable_acmp, CodeBuilder::ifle)),
+        GT(CodeBuilder::ifgt, CodeBuilder::if_icmpgt, null, IfOp.of(If::comparable_acmp, CodeBuilder::ifgt)),
         ;
 
         static final List<Kind> values = List.of(values());
@@ -113,5 +121,12 @@ abstract class If extends Item {
 
     interface IfOp {
         void accept(CodeBuilder cb, Label a);
+
+        static IfOp of(IfOp op1, IfOp op2) {
+            return (cb, a) -> {
+                op1.accept(cb, a);
+                op2.accept(cb, a);
+            };
+        }
     }
 }

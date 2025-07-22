@@ -20,7 +20,7 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Cmp extends Item {
-    private static final ClassDesc CD_Comparable = ClassDesc.of("java.lang.Comparable");
+    static final ClassDesc CD_Comparable = ClassDesc.of("java.lang.Comparable");
     private final Item a;
     private final Item b;
     private final Kind kind;
