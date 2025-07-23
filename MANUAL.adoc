@@ -2696,7 +2696,60 @@ public class GotoExample {
 ----
 
 [id=if]
-=== `if`/`cond`
+=== `if_`/`ifElse`/`ifNot`/`cond`
+The `if*(...)` and `cond(...)` operations work like the Java `if` and `?:` constructs, respectively.
+The `if_(...)` operation accepts a condition and a block to execute if the condition is true.
+The `ifNot(...)` operation accepts a condition and a block to execute if the condition is false.
+The `ifElse(...)` and `cond(...)` operations accept a condition and a block for each of the true or false cases.
+Additionally, the `cond(...)` operation returns an expression representing the output of the block that was executed based on the condition.
+
+In all cases, the condition argument must have a type of `boolean`.
+
+.Example of `if_` and `cond`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class IfExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("If", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // check arguments length
+                    b0.ifNot(b0.eq(args.length(), 2), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected 2 arguments");
+                    });
+                    LocalVar len0 = b0.localVar("len0", b0.withString(args.elem(0)).length());
+                    LocalVar len1 = b0.localVar("len1", b0.withString(args.elem(1)).length());
+                    b0.if_(b0.eq(len0, len1), b1 -> {
+                        b1.printf("Both arguments have the same length%n");
+                    });
+                    b0.ifElse(b0.lt(args.elem(0), args.elem(1)), b1 -> {
+                        b1.printf("Argument 0 comes before argument 1%n");
+                    }, b1 -> {
+                        b1.printf("Argument 0 does not come before argument 1%n");
+                    });
+                    LocalVar str = b0.localVar("str", b0.cond(String.class, b0.eq(len0, 1), b1 -> {
+                        b1.yield(Const.of("letter"));
+                    }, b1 -> {
+                        b1.yield(Const.of("letters"));
+                    }));
+                    b0.printf("Argument 0 has %d %s%n", len0, str);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=logical]
 === `logicalAnd`/`logicalOr`
