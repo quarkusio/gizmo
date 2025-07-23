@@ -2,6 +2,7 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -35,6 +36,34 @@ public class LoopTest {
             });
         });
         assertEquals("foo", tcm.noArgsConstructor(StringListFun.class).apply(List.of("foo", "bar", "baz")));
+    }
+
+    @Test
+    public void testForEachArray() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.LoopArrayFun", cc -> {
+            cc.implements_(StringArrayFun.class);
+            cc.defaultConstructor();
+            cc.method("apply", mc -> {
+                ParamVar p = mc.parameter("array", String[].class);
+                mc.returning(List.class);
+                mc.public_();
+                mc.body(b0 -> {
+                    // var l = new ArrayList<>();
+                    // for(String e : array) {
+                    //     l.add(e);
+                    // }
+                    // return l;
+                    LocalVar l = b0.localVar("l", b0.new_(ArrayList.class));
+                    b0.forEach(p, (loop, item) -> {
+                        loop.withList(l).add(item);
+                    });
+                    b0.return_(l);
+                });
+            });
+        });
+        assertEquals(List.of("foo", "bar", "baz"), tcm.noArgsConstructor(StringArrayFun.class).apply("foo", "bar", "baz"));
     }
 
     @Test
@@ -225,9 +254,11 @@ public class LoopTest {
     }
 
     public interface StringListFun {
-
         String apply(List<String> list);
+    }
 
+    public interface StringArrayFun {
+        List<String> apply(String... array);
     }
 
 }

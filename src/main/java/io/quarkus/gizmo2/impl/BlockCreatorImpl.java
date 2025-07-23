@@ -806,7 +806,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                         builder.accept(b2, val);
                         if (b2.active()) {
                             b2.inc(idx);
-                            b2.gotoStart();
+                            b2.goto_(b1);
                         }
                     });
                 });
