@@ -2627,6 +2627,38 @@ public class ReturnExample {
 
 [id=throw]
 === `throw_`
+The `throw_(...)` operation throws an exception which is given as its sole argument.
+It is functionally equivalent to Java's `throw` operation.
+
+There are convenience overloads which accept an exception type and optional string or `String`-typed expression which will construct the exception and throw it, all in one operation.
+
+.Example of `throw_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class ThrowExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Throw", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.ne(args.length(), 7), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "I wanted exactly seven arguments");
+                    });
+                    b0.printf("Thank you!%n");
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=goto]
 === `goto`/`gotoStart`
