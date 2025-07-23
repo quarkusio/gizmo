@@ -2515,8 +2515,13 @@ public class AnonymousClassExample {
 [id=control]
 == Control flow
 
+Gizmo provides many control flow constructs comprising a superset of what is available in the Java language.
+
 [id=block]
 === `block`
+
+The `block(...)` operation constructs a new block with its own scope.
+See <<blocks>> for information about creating and using blocks.
 
 [id=break]
 === `break`
