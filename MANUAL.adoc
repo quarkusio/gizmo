@@ -2661,7 +2661,39 @@ public class ThrowExample {
 ----
 
 [id=goto]
-=== `goto`/`gotoStart`
+=== `goto_`/`gotoStart`
+
+The `goto_(...)` operation transfers control to the beginning of the target block which is given as the sole argument.
+The target block must enclose the current block.
+As a convenience, the `gotoStart()` is equivalent to calling `b.goto_(b)` where `b` is the current block.
+
+To target cases of a `switch` from within that `switch`, use <<goto-case>> instead.
+
+.Example of `goto_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class GotoExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Goto", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Hello world!%n");
+                    b0.goto_(b0);
+                    // no return is needed, because control never reaches here
+                });
+            });
+        });
+    }
+}
+----
 
 [id=if]
 === `if`/`cond`
