@@ -2566,6 +2566,65 @@ public class BreakExample {
 [id=return]
 === `return_`
 
+The `return_(...)` operation immediately returns from the current method or constructor.
+If an argument is given, the <<types,type>> of the argument must match the return type of the method.
+Methods that do not return <<void-expr,`void`>> _must_ provide an argument.
+The `return_(...)` operation cannot be used within initializers.
+
+.Example of `return_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ReturnExample {
+    private static final MethodDesc parseLong = MethodDesc.of(
+        Long.class,
+        "parseLong",
+        long.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Return", cc -> {
+            // compute a factorial
+            MethodDesc factorial = cc.staticMethod("factorial", mc -> {
+                mc.returning(long.class);
+                ParamVar n = mc.parameter("n", long.class);
+                mc.body(b0 -> {
+                    b0.ifElse(b0.eq(n, 0), b1 -> {
+                        b1.return_(1);
+                    }, b1 -> {
+                        // return n * factorial(n - 1)
+                        b1.return_(b1.mul(n, b1.invokeStatic(mc.desc(), b1.sub(n, 1))));
+                    });
+                });
+            });
+            // a nice main method
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.ifNot(b0.eq(args.length(), 1), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected one argument");
+                    });
+                    LocalVar n = b0.localVar("n", b0.invokeStatic(parseLong, args.elem(0)));
+                    LocalVar res = b0.localVar("res", b0.invokeStatic(factorial, n));
+                    b0.printf("The factorial of %d is %d%n", n, res);
+                    // void methods return nothing
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+
 [id=throw]
 === `throw_`
 
