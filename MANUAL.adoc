@@ -2524,7 +2524,44 @@ The `block(...)` operation constructs a new block with its own scope.
 See <<blocks>> for information about creating and using blocks.
 
 [id=break]
-=== `break`
+=== `break_`
+
+The `break_(...)` operation exits the block identified by its `BlockCreator` argument.
+Control will resume at the next instruction after the target block (even if the target block otherwise exits abnormally).
+The target block must enclose the block that contains the instruction or an exception will be thrown.
+The target block must not be the outermost block of a method or constructor.
+
+.Example of `break_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class BreakExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Break", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // n.b. the b0 block cannot be a "break" target
+                    b0.block(b1 -> {
+                        b1.if_(b1.lt(args.length(), 1), b2 -> {
+                            // we'll break out of b1 to return
+                            b2.break_(b1);
+                        });
+                        b1.printf("The first argument is: %s%n", args.elem(0));
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=return]
 === `return_`
