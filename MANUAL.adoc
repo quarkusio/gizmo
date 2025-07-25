@@ -2880,6 +2880,36 @@ These methods accept the creator of the enclosing switch and, for `gotoCase(...)
 [id=loop]
 === `loop`
 
+The `loop(...)` operation works like <<block,`block(...)`>>, with the sole difference that the block will end with an implicit `gotoStart()` if the block is not terminated some other way.
+The main benefit of using `loop(...)` over the combination of `block(...)` and `gotoStart()` is readability.
+
+.Example of `loop`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+
+public class LoopExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Loop", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.loop(b1 -> {
+                        b1.printf("Hello world!%n");
+                    });
+                    // control never reaches here
+                });
+            });
+        });
+    }
+}
+----
+
 [id=while]
 === `while`/`doWhile`
 
