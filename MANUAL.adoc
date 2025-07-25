@@ -2754,6 +2754,67 @@ public class IfExample {
 [id=logical]
 === `logicalAnd`/`logicalOr`
 
+The `logicalAnd(...)` and `logicalOr(...)` constructs mirror the `&&` and `||` operators in Java.
+These operators are control-flow-affecting because of their "short-circuiting" behavior: if evaluating the first argument is sufficient to resolve the expression, then the second argument is not evaluated.
+For this reason, the second argument is given as a <<blocks,block>> which must <<yielding,yield>> a `boolean`-typed value.
+
+.Example of `logicalAnd` and `logicalOr`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class LogicalExample {
+    private static final MethodDesc startsWith = MethodDesc.of(
+        String.class,
+        "startsWith",
+        boolean.class,
+        String.class
+    );
+    private static final MethodDesc endsWith = MethodDesc.of(
+        String.class,
+        "endsWith",
+        boolean.class,
+        String.class
+    );
+
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Logical", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.if_(b0.ne(args.length(), 1), b1 -> {
+                        b1.throw_(IllegalArgumentException.class, "Expected one argument");
+                    });
+                    LocalVar arg = b0.localVar("arg", args.elem(0));
+                    LocalVar startsWithFoo = b0.localVar("startsWithFoo", b0.invokeVirtual(startsWith, arg, Const.of("foo")));
+                    b0.ifElse(b0.logicalAnd(startsWithFoo, b1 -> {
+                        b1.yield(b1.invokeVirtual(endsWith, arg, Const.of("bar")));
+                    }), b1 -> {
+                        // true
+                        b1.printf("It is a foo...bar!%n");
+                    }, b1 -> {
+                        // false
+                        b1.if_(b1.logicalOr(startsWithFoo, b2 -> {
+                            b2.yield(b2.invokeVirtual(endsWith, arg, Const.of("bar")));
+                        }), b2 -> {
+                            b2.printf("It is almost a foo...bar%n");
+                        });
+                    });
+                });
+            });
+        });
+    }
+}
+----
+
 [id=switch]
 === `switch` and `switchEnum`
 
