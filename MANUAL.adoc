@@ -2816,7 +2816,61 @@ public class LogicalExample {
 ----
 
 [id=switch]
-=== `switch` and `switchEnum`
+=== `switch_` and `switchEnum`
+The `switch_(...)` and `switchEnum(...)` operations generally work equivalently to (non-enhanced) `switch` statement or expression in Java.
+The type of the switch value is generally inferred from the static type of the argument; however, as a special case, switching on `enum` requires use of the `switchEnum(...)` method instead, because it is not possible to statically infer that a type is an `enum` type.
+
+The types presently supported by `switch_(...)` are:
+
+* `int` (or any type that promotes to `int`, including `boolean`)
+* `long`
+* `java.lang.String`
+* `java.lang.Class` (exact matches only, not subtype matches)
+
+The `switchEnum(...)` operation differs from Java in that it has the capability to match `enum` constants from any `enum` type in one switch.
+
+Cases can be added using `case_(...)` on the `SwitchCreator`.
+For convenience, a series of `caseOf(...)` methods exist which accept a constant value and a `BlockCreator`.
+Cases do _not_ fall through.
+To simulate fallthrough behavior, use <<goto-case,`gotoCase` or `gotoDefault`>>.
+
+Either operation can be used as an expression by passing the expression output type as the first argument.
+However, each case which exits must yield a value of the expected type.
+
+.Example of `switch_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class SwitchExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Switch", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar arg = b0.localVar("arg", Const.of("help"));
+                    b0.if_(b0.ge(args.length(), 1), b1 -> b1.set(arg, args.elem(0)));
+                    b0.switch_(arg, s1 -> {
+                        s1.caseOf("help", b2 -> b2.printf("Your job is to guess my favorite color!%n"));
+                        s1.caseOf("brown", b2 -> b2.printf("No, it's not brown!%n"));
+                        s1.caseOf("grey", b2 -> b2.printf("I'd spell that as \"gray\", but no.%n"));
+                        s1.caseOf("red", b2 -> b2.printf("You guessed it!%n"));
+                        s1.default_(b2 -> b2.printf("Incorrect! Sorry...%n"));
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
 
 [id=goto-case]
 ==== `gotoCase`/`gotoDefault`
