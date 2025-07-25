@@ -2874,6 +2874,8 @@ public class SwitchExample {
 
 [id=goto-case]
 ==== `gotoCase`/`gotoDefault`
+In order to jump to the start of a case of an enclosing switch, the `gotoCase(...)` or `gotoDefault(...)` operations may be used.
+These methods accept the creator of the enclosing switch and, for `gotoCase(...)`, the constant value of the case to jump to.
 
 [id=loop]
 === `loop`
