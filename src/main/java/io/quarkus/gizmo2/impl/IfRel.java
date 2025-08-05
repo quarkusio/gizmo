@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
@@ -21,7 +23,7 @@ final class IfRel extends If {
         return switch (a.typeKind().asLoadable()) {
             case INT -> kind.if_icmp;
             case REFERENCE -> kind.if_acmp;
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         };
     }
 }

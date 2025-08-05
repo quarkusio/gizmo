@@ -432,7 +432,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 // wrap with cmpg
                 return relZero(cmpg(a, Const.of(0, a.typeKind())), kind);
             }
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         }
     }
 

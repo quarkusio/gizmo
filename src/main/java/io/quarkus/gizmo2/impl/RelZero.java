@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
@@ -67,7 +68,7 @@ final class RelZero extends Item {
                 cb.iand();
                 return;
             }
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         }
         cb.iconst_0();
         cb.goto_(end);
