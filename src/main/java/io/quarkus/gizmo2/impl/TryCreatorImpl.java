@@ -29,7 +29,8 @@ public final class TryCreatorImpl implements TryCreator {
 
     private void advanceToState(int newState) {
         if (state > newState) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Wrong method call order: body() must come first, then arbitrarily "
+                    + "many catch_(), then at most one finally_()");
         }
         this.state = newState;
     }
