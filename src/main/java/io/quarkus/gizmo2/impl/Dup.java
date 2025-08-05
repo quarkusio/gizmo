@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
+
 import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
@@ -46,7 +48,7 @@ final class Dup extends Item {
             case 1 -> cb.dup();
             case 0 -> {
             }
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(typeKind().asLoadable());
         }
     }
 }

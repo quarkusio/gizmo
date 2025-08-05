@@ -971,6 +971,18 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Create a new array with the given type, initialized with the given values.
      *
      * @param componentType the component type (must not be {@code null})
+     * @param values the values to assign into the array after mapping (must not be {@code null})
+     * @param mapper function that turns values into expressions (must not be {@code null})
+     * @return the expression for the new array (not {@code null})
+     */
+    default <T> Expr newArray(Class<?> componentType, List<T> values, Function<T, ? extends Expr> mapper) {
+        return newArray(Util.classDesc(componentType), values, mapper);
+    }
+
+    /**
+     * Create a new array with the given type, initialized with the given values.
+     *
+     * @param componentType the component type (must not be {@code null})
      * @param values the values to assign into the array (must not be {@code null})
      * @return the expression for the new array (not {@code null})
      */
@@ -2794,6 +2806,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the returned value (not {@code null})
      */
     Expr blockExpr(ClassDesc type, Consumer<BlockCreator> nested);
+
+    /**
+     * Create a block expression of given {@code type}. The block must {@link #yield(Expr)} its result.
+     *
+     * @param type the output type (must not be {@code null})
+     * @param nested the builder for the block body (must not be {@code null})
+     * @return the returned value (not {@code null})
+     */
+    default Expr blockExpr(Class<?> type, Consumer<BlockCreator> nested) {
+        return blockExpr(Util.classDesc(type), nested);
+    }
 
     /**
      * If the given object is an instance of the given type, then execute the block with the narrowed object.

@@ -2,6 +2,7 @@ package io.quarkus.gizmo2.impl;
 
 import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_Double;
 import static java.lang.constant.ConstantDescs.CD_Float;
 import static java.lang.constant.ConstantDescs.CD_Integer;
@@ -56,7 +57,7 @@ final class Cmp extends Item {
             case FLOAT -> kind.floatOp.apply(cb);
             case DOUBLE -> kind.doubleOp.apply(cb);
             case REFERENCE -> kind.refOp.apply(cb);
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         }
     }
 

@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import static io.quarkus.gizmo2.impl.Conversions.convert;
+import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
@@ -23,7 +24,7 @@ final class IfZero extends If {
         return switch (a.typeKind().asLoadable()) {
             case INT -> kind.if_;
             case REFERENCE -> kind.if_acmpnull;
-            default -> throw new IllegalStateException();
+            default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         };
     }
 }
