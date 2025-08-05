@@ -60,7 +60,7 @@ public final class SwitchTest {
     public void testIntSwitch() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitchExpr"), zc -> {
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
             zc.staticMethod("frobnicate", mc -> {
                 mc.returning(int.class);
                 ParamVar cp = mc.parameter("cp", int.class);
@@ -88,6 +88,32 @@ public final class SwitchTest {
                         });
                         sc.default_(b1 -> b1.yield(cp));
                     }));
+                });
+            });
+        });
+        IntUnaryOperator frobnicate = tcm.staticMethod("frobnicate", IntUnaryOperator.class);
+        assertEquals('i', frobnicate.applyAsInt('a'));
+        assertEquals('q', frobnicate.applyAsInt('q'));
+        assertEquals('o', frobnicate.applyAsInt('e'));
+    }
+
+    @Test
+    public void testIntSwitchWithoutDefaultCase() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
+            zc.staticMethod("frobnicate", mc -> {
+                mc.returning(int.class);
+                ParamVar cp = mc.parameter("cp", int.class);
+                mc.body(b0 -> {
+                    b0.switch_(cp, sc -> {
+                        sc.caseOf('a', b1 -> b1.return_(Const.of((int) 'i')));
+                        sc.caseOf('e', b1 -> b1.return_(Const.of((int) 'o')));
+                        sc.caseOf('i', b1 -> b1.return_(Const.of((int) 'u')));
+                        sc.caseOf('o', b1 -> b1.return_(Const.of((int) 'a')));
+                        sc.caseOf('u', b1 -> b1.return_(Const.of((int) 'e')));
+                    });
+                    b0.return_(cp);
                 });
             });
         });
@@ -154,6 +180,33 @@ public final class SwitchTest {
                         sc.caseOf("three", b1 -> b1.yield(Const.of(3)));
                         sc.default_(b1 -> b1.yield(Const.of(-1)));
                     }));
+                });
+            });
+        });
+        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        assertEquals(0, nameToNumber.get("zero"));
+        assertEquals(1, nameToNumber.get("one"));
+        assertEquals(2, nameToNumber.get("two"));
+        assertEquals(3, nameToNumber.get("three"));
+        assertEquals(-1, nameToNumber.get("four"));
+    }
+
+    @Test
+    public void testStringSwitchWithoutDefaultCase() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+            zc.staticMethod("nameToNumber", mc -> {
+                mc.returning(int.class);
+                ParamVar name = mc.parameter("name", String.class);
+                mc.body(b0 -> {
+                    b0.switch_(name, sc -> {
+                        sc.caseOf("zero", b1 -> b1.return_(Const.of(0)));
+                        sc.caseOf("one", b1 -> b1.return_(Const.of(1)));
+                        sc.caseOf("two", b1 -> b1.return_(Const.of(2)));
+                        sc.caseOf("three", b1 -> b1.return_(Const.of(3)));
+                    });
+                    b0.return_(Const.of(-1));
                 });
             });
         });

@@ -49,8 +49,8 @@ sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstImpl> extends 
         }
         // finally, the default block
         if (default_ == null) {
+            // `fallOut` and `nonMatching` refer to the same object, so we need to bind it just once
             cb.labelBinding(fallOut);
-            cb.labelBinding(nonMatching);
         } else {
             default_.writeCode(cb, block);
         }
