@@ -71,9 +71,29 @@ public class ComparisonsTest {
                     bc.return_(bc.eq(Const.of(7), Const.of(7)));
                 });
             });
+            cc.staticMethod("test3", mc -> {
+                // static boolean test3() {
+                //     return 0 == 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.eq(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test4", mc -> {
+                // static boolean test4() {
+                //     return 1 == 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.eq(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
@@ -129,9 +149,29 @@ public class ComparisonsTest {
                     bc.return_(bc.ne(Const.of(7L), Const.of(7L)));
                 });
             });
+            cc.staticMethod("test3", mc -> {
+                // static boolean test3() {
+                //     return 0 != 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ne(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test4", mc -> {
+                // static boolean test4() {
+                //     return 1 != 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ne(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
@@ -205,12 +245,32 @@ public class ComparisonsTest {
                     bc.return_(bc.lt(Const.of("world"), Const.of("hello")));
                 });
             });
+            cc.staticMethod("test6", mc -> {
+                // static boolean test6() {
+                //     return 0 < 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.lt(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test7", mc -> {
+                // static boolean test7() {
+                //     return 1 < 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.lt(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
@@ -254,12 +314,32 @@ public class ComparisonsTest {
                     bc.return_(bc.le(Const.of("world"), Const.of("hello")));
                 });
             });
+            cc.staticMethod("test6", mc -> {
+                // static boolean test6() {
+                //     return 0 <= 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.le(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test7", mc -> {
+                // static boolean test7() {
+                //     return 1 <= 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.le(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
@@ -303,12 +383,32 @@ public class ComparisonsTest {
                     bc.return_(bc.gt(Const.of("world"), Const.of("hello")));
                 });
             });
+            cc.staticMethod("test6", mc -> {
+                // static boolean test6() {
+                //     return 0 > 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.gt(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test7", mc -> {
+                // static boolean test7() {
+                //     return 1 > 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.gt(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
@@ -352,11 +452,31 @@ public class ComparisonsTest {
                     bc.return_(bc.ge(Const.of("world"), Const.of("hello")));
                 });
             });
+            cc.staticMethod("test6", mc -> {
+                // static boolean test6() {
+                //     return 0 >= 1;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ge(Const.of(0), Const.of(1)));
+                });
+            });
+            cc.staticMethod("test7", mc -> {
+                // static boolean test7() {
+                //     return 1 >= 0;
+                // }
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.ge(Const.of(1), Const.of(0)));
+                });
+            });
         });
         assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
         assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
     }
 }
