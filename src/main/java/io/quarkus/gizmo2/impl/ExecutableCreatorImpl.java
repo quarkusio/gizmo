@@ -32,6 +32,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttrib
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
@@ -405,5 +406,10 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             typeParameters = Util.listWith(typeParameters, var);
         }
         return var;
+    }
+
+    // required by `InstanceExecutableCreator`
+    public This this_() {
+        return typeCreator.this_();
     }
 }

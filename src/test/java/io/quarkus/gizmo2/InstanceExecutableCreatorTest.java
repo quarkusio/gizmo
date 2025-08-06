@@ -25,7 +25,7 @@ public class InstanceExecutableCreatorTest {
             cc.constructor(con -> {
                 con.public_();
                 con.body(bc -> {
-                    bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
+                    bc.invokeSpecial(ConstructorDesc.of(Object.class), con.this_());
                     bc.return_();
                 });
             });
@@ -45,7 +45,7 @@ public class InstanceExecutableCreatorTest {
                 mc.body(bc -> {
                     // return convert((String)t);
                     Expr strVal = bc.cast(p, String.class);
-                    bc.return_(bc.invokeVirtual(convert, cc.this_(), strVal));
+                    bc.return_(bc.invokeVirtual(convert, mc.this_(), strVal));
                 });
             });
         });
