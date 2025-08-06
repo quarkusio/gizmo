@@ -100,7 +100,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final Node tail;
     private boolean breakTarget;
     /**
-     * Set if this block is within a try block.
+     * Set if this block is an outermost body block of a {@code try} that also has a {@code finally}.
+     * Note that this is only set when the {@code finally} block is added, so when generating the
+     * {@code try} body, this is still {@code null}. Call {@link #tryFinally()} to find the enclosing
+     * {@code TryFinally} inside {@link #writeCode(CodeBuilder, BlockCreatorImpl)}.
      */
     TryFinally tryFinally;
     private int state;
@@ -148,7 +151,6 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         this.owner = owner;
         depth = parent == null ? 0 : parent.depth + 1;
         this.methodNameForLambdas = methodNameForLambdas;
-        tryFinally = parent == null ? null : parent.tryFinally;
         postInits = parent == null ? List.of() : parent.postInits;
         startLabel = newLabel();
         endLabel = newLabel();
@@ -172,6 +174,23 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     BlockCreatorImpl parent() {
         return parent;
+    }
+
+    /**
+     * This method should be used to look up the enclosing {@code TryFinally} inside
+     * {@link #writeCode(CodeBuilder, BlockCreatorImpl)}. The {@code tryFinally} field is set late
+     * (when the {@code finally} block is being added), so all blocks within the {@code try} body,
+     * except of the outermost one, do <em>not</em> have it set correctly.
+     */
+    TryFinally tryFinally() {
+        BlockCreatorImpl current = this;
+        while (current != null) {
+            if (current.tryFinally != null) {
+                return current.tryFinally;
+            }
+            current = current.parent;
+        }
+        return null;
     }
 
     Label newLabel() {

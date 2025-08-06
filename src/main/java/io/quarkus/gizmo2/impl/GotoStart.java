@@ -18,7 +18,7 @@ final class GotoStart extends Goto {
     }
 
     Label target(final BlockCreatorImpl from) {
-        TryFinally tryFinally = from.tryFinally;
+        TryFinally tryFinally = from.tryFinally();
         if (tryFinally != null) {
             return tryFinally.cleanup(new GotoStartKey(outer));
         } else {
