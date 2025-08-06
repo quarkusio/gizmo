@@ -423,13 +423,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         // build the object graph
         int size = values.size();
+        List<Expr> mappedValues = new ArrayList<>(size);
         List<ArrayStore> stores = new ArrayList<>(size);
         NewEmptyArray nea = new NewEmptyArray(componentType, ConstImpl.of(size));
         for (int i = 0; i < size; i++) {
-            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) mapper.apply(values.get(i)), componentType));
+            Expr mapped = mapper.apply(values.get(i));
+            mappedValues.add(mapped);
+            stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) mapped, componentType));
         }
         // stitch the object graph into our list
-        insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(values), values.size());
+        insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(mappedValues), size);
         Item result = nea;
         if (size > 0) {
             result = addItem(new NewArrayResult(nea, Util.reinterpretCast(stores)));

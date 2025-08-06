@@ -1,11 +1,13 @@
 package io.quarkus.gizmo2;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
@@ -413,5 +415,23 @@ public class ArraysTest {
         assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
         assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
         assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+    }
+
+    @Test
+    public void testCreateArrayByMapping() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.CreateArrayByMapping", cc -> {
+            cc.staticMethod("test", mc -> {
+                mc.returning(Object.class); // always `String[]`
+                mc.body(bc -> {
+                    bc.return_(bc.newArray(String.class, List.of("foo", "bar"), it -> {
+                        Const value = Const.of(it);
+                        return bc.invokeVirtual(MethodDesc.of(String.class, "toUpperCase", String.class), value);
+                    }));
+                });
+            });
+        });
+        assertArrayEquals(new String[] { "FOO", "BAR" }, (String[]) tcm.staticMethod("test", Supplier.class).get());
     }
 }
