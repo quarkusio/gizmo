@@ -17,7 +17,7 @@ class GotoCase extends Goto {
     }
 
     Label target(final BlockCreatorImpl from) {
-        TryFinally tryFinally = from.tryFinally;
+        TryFinally tryFinally = from.tryFinally();
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
         if (tryFinally != null) {
             return tryFinally.cleanup(new GotoCaseKey(sci, case_));

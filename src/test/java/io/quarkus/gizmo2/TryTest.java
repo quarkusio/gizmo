@@ -234,8 +234,9 @@ public final class TryTest {
                 ifc.setType(boolean.class);
             });
             MethodDesc test2 = cc.staticMethod("test2body", smc -> {
+                ParamVar i = smc.parameter("i", int.class);
                 smc.body(b0 -> {
-                    LocalVar i = b0.localVar("i", Const.of(1));
+                    b0.set(ran, Const.of(false));
                     b0.while_(cond1 -> cond1.yield(cond1.lt(i, 10)), b1 -> {
                         b1.try_(try2 -> {
                             try2.body(b3 -> {
@@ -252,15 +253,45 @@ public final class TryTest {
             });
             cc.staticMethod("test2", smc -> {
                 smc.returning(boolean.class);
+                ParamVar i = smc.parameter("i", int.class);
                 smc.body(b0 -> {
-                    b0.invokeStatic(test2);
+                    b0.invokeStatic(test2, i);
                     b0.return_(ran);
+                });
+            });
+            cc.staticMethod("test3", mc -> {
+                mc.returning(boolean.class);
+                mc.body(b0 -> {
+                    b0.try_(tc -> {
+                        tc.body(BlockCreator::returnFalse);
+                        tc.finally_(BlockCreator::returnTrue);
+                    });
+                });
+            });
+            cc.staticMethod("test4", mc -> {
+                mc.returning(int.class);
+                mc.body(b0 -> {
+                    LocalVar result = b0.localVar("result", Const.of(0));
+                    b0.try_(tc -> {
+                        tc.body(b1 -> {
+                            b1.set(result, Const.of(1));
+                            b1.return_(result);
+                        });
+                        tc.finally_(b1 -> {
+                            // this is ignored, just like how javac compiles equivalent code
+                            b1.set(result, Const.of(2));
+                        });
+                    });
                 });
             });
         });
         assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
         assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        for (int i = 0; i < 10; i++) {
+            assertTrue(tcm.staticMethod("test2", IntToBooleanFunction.class).apply(i));
+        }
+        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+        assertEquals(1, tcm.staticMethod("test4", IntSupplier.class).getAsInt());
     }
 
     @Test
@@ -324,7 +355,13 @@ public final class TryTest {
         assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
     }
 
+    @FunctionalInterface
     public interface CrashIt {
         String crashIt(String foo, String bar);
+    }
+
+    @FunctionalInterface
+    public interface IntToBooleanFunction {
+        boolean apply(int i);
     }
 }

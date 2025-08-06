@@ -27,7 +27,7 @@ final class Return extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl from) {
-        TryFinally tryFinally = from.tryFinally;
+        TryFinally tryFinally = from.tryFinally();
         ClassDesc returnType = from.returnType();
         if (tryFinally != null) {
             cb.goto_(tryFinally.cleanup(new ReturnKey(returnType)));
