@@ -474,7 +474,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case INT -> {
                 // normal rel
                 if (a instanceof IntConst ac && ac.intValue() == 0) {
-                    return relZero(b, kind.invert());
+                    boolean shouldNotInvert = kind == If.Kind.EQ || kind == If.Kind.NE;
+                    return relZero(b, shouldNotInvert ? kind : kind.invert());
                 } else if (b instanceof IntConst bc && bc.intValue() == 0) {
                     return relZero(a, kind);
                 } else {
