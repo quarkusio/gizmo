@@ -1150,6 +1150,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void return_(Expr val) {
+        if (returnType.equals(CD_void) && !val.isVoid()) {
+            // Gizmo 1 automatically dropped the provided value in this case
+            // let's at least provide a proper error message
+            throw new IllegalArgumentException("Attempted to return a value from a `void`-returning method");
+        }
+
         val = convert(val, returnType);
         replaceLastItem(val.equals(Const.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
