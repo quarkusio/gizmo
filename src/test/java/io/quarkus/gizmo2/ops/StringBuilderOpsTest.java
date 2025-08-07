@@ -62,4 +62,27 @@ public class StringBuilderOpsTest {
             return "jklm";
         }
     }
+
+    @Test
+    public void testStringBuilderWithControlFlow() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.TestStringBuilder", cc -> {
+            cc.staticMethod("createString", mc -> {
+                mc.returning(Object.class); // always `String`
+                mc.body(b0 -> {
+                    LocalVar msg = b0.localVar("msg", b0.new_(StringBuilder.class));
+                    StringBuilderOps msgBuilder = b0.withStringBuilder(msg).append("FooBar");
+                    LocalVar i = b0.localVar("i", Const.of(0));
+                    b0.while_(b1 -> b1.yield(b1.lt(i, 5)), b1 -> {
+                        b1.withStringBuilder(msg).append("Baz").append(i);
+                        b1.inc(i);
+                    });
+                    msgBuilder.append("Quux");
+                    b0.return_(msgBuilder.toString_());
+                });
+            });
+        });
+        assertEquals("FooBarBaz0Baz1Baz2Baz3Baz4Quux", tcm.staticMethod("createString", Supplier.class).get());
+    }
 }

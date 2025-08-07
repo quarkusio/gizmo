@@ -2,6 +2,7 @@ package io.quarkus.gizmo2.creator.ops;
 
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
 /**
@@ -18,6 +19,11 @@ import io.quarkus.gizmo2.creator.BlockCreator;
  * itself doesn't provide access to the underlying object.
  */
 public final class StringBuilderOps extends ObjectOps implements ComparableOps {
+    // note that for the `public` methods to be able to `return this`, all constructors
+    // must make sure the string builder we operate upon is stored in a local variable!
+    private static Var declare(Expr obj, BlockCreator bc) {
+        return obj instanceof Var var ? var : bc.localVar("$$stringBuilder", obj);
+    }
 
     /**
      * Construct a new instance on an existing {@link StringBuilder}.
@@ -26,7 +32,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @param obj the receiver string builder (must not be {@code null})
      */
     public StringBuilderOps(final BlockCreator bc, final Expr obj) {
-        super(StringBuilder.class, bc, obj);
+        super(StringBuilder.class, bc, declare(obj, bc));
     }
 
     /**
@@ -35,7 +41,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @param bc the block creator (must not be {@code null})
      */
     public StringBuilderOps(final BlockCreator bc) {
-        super(StringBuilder.class, bc, bc.localVar("stringBuilder", bc.new_(StringBuilder.class)));
+        super(StringBuilder.class, bc, declare(bc.new_(StringBuilder.class), bc));
     }
 
     /**
@@ -46,7 +52,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @param capacity the capacity of the newly created {@link StringBuilder}
      */
     public StringBuilderOps(final BlockCreator bc, final int capacity) {
-        super(StringBuilder.class, bc, bc.new_(StringBuilder.class, Const.of(capacity)));
+        super(StringBuilder.class, bc, declare(bc.new_(StringBuilder.class, Const.of(capacity)), bc));
     }
 
     /**
@@ -56,7 +62,7 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * @return this instance
      */
     public StringBuilderOps append(final Expr expr) {
-        return new StringBuilderOps(bc, switch (expr.type().descriptorString()) {
+        switch (expr.type().descriptorString()) {
             case "Z" -> invokeInstance(StringBuilder.class, "append", boolean.class, expr);
             case "B", "S", "I" -> invokeInstance(StringBuilder.class, "append", int.class, expr);
             case "J" -> invokeInstance(StringBuilder.class, "append", long.class, expr);
@@ -67,7 +73,8 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
             case "Ljava/lang/String;" -> invokeInstance(StringBuilder.class, "append", String.class, expr);
             case "Ljava/lang/CharSequence;" -> invokeInstance(StringBuilder.class, "append", CharSequence.class, expr);
             default -> invokeInstance(StringBuilder.class, "append", Object.class, expr);
-        });
+        }
+        return this;
     }
 
     /**
@@ -94,17 +101,18 @@ public final class StringBuilderOps extends ObjectOps implements ComparableOps {
      * Appends the given code point to this {@code StringBuilder}.
      *
      * @param codePoint the value to append (must not be {@code null})
-     * @return a valid wrapper for this instance (not {@code null})
+     * @return this instance
      */
     public StringBuilderOps appendCodePoint(final Expr codePoint) {
-        return new StringBuilderOps(bc, invokeInstance(StringBuilder.class, "appendCodePoint", int.class, codePoint));
+        invokeInstance(StringBuilder.class, "appendCodePoint", int.class, codePoint);
+        return this;
     }
 
     /**
      * Appends the given code point to this {@code StringBuilder}.
      *
      * @param codePoint the value to append
-     * @return a valid wrapper for this instance (not {@code null})
+     * @return this instance
      */
     public StringBuilderOps appendCodePoint(final int codePoint) {
         return appendCodePoint(Const.of(codePoint));
