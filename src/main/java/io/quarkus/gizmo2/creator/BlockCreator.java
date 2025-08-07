@@ -2301,6 +2301,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Construct a lambda instance with the given type.
+     * <p>
+     * Note that all values used in the lambda but created outside of it, including {@code this},
+     * must be captured using {@link LambdaCreator#capture(String, Expr)} or {@link LambdaCreator#capture(Var)}.
      *
      * @param type the type of the lambda (must not be {@code null})
      * @param builder the builder for the lambda body (must not be {@code null})
@@ -2312,6 +2315,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Construct a lambda instance with the given type.
+     * <p>
+     * Note that all values used in the lambda but created outside of it, including {@code this},
+     * must be captured using {@link LambdaCreator#capture(String, Expr)} or {@link LambdaCreator#capture(Var)}.
      *
      * @param sam the descriptor of the single abstract method of the lambda (must not be {@code null})
      * @param builder the builder for the lambda body (must not be {@code null})
@@ -2323,6 +2329,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Construct a lambda instance with the given type.
+     * <p>
+     * Note that all values used in the lambda but created outside of it, including {@code this},
+     * must be captured using {@link LambdaCreator#capture(String, Expr)} or {@link LambdaCreator#capture(Var)}.
      *
      * @param sam the descriptor of the single abstract method of the lambda (must not be {@code null})
      * @param owner the type of the final lambda (must not be {@code null})
@@ -2335,9 +2344,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * Create a new anonymous class instance.
-     * Unlike Java anonymous classes,
-     * the anonymous class definition created here may implement additional interfaces.
+     * Unlike Java anonymous classes, the anonymous class definition created here may implement additional interfaces.
      * The type of the returned instance is the anonymous class type.
+     * <p>
+     * Note that all values used in the anonymous class but created outside of it, including {@code this},
+     * must be captured using {@link AnonymousClassCreator#capture(String, Expr)} or {@link AnonymousClassCreator#capture(Var)}.
      *
      * @param superCtor the superclass constructor to invoke (must not be {@code null})
      * @param args the constructor arguments (must not be {@code null})
@@ -2349,6 +2360,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Create a new anonymous class instance which implements the given interface.
      * The type of the returned instance is the anonymous class type.
+     * <p>
+     * Note that all values used in the anonymous class but created outside of it, including {@code this},
+     * must be captured using {@link AnonymousClassCreator#capture(String, Expr)} or {@link AnonymousClassCreator#capture(Var)}.
      *
      * @param interface_ the interface to implement (must not be {@code null})
      * @param builder the builder for the anonymous class (must not be {@code null})
@@ -2368,6 +2382,9 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Create a new anonymous class instance which extends the given class or implements the given interface.
      * If the given supertype is a class, it has to have a zero-parameter constructor.
      * The type of the returned instance is the anonymous class type.
+     * <p>
+     * Note that all values used in the anonymous class but created outside of it, including {@code this},
+     * must be captured using {@link AnonymousClassCreator#capture(String, Expr)} or {@link AnonymousClassCreator#capture(Var)}.
      *
      * @param supertype the supertype to extend or implement (must not be {@code null})
      * @param builder the builder for the anonymous class (must not be {@code null})
