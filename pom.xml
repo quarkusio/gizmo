@@ -99,6 +99,22 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-modules</arg>
+                                <arg>java.compiler</arg>
+                                <arg>--add-reads</arg>
+                                <arg>io.quarkus.gizmo2=java.compiler</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>${jacoco.agent.argLine}</argLine>
