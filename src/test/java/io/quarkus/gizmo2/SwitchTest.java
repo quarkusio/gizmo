@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.constant.ClassDesc;
 import java.util.function.IntUnaryOperator;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public final class SwitchTest {
@@ -189,6 +190,26 @@ public final class SwitchTest {
         assertEquals(2, nameToNumber.get("two"));
         assertEquals(3, nameToNumber.get("three"));
         assertEquals(-1, nameToNumber.get("four"));
+    }
+
+    @Test
+    @Disabled("https://github.com/quarkusio/gizmo/issues/472")
+    public void testStringSwitchWeird() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_("io.quarkus.gizmo2.TestStringSwitch", cc -> {
+            cc.staticMethod("guess", mc -> {
+                mc.returning(void.class);
+                ParamVar arg = mc.parameter("arg", String.class);
+                mc.body(b0 -> {
+                    b0.switch_(arg, sc -> {
+                        sc.caseOf("help", b1 -> b1.printf("foo"));
+                        sc.default_(b1 -> b1.printf("bar"));
+                    });
+                    b0.return_();
+                });
+            });
+        });
     }
 
     @Test
