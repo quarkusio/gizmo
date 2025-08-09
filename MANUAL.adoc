@@ -22,6 +22,7 @@ While Gizmo 2 is not source- or binary-compatible with Gizmo 1, it resides in a 
 
 To get started quickly, include the `io.quarkus.gizmo:gizmo2` artifact in your project build. The following code blob shows how to generate a simple class:
 
+//TEST:BEGIN
 ."Hello world" example
 [source,java]
 ----
@@ -34,7 +35,7 @@ public class HelloWorld {
     public static void main(String[] args) {
         Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
         gizmo.class_("HelloWorldGenerated", cc -> {
-            zc.staticMethod("main", mc -> {
+            cc.staticMethod("main", mc -> {
                 mc.public_();
                 mc.parameter("args", String[].class);
                 mc.body(b0 -> {
@@ -46,6 +47,9 @@ public class HelloWorld {
     }
 }
 ----
+//TEST:RUN HelloWorldGenerated
+//= Hello world!
+//TEST:END
 
 [id=gizmo-interface]
 == The `Gizmo` interface
@@ -77,17 +81,21 @@ Some of these object types are provided by the JDK, and others are defined by Gi
 Types (primitives, classes and interfaces and their variations, and arrays) are identified using the `ClassDesc` interface, which is provided by the JDK as part of the `java.lang.constant` package.
 Instances can be created using the various factory methods of that class.
 
+//TEST:BEGIN
 .Example of creating a class descriptor for `java.lang.String`
 [source,java]
 ----
 import java.lang.constant.ClassDesc;
 
-public static class ClassDescExample {
+public class ClassDescExample {
     public static void main(String[] args) {
         System.out.printf("The descriptor of String is: %s%n", ClassDesc.of("java.lang.String"));
     }
 }
 ----
+//TEST:OUTPUT
+//~ The descriptor of String is: .*
+//TEST:END
 
 A class descriptor can also be derived from a `Class<?>` object by calling its `describeConstable` method.
 Note that https://openjdk.org/jeps/371[hidden classes] will return an empty `Optional` from this method.
@@ -102,6 +110,7 @@ Fields are identified by the combination of the "owner" type (represented as a <
 This is true for both static and instance fields, which therefore share an overall namespace.
 In Gizmo, these identifiers are represented using the `FieldDesc` interface, which contains several factory methods for easy usage.
 
+//TEST:BEGIN
 .Examples of various field descriptors
 [source,java]
 ----
@@ -127,6 +136,7 @@ public class FieldDescExample {
 }
 
 ----
+//TEST:END
 
 [id=methoddesc]
 === `MethodDesc` and `ConstructorDesc`
@@ -148,6 +158,7 @@ Since a `ConstructorDesc` always returns `void`, any attempt to create a `Constr
 There are a wide variety of factory methods available for these types.
 A few of the common ones are illustrated below.
 
+//TEST:BEGIN
 .Examples of various method and constructor descriptors
 [source,java]
 ----
@@ -176,6 +187,7 @@ public class MethodDescExample {
     }
 }
 ----
+//TEST:END
 
 [id=methodtypedesc]
 === The `MethodTypeDesc` interface
@@ -184,6 +196,7 @@ The type of a method or constructor is determined by its return and parameter ty
 The JDK represents this type using the `MethodTypeDesc` interface in the `java.lang.constant` package.
 This interface contains a factory method to compose instances from constituent <<classdesc,ClassDesc>> instances.
 
+//TEST:BEGIN
 .Example of creating a `MethodTypeDesc`
 [source,java]
 ----
@@ -200,6 +213,7 @@ public class MethodTypeDescExample {
     }
 }
 ----
+//TEST:END
 
 [id=creating-types]
 == Creating types
@@ -211,6 +225,7 @@ By convention, the parameter name `cc` is typically used for the `ClassCreator` 
 
 The creator instance passed to the consumer may add or remove flags, set the access level, modify the class version, extend interfaces or a base class, and add members to the type.
 
+//TEST:BEGIN
 .Example of creating a simple class
 [source,java]
 ----
@@ -249,7 +264,9 @@ public class SimpleClassExample {
     }
 }
 ----
+//TEST:END
 
+//TEST:BEGIN
 .Example of creating a simple interface
 [source,java]
 ----
@@ -284,6 +301,7 @@ public class SimpleInterfaceExample {
     }
 }
 ----
+//TEST:END
 
 [id=creating-fields]
 == Creating fields
@@ -299,6 +317,7 @@ Initializers are automatically emitted into constructors or static initializers 
 
 By convention, the parameter name `fc` is typically used for the `FieldCreator` instance.
 
+//TEST:BEGIN
 .Example of creating a class with some fields
 [source,java]
 ----
@@ -362,6 +381,7 @@ public class ClassWithFieldsExample {
     }
 }
 ----
+//TEST:END
 
 [id=creating-methods]
 == Creating methods and constructors
@@ -401,6 +421,7 @@ If the type is not given, it will be computed based on the types of the paramete
 The following is an example of defining constructors and methods.
 Note that constructors and some types of methods have bodies containing program code, which is covered in more detail in the <<blocks>> section, and other features such as <<annotations,annotations>> and <<modifiers,access levels and modifiers>> which are explained in their respective sections.
 
+//TEST:BEGIN
 .Example of defining constructors and methods
 [source,java]
 ----
@@ -503,6 +524,7 @@ public class TypesWithMethodsAndConstructorsExample {
     }
 }
 ----
+//TEST:END
 
 Conventionally, we use `mc` as the name of the lambda parameter which accepts the method or constructor builder.
 Since `cc` is conventionally used for classes, we use `mc` even for constructors.
@@ -560,10 +582,10 @@ Any creator which accepts a modifier or access level extends the `ModifiableCrea
 This interface can be used to determine the modifier location of the creator by way of the `modifierLocation()` method.
 The `supports(...)` method can also be used to determine whether a modifier flag or access level may be used on that creator.
 
+//TEST:BEGIN
 .Example of access levels and modifier flags
 [source,java]
 ----
-
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
@@ -639,6 +661,7 @@ public class ModifiersAndAccessLevelsExample {
     }
 }
 ----
+//TEST:END
 
 [id=default-modifiers]
 === Changing default access levels and modifiers
@@ -646,6 +669,7 @@ public class ModifiersAndAccessLevelsExample {
 Instances of <<gizmo-interface,the `Gizmo` interface>> are configured with the set of default modifiers and access levels for the different `ModifierLocation` instances.
 Instances of `Gizmo` are immutable; however, it is possible to create a derived `Gizmo` instance with a different configuration of default access levels and/or modifier flags using the `withDefaultModifiers` method.
 
+//TEST:BEGIN
 .Changing the default modifiers
 [source,java]
 ----
@@ -672,6 +696,7 @@ public class DefaultModifiersExample {
     }
 }
 ----
+//TEST:END
 
 By default, the following modifier flags and access levels are used if none is given:
 
@@ -726,10 +751,10 @@ These scopes mirror the way that blocks are constructed by the API.
 
 Since blocks are thus nested hierarchically, it is conventional to use the variable names `b0`, `b1`, `b2`, etc. to represent the nesting level.
 
+//TEST:BEGIN
 .Example of simple block nesting
 [source,java]
 ----
-
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
@@ -752,6 +777,7 @@ public class BlockNestingExample {
     }
 }
 ----
+//TEST:END
 
 [id=expressions]
 == Expressions
@@ -775,10 +801,10 @@ Variables, like constants, can be used multiple times and in any position.
 
 Here's an example:
 
+//TEST:BEGIN
 .Example of natural expression ordering
 [source,java]
 ----
-
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
@@ -813,6 +839,9 @@ public class NaturalOrderingExample {
     }
 }
 ----
+//TEST:RUN NaturalOrdering
+//= The answer is: 2364
+//TEST:END
 
 [id=types]
 === Types
@@ -833,6 +862,7 @@ It is sometimes useful to categorize types as either being primitive or non-prim
 This is done using the `typeKind()` method, which is also found on `SimpleTyped` and its subtypes, including `Expr`.
 The return type of this method is `TypeKind`, an enumeration which contains constants for each of the eight primitive types, one for reference types, and one for `void`.
 
+//TEST:BEGIN
 .Examining types of a simple expression
 [source,java]
 ----
@@ -850,6 +880,9 @@ public class ExaminingTypesOfExpressions {
     }
 }
 ----
+//TEST:OUTPUT
+//= The type and kind of the constant is: boolean and BOOLEAN
+//TEST:END
 
 [id=constants]
 === Constants
@@ -930,6 +963,7 @@ The resultant expression may not be used from a static context (such as a static
 By convention, it is typical to call `this_()` once near the top of your class builder lambda, and reuse the same instance.
 Calling `this_()` multiple times is not harmful, however.
 
+//TEST:BEGIN
 .Example of accessing `this`
 [source,java]
 ----
@@ -966,6 +1000,9 @@ public class ThisAccessExample {
     }
 }
 ----
+//TEST:RUN ThisAccess
+//~ This is ThisAccess.*
+//TEST:END
 
 [id=assignable]
 === Assignable expressions
@@ -987,6 +1024,7 @@ Once defined, a local variable can be referenced or updated as many times as nee
 By convention, the `LocalVar` variable's name matches the name given to `localVar(...)`.
 This is strongly encouraged for readability.
 
+//TEST:BEGIN
 .Local variable example
 [source,java]
 ----
@@ -1015,6 +1053,9 @@ public class LocalVarExample {
     }
 }
 ----
+//TEST:RUN LocalVar
+//= One is 1 and two is Two
+//TEST:END
 
 [id=fields]
 ==== Field expressions
@@ -1033,12 +1074,14 @@ Note that `final` variables generally cannot be mutated outside of initializatio
 The `set(...)` method on the `BlockCreator` interface may be used to modify the value of an assignable expression.
 This is equivalent to using the assignment (`=`) operator in Java.
 
+//TEST:BEGIN
 .Variable mutation using `set(...)`
 [source,java]
 ----
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.ParamVar;
 
@@ -1062,6 +1105,10 @@ public class SetExample {
     }
 }
 ----
+//TEST:RUN Set
+//= I changed args to [Hello!]
+//= I changed args[0] to New string!
+//TEST:END
 
 [id=swap]
 ===== `swap`
@@ -1069,6 +1116,7 @@ public class SetExample {
 The `swap(...)` method exchanges values between two assignable expressions without using a temporary variable.
 This operation can not be <<variable-atomics,atomic>> because it acts on two separate memory locations.
 
+//TEST:BEGIN
 .Swapping variable values using `swap(...)`
 [source,java]
 ----
@@ -1108,6 +1156,7 @@ public class SwapExample {
     }
 }
 ----
+//TEST:END
 
 [id=rotate]
 ===== `rotate`
@@ -1115,6 +1164,7 @@ public class SwapExample {
 The `rotate(...)` method moves all the values given as arguments one position to the right, and the rightmost value to the leftmost position, without requiring an intermediate temporary variable.
 This operation can not be <<variable-atomics,atomic>> because it acts on multiple memory locations.
 
+//TEST:BEGIN
 .Rotating variable values using `rotate(...)`
 [source,java]
 ----
@@ -1134,14 +1184,14 @@ public class RotateExample {
                     b0.if_(b0.ne(args.length(), 4), b1 -> {
                         b1.throw_(IllegalArgumentException.class, "Expected 4 arguments");
                     });
-                    b0.printf("The initial order is: %s %s %s %sn",
+                    b0.printf("The initial order is: %s %s %s %s%n",
                         args.elem(0),
                         args.elem(1),
                         args.elem(2),
                         args.elem(3)
                     );
                     b0.rotate(args.elem(0), args.elem(1), args.elem(2), args.elem(3));
-                    b0.printf("The new order is: %s %s %s %sn",
+                    b0.printf("The new order is: %s %s %s %s%n",
                         args.elem(0),
                         args.elem(1),
                         args.elem(2),
@@ -1154,6 +1204,10 @@ public class RotateExample {
     }
 }
 ----
+//TEST:RUN Rotate a b c d
+//= The initial order is: a b c d
+//= The new order is: d a b c
+//TEST:END
 
 [id=arith-assign]
 ===== Arithmetic assignment operators
@@ -1162,12 +1216,14 @@ In Java, the `+=`, `-=`, `*=`, `/=`, and `%=` operators may be used to perform a
 The `BlockCreator` interface has corresponding methods for each of these operations: `addAssign`, `subAssign`, `mulAssign`, `divAssign`, and `remAssign`.
 Each of these methods accepts the assignable expression and the value to operate on.
 
+//TEST:BEGIN
 .Arithmetic assignment example
 [source,java]
 ----
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -1188,16 +1244,16 @@ public class ArithmeticAssignmentExample {
                         b1.throw_(IllegalArgumentException.class, "Expected 1 argument"));
                     LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
                     b0.printf("n = %d%n", n);
-                    b0.addAssign(n, 10);
+                    b0.addAssign(n, Const.of(10));
                     b0.printf("+ 10 = %d%n", n);
-                    b0.subAssign(n, 5);
+                    b0.subAssign(n, Const.of(5));
                     b0.printf("- 5 = %d%n", n);
-                    b0.mulAssign(n, 5);
+                    b0.mulAssign(n, Const.of(4));
                     b0.printf("* 4 = %d%n", n);
-                    b0.divAssign(n, 2);
+                    b0.divAssign(n, Const.of(2));
                     b0.printf("/ 2 = %d%n", n);
-                    b0.remAssign(n, 17);
-                    b0.printf("% 17 = %d%n", n);
+                    b0.remAssign(n, Const.of(17));
+                    b0.printf("%% 17 = %d%n", n);
                     b0.return_();
                 });
             });
@@ -1205,6 +1261,14 @@ public class ArithmeticAssignmentExample {
     }
 }
 ----
+//TEST:RUN ArithmeticAssignment 3
+//= n = 3
+//= + 10 = 13
+//= - 5 = 8
+//= * 4 = 32
+//= / 2 = 16
+//= % 17 = 16
+//TEST:END
 
 [id=inc-and-dec]
 ===== Increment and decrement
@@ -1213,12 +1277,14 @@ If the amount being added to or subtracted from a value is <<constants,constant>
 In certain cases, this may generate more compact method bodies.
 For <<loop,loops>> in particular, this can aid readability.
 
+//TEST:BEGIN
 .Increment and decrement example
 [source,java]
 ----
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -1243,13 +1309,10 @@ public class IncDecExample {
                     LocalVar letters = b0.localVar("letters", 0);
                     LocalVar nonLetters = b0.localVar("nonLetters", len);
                     b0.while_(b1 -> b1.yield(b1.lt(i, len)), b1 -> {
-                        LocalVar ch = b1.withString(str).charAt(i);
-                        b1.ifElse(b1.invokeStatic(isLetter, ch), b1 -> {
-                            // is a letter
-                            b1.inc(letters);
-                        }, b1 -> {
-                            // is not a letter
-                            b1.dec(nonLetters);
+                        Expr ch = b1.withString(str).charAt(i);
+                        b1.if_(b1.invokeStatic(isLetter, ch), b2 -> {
+                            b2.inc(letters);
+                            b2.dec(nonLetters);
                         });
                         // next character
                         b1.inc(i);
@@ -1262,6 +1325,13 @@ public class IncDecExample {
     }
 }
 ----
+//TEST:RUN IncDec foobar
+//= The string has 6 letters and 0 non-letters
+//TEST:RUN IncDec foo-bar_baz#quux
+//= The string has 13 letters and 3 non-letters
+//TEST:RUN IncDec ===
+//= The string has 0 letters and 3 non-letters
+//TEST:END
 
 [id=bitwise-assign]
 ===== Bitwise assignment operators
@@ -1270,12 +1340,14 @@ Corresponding to Java's <<bitwise-logic,bitwise>> assignment operators, specific
 
 Like the <<arith-assign,arithmetic assignment operators>>, these methods accept an <<assignable,assignable expression>> along with a value which may be any expression.
 
+//TEST:BEGIN
 .Example of bitwise assignment operations
 [source,java]
 ----
 import java.nio.file.Path;
 
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
@@ -1297,17 +1369,17 @@ public class BitwiseAssignmentExample {
                     LocalVar n = b0.localVar("n", b0.invokeStatic(parseInt, args.elem(0)));
                     // pass `n` through a gauntlet of various bitwise operations
                     b0.printf("n = 0x%x%n", n);
-                    b0.andAssign(n, 0x5555);
+                    b0.andAssign(n, Const.of(0x5555));
                     b0.printf(" & 0x5555 = 0x%x%n", n);
-                    b0.orAssign(n, 0xa0a0);
+                    b0.orAssign(n, Const.of(0xa0a0));
                     b0.printf(" | 0xa0a0 = 0x%x%n", n);
-                    b0.xorAssign(n, 0x9999);
+                    b0.xorAssign(n, Const.of(0x9999));
                     b0.printf(" ^ 0x9999 = 0x%x%n", n);
-                    b0.shlAssign(n, 16);
+                    b0.shlAssign(n, Const.of(16));
                     b0.printf(" << 16 = 0x%x%n", n);
-                    b0.shrAssign(n, 8);
+                    b0.shrAssign(n, Const.of(8));
                     b0.printf(" >> 8 = 0x%x%n", n);
-                    b0.ushrAssign(n, 8);
+                    b0.ushrAssign(n, Const.of(8));
                     b0.printf(" >>> 8 = 0x%x%n", n);
                     b0.return_();
                 });
@@ -1316,6 +1388,15 @@ public class BitwiseAssignmentExample {
     }
 }
 ----
+//TEST:RUN BitwiseAssignment 13
+//= n = 0xd
+//= & 0x5555 = 0x5
+//= | 0xa0a0 = 0xa0a5
+//= ^ 0x9999 = 0x393c
+//= << 16 = 0x393c0000
+//= >> 8 = 0x393c00
+//= >>> 8 = 0x393c
+//TEST:END
 
 [id=variable-atomics]
 ==== Advanced use case: Atomic operations on variables
@@ -1383,6 +1464,7 @@ If these rules fail, then an exception is thrown at the point where the expressi
 The `add(...)` operation adds two integers or floating-point numbers.
 The Java language equivalent of the `add(...)` operation is the binary `+` operator (when applied to integers and floating-point numbers only).
 
+//TEST:BEGIN
 .Example of `add`
 [source,java]
 ----
@@ -1413,7 +1495,7 @@ public class AddFloatExample {
                     });
                     LocalVar f1 = b0.localVar("f1", b0.invokeStatic(parseFloat, args.elem(0)));
                     LocalVar f2 = b0.localVar("f2", b0.invokeStatic(parseFloat, args.elem(1)));
-                    b0.printf("%f + %f = %f%n", f1, f2, b0.add(f1, f2));
+                    b0.printf("%.2f + %.2f = %.2f%n", f1, f2, b0.add(f1, f2));
                     b0.return_();
                 });
             });
@@ -1421,6 +1503,9 @@ public class AddFloatExample {
     }
 }
 ----
+//TEST:RUN AddFloat 3 5
+//= 3.00 + 5.00 = 8.00
+//TEST:END
 
 [id=sub]
 ==== `sub`
@@ -1428,6 +1513,7 @@ public class AddFloatExample {
 The `sub(...)` operation subtracts two integers or floating-point numbers.
 The Java language equivalent of the `sub(...)` operation is the binary `-` operator.
 
+//TEST:BEGIN
 .Example of `sub`
 [source,java]
 ----
@@ -1466,6 +1552,9 @@ public class SubLongExample {
     }
 }
 ----
+//TEST:RUN SubLong 8 5
+//= 8 - 5 = 3
+//TEST:END
 
 [id=mul]
 ==== `mul`
@@ -1473,6 +1562,7 @@ public class SubLongExample {
 The `mul(...)` operation multiplies two integers or floating-point numbers.
 The Java language equivalent of the `mul(...)` operation is the `*` operator.
 
+//TEST:BEGIN
 .Example of `mul`
 [source,java]
 ----
@@ -1511,6 +1601,9 @@ public class MulIntExample {
     }
 }
 ----
+//TEST:RUN MulInt 3 5
+//= 3 * 5 = 15
+//TEST:END
 
 [id=div]
 ==== `div`
@@ -1519,6 +1612,7 @@ The `div(...)` operation divides two integers or floating-point numbers.
 The Java language equivalent of the `div(...)` operation is the `/` operator.
 Note that integer division will fail with an exception if the second argument is equal to zero.
 
+//TEST:BEGIN
 .Example of `div`
 [source,java]
 ----
@@ -1557,7 +1651,9 @@ public class DivIntExample {
     }
 }
 ----
-
+//TEST:RUN DivInt 15 5
+//= 15 / 5 = 3
+//TEST:END
 
 [id=rem]
 ==== `rem`
@@ -1566,6 +1662,7 @@ The `rem(...)` operation performs a remainder operation of two integers or float
 The Java language equivalent of the `rem(...)` operation is the `%` operator.
 Note that integer division (including the remainder operation) will fail with an exception if the second argument is equal to zero.
 
+//TEST:BEGIN
 .Example of `rem`
 [source,java]
 ----
@@ -1604,6 +1701,9 @@ public class RemIntExample {
     }
 }
 ----
+//TEST:RUN RemInt 15 12
+//= 15 % 12 = 3
+//TEST:END
 
 [id=neg]
 ==== `neg`
@@ -1611,6 +1711,7 @@ public class RemIntExample {
 The unary `neg(...)` operation performs a negation of its integer or floating-point argument.
 The Java language equivalent of the `neg(...)` operation is the unary `-` operator.
 
+//TEST:BEGIN
 .Example of `neg`
 [source,java]
 ----
@@ -1640,7 +1741,7 @@ public class NegDoubleExample {
                         b1.throw_(IllegalArgumentException.class, "Expected one argument");
                     });
                     LocalVar d = b0.localVar("d", b0.invokeStatic(parseDouble, args.elem(0)));
-                    b0.printf("negated %f = %f%n", d, b0.neg(d));
+                    b0.printf("negated %.2f = %.2f%n", d, b0.neg(d));
                     b0.return_();
                 });
             });
@@ -1648,6 +1749,11 @@ public class NegDoubleExample {
     }
 }
 ----
+//TEST:RUN NegDouble 2
+//= negated 2.00 = -2.00
+//TEST:RUN NegDouble -4
+//= negated -4.00 = 4.00
+//TEST:END
 
 [id=bitwise-logic]
 === Bitwise logical expressions
@@ -1669,6 +1775,7 @@ If these rules fail, then an exception is thrown at the point where the expressi
 The `and(...)` operation performs a bitwise-AND on the two arguments, returning the result.
 The Java language equivalent of this operation is the `&` operator.
 
+//TEST:BEGIN
 .Example of bitwise `and`
 [source,java]
 ----
@@ -1707,6 +1814,9 @@ public class AndIntExample {
     }
 }
 ----
+//TEST:RUN AndInt 5 6
+//= 5 & 6 = 4
+//TEST:END
 
 [id=or]
 ==== `or`
@@ -1714,6 +1824,7 @@ public class AndIntExample {
 The `or(...)` operation performs a bitwise-OR on the two arguments, returning the result.
 The Java language equivalent of this operation is the `|` operator.
 
+//TEST:BEGIN
 .Example of bitwise `or`
 [source,java]
 ----
@@ -1752,6 +1863,9 @@ public class OrIntExample {
     }
 }
 ----
+//TEST:RUN OrInt 1 2
+//= 1 | 2 = 3
+//TEST:END
 
 [id=xor]
 ==== `xor`
@@ -1759,6 +1873,7 @@ public class OrIntExample {
 The `xor(...)` operation performs a bitwise-XOR on the two arguments, returning the result.
 The Java language equivalent of this operation is the `^` operator.
 
+//TEST:BEGIN
 .Example of bitwise `xor`
 [source,java]
 ----
@@ -1797,6 +1912,9 @@ public class XorIntExample {
     }
 }
 ----
+//TEST:RUN XorInt 2 4
+//= 2 ^ 4 = 6
+//TEST:END
 
 [id=complement]
 ==== `complement`
@@ -1804,6 +1922,7 @@ public class XorIntExample {
 The `complement(...)` operation performs a unary bitwise-complement on the sole argument, returning the result.
 The Java language equivalent of this operation is the unary `~` operator.
 
+//TEST:BEGIN
 .Example of bitwise `complement`
 [source,java]
 ----
@@ -1833,7 +1952,7 @@ public class ComplementLongExample {
                         b1.throw_(IllegalArgumentException.class, "Expected one argument");
                     });
                     LocalVar i = b0.localVar("i", b0.invokeStatic(parseLong, args.elem(0)));
-                    b0.printf("complement of %1$d (0x%1$x) = %2$d (0x%2$x)%n", d, b0.complement(i));
+                    b0.printf("complement of %1$d (0x%1$x) = %2$d (0x%2$x)%n", i, b0.complement(i));
                     b0.return_();
                 });
             });
@@ -1841,6 +1960,9 @@ public class ComplementLongExample {
     }
 }
 ----
+//TEST:RUN ComplementLong 5
+//= complement of 5 (0x5) = -6 (0xfffffffffffffffa)
+//TEST:END
 
 [id=bitwise-shift]
 === Bitwise shifting expressions
@@ -1860,6 +1982,7 @@ New incoming low-order bits are filled with zero.
 As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
 This prevents shifting by any effective distance which is greater than this number or less than zero.
 
+//TEST:BEGIN
 .Example of `shl`
 [source,java]
 ----
@@ -1898,6 +2021,9 @@ public class ShlExample {
     }
 }
 ----
+//TEST:RUN Shl 2 4
+//= 2 (0x2) << 4 (0x4) = 32 (0x20)
+//TEST:END
 
 [id=shr]
 ==== `shr`
@@ -1907,6 +2033,7 @@ New incoming high-order bits are equal to the MSB of the first argument (i.e. si
 As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
 This prevents shifting by any effective distance which is greater than this number or less than zero.
 
+//TEST:BEGIN
 .Example of `shr`
 [source,java]
 ----
@@ -1945,6 +2072,9 @@ public class ShrExample {
     }
 }
 ----
+//TEST:RUN Shr 32 3
+//= 32 (0x20) >> 3 (0x3) = 4 (0x4)
+//TEST:END
 
 [id=ushr]
 ==== `ushr`
@@ -1954,6 +2084,7 @@ New incoming high-order bits are filled with zero.
 As per the JVM specification, the second argument is implicitly bitwise-ANDed with an integer equal to the number of bits in the type of the first argument minus one (so, 31 for `int` and 63 for `long`).
 This prevents shifting by any effective distance which is greater than this number or less than zero.
 
+//TEST:BEGIN
 .Example of `ushr`
 [source,java]
 ----
@@ -1992,6 +2123,9 @@ public class UshrExample {
     }
 }
 ----
+//TEST:RUN Ushr 32 3
+//= 32 (0x20) >>> 3 (0x3) = 4 (0x4)
+//TEST:END
 
 [id=relational]
 === Relational expressions
@@ -2010,6 +2144,7 @@ Both inputs of an equality/inequality operation must be of the same type.
 If the types differ, then Java-like widening and unboxing rules are applied if possible.
 If these rules fail, then an exception is thrown at the point where the expression is created.
 
+//TEST:BEGIN
 .Example of `eq` and `ne`
 [source,java]
 ----
@@ -2052,6 +2187,11 @@ public class EqNeExample {
     }
 }
 ----
+//TEST:RUN EqNe 1 2
+//= 1 != 2
+//TEST:RUN EqNe 1 1
+//= 1 == 1
+//TEST:END
 
 [id=ordering-operators]
 ==== Ordering operators: `lt`, `le`, `gt`, `ge`
@@ -2062,6 +2202,7 @@ For primitive floating-point and integer types, these operations work in the sam
 Additionally, Gizmo supports using these operations on object-typed values which statically implement the `Comparable` interface.
 If the static type of the given object values does not implement this interface, then verification of the method bytecode will fail.
 
+//TEST:BEGIN
 .Example of ordering operations
 [source,java]
 ----
@@ -2132,6 +2273,13 @@ public class SortExample {
     }
 }
 ----
+//TEST:RUN Sort d a c e b
+//= a
+//= b
+//= c
+//= d
+//= e
+//TEST:END
 
 [id=comparator-like]
 ==== Comparator-like operations: `cmp`, `cmpl`, `cmpg`
@@ -2161,6 +2309,7 @@ For all invocations, type of the invocation expression is equal to the return ty
 
 The `invokeStatic` operation calls a `static` method on a class or interface.
 
+//TEST:BEGIN
 .Example of `invokeStatic`
 [source,java]
 ----
@@ -2196,6 +2345,9 @@ public class InvokeStaticExample {
     }
 }
 ----
+//TEST:RUN InvokeStatic
+//= Hello, User!
+//TEST:END
 
 [id=invoke-virtual]
 ==== `invokeVirtual`
@@ -2205,6 +2357,7 @@ While it can also be used to invoke public methods on an interface instance in m
 
 The class of the method which is called is determined by the class of the receiver object.
 
+//TEST:BEGIN
 .Example of `invokeVirtual`
 [source,java]
 ----
@@ -2243,6 +2396,9 @@ public class InvokeVirtualExample {
     }
 }
 ----
+//TEST:RUN InvokeVirtual
+//= Hello, User!
+//TEST:END
 
 [id=invoke-interface]
 ==== `invokeInterface`
@@ -2251,6 +2407,7 @@ The `invokeInterface` operation calls an instance method on an interface using _
 
 The class of the method which is called is determined by the class of the receiver object.
 
+//TEST:BEGIN
 .Example of `invokeInterface`
 [source,java]
 ----
@@ -2282,6 +2439,9 @@ public class InvokeInterfaceExample {
     }
 }
 ----
+//TEST:RUN InvokeInterface
+//= The length of "a few words" is 11
+//TEST:END
 
 [id=invoke-special]
 ==== `invokeSpecial`
@@ -2293,6 +2453,7 @@ Constructors are required to call another constructor of the current type or a c
 When calling methods, the `invokeSpecial` operation should only be used for method calls when calling a method directly present on the current type or a supertype of the current type to prevent virtual dispatch.
 For all other cases, including invocation of instance methods declared `private` or `final`, `invokevirtual` should be used instead.
 
+//TEST:BEGIN
 .Example of `invokeSpecial`
 [source,java]
 ----
@@ -2312,15 +2473,15 @@ public class InvokeSpecialExample {
         gizmo.class_("InvokeSpecial", cc -> {
             This this_ = cc.this_();
             // tip: we can create this constructor via cc.defaultConstructor()
-            cc.constructor(cc -> {
-                cc.body(b0 -> {
+            cc.constructor(mc -> {
+                mc.body(b0 -> {
                     // use `invokeSpecial` to call Object()
                     b0.invokeSpecial(ConstructorDesc.of(Object.class), this_);
                     b0.return_();
                 });
             });
 
-            cc.method("toString", objectToString, mc -> {
+            cc.method(objectToString, mc -> {
                 // not necessary, but illustrative
                 mc.addAnnotation(Override.class);
                 // we don't need to redeclare the return type because the descriptor already has it
@@ -2343,6 +2504,9 @@ public class InvokeSpecialExample {
     }
 }
 ----
+//TEST:RUN InvokeSpecial
+//~ super.toString\(\) == "InvokeSpecial.*?"
+//TEST:END
 
 [id=new]
 === `new` expression
@@ -2353,6 +2517,7 @@ The return type of a `new` expression is equal to the "owner" type of the <<meth
 
 As a convenience, overloads of `new_(...)` exist which accept the type to build followed by the arguments; the descriptor will automatically be constructed based on the static types of the arguments and the type to build.
 
+//TEST:BEGIN
 .Example of `new`
 [source,java]
 ----
@@ -2379,6 +2544,7 @@ public class NewExample {
     }
 }
 ----
+//TEST:END
 
 [id=new-array]
 === `newArray` and `newEmptyArray`
@@ -2387,6 +2553,7 @@ The `newArray` expression constructs an array whose contents are then initialize
 The `newEmptyArray` expression constructs an array of a given length.
 Both methods accept the array component type to determine the type of array to construct.
 
+//TEST:BEGIN
 .Example of `newArray` and `newEmptyArray`
 [source,java]
 ----
@@ -2421,6 +2588,46 @@ public class NewArrayExample {
     }
 }
 ----
+//TEST:RUN NewArray
+//= Empty array is: [null, null, null, null, null]
+//= Full array is: [one, two, three, four, five]
+//TEST:END
+
+For convenience, an array may be constructed from a list of arbitrary items and a mapping function that turns the items into ``Expr``s.
+
+//TEST:BEGIN
+.Example of `newArray` with mapping
+[source,java]
+----
+import java.nio.file.Path;
+
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+
+public class NewArrayWithMappingExample {
+    public static void main(String[] args) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("NewArrayWithMapping", cc -> {
+            cc.staticMethod("main", mc -> {
+                mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar array = b0.localVar("array", b0.newArray(String.class,
+                        List.of("one", "two", "three", "four", "five"), Const::of));
+                    b0.printf("Array is: %s%n", b0.arrayToString(array));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN NewArrayWithMapping
+//= Array is: [one, two, three, four, five]
+//TEST:END
 
 [id=anonymous]
 === Anonymous class expressions
@@ -2429,6 +2636,7 @@ Like in Java, it is possible to define an expression which is an instance of an 
 Anonymous class expressions may be defined to capture values from the enclosing scope, as well as to pass parameter arguments to the constructor of the base class of the anonymous class.
 Note that the base class of interface-based anonymous classes is always `java.lang.Object`, whose sole constructor does not accept any arguments.
 
+//TEST:BEGIN
 .Example of an anonymous class expression
 [source,java]
 ----
@@ -2459,16 +2667,21 @@ public class AnonymousClassExample {
                             });
                         });
                     }));
+                    b0.return_();
                 });
             });
         });
     }
 }
 ----
+//TEST:RUN AnonymousClass
+//= The string is: The captured string
+//TEST:END
 
 [id=lambdas]
 === Lambda expressions
 
+//TEST:BEGIN
 .Example of a lambda expression
 [source,java]
 ----
@@ -2477,12 +2690,12 @@ import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.Gizmo;
-import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-public class AnonymousClassExample {
+public class LambdaExample {
     private static final MethodDesc consumerAccept = MethodDesc.of(
         Consumer.class,
         "accept",
@@ -2492,14 +2705,14 @@ public class AnonymousClassExample {
 
     public static void main(String[] ignored) {
         Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
-        gizmo.class_("AnonymousClass", cc -> {
+        gizmo.class_("Lambda", cc -> {
             cc.staticMethod("main", mc -> {
                 ParamVar args = mc.parameter("args", String[].class);
                 mc.body(b0 -> {
-                    LocalVar printer = b0.lambda(Consumer.class, lc -> {
-                        ParamVar toPrint = lc.parameter("toPrint", String.class);
+                    Expr printer = b0.lambda(Consumer.class, lc -> {
+                        ParamVar toPrint = lc.parameter("toPrint", 0);
                         lc.body(b1 -> {
-                            b1.printf(toPrint);
+                            b1.printf("%s%n", toPrint);
                             b1.return_();
                         });
                     });
@@ -2511,6 +2724,9 @@ public class AnonymousClassExample {
     }
 }
 ----
+//TEST:RUN Lambda
+//= Print me!
+//TEST:END
 
 [id=control]
 == Control flow
@@ -2531,6 +2747,7 @@ Control will resume at the next instruction after the target block (even if the 
 The target block must enclose the block that contains the instruction or an exception will be thrown.
 The target block must not be the outermost block of a method or constructor.
 
+//TEST:BEGIN
 .Example of `break_`
 [source,java]
 ----
@@ -2562,6 +2779,10 @@ public class BreakExample {
     }
 }
 ----
+//TEST:RUN Break
+//TEST:RUN Break a
+//= The first argument is: a
+//TEST:END
 
 [id=return]
 === `return_`
@@ -2571,6 +2792,7 @@ If an argument is given, the <<types,type>> of the argument must match the retur
 Methods that do not return <<void-expr,`void`>> _must_ provide an argument.
 The `return_(...)` operation cannot be used within initializers.
 
+//TEST:BEGIN
 .Example of `return_`
 [source,java]
 ----
@@ -2624,6 +2846,9 @@ public class ReturnExample {
     }
 }
 ----
+//TEST:RUN Return 5
+//= The factorial of 5 is 120
+//TEST:END
 
 [id=throw]
 === `throw_`
@@ -2632,6 +2857,7 @@ It is functionally equivalent to Java's `throw` operation.
 
 There are convenience overloads which accept an exception type and optional string or `String`-typed expression which will construct the exception and throw it, all in one operation.
 
+//TEST:BEGIN
 .Example of `throw_`
 [source,java]
 ----
@@ -2659,6 +2885,9 @@ public class ThrowExample {
     }
 }
 ----
+//TEST:RUN Throw 1 2 3 4 5 6 7
+//= Thank you!
+//TEST:END
 
 [id=goto]
 === `goto_`/`gotoStart`
@@ -2669,6 +2898,7 @@ As a convenience, the `gotoStart()` is equivalent to calling `b.goto_(b)` where 
 
 To target cases of a `switch` from within that `switch`, use <<goto-case>> instead.
 
+//TEST:BEGIN
 .Example of `goto_`
 [source,java]
 ----
@@ -2694,6 +2924,8 @@ public class GotoExample {
     }
 }
 ----
+//no TEST:RUN, because the generated program never ends
+//TEST:END
 
 [id=if]
 === `if_`/`ifElse`/`ifNot`/`cond`
@@ -2705,6 +2937,7 @@ Additionally, the `cond(...)` operation returns an expression representing the o
 
 In all cases, the condition argument must have a type of `boolean`.
 
+//TEST:BEGIN
 .Example of `if_` and `cond`
 [source,java]
 ----
@@ -2750,6 +2983,14 @@ public class IfExample {
     }
 }
 ----
+//TEST:RUN If a b
+//= Both arguments have the same length
+//= Argument 0 comes before argument 1
+//= Argument 0 has 1 letter
+//TEST:RUN If edc ba
+//= Argument 0 does not come before argument 1
+//= Argument 0 has 3 letters
+//TEST:END
 
 [id=logical]
 === `logicalAnd`/`logicalOr`
@@ -2758,6 +2999,7 @@ The `logicalAnd(...)` and `logicalOr(...)` constructs mirror the `&&` and `||` o
 These operators are control-flow-affecting because of their "short-circuiting" behavior: if evaluating the first argument is sufficient to resolve the expression, then the second argument is not evaluated.
 For this reason, the second argument is given as a <<blocks,block>> which must <<yielding,yield>> a `boolean`-typed value.
 
+//TEST:BEGIN
 .Example of `logicalAnd` and `logicalOr`
 [source,java]
 ----
@@ -2808,12 +3050,21 @@ public class LogicalExample {
                             b2.printf("It is almost a foo...bar%n");
                         });
                     });
+                    b0.return_();
                 });
             });
         });
     }
 }
 ----
+//TEST:RUN Logical foo_bar
+//= It is a foo...bar!
+//TEST:RUN Logical foo_
+//= It is almost a foo...bar
+//TEST:RUN Logical _bar
+//= It is almost a foo...bar
+//TEST:RUN Logical quux
+//TEST:END
 
 [id=switch]
 === `switch_` and `switchEnum`
@@ -2837,6 +3088,8 @@ To simulate fallthrough behavior, use <<goto-case,`gotoCase` or `gotoDefault`>>.
 Either operation can be used as an expression by passing the expression output type as the first argument.
 However, each case which exits must yield a value of the expected type.
 
+//TEST:BEGIN
+//TEST:COMPILE-ONLY https://github.com/quarkusio/gizmo/issues/472
 .Example of `switch_`
 [source,java]
 ----
@@ -2871,6 +3124,19 @@ public class SwitchExample {
     }
 }
 ----
+//TEST:RUN Switch
+//= Your job is to guess my favorite color!
+//TEST:RUN Switch help
+//= Your job is to guess my favorite color!
+//TEST:RUN Switch brown
+//= No, it's not brown!
+//TEST:RUN Switch grey
+//= I'd spell that as "gray", but no.
+//TEST:RUN Switch green
+//= Incorrect! Sorry...
+//TEST:RUN Switch red
+//= You guessed it!
+//TEST:END
 
 [id=goto-case]
 ==== `gotoCase`/`gotoDefault`
@@ -2883,6 +3149,7 @@ These methods accept the creator of the enclosing switch and, for `gotoCase(...)
 The `loop(...)` operation works like <<block,`block(...)`>>, with the sole difference that the block will end with an implicit `gotoStart()` if the block is not terminated some other way.
 The main benefit of using `loop(...)` over the combination of `block(...)` and `gotoStart()` is readability.
 
+//TEST:BEGIN
 .Example of `loop`
 [source,java]
 ----
@@ -2909,6 +3176,8 @@ public class LoopExample {
     }
 }
 ----
+//no TEST:RUN, because the generated program never ends
+//TEST:END
 
 [id=while]
 === `while`/`doWhile`

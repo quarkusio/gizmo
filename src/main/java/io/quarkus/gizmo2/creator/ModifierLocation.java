@@ -154,17 +154,17 @@ public enum ModifierLocation {
     // the allowed access levels
     private final byte validAccesses;
     // the allowed settable/clearable flags
-    private final byte validFlags;
+    private final short validFlags;
     // the fixed flags
-    private final byte requiredFlags;
+    private final short requiredFlags;
     // the initial modifier bits
     private final int defaultModifierBits;
 
     ModifierLocation(final int validAccesses, final int validFlags, final int requiredFlags,
             final Modifier... defaultModifiers) {
         this.validAccesses = (byte) validAccesses;
-        this.validFlags = (byte) validFlags;
-        this.requiredFlags = (byte) requiredFlags;
+        this.validFlags = (short) validFlags;
+        this.requiredFlags = (short) requiredFlags;
         this.defaultModifierBits = Stream.of(defaultModifiers).filter(this::check).mapToInt(Modifier::mask)
                 .reduce(bitsToMask(requiredFlags), (a, b) -> a | b);
     }
