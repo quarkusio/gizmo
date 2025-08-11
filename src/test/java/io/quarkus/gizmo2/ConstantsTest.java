@@ -64,4 +64,17 @@ public class ConstantsTest {
         });
         assertEquals(expectedResult, tcm.staticMethod("returnValueAndDescriptor", Supplier.class).get());
     }
+
+    @Test
+    public void primitiveClassConstants() {
+        test(() -> Const.of(byte.class), "byte|Ljava/lang/Class;");
+        test(() -> Const.of(short.class), "short|Ljava/lang/Class;");
+        test(() -> Const.of(char.class), "char|Ljava/lang/Class;");
+        test(() -> Const.of(int.class), "int|Ljava/lang/Class;");
+        test(() -> Const.of(long.class), "long|Ljava/lang/Class;");
+        test(() -> Const.of(float.class), "float|Ljava/lang/Class;");
+        test(() -> Const.of(double.class), "double|Ljava/lang/Class;");
+        test(() -> Const.of(boolean.class), "boolean|Ljava/lang/Class;");
+        test(() -> Const.of(void.class), "void|Ljava/lang/Class;");
+    }
 }
