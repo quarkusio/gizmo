@@ -222,6 +222,12 @@ public final class Util {
         }
     }
 
+    // I'm not exactly sure why, but the following usage of `ClassValue` seems to cause a classloader leak.
+    // It feels likely the cause is more subtle, or entirely different, but avoiding `ClassValue` caching
+    // seems to get rid of the leak, or at least of its symptoms, so after spending two days staring into
+    // heap dumps and figuring out nothing, I'm just removing it and leaving it for someone else :-)
+    // @formatter:off
+/*
     private static final ClassValue<MethodDesc> samCache = new ClassValue<MethodDesc>() {
         protected MethodDesc computeValue(final Class<?> type) {
             // this is a slow and expensive operation, but there seems to be no way around it.
@@ -238,7 +244,7 @@ public final class Util {
                 }
             }
             if (sam == null) {
-                throw new IllegalArgumentException("No SAM found on " + type);
+                throw new IllegalArgumentException("No abstract method found on " + type);
             }
             return MethodDesc.of(sam.getDeclaringClass(), sam.getName(), sam.getReturnType(), sam.getParameterTypes());
         }
@@ -246,6 +252,28 @@ public final class Util {
 
     public static MethodDesc findSam(final Class<?> type) {
         return samCache.get(type);
+    }
+*/
+    // @formatter:on
+
+    public static MethodDesc findSam(final Class<?> type) {
+        // this is a slow and expensive operation, but there seems to be no way around it.
+        Method sam = null;
+        for (Method method : type.getMethods()) {
+            int mods = method.getModifiers();
+            if (Modifier.isAbstract(mods) && Modifier.isPublic(mods) && !Modifier.isStatic(mods)) {
+                if (sam == null) {
+                    sam = method;
+                } else {
+                    throw new IllegalArgumentException(
+                            "Found two abstract methods on " + type + ": " + sam.getName() + " and " + method.getName());
+                }
+            }
+        }
+        if (sam == null) {
+            throw new IllegalArgumentException("No abstract method found on " + type);
+        }
+        return MethodDesc.of(sam.getDeclaringClass(), sam.getName(), sam.getReturnType(), sam.getParameterTypes());
     }
 
     public static String internalName(final ClassDesc desc) {
