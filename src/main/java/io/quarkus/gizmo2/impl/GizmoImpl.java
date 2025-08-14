@@ -4,6 +4,8 @@ import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassHierarchyResolver;
+import io.quarkus.gizmo2.ClassHierarchyLocator;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.ModifierConfigurator;
@@ -19,20 +21,41 @@ public final class GizmoImpl implements Gizmo {
 
     private final ClassOutput outputHandler;
     private final int[] modifiersByLocation;
+    private final ClassHierarchyLocator classHierarchyLocator;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS);
+        this(outputHandler, DEFAULTS, null);
     }
 
-    private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation) {
+    private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
+            final ClassHierarchyLocator classHierarchyLocator) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
+        this.classHierarchyLocator = classHierarchyLocator;
     }
 
     int getDefaultModifiers(ModifierLocation location) {
         return modifiersByLocation[location.ordinal()];
     }
 
+    ClassFile createClassFile() {
+        if (classHierarchyLocator == null) {
+            return ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        }
+
+        ClassHierarchyResolver resolver = new ClassHierarchyResolver() {
+            @Override
+            public ClassHierarchyInfo getClassInfo(ClassDesc classDesc) {
+                ClassHierarchyLocator.Result result = classHierarchyLocator.locate(classDesc);
+                return result != null ? ((ClassHierarchyLocatorResultImpl) result).info : null;
+            }
+        };
+        return ClassFile.of(
+                ClassFile.StackMapsOption.GENERATE_STACK_MAPS,
+                ClassFile.ClassHierarchyResolverOption.of(resolver));
+    }
+
+    @Override
     public Gizmo withDefaultModifiers(final Consumer<ModifierConfigurator> builder) {
         final int[] flags = modifiersByLocation.clone();
         var configurator = new ModifierConfigurator() {
@@ -64,11 +87,17 @@ public final class GizmoImpl implements Gizmo {
             }
         };
         builder.accept(configurator);
-        return new GizmoImpl(outputHandler, flags.clone());
+        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator);
     }
 
+    @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler, modifiersByLocation);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
+    }
+
+    @Override
+    public Gizmo withClassHierarchyLocator(final ClassHierarchyLocator classHierarchyLocator) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {
@@ -76,7 +105,7 @@ public final class GizmoImpl implements Gizmo {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
 
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = createClassFile();
         byte[] bytes = cf.build(desc, zb -> {
             ClassCreatorImpl tc = new ClassCreatorImpl(this, desc, outputHandler, zb);
             tc.preAccept();
@@ -91,7 +120,7 @@ public final class GizmoImpl implements Gizmo {
         if (!desc.isClassOrInterface()) {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = createClassFile();
         byte[] bytes = cf.build(desc, zb -> {
             InterfaceCreatorImpl tc = new InterfaceCreatorImpl(this, desc, outputHandler, zb);
             tc.accept(builder);
