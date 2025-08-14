@@ -25,6 +25,8 @@ import java.util.stream.Stream;
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
+import io.github.dmlloyd.classfile.ClassFile;
+import io.github.dmlloyd.classfile.ClassHierarchyResolver;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
@@ -47,6 +49,17 @@ public final class Util {
     public static final String trackingMessage = "\nTo track callers and get an improved exception message, add the system property `gizmo.debug`";
 
     private Util() {
+    }
+
+    public static ClassFile createClassFile() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) {
+            cl = ClassLoader.getSystemClassLoader();
+        }
+
+        return ClassFile.of(
+                ClassFile.StackMapsOption.GENERATE_STACK_MAPS,
+                ClassFile.ClassHierarchyResolverOption.of(ClassHierarchyResolver.ofResourceParsing(cl)));
     }
 
     private static final ClassValue<ClassDesc> constantCache = new ClassValue<ClassDesc>() {
