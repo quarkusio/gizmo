@@ -76,7 +76,7 @@ public final class GizmoImpl implements Gizmo {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
 
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = Util.createClassFile();
         byte[] bytes = cf.build(desc, zb -> {
             ClassCreatorImpl tc = new ClassCreatorImpl(this, desc, outputHandler, zb);
             tc.preAccept();
@@ -91,7 +91,7 @@ public final class GizmoImpl implements Gizmo {
         if (!desc.isClassOrInterface()) {
             throw new IllegalArgumentException("Descriptor must describe a valid class");
         }
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = Util.createClassFile();
         byte[] bytes = cf.build(desc, zb -> {
             InterfaceCreatorImpl tc = new InterfaceCreatorImpl(this, desc, outputHandler, zb);
             tc.accept(builder);
