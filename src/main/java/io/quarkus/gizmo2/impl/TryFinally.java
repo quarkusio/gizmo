@@ -56,13 +56,13 @@ final class TryFinally extends Item {
         return body.mayFallThrough() && cleanupTemplate.mayFallThrough();
     }
 
-    IllegalStateException written = null;
+    boolean written = false;
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        if (written != null) {
-            throw written;
+        if (written) {
+            throw new IllegalStateException("Code has already been written");
         }
-        written = new IllegalStateException();
+        written = true;
         boolean bodyFallsThrough = body.mayFallThrough();
         final Label cleanupAndThrow = cb.newLabel();
         body.writeCode(cb, block);
