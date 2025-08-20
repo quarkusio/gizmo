@@ -16,7 +16,7 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
         this.owner = owner;
         this.name = name;
         this.type = type;
-        hashCode = Objects.hash(owner, name, type);
+        this.hashCode = buildHashCode();
     }
 
     public ClassDesc owner() {
@@ -46,5 +46,12 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
 
     public String toString() {
         return toString(new StringBuilder()).toString();
+    }
+
+    public int buildHashCode() {
+        int result = Objects.hashCode(owner);
+        result = 31 * result + Objects.hashCode(name);
+        result = 31 * result + Objects.hashCode(type);
+        return result;
     }
 }
