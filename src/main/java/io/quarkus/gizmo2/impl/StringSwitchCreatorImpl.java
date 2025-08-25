@@ -14,6 +14,10 @@ import io.quarkus.gizmo2.impl.constant.StringConst;
  * A switch over {@code String} objects.
  */
 public final class StringSwitchCreatorImpl extends HashSwitchCreatorImpl<StringConst> {
+
+    private static final MethodTypeDesc STRING_EQUALS_METHOD_TYPE_DESC = MethodTypeDesc.of(CD_boolean, CD_Object);
+    private static final MethodTypeDesc STRING_HASH_CODE_METHOD_TYPE_DESC = MethodTypeDesc.of(CD_int);
+
     StringSwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type) {
         super(enclosing, switchVal, type, StringConst.class);
     }
@@ -24,7 +28,7 @@ public final class StringSwitchCreatorImpl extends HashSwitchCreatorImpl<StringC
 
     void equaller(final CodeBuilder cb, final StringConst value, final Label ifEq) {
         value.writeCode(cb, enclosing);
-        cb.invokevirtual(CD_String, "equals", MethodTypeDesc.of(CD_boolean, CD_Object));
+        cb.invokevirtual(CD_String, "equals", STRING_EQUALS_METHOD_TYPE_DESC);
         // returns 1 if equal
         cb.ifne(ifEq);
     }
@@ -34,6 +38,6 @@ public final class StringSwitchCreatorImpl extends HashSwitchCreatorImpl<StringC
     }
 
     void hash(final CodeBuilder cb) {
-        cb.invokevirtual(CD_String, "hashCode", MethodTypeDesc.of(CD_int));
+        cb.invokevirtual(CD_String, "hashCode", STRING_HASH_CODE_METHOD_TYPE_DESC);
     }
 }

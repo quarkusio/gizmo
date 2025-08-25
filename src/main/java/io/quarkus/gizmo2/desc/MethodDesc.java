@@ -1,8 +1,10 @@
 package io.quarkus.gizmo2.desc;
 
+import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 import io.quarkus.gizmo2.MethodTyped;
@@ -50,7 +52,7 @@ public sealed interface MethodDesc extends MemberDesc, MethodTyped
      * @return the method descriptor (must not be {@code null})
      */
     static MethodDesc of(Class<?> owner, String name, Class<?> returnType, Class<?>... paramTypes) {
-        return of(owner, name, MethodType.methodType(returnType, paramTypes));
+        return of(owner, name, returnType, Arrays.asList(paramTypes));
     }
 
     /**
@@ -63,7 +65,12 @@ public sealed interface MethodDesc extends MemberDesc, MethodTyped
      * @return the method descriptor (must not be {@code null})
      */
     static MethodDesc of(Class<?> owner, String name, Class<?> returnType, List<Class<?>> paramTypes) {
-        return of(owner, name, MethodType.methodType(returnType, paramTypes));
+        ClassDesc[] paramDescriptors = new ClassDesc[paramTypes.size()];
+        for (int i = 0; i < paramTypes.size(); i++) {
+            paramDescriptors[i] = Util.classDesc(paramTypes.get(i));
+        }
+
+        return of(owner, name, MethodTypeDesc.of(Util.classDesc(returnType), paramDescriptors));
     }
 
     /**

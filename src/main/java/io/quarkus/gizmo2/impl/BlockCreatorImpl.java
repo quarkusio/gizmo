@@ -111,6 +111,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private final Label endLabel;
     private final Item input;
     private final ClassDesc outputType;
+    private final TypeKind outputTypeKind;
     private final ClassDesc returnType;
     private Consumer<BlockCreator> loopAction;
 
@@ -161,6 +162,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             head.insertNext(new BlockExpr(inputType));
         }
         this.outputType = outputType;
+        this.outputTypeKind = TypeKind.from(outputType);
         this.returnType = returnType;
     }
 
@@ -203,6 +205,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public ClassDesc type() {
         return outputType;
+    }
+
+    @Override
+    public TypeKind typeKind() {
+        return outputTypeKind;
     }
 
     public boolean active() {

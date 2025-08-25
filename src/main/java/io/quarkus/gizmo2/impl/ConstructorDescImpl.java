@@ -18,7 +18,7 @@ public final class ConstructorDescImpl implements ConstructorDesc {
         }
         this.owner = owner;
         this.type = type;
-        hashCode = Objects.hash(owner, "<init>", type);
+        hashCode = buildHashCode();
     }
 
     public ClassDesc owner() {
@@ -56,5 +56,12 @@ public final class ConstructorDescImpl implements ConstructorDesc {
 
     public String toString() {
         return toString(new StringBuilder()).toString();
+    }
+
+    public int buildHashCode() {
+        int result = Objects.hashCode(owner);
+        result = 31 * result + "<init>".hashCode();
+        result = 31 * result + Objects.hashCode(type);
+        return result;
     }
 }

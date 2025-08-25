@@ -713,10 +713,14 @@ public abstract class GenericType {
      */
     public static abstract class OfClass extends OfThrows {
         final List<TypeArgument> typeArguments;
+        private final boolean hasVisibleAnnotations;
+        private final boolean hasInvisibleAnnotations;
 
         OfClass(final List<Annotation> visible, final List<Annotation> invisible, final List<TypeArgument> typeArguments) {
             super(visible, invisible);
             this.typeArguments = typeArguments;
+            this.hasVisibleAnnotations = typeArguments.stream().anyMatch(TypeArgument::hasVisibleAnnotations);
+            this.hasInvisibleAnnotations = typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
         }
 
         /**
@@ -744,11 +748,11 @@ public abstract class GenericType {
         }
 
         public boolean hasVisibleAnnotations() {
-            return super.hasVisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasVisibleAnnotations);
+            return super.hasVisibleAnnotations() || hasVisibleAnnotations;
         }
 
         public boolean hasInvisibleAnnotations() {
-            return super.hasInvisibleAnnotations() || typeArguments.stream().anyMatch(TypeArgument::hasInvisibleAnnotations);
+            return super.hasInvisibleAnnotations() || hasInvisibleAnnotations;
         }
 
         /**

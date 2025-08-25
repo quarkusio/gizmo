@@ -9,15 +9,18 @@ import java.util.List;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
+import io.quarkus.gizmo2.TypeKind;
 
 abstract class If extends Item {
     private final ClassDesc type;
+    private final TypeKind typeKind;
     final Kind kind;
     final BlockCreatorImpl whenTrue;
     final BlockCreatorImpl whenFalse;
 
     If(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse) {
         this.type = type;
+        this.typeKind = TypeKind.from(type);
         this.kind = kind;
         this.whenTrue = whenTrue;
         this.whenFalse = whenFalse;
@@ -25,6 +28,11 @@ abstract class If extends Item {
 
     public ClassDesc type() {
         return type;
+    }
+
+    @Override
+    public TypeKind typeKind() {
+        return typeKind;
     }
 
     private static void comparable_acmp(CodeBuilder cb, Label label) {

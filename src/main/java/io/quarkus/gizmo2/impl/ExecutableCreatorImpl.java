@@ -20,6 +20,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
 import io.github.dmlloyd.classfile.MethodSignature;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.Signature.TypeParam;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
@@ -30,6 +31,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttr
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
+import io.github.dmlloyd.classfile.constantpool.ClassEntry;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.This;
@@ -126,8 +128,13 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     MethodTypeDesc computeType() {
         assert type == null;
-        return MethodTypeDesc.of(returnType(),
-                params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
+
+        ClassDesc[] paramTypes = new ClassDesc[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            paramTypes[i] = params.get(i).type();
+        }
+
+        return MethodTypeDesc.of(returnType(), paramTypes);
     }
 
     public GenericType genericReturnType() {
@@ -169,8 +176,11 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         addInvisible(mb);
         List<GenericType.OfThrows> throws_ = this.throws_;
         if (!throws_.isEmpty()) {
-            mb.with(ExceptionsAttribute.of(
-                    throws_.stream().map(GenericType::desc).map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
+            List<ClassEntry> exceptions = new ArrayList<>(throws_.size());
+            for (int i = 0; i < throws_.size(); i++) {
+                exceptions.add(typeCreator.zb.constantPool().classEntry(throws_.get(i).desc()));
+            }
+            mb.with(ExceptionsAttribute.of(exceptions));
             for (int i = 0; i < throws_.size(); i++) {
                 final GenericType.OfThrows genericType = throws_.get(i);
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofThrows(i),
@@ -180,27 +190,41 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
         }
         // lock parameters
-        List<MethodParameterInfo> mpi = params.stream()
-                .map(pv -> pv == null ? EMPTY_PI : MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags()))
-                .toList();
-        if (!mpi.isEmpty()) {
-            mb.with(MethodParametersAttribute.of(mpi));
-        }
-        // find parameter annotations, if any
-        if (params.stream().anyMatch(pvi -> !pvi.visible.isEmpty())) {
-            mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(params.stream().map(
-                    pvi -> pvi != null ? pvi.visible : List.<Annotation> of()).toList()));
-        }
-        if (params.stream().anyMatch(pvi -> !pvi.invisible.isEmpty())) {
-            mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(params.stream().map(
-                    pvi -> pvi != null ? pvi.invisible : List.<Annotation> of()).toList()));
-        }
-        for (int i = 0; i < params.size(); i++) {
-            GenericType genericType = params.get(i).genericType();
-            Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    visible, new ArrayDeque<>());
-            Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    invisible, new ArrayDeque<>());
+        if (!params.isEmpty()) {
+            List<MethodParameterInfo> parameters = new ArrayList<>(params.size());
+            List<List<Annotation>> parametersVisibleAnnotations = new ArrayList<>(params.size());
+            List<List<Annotation>> parametersInvisibleAnnotations = new ArrayList<>(params.size());
+            boolean hasVisibleAnnotations = false;
+            boolean hasInvisibleAnnotations = false;
+            for (int i = 0; i < params.size(); i++) {
+                ParamVarImpl currentParam = params.get(i);
+                if (currentParam != null) {
+                    parameters.add(i, MethodParameterInfo.ofParameter(Optional.of(currentParam.name()), currentParam.flags()));
+                    parametersVisibleAnnotations.add(i, currentParam.visible);
+                    hasVisibleAnnotations = hasVisibleAnnotations || !currentParam.visible.isEmpty();
+                    parametersInvisibleAnnotations.add(i, currentParam.invisible);
+                    hasInvisibleAnnotations = hasInvisibleAnnotations || !currentParam.invisible.isEmpty();
+
+                    GenericType genericType = currentParam.genericType();
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
+                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                            visible, new ArrayDeque<>());
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
+                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                            invisible, new ArrayDeque<>());
+                } else {
+                    parameters.add(i, EMPTY_PI);
+                    parametersVisibleAnnotations.add(i, List.of());
+                    parametersInvisibleAnnotations.add(i, List.of());
+                }
+            }
+            mb.with(MethodParametersAttribute.of(parameters));
+            if (hasVisibleAnnotations) {
+                mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(parametersVisibleAnnotations));
+            }
+            if (hasInvisibleAnnotations) {
+                mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(parametersInvisibleAnnotations));
+            }
         }
         Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
                 visible, new ArrayDeque<>());
@@ -230,11 +254,34 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     MethodSignature computeSignature() {
+        List<Signature.TypeParam> signatureTypeParams;
+        if (!typeParameters.isEmpty()) {
+            signatureTypeParams = new ArrayList<>(typeParameters.size());
+            for (int i = 0; i < typeParameters.size(); i++) {
+                signatureTypeParams.add(Util.typeParamOf(typeParameters.get(i)));
+            }
+        } else {
+            signatureTypeParams = List.of();
+        }
+        List<Signature.ThrowableSig> signatureThrows;
+        if (!throws_.isEmpty()) {
+            signatureThrows = new ArrayList<>(throws_.size());
+            for (int i = 0; i < throws_.size(); i++) {
+                signatureThrows.add((Signature.ThrowableSig) Util.signatureOf(throws_.get(i)));
+            }
+        } else {
+            signatureThrows = List.of();
+        }
+        Signature[] signatureParameters = new Signature[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            signatureParameters[i] = Util.signatureOf(params.get(i).genericType());
+        }
+
         return MethodSignature.of(
-                typeParameters.stream().map(Util::typeParamOf).toList(),
-                throws_.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
+                signatureTypeParams,
+                signatureThrows,
                 Util.signatureOf(genericReturnType()),
-                params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
+                signatureParameters);
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
