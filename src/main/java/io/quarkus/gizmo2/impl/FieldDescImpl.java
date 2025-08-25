@@ -3,18 +3,21 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.Objects;
 
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
 public final class FieldDescImpl implements FieldDesc {
     private final ClassDesc owner;
     private final String name;
     private final ClassDesc type;
+    private final TypeKind typeKind;
     private final int hashCode;
 
     public FieldDescImpl(final ClassDesc owner, final String name, final ClassDesc type) {
         this.owner = owner;
         this.name = name;
         this.type = type;
+        this.typeKind = TypeKind.from(type);
         hashCode = Objects.hash(owner, name, type);
     }
 
@@ -28,6 +31,11 @@ public final class FieldDescImpl implements FieldDesc {
 
     public ClassDesc type() {
         return type;
+    }
+
+    @Override
+    public TypeKind typeKind() {
+        return typeKind;
     }
 
     public boolean equals(final Object obj) {

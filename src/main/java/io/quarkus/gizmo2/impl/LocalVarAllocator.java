@@ -40,4 +40,9 @@ final class LocalVarAllocator extends Item {
                     annotations, new ArrayDeque<>());
         }
     }
+
+    @Override
+    public boolean isVoid() {
+        return true;
+    }
 }

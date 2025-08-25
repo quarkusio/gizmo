@@ -20,4 +20,9 @@ final class FieldSet extends Item {
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.putfield(fieldDeref.owner(), fieldDeref.name(), fieldDeref.desc().type());
     }
+
+    @Override
+    public boolean isVoid() {
+        return true;
+    }
 }

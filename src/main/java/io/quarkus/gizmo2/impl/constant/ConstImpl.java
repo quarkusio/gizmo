@@ -25,9 +25,11 @@ import io.quarkus.gizmo2.impl.Util;
 
 public abstract non-sealed class ConstImpl extends Item implements Const {
     private final ClassDesc type;
+    private final TypeKind typeKind;
 
     ConstImpl(final ClassDesc type) {
         this.type = type;
+        this.typeKind = TypeKind.from(type);
     }
 
     public static StringConst of(final String value) {
@@ -330,6 +332,11 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
 
     public ClassDesc type() {
         return type;
+    }
+
+    @Override
+    public TypeKind typeKind() {
+        return typeKind;
     }
 
     public boolean bound() {

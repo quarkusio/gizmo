@@ -12,6 +12,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -20,6 +21,7 @@ final class Invoke extends Item {
     private final ClassDesc owner;
     private final String name;
     private final MethodTypeDesc type;
+    private final TypeKind typeKind;
     private final GenericType genericType;
     private final Item instance;
     private final List<Item> args;
@@ -63,6 +65,7 @@ final class Invoke extends Item {
         this.owner = owner;
         this.name = name;
         this.type = type;
+        this.typeKind = TypeKind.from(type.returnType());
         this.opcode = opcode;
         this.isInterface = isInterface;
         this.instance = instance;
@@ -76,6 +79,11 @@ final class Invoke extends Item {
 
     public ClassDesc type() {
         return type.returnType();
+    }
+
+    @Override
+    public TypeKind typeKind() {
+        return typeKind;
     }
 
     public GenericType genericType() {

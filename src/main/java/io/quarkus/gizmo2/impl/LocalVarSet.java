@@ -21,4 +21,9 @@ final class LocalVarSet extends Item {
         localVar.checkSlot();
         cb.storeLocal(Util.actualKindOf(localVar.typeKind()), localVar.slot);
     }
+
+    @Override
+    public boolean isVoid() {
+        return true;
+    }
 }
