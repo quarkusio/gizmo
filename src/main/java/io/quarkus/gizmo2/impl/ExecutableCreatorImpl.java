@@ -30,6 +30,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttr
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
+import io.github.dmlloyd.classfile.constantpool.ClassEntry;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.ParamVar;
@@ -171,8 +172,11 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         List<GenericType.OfThrows> throws_ = this.throws_;
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if (!throws_.isEmpty()) {
-            mb.with(ExceptionsAttribute.of(
-                    throws_.stream().map(GenericType::desc).map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
+            List<ClassEntry> exceptions = new ArrayList<>(throws_.size());
+            for (int i = 0; i < throws_.size(); i++) {
+                exceptions.add(typeCreator.zb.constantPool().classEntry(throws_.get(i).desc()));
+            }
+            mb.with(ExceptionsAttribute.of(exceptions));
             for (int i = 0; i < throws_.size(); i++) {
                 final GenericType.OfThrows genericType = throws_.get(i);
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofThrows(i),
@@ -184,29 +188,43 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
         }
         // lock parameters
-        List<MethodParameterInfo> mpi = params.stream()
-                .map(pv -> pv == null ? EMPTY_PI : MethodParameterInfo.ofParameter(Optional.of(pv.name()), pv.flags()))
-                .toList();
-        if (!mpi.isEmpty()) {
-            mb.with(MethodParametersAttribute.of(mpi));
-        }
-        // find parameter annotations, if any
-        if (params.stream().anyMatch(pvi -> !pvi.visible.isEmpty())) {
-            mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(params.stream().map(
-                    pvi -> pvi != null ? pvi.visible : List.<Annotation> of()).toList()));
-        }
-        if (params.stream().anyMatch(pvi -> !pvi.invisible.isEmpty())) {
-            mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(params.stream().map(
-                    pvi -> pvi != null ? pvi.invisible : List.<Annotation> of()).toList()));
-        }
-        for (int i = 0; i < params.size(); i++) {
-            GenericType genericType = params.get(i).genericType();
-            Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    visible, pathStack);
-            assert pathStack.isEmpty();
-            Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    invisible, pathStack);
-            assert pathStack.isEmpty();
+        if (!params.isEmpty()) {
+            List<MethodParameterInfo> parameters = new ArrayList<>(params.size());
+            List<List<Annotation>> parametersVisibleAnnotations = new ArrayList<>(params.size());
+            List<List<Annotation>> parametersInvisibleAnnotations = new ArrayList<>(params.size());
+            boolean hasVisibleAnnotations = false;
+            boolean hasInvisibleAnnotations = false;
+            for (int i = 0; i < params.size(); i++) {
+                ParamVarImpl currentParam = params.get(i);
+                if (currentParam != null) {
+                    parameters.add(i, MethodParameterInfo.ofParameter(Optional.of(currentParam.name()), currentParam.flags()));
+                    parametersVisibleAnnotations.add(i, currentParam.visible);
+                    hasVisibleAnnotations = hasVisibleAnnotations || !currentParam.visible.isEmpty();
+                    parametersInvisibleAnnotations.add(i, currentParam.invisible);
+                    hasInvisibleAnnotations = hasInvisibleAnnotations || !currentParam.invisible.isEmpty();
+
+                    GenericType genericType = currentParam.genericType();
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
+                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                            visible, pathStack);
+                    assert pathStack.isEmpty();
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
+                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                            invisible, pathStack);
+                    assert pathStack.isEmpty();
+                } else {
+                    parameters.add(i, EMPTY_PI);
+                    parametersVisibleAnnotations.add(i, List.of());
+                    parametersInvisibleAnnotations.add(i, List.of());
+                }
+            }
+            mb.with(MethodParametersAttribute.of(parameters));
+            if (hasVisibleAnnotations) {
+                mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(parametersVisibleAnnotations));
+            }
+            if (hasInvisibleAnnotations) {
+                mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(parametersInvisibleAnnotations));
+            }
         }
         Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
                 visible, pathStack);
