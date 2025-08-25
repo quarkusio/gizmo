@@ -20,6 +20,7 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.MethodBuilder;
 import io.github.dmlloyd.classfile.MethodSignature;
 import io.github.dmlloyd.classfile.Signature;
+import io.github.dmlloyd.classfile.Signature.TypeParam;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.TypeKind;
 import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
@@ -127,8 +128,13 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     MethodTypeDesc computeType() {
         assert type == null;
-        return MethodTypeDesc.of(returnType(),
-                params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
+
+        ClassDesc[] paramTypes = new ClassDesc[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            paramTypes[i] = params.get(i).type();
+        }
+
+        return MethodTypeDesc.of(returnType(), paramTypes);
     }
 
     public GenericType genericReturnType() {
@@ -248,11 +254,34 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     MethodSignature computeSignature() {
+        List<Signature.TypeParam> signatureTypeParams;
+        if (!typeParameters.isEmpty()) {
+            signatureTypeParams = new ArrayList<>(typeParameters.size());
+            for (int i = 0; i < typeParameters.size(); i++) {
+                signatureTypeParams.add(Util.typeParamOf(typeParameters.get(i)));
+            }
+        } else {
+            signatureTypeParams = List.of();
+        }
+        List<Signature.ThrowableSig> signatureThrows;
+        if (!throws_.isEmpty()) {
+            signatureThrows = new ArrayList<>(throws_.size());
+            for (int i = 0; i < throws_.size(); i++) {
+                signatureThrows.add((Signature.ThrowableSig) Util.signatureOf(throws_.get(i)));
+            }
+        } else {
+            signatureThrows = List.of();
+        }
+        Signature[] signatureParameters = new Signature[params.size()];
+        for (int i = 0; i < params.size(); i++) {
+            signatureParameters[i] = Util.signatureOf(params.get(i).genericType());
+        }
+
         return MethodSignature.of(
-                typeParameters.stream().map(Util::typeParamOf).toList(),
-                throws_.stream().map(Util::signatureOf).map(Signature.ThrowableSig.class::cast).toList(),
+                signatureTypeParams,
+                signatureThrows,
                 Util.signatureOf(genericReturnType()),
-                params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
+                signatureParameters);
     }
 
     void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {

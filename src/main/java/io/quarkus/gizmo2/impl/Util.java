@@ -424,7 +424,12 @@ public final class Util {
     // Generic type argument mapping
 
     public static Signature.TypeArg[] typeArgsOf(final List<TypeArgument> typeArguments) {
-        return typeArguments.stream().map(Util::typeArgOf).toArray(Signature.TypeArg[]::new);
+        Signature.TypeArg[] typeArgs = new Signature.TypeArg[typeArguments.size()];
+        for (int i = 0; i < typeArguments.size(); i++) {
+            typeArgs[i] = typeArgOf(typeArguments.get(i));
+        }
+
+        return typeArgs;
     }
 
     public static Signature.TypeArg typeArgOf(TypeArgument arg) {

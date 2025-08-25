@@ -194,10 +194,24 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     ClassSignature computeSignature() {
+        List<Signature.TypeParam> signatureTypeParams;
+        if (!typeParameters.isEmpty()) {
+            signatureTypeParams = new ArrayList<>(typeParameters.size());
+            for (int i = 0; i < typeParameters.size(); i++) {
+                signatureTypeParams.add(Util.typeParamOf(typeParameters.get(i)));
+            }
+        } else {
+            signatureTypeParams = List.of();
+        }
+        Signature.ClassTypeSig[] signatureInterfaces = new Signature.ClassTypeSig[interfaceSigs.size()];
+        for (int i = 0; i < interfaceSigs.size(); i++) {
+            signatureInterfaces[i] = Util.signatureOf(interfaceSigs.get(i));
+        }
+
         return ClassSignature.of(
-                typeParameters.stream().map(Util::typeParamOf).toList(),
+                signatureTypeParams,
                 Util.signatureOf(superSig),
-                interfaceSigs.stream().map(Util::signatureOf).toArray(Signature.ClassTypeSig[]::new));
+                signatureInterfaces);
     }
 
     void implements_(final GenericType.OfClass genericType) {
