@@ -81,10 +81,13 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     void addTypeAnnotations(final FieldBuilder fb) {
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
+        ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofField(),
-                visible, new ArrayDeque<>());
+                visible, pathStack);
+        assert pathStack.isEmpty();
         Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofField(),
-                invisible, new ArrayDeque<>());
+                invisible, pathStack);
+        assert pathStack.isEmpty();
         if (!visible.isEmpty()) {
             fb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
         }

@@ -293,28 +293,35 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         addInvisible(zb);
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
+        ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         for (int i = 0; i < typeParameters.size(); i++) {
             final TypeParameter tv = typeParameters.get(i);
             Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
-                    visible, new ArrayDeque<>());
+                    visible, pathStack);
+            assert pathStack.isEmpty();
             Util.computeAnnotations(tv, RetentionPolicy.CLASS,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.CLASS_TYPE_PARAMETER, i),
-                    invisible, new ArrayDeque<>());
+                    invisible, pathStack);
+            assert pathStack.isEmpty();
         }
         Util.computeAnnotations(superSig, RetentionPolicy.RUNTIME,
                 TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
-                visible, new ArrayDeque<>());
+                visible, pathStack);
+        assert pathStack.isEmpty();
         Util.computeAnnotations(superSig, RetentionPolicy.CLASS,
                 TypeAnnotation.TargetInfo.ofClassExtends(65535 /* superclass */),
-                invisible, new ArrayDeque<>());
+                invisible, pathStack);
+        assert pathStack.isEmpty();
         for (int i = 0; i < interfaceSigs.size(); i++) {
             Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.RUNTIME,
                     TypeAnnotation.TargetInfo.ofClassExtends(i),
-                    visible, new ArrayDeque<>());
+                    visible, pathStack);
+            assert pathStack.isEmpty();
             Util.computeAnnotations(interfaceSigs.get(i), RetentionPolicy.CLASS,
                     TypeAnnotation.TargetInfo.ofClassExtends(i),
-                    invisible, new ArrayDeque<>());
+                    invisible, pathStack);
+            assert pathStack.isEmpty();
         }
         if (!visible.isEmpty()) {
             zb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
