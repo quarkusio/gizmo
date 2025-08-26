@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -227,7 +226,7 @@ public abstract class GenericType {
             return new OfRootClass(List.of(), List.of(), desc, List.of());
         }
         if (desc.isPrimitive()) {
-            return OfPrimitive.baseItems.get(desc);
+            return OfPrimitive.baseItems.get(desc.descriptorString());
         }
         assert desc.isArray();
         return new OfArray(List.of(), List.of(), of(desc.componentType()));
@@ -895,11 +894,11 @@ public abstract class GenericType {
          * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
          */
         public boolean equals(final OfRootClass other) {
-            return this == other || super.equals(other) && desc.equals(other.desc);
+            return this == other || super.equals(other) && desc.descriptorString().equals(other.desc.descriptorString());
         }
 
         public int hashCode() {
-            return super.hashCode() * 19 + desc.hashCode();
+            return super.hashCode() * 19 + desc.descriptorString().hashCode();
         }
 
         public StringBuilder toString(final StringBuilder b) {
@@ -1015,7 +1014,7 @@ public abstract class GenericType {
      * A generic type corresponding to a primitive type, including {@code void}.
      */
     public static final class OfPrimitive extends GenericType {
-        private static final Map<ClassDesc, OfPrimitive> baseItems = Stream.of(
+        private static final Map<String, OfPrimitive> baseItems = Stream.of(
                 CD_boolean,
                 CD_byte,
                 CD_short,
@@ -1024,7 +1023,7 @@ public abstract class GenericType {
                 CD_long,
                 CD_float,
                 CD_double,
-                CD_void).collect(Collectors.toUnmodifiableMap(Function.identity(), OfPrimitive::new));
+                CD_void).collect(Collectors.toUnmodifiableMap(ClassDesc::descriptorString, OfPrimitive::new));
 
         private final ClassDesc type;
 

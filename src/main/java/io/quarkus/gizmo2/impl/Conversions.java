@@ -1,25 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Preconditions.requireSameLoadableTypeKind;
-import static java.lang.constant.ConstantDescs.CD_Boolean;
-import static java.lang.constant.ConstantDescs.CD_Byte;
-import static java.lang.constant.ConstantDescs.CD_Character;
-import static java.lang.constant.ConstantDescs.CD_Double;
-import static java.lang.constant.ConstantDescs.CD_Float;
-import static java.lang.constant.ConstantDescs.CD_Integer;
-import static java.lang.constant.ConstantDescs.CD_Long;
-import static java.lang.constant.ConstantDescs.CD_Object;
-import static java.lang.constant.ConstantDescs.CD_Short;
-import static java.lang.constant.ConstantDescs.CD_Void;
-import static java.lang.constant.ConstantDescs.CD_boolean;
-import static java.lang.constant.ConstantDescs.CD_byte;
-import static java.lang.constant.ConstantDescs.CD_char;
-import static java.lang.constant.ConstantDescs.CD_double;
-import static java.lang.constant.ConstantDescs.CD_float;
-import static java.lang.constant.ConstantDescs.CD_int;
-import static java.lang.constant.ConstantDescs.CD_long;
-import static java.lang.constant.ConstantDescs.CD_short;
-import static java.lang.constant.ConstantDescs.CD_void;
+import static io.quarkus.gizmo2.impl.Preconditions.*;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.io.Serializable;
 import java.lang.constant.ClassDesc;
@@ -34,62 +16,94 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Conversions {
-    private static final ClassDesc CD_Comparable = Util.classDesc(Comparable.class);
-    private static final ClassDesc CD_Constable = Util.classDesc(Constable.class);
-    private static final ClassDesc CD_ConstantDesc = Util.classDesc(ConstantDesc.class);
-    private static final ClassDesc CD_Number = Util.classDesc(Number.class);
-    private static final ClassDesc CD_Serializable = Util.classDesc(Serializable.class);
+
+    private static final String DS_boolean = "Z";
+    private static final String DS_byte = "B";
+    private static final String DS_char = "C";
+    private static final String DS_double = "D";
+    private static final String DS_float = "F";
+    private static final String DS_int = "I";
+    private static final String DS_long = "J";
+    private static final String DS_short = "S";
+    private static final String DS_void = "V";
+
+    private static final String DS_Object = Object.class.descriptorString().intern();
+
+    private static final String DS_Boolean = Boolean.class.descriptorString().intern();
+    private static final String DS_Byte = Byte.class.descriptorString().intern();
+    private static final String DS_Character = Character.class.descriptorString().intern();
+    private static final String DS_Double = Double.class.descriptorString().intern();
+    private static final String DS_Float = Float.class.descriptorString().intern();
+    private static final String DS_Integer = Integer.class.descriptorString().intern();
+    private static final String DS_Long = Long.class.descriptorString().intern();
+    private static final String DS_Short = Short.class.descriptorString().intern();
+    private static final String DS_Void = Void.class.descriptorString().intern();
+
+    private static final String DS_Comparable = Comparable.class.descriptorString().intern();
+    private static final String DS_Constable = Constable.class.descriptorString().intern();
+    private static final String DS_Number = Number.class.descriptorString().intern();
+    private static final String DS_Serializable = Serializable.class.descriptorString().intern();
+    private static final String DS_ConstantDesc = ConstantDesc.class.descriptorString().intern();
 
     // https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.7
-    private static final Map<ClassDesc, ClassDesc> boxTypes = Map.of(
-            CD_boolean, CD_Boolean,
-            CD_byte, CD_Byte,
-            CD_char, CD_Character,
-            CD_short, CD_Short,
-            CD_int, CD_Integer,
-            CD_long, CD_Long,
-            CD_float, CD_Float,
-            CD_double, CD_Double,
-            CD_void, CD_Void);
+    private static final Map<String, ClassDesc> boxTypes = Map.of(
+            DS_boolean, CD_Boolean,
+            DS_byte, CD_Byte,
+            DS_char, CD_Character,
+            DS_short, CD_Short,
+            DS_int, CD_Integer,
+            DS_long, CD_Long,
+            DS_float, CD_Float,
+            DS_double, CD_Double,
+            DS_void, CD_Void);
 
-    private static final Map<ClassDesc, Set<ClassDesc>> additionalBoxTypes = Map.of(
-            CD_boolean, Set.of(CD_Object, CD_Comparable, CD_Constable, CD_Serializable),
-            CD_byte, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_Serializable),
-            CD_char, Set.of(CD_Object, CD_Comparable, CD_Constable, CD_Serializable),
-            CD_short, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_Serializable),
-            CD_int, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_ConstantDesc, CD_Serializable),
-            CD_long, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_ConstantDesc, CD_Serializable),
-            CD_float, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_ConstantDesc, CD_Serializable),
-            CD_double, Set.of(CD_Object, CD_Number, CD_Comparable, CD_Constable, CD_ConstantDesc, CD_Serializable),
-            CD_void, Set.of(CD_Object));
+    private static final Map<String, Set<String>> additionalBoxTypes = Map.of(
+            DS_boolean, Set.of(DS_Object, DS_Comparable, DS_Constable, DS_Serializable),
+            DS_byte, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_Serializable),
+            DS_char, Set.of(DS_Object, DS_Comparable, DS_Constable, DS_Serializable),
+            DS_short, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_Serializable),
+            DS_int, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_ConstantDesc, DS_Serializable),
+            DS_long, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_ConstantDesc, DS_Serializable),
+            DS_float, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_ConstantDesc, DS_Serializable),
+            DS_double, Set.of(DS_Object, DS_Number, DS_Comparable, DS_Constable, DS_ConstantDesc, DS_Serializable),
+            DS_void, Set.of(DS_Object));
 
     // https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.8
-    private static final Map<ClassDesc, ClassDesc> unboxTypes = Util.reverseMap(boxTypes);
+    private static final Map<String, ClassDesc> unboxTypes = Map.of(
+            DS_Boolean, CD_boolean,
+            DS_Byte, CD_byte,
+            DS_Character, CD_char,
+            DS_Short, CD_short,
+            DS_Integer, CD_int,
+            DS_Long, CD_long,
+            DS_Float, CD_float,
+            DS_Double, CD_double,
+            DS_Void, CD_void);
 
     // https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.1.2
-    private static final Map<ClassDesc, Set<ClassDesc>> primitiveWideningConversions = Map.of(
-            CD_boolean, Set.of(),
-            CD_byte, Set.of(CD_short, CD_int, CD_long, CD_float, CD_double),
-            CD_char, Set.of(CD_int, CD_long, CD_float, CD_double),
-            CD_short, Set.of(CD_int, CD_long, CD_float, CD_double),
-            CD_int, Set.of(CD_long, CD_float, CD_double),
-            CD_long, Set.of(CD_float, CD_double),
-            CD_float, Set.of(CD_double),
-            CD_double, Set.of(),
-            CD_void, Set.of());
+    private static final Map<String, Set<String>> primitiveWideningConversions = Map.of(
+            DS_boolean, Set.of(),
+            DS_byte, Set.of(DS_short, DS_int, DS_long, DS_float, DS_double),
+            DS_char, Set.of(DS_int, DS_long, DS_float, DS_double),
+            DS_short, Set.of(DS_int, DS_long, DS_float, DS_double),
+            DS_int, Set.of(DS_long, DS_float, DS_double),
+            DS_long, Set.of(DS_float, DS_double),
+            DS_float, Set.of(DS_double),
+            DS_double, Set.of(),
+            DS_void, Set.of());
 
     /**
      * {@return whether the given {@code type} is primitive}
      */
     static boolean isPrimitive(ClassDesc type) {
-        return boxTypes.containsKey(type); // could also be just `type.isPrimitive()`
+        return boxTypes.containsKey(type.descriptorString()); // could also be just `type.isPrimitive()`
     }
 
     /**
      * {@return whether the given {@code type} is a primitive wrapper class}
      */
     static boolean isPrimitiveWrapper(ClassDesc type) {
-        return unboxTypes.containsKey(type);
+        return unboxTypes.containsKey(type.descriptorString());
     }
 
     /**
@@ -97,7 +111,7 @@ final class Conversions {
      * Returns an empty {@code Optional} if no such conversion exists.
      */
     static Optional<ClassDesc> boxingConversion(ClassDesc type) {
-        return Optional.ofNullable(boxTypes.get(type));
+        return Optional.ofNullable(boxTypes.get(type.descriptorString()));
     }
 
     /**
@@ -105,7 +119,7 @@ final class Conversions {
      * Returns an empty {@code Optional} if no such conversion exists.
      */
     static Optional<ClassDesc> unboxingConversion(ClassDesc type) {
-        return Optional.ofNullable(unboxTypes.get(type));
+        return Optional.ofNullable(unboxTypes.get(type.descriptorString()));
     }
 
     /**
@@ -135,38 +149,42 @@ final class Conversions {
     static Item convert(Expr expr, ClassDesc toType) {
         Item item = (Item) expr;
         ClassDesc fromType = item.type();
-        if (fromType.equals(toType)) {
+        String toDesc = toType.descriptorString();
+        String fromDesc = fromType.descriptorString();
+        if (fromDesc.equals(toDesc)) {
             // identity
             return item;
-        } else if (toType.equals(boxTypes.get(fromType))) {
+        } else if (toType.equals(boxTypes.get(fromDesc))) {
             // boxing
             return new Box(item);
-        } else if (fromType.isPrimitive() && additionalBoxTypes.get(fromType).contains(toType)) {
+        } else if (fromType.isPrimitive() && additionalBoxTypes.get(fromDesc).contains(toDesc)) {
             // boxing to a superclass/superinterface of the wrapper class
             return new Box(item, toType);
-        } else if (fromType.isPrimitive() && unboxTypes.containsKey(toType)) {
+        } else if (fromType.isPrimitive() && unboxTypes.containsKey(toDesc)) {
             // primitive widening + boxing
-            ClassDesc widerType = unboxTypes.get(toType);
-            if (primitiveWideningConversions.get(fromType).contains(widerType)) {
+            ClassDesc widerType = unboxTypes.get(toDesc);
+            if (primitiveWideningConversions.get(fromDesc).contains(widerType.descriptorString())) {
                 return new Box(new PrimitiveCast(item, GenericType.of(widerType)));
             }
-        } else if (toType.equals(unboxTypes.get(fromType))) {
+        } else if (toType.equals(unboxTypes.get(fromDesc))) {
             // unboxing
             return new Unbox(item);
-        } else if (toType.isPrimitive() && unboxTypes.containsKey(fromType)
-                && primitiveWideningConversions.get(unboxTypes.get(fromType)).contains(toType)) {
+        } else if (toType.isPrimitive() && unboxTypes.containsKey(fromDesc)
+                && primitiveWideningConversions.get(unboxTypes.get(fromDesc).descriptorString()).contains(toDesc)) {
             // unboxing + primitive widening
             return new PrimitiveCast(new Unbox(item), GenericType.of(toType));
         } else if (fromType.isPrimitive() && toType.isPrimitive()
-                && primitiveWideningConversions.get(fromType).contains(toType)) {
+                && primitiveWideningConversions.get(fromDesc).contains(toDesc)) {
             // primitive widening
             return new PrimitiveCast(item, GenericType.of(toType));
-        } else if (!fromType.isPrimitive() && CD_Object.equals(toType)) {
+        } else if (!fromType.isPrimitive() && DS_Object.equals(toDesc)) {
             return new UncheckedCast(item, GenericType.of(toType));
-        } else if (CD_Object.equals(fromType) && !toType.isPrimitive()) {
-            return new CheckCast(item, GenericType.of(toType));
-        } else if (CD_Object.equals(fromType) && toType.isPrimitive()) {
-            return new Unbox(new CheckCast(item, GenericType.of(boxTypes.get(toType))));
+        } else if (DS_Object.equals(fromDesc)) {
+            if (toType.isPrimitive()) {
+                return new Unbox(new CheckCast(item, GenericType.of(boxTypes.get(toDesc))));
+            } else {
+                return new CheckCast(item, GenericType.of(toType));
+            }
         }
 
         requireSameLoadableTypeKind(fromType, toType);
@@ -180,10 +198,10 @@ final class Conversions {
     // https://docs.oracle.com/javase/specs/jls/se17/html/jls-5.html#jls-5.6
     static Optional<ClassDesc> numericPromotion(ClassDesc a, ClassDesc b) {
         if (a.isClassOrInterface()) {
-            a = unboxTypes.getOrDefault(a, a);
+            a = unboxTypes.getOrDefault(a.descriptorString(), a);
         }
         if (b.isClassOrInterface()) {
-            b = unboxTypes.getOrDefault(b, b);
+            b = unboxTypes.getOrDefault(b.descriptorString(), b);
         }
         if (a.isPrimitive() && b.isPrimitive()) {
             TypeKind aKind = TypeKind.from(a);
@@ -217,6 +235,7 @@ final class Conversions {
 
         // equality operations only require promotion if performed on numeric types
         // that is, all primitive types except `boolean` (and `void`, but that never occurs here)
-        return a.isPrimitive() && !CD_boolean.equals(a) || b.isPrimitive() && !CD_boolean.equals(b);
+        return a.isPrimitive() && !DS_boolean.equals(a.descriptorString())
+                || b.isPrimitive() && !DS_boolean.equals(b.descriptorString());
     }
 }

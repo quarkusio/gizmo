@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -350,7 +349,7 @@ public final class Util {
 
     // Generic type signature mapping
 
-    private static final Map<ClassDesc, Signature.BaseTypeSig> baseTypeSigs = Stream.of(
+    private static final Map<String, Signature.BaseTypeSig> baseTypeSigs = Stream.of(
             CD_boolean,
             CD_byte,
             CD_short,
@@ -359,7 +358,7 @@ public final class Util {
             CD_long,
             CD_float,
             CD_double,
-            CD_void).collect(Collectors.toUnmodifiableMap(Function.identity(), Signature.BaseTypeSig::of));
+            CD_void).collect(Collectors.toUnmodifiableMap(ClassDesc::descriptorString, Signature.BaseTypeSig::of));
 
     public static Signature signatureOf(GenericType type) {
         if (type instanceof GenericType.OfPrimitive prim) {
@@ -372,7 +371,7 @@ public final class Util {
     }
 
     public static Signature.BaseTypeSig signatureOf(GenericType.OfPrimitive type) {
-        return baseTypeSigs.get(type.desc());
+        return baseTypeSigs.get(type.desc().descriptorString());
     }
 
     public static Signature.RefTypeSig signatureOf(GenericType.OfReference type) {
