@@ -3089,7 +3089,6 @@ Either operation can be used as an expression by passing the expression output t
 However, each case which exits must yield a value of the expected type.
 
 //TEST:BEGIN
-//TEST:COMPILE-ONLY https://github.com/quarkusio/gizmo/issues/472
 .Example of `switch_`
 [source,java]
 ----
