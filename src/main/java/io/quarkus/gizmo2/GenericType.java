@@ -436,13 +436,16 @@ public abstract class GenericType {
 
     List<TypeAnnotation> computeAnnotations(RetentionPolicy retention, TypeAnnotation.TargetInfo targetInfo,
             ArrayList<TypeAnnotation> list, ArrayDeque<TypeAnnotation.TypePathComponent> path) {
-        List<TypeAnnotation.TypePathComponent> pathSnapshot = List.copyOf(path);
-        for (Annotation annotation : switch (retention) {
+        List<Annotation> annotations = switch (retention) {
             case RUNTIME -> visible;
             case CLASS -> invisible;
             default -> throw Assert.impossibleSwitchCase(retention);
-        }) {
-            list.add(TypeAnnotation.of(targetInfo, pathSnapshot, annotation));
+        };
+        if (!annotations.isEmpty()) {
+            List<TypeAnnotation.TypePathComponent> pathSnapshot = List.copyOf(path);
+            for (Annotation annotation : annotations) {
+                list.add(TypeAnnotation.of(targetInfo, pathSnapshot, annotation));
+            }
         }
         return list;
     }
