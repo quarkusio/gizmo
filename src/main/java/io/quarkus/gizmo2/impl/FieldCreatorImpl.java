@@ -14,6 +14,7 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
@@ -22,7 +23,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     final ClassDesc owner;
     final String name;
     final TypeCreatorImpl tc;
-    GenericType genericType = GenericType.of(CD_int);
+    GenericType genericType = GenericTypes.GT_int;
     private FieldDesc desc;
 
     public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc) {

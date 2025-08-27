@@ -31,6 +31,7 @@ import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsA
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.This;
 import io.quarkus.gizmo2.TypeParameter;
@@ -133,7 +134,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     public GenericType genericReturnType() {
         GenericType returnType = this.genericReturnType;
         if (returnType == null) {
-            return GenericType.of(CD_void);
+            return GenericTypes.GT_void;
         }
         return returnType;
     }
