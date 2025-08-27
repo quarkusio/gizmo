@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.lang.constant.ClassDesc;
 import java.util.function.IntUnaryOperator;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public final class SwitchTest {
@@ -193,7 +192,6 @@ public final class SwitchTest {
     }
 
     @Test
-    @Disabled("https://github.com/quarkusio/gizmo/issues/472")
     public void testStringSwitchWeird() {
         TestClassMaker tcm = new TestClassMaker();
         Gizmo g = Gizmo.create(tcm);
