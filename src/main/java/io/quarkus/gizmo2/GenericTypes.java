@@ -45,4 +45,8 @@ public final class GenericTypes {
      * The generic type for {@code void}.
      */
     public static final GenericType GT_void = GenericType.of(CD_void);
+    /**
+     * The generic type for {@code java.lang.Object}.
+     */
+    public static final GenericType GT_Object = GenericType.of(CD_Object);
 }
