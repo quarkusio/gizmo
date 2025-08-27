@@ -168,15 +168,18 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         addVisible(mb);
         addInvisible(mb);
         List<GenericType.OfThrows> throws_ = this.throws_;
+        ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if (!throws_.isEmpty()) {
             mb.with(ExceptionsAttribute.of(
                     throws_.stream().map(GenericType::desc).map(cd -> typeCreator.zb.constantPool().classEntry(cd)).toList()));
             for (int i = 0; i < throws_.size(); i++) {
                 final GenericType.OfThrows genericType = throws_.get(i);
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofThrows(i),
-                        visible, new ArrayDeque<>());
+                        visible, pathStack);
+                assert pathStack.isEmpty();
                 Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofThrows(i),
-                        invisible, new ArrayDeque<>());
+                        invisible, pathStack);
+                assert pathStack.isEmpty();
             }
         }
         // lock parameters
@@ -198,23 +201,27 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         for (int i = 0; i < params.size(); i++) {
             GenericType genericType = params.get(i).genericType();
             Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    visible, new ArrayDeque<>());
+                    visible, pathStack);
+            assert pathStack.isEmpty();
             Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                    invisible, new ArrayDeque<>());
+                    invisible, pathStack);
+            assert pathStack.isEmpty();
         }
         Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
-                visible, new ArrayDeque<>());
+                visible, pathStack);
         Util.computeAnnotations(genericReturnType(), RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReturn(),
-                invisible, new ArrayDeque<>());
+                invisible, pathStack);
         // todo: `this` type annotations and generic type
         for (int i = 0; i < typeParameters.size(); i++) {
             final TypeParameter tv = typeParameters.get(i);
             Util.computeAnnotations(tv, RetentionPolicy.RUNTIME,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER, i),
-                    visible, new ArrayDeque<>());
+                    visible, pathStack);
+            assert pathStack.isEmpty();
             Util.computeAnnotations(tv, RetentionPolicy.CLASS,
                     TypeAnnotation.TargetInfo.ofTypeParameter(TypeAnnotation.TargetType.METHOD_TYPE_PARAMETER, i),
-                    invisible, new ArrayDeque<>());
+                    invisible, pathStack);
+            assert pathStack.isEmpty();
         }
         if (builder != null) {
             mb.withCode(cb -> {
@@ -242,6 +249,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType(),
                 this instanceof ConstructorCreator ? "new" : name());
+        ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
@@ -252,16 +260,20 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             if (genericType.hasVisibleAnnotations()) {
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
                         List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        visible, new ArrayDeque<>());
+                        visible, pathStack);
+                assert pathStack.isEmpty();
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        visible, new ArrayDeque<>());
+                        visible, pathStack);
+                assert pathStack.isEmpty();
             }
             if (genericType.hasInvisibleAnnotations()) {
                 Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
                         List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        invisible, new ArrayDeque<>());
+                        invisible, pathStack);
+                assert pathStack.isEmpty();
                 Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        invisible, new ArrayDeque<>());
+                        invisible, pathStack);
+                assert pathStack.isEmpty();
             }
         }
         for (final ParamVarImpl param : params) {
@@ -275,12 +287,14 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 if (genericType.hasVisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
                             List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
-                            visible, new ArrayDeque<>());
+                            visible, pathStack);
+                    assert pathStack.isEmpty();
                 }
                 if (genericType.hasInvisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
                             List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
-                            invisible, new ArrayDeque<>());
+                            invisible, pathStack);
+                    assert pathStack.isEmpty();
                 }
             }
         }
