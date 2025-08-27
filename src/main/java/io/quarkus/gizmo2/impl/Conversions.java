@@ -13,6 +13,7 @@ import java.util.Set;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Conversions {
@@ -178,7 +179,7 @@ final class Conversions {
             // primitive widening
             return new PrimitiveCast(item, GenericType.of(toType));
         } else if (!fromType.isPrimitive() && DS_Object.equals(toDesc)) {
-            return new UncheckedCast(item, GenericType.of(toType));
+            return new UncheckedCast(item, GenericTypes.GT_Object);
         } else if (DS_Object.equals(fromDesc)) {
             if (toType.isPrimitive()) {
                 return new Unbox(new CheckCast(item, GenericType.of(boxTypes.get(toDesc))));
