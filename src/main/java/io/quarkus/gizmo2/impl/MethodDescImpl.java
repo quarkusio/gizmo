@@ -48,10 +48,19 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
         return toString(new StringBuilder()).toString();
     }
 
-    public int buildHashCode() {
-        int result = Objects.hashCode(owner);
+    private int buildHashCode() {
+        int result = Objects.hashCode(owner.descriptorString());
         result = 31 * result + Objects.hashCode(name);
-        result = 31 * result + Objects.hashCode(type);
+        result = 31 * result + typeHash();
+        return result;
+    }
+
+    private int typeHash() {
+        int result = type.returnType().descriptorString().hashCode();
+        int pc = type.parameterCount();
+        for (int i = 0; i < pc; i++) {
+            result = 31 * result + type.parameterType(i).descriptorString().hashCode();
+        }
         return result;
     }
 }
