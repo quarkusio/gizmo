@@ -60,4 +60,30 @@ public sealed interface ClassMethodDesc extends MethodDesc permits ClassMethodDe
     static ClassMethodDesc of(ClassDesc owner, String name, Class<?> returnType, List<Class<?>> paramTypes) {
         return of(owner, name, MethodType.methodType(returnType, paramTypes));
     }
+
+    /**
+     * Create a new class method descriptor.
+     *
+     * @param owner the class which contains the method (must not be {@code null})
+     * @param name the name of the method (must not be {@code null})
+     * @param returnType the class of the return type (must not be {@code null})
+     * @param paramTypes the classes of the parameter types (must not be {@code null})
+     * @return the class method descriptor (not {@code null})
+     */
+    static ClassMethodDesc of(ClassDesc owner, String name, ClassDesc returnType, ClassDesc... paramTypes) {
+        return of(owner, name, MethodTypeDesc.of(returnType, paramTypes));
+    }
+
+    /**
+     * Construct a new class method descriptor.
+     *
+     * @param owner the class which contains the method (must not be {@code null})
+     * @param name the name of the method (must not be {@code null})
+     * @param returnType the class of the return type (must not be {@code null})
+     * @param paramTypes the classes of the parameter types (must not be {@code null})
+     * @return the class method descriptor (not {@code null})
+     */
+    static ClassMethodDesc of(ClassDesc owner, String name, ClassDesc returnType, List<ClassDesc> paramTypes) {
+        return of(owner, name, MethodTypeDesc.of(returnType, paramTypes.toArray(ClassDesc[]::new)));
+    }
 }
