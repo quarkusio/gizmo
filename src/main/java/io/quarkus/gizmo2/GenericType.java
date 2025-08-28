@@ -12,11 +12,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
@@ -222,14 +219,22 @@ public abstract class GenericType {
      * @param desc the type descriptor (must not be {@code null})
      */
     public static GenericType of(ClassDesc desc) {
-        if (desc.isClassOrInterface()) {
-            return new OfRootClass(List.of(), List.of(), desc, List.of());
-        }
-        if (desc.isPrimitive()) {
-            return OfPrimitive.baseItems.get(desc.descriptorString());
-        }
-        assert desc.isArray();
-        return new OfArray(List.of(), List.of(), of(desc.componentType()));
+        String descStr = desc.descriptorString();
+        char ch = descStr.charAt(0);
+        return switch (ch) {
+            case 'L' -> new OfRootClass(List.of(), List.of(), desc, List.of());
+            case 'Z' -> OfPrimitive.GT_boolean;
+            case 'B' -> OfPrimitive.GT_byte;
+            case 'C' -> OfPrimitive.GT_char;
+            case 'D' -> OfPrimitive.GT_double;
+            case 'F' -> OfPrimitive.GT_float;
+            case 'I' -> OfPrimitive.GT_int;
+            case 'J' -> OfPrimitive.GT_long;
+            case 'S' -> OfPrimitive.GT_short;
+            case 'V' -> OfPrimitive.GT_void;
+            case '[' -> new OfArray(List.of(), List.of(), of(desc.componentType()));
+            default -> throw Assert.impossibleSwitchCase(ch);
+        };
     }
 
     /**
@@ -1017,16 +1022,15 @@ public abstract class GenericType {
      * A generic type corresponding to a primitive type, including {@code void}.
      */
     public static final class OfPrimitive extends GenericType {
-        private static final Map<String, OfPrimitive> baseItems = Stream.of(
-                CD_boolean,
-                CD_byte,
-                CD_short,
-                CD_char,
-                CD_int,
-                CD_long,
-                CD_float,
-                CD_double,
-                CD_void).collect(Collectors.toUnmodifiableMap(ClassDesc::descriptorString, OfPrimitive::new));
+        private static final OfPrimitive GT_boolean = new OfPrimitive(CD_boolean);
+        private static final OfPrimitive GT_byte = new OfPrimitive(CD_byte);
+        private static final OfPrimitive GT_char = new OfPrimitive(CD_char);
+        private static final OfPrimitive GT_double = new OfPrimitive(CD_double);
+        private static final OfPrimitive GT_float = new OfPrimitive(CD_float);
+        private static final OfPrimitive GT_int = new OfPrimitive(CD_int);
+        private static final OfPrimitive GT_long = new OfPrimitive(CD_long);
+        private static final OfPrimitive GT_short = new OfPrimitive(CD_short);
+        private static final OfPrimitive GT_void = new OfPrimitive(CD_void);
 
         private final ClassDesc type;
 
