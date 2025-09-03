@@ -9,6 +9,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
+
 // verifies that we correctly fail when calling a method on a `BlockCreator`
 // which is not active, because a nested `BlockCreator` is active instead
 public class NestingTest {
@@ -460,6 +462,32 @@ public class NestingTest {
                     b0.locked(lock, b1 -> {
                         asserter.expectedNestingFailure(b0::return_);
                     });
+                    b0.return_();
+                });
+            });
+        });
+
+        asserter.expectedFailures(1);
+    }
+
+    @Test
+    public void withStringBuilder() {
+        NestingFailureAsserter asserter = new NestingFailureAsserter();
+
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        g.class_(ClassDesc.of("io.quarkus.gizmo2.WithStringBuilder"), cc -> {
+            cc.staticMethod("hello", mc -> {
+                mc.body(b0 -> {
+                    StringBuilderOps sb = b0.withNewStringBuilder()
+                            .append("foo")
+                            .append("bar");
+                    b0.block(b1 -> {
+                        asserter.expectedNestingFailure(() -> {
+                            sb.append("baz");
+                        });
+                    });
+                    sb.append("quux").toString_();
                     b0.return_();
                 });
             });
