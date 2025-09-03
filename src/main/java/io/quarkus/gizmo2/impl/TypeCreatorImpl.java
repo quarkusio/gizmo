@@ -94,6 +94,24 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
             MethodTypeDesc.of(
                     CD_Map,
                     CD_Map_Entry.arrayType()));
+    private static final ClassMethodDesc MD_StringBuilder_append = ClassMethodDesc.of(
+            CD_StringBuilder,
+            "append",
+            MethodTypeDesc.of(
+                    CD_StringBuilder,
+                    CD_char));
+    private static final ClassMethodDesc MD_StringBuilder_appendCodePoint = ClassMethodDesc.of(
+            CD_StringBuilder,
+            "appendCodePoint",
+            MethodTypeDesc.of(
+                    CD_StringBuilder,
+                    CD_int));
+    private static final ClassMethodDesc MD_StringBuilder_setLength = ClassMethodDesc.of(
+            CD_StringBuilder,
+            "setLength",
+            MethodTypeDesc.of(
+                    CD_void,
+                    CD_int));
 
     final GizmoImpl gizmo;
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
@@ -543,13 +561,13 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                 // end of string
                                 Expr toString = b3.withObject(sb).toString_();
                                 // this is safe because this statement does not use or leave anything on the stack
-                                b3.withStringBuilder(sb).setLength(0);
+                                b3.invokeVirtual(MD_StringBuilder_setLength, sb, Const.of(0));
                                 b3.return_(toString);
                             });
                             // parse code point
                             b2.if_(b2.lt(a, 0x80), b3 -> {
                                 // one-byte sequence
-                                b3.withStringBuilder(sb).append(b3.cast(a, CD_char));
+                                b3.invokeVirtual(MD_StringBuilder_append, sb, b3.cast(a, CD_char));
                                 b3.break_(b2);
                             });
                             // validate prefix
@@ -572,7 +590,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for two-byte sequence
                             b2.if_(b2.lt(a, 0xE0), b3 -> {
                                 // two-byte sequence
-                                b3.withStringBuilder(sb).appendCodePoint(
+                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
                                         b3.or(
                                                 b3.shl(b3.and(a, 0x1F), 6),
                                                 b3.and(b, 0x3F)));
@@ -593,7 +611,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for three-byte sequence
                             b2.if_(b2.lt(a, 0xF0), b3 -> {
                                 // three-byte sequence
-                                b3.withStringBuilder(sb).appendCodePoint(
+                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
                                         b3.or(
                                                 b3.or(
                                                         b3.shl(b3.and(a, 0x0F), 12),
@@ -616,7 +634,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for four-byte sequence
                             b2.if_(b2.lt(a, 0xF8), b3 -> {
                                 // four-byte sequence
-                                b3.withStringBuilder(sb).appendCodePoint(
+                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
                                         b3.or(
                                                 b3.or(
                                                         b3.shl(b3.and(a, 0x07), 18),

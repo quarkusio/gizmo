@@ -17,6 +17,9 @@ import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class InvocationTest {
+    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
+            "append", StringBuilder.class, String.class);
+
     @Test
     public void invokeStaticOnClass() {
         // class StaticInvocation {
@@ -36,7 +39,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -71,7 +77,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -114,7 +123,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
         });
@@ -181,7 +193,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -220,7 +235,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
         });
@@ -264,7 +282,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
         });
@@ -343,7 +364,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -371,7 +395,10 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(input).append("_foobar").toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, input);
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_foobar"));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 

@@ -20,6 +20,9 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 @ParameterizedClass
 @ValueSource(booleans = { false, true })
 public class LambdaTest {
+    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
+            "append", StringBuilder.class, String.class);
+
     @Parameter
     boolean lambdasAsAnonymousClasses;
 
@@ -192,10 +195,8 @@ public class LambdaTest {
                         Var this_ = lc.capture("this_", cc.this_());
                         Var next_ = lc.capture(next);
                         lc.body(b1 -> {
-                            b1.return_(b1.withNewStringBuilder()
-                                    .append(b1.invokeVirtual(returnString, this_))
-                                    .append(next_)
-                                    .toString_());
+                            Expr string = b1.invokeVirtual(returnString, this_);
+                            b1.return_(b1.withString(string).concat(next_));
                         });
                     }));
                 });
@@ -275,18 +276,27 @@ public class LambdaTest {
                         ParamVar d = lc.parameter("d", 3);
                         ParamVar s = lc.parameter("s", 4);
                         lc.body(b1 -> {
-                            b1.return_(b1.withNewStringBuilder()
-                                    .append(ai_).append('_')
-                                    .append(al_).append('_')
-                                    .append(af_).append('_')
-                                    .append(ad_).append('_')
-                                    .append(as_).append('_')
-                                    .append(i).append('_')
-                                    .append(l).append('_')
-                                    .append(f).append('_')
-                                    .append(d).append('_')
-                                    .append(s)
-                                    .toString_());
+                            LocalVar result = b1.localVar("result", b1.new_(StringBuilder.class));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(ai_));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(al_));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(af_));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(ad_));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(as_));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(i));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(l));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(f));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(d));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                            b1.invokeVirtual(MD_StringBuilder_append, result, b1.objToString(s));
+                            b1.return_(b1.withObject(result).toString_());
                         });
                     });
                     b0.return_(b0.invokeInterface(lambdaMethod, lambda,

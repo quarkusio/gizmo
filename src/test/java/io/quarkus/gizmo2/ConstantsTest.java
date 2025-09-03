@@ -6,7 +6,12 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.desc.MethodDesc;
+
 public class ConstantsTest {
+    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
+            "append", StringBuilder.class, String.class);
+
     @Test
     public void primitiveConstants() {
         test(() -> Const.of((byte) 1), "1|B");
@@ -57,8 +62,11 @@ public class ConstantsTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Const c = bytecode.get();
-                    bc.return_(bc.withNewStringBuilder().append(c).append('|')
-                            .append(c.type().descriptorString()).toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(c));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("|"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of(c.type().descriptorString()));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
         });

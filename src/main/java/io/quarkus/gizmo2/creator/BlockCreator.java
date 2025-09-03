@@ -37,7 +37,6 @@ import io.quarkus.gizmo2.creator.ops.MapOps;
 import io.quarkus.gizmo2.creator.ops.ObjectOps;
 import io.quarkus.gizmo2.creator.ops.OptionalOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
-import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.creator.ops.ThrowableOps;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
@@ -3734,6 +3733,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Object}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3743,6 +3744,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Class}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3752,6 +3755,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link String}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3761,6 +3766,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Collection}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3771,6 +3778,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link List}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3780,6 +3789,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Set}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3789,6 +3800,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Map}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3798,6 +3811,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Iterator}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3807,6 +3822,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Optional}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param receiver the instance to invoke upon (must not be {@code null})
      */
@@ -3816,121 +3833,13 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     /**
      * {@return a convenience wrapper for accessing instance methods of {@link Throwable}}
+     * Note that the returned instance <em>must not be reused</em>; only a single method
+     * may be called on it.
      *
      * @param throwable the instance to invoke upon (must not be {@code null})
      */
     default ThrowableOps withThrowable(Expr throwable) {
         return new ThrowableOps(this, throwable);
-    }
-
-    /**
-     * Creates a {@code StringBuilder} generator that helps to generate a chain of
-     * {@code append} calls and a final {@code toString} call.
-     *
-     * <pre>
-     * StringBuilderOps str = bc.withNewStringBuilder();
-     * str.append("constant");
-     * str.append(someExpr);
-     * Expr result = str.toString_();
-     * </pre>
-     *
-     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
-     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
-     * has an overload:
-     * <ul>
-     * <li>primitive types</li>
-     * <li>{@code char[]}</li>
-     * <li>{@code java.lang.String}</li>
-     * <li>{@code java.lang.CharSequence}</li>
-     * <li>{@code java.lang.Object}</li>
-     * </ul>
-     *
-     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
-     * and if {@code Arrays.toString} should be used, it must be generated manually.
-     * <p>
-     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
-     * provided. Other {@code StringBuilder} methods are not provided either. This is just
-     * a simple utility for generating code that concatenates strings, e.g. for implementing
-     * the {@code toString} method.
-     *
-     * @return a convenience wrapper for accessing instance methods of a newly created {@link StringBuilder}
-     */
-    default StringBuilderOps withNewStringBuilder() {
-        return new StringBuilderOps(this);
-    }
-
-    /**
-     * Creates a {@code StringBuilder} generator that helps to generate a chain of
-     * {@code append} calls and a final {@code toString} call.
-     *
-     * <pre>
-     * StringBuilderOps str = bc.withNewStringBuilder(16);
-     * str.append("constant");
-     * str.append(someExpr);
-     * Expr result = str.toString_();
-     * </pre>
-     *
-     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
-     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
-     * has an overload:
-     * <ul>
-     * <li>primitive types</li>
-     * <li>{@code char[]}</li>
-     * <li>{@code java.lang.String}</li>
-     * <li>{@code java.lang.CharSequence}</li>
-     * <li>{@code java.lang.Object}</li>
-     * </ul>
-     *
-     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
-     * and if {@code Arrays.toString} should be used, it must be generated manually.
-     * <p>
-     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
-     * provided. Other {@code StringBuilder} methods are not provided either. This is just
-     * a simple utility for generating code that concatenates strings, e.g. for implementing
-     * the {@code toString} method.
-     *
-     * @param capacity the capacity of the newly created {@link StringBuilder}
-     * @return a convenience wrapper for accessing instance methods of a newly created {@link StringBuilder}
-     */
-    default StringBuilderOps withNewStringBuilder(int capacity) {
-        return new StringBuilderOps(this, capacity);
-    }
-
-    /**
-     * Creates a {@code StringBuilder} generator that helps to generate a chain of
-     * {@code append} calls and a final {@code toString} call.
-     *
-     * <pre>
-     * StringBuilderOps str = bc.withStringBuilder(theStringBuilder);
-     * str.append("constant");
-     * str.append(someExpr);
-     * Expr result = str.toString_();
-     * </pre>
-     *
-     * The {@code append} method mimics the regular {@code StringBuilder.append}, so
-     * it accepts {@code Expr}s of all types for which {@code StringBuilder}
-     * has an overload:
-     * <ul>
-     * <li>primitive types</li>
-     * <li>{@code char[]}</li>
-     * <li>{@code java.lang.String}</li>
-     * <li>{@code java.lang.CharSequence}</li>
-     * <li>{@code java.lang.Object}</li>
-     * </ul>
-     *
-     * Notably, arrays except of {@code char[]} are appended using {@code Object.toString}
-     * and if {@code Arrays.toString} should be used, it must be generated manually.
-     * <p>
-     * Methods for appending only a part of {@code char[]} or {@code CharSequence} are not
-     * provided. Other {@code StringBuilder} methods are not provided either. This is just
-     * a simple utility for generating code that concatenates strings, e.g. for implementing
-     * the {@code toString} method.
-     *
-     * @param receiver the {@link StringBuilder}
-     * @return a convenience wrapper for accessing instance methods of the given {@link StringBuilder}
-     */
-    default StringBuilderOps withStringBuilder(Expr receiver) {
-        return new StringBuilderOps(this, receiver);
     }
 
     /**

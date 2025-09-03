@@ -19,6 +19,9 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class AutoConversionTest {
+    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
+            "append", StringBuilder.class, String.class);
+
     @FunctionalInterface
     public interface IntegerIntToIntFunction {
         int apply(Integer a, int b);
@@ -49,8 +52,15 @@ public class AutoConversionTest {
                 ParamVar d = mc.parameter("d", double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).append("_").append(c)
-                            .append("_").append(d).toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(c));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(d));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -82,7 +92,11 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -113,7 +127,11 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
@@ -145,7 +163,11 @@ public class AutoConversionTest {
                 ParamVar b = mc.parameter("b", Double.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    bc.return_(bc.withNewStringBuilder().append(a).append("_").append(b).toString_());
+                    LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.return_(bc.withObject(result).toString_());
                 });
             });
 
