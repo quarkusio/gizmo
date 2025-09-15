@@ -47,7 +47,7 @@
         <version.junit>5.13.4</version.junit>
         <version.smallrye-common>2.13.8</version.smallrye-common>
 
-        <version.formatter-maven-plugin>2.28.0</version.formatter-maven-plugin>
+        <version.formatter-maven-plugin>2.29.0</version.formatter-maven-plugin>
         <version.impsort-maven-plugin>1.12.0</version.impsort-maven-plugin>
         <version.quarkus-ide-config>3.21.1</version.quarkus-ide-config>
     </properties>
