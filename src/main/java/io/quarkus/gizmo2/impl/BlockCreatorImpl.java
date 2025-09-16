@@ -610,7 +610,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassDesc ownerDesc = owner.type();
         String ds = ownerDesc.descriptorString();
         ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$lambda;");
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = owner.gizmo.createClassFile();
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(owner.version().major(), 0);
@@ -680,7 +680,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         int idx = owner.lambdaAndAnonClassCounter++;
         String ds = ownerDesc.descriptorString();
         ClassDesc desc = ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$" + idx + ";");
-        ClassFile cf = ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        ClassFile cf = owner.gizmo.createClassFile();
         final ArrayList<Expr> captureExprs = new ArrayList<>();
 
         byte[] bytes = cf.build(desc, zb -> {
