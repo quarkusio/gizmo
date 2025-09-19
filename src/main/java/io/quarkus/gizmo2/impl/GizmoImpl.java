@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
@@ -22,16 +23,36 @@ public final class GizmoImpl implements Gizmo {
     private final ClassOutput outputHandler;
     private final int[] modifiersByLocation;
     private final ClassHierarchyLocator classHierarchyLocator;
+    private final boolean debugInfo;
+    private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, null);
+        this(outputHandler, DEFAULTS, null, true);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
-            final ClassHierarchyLocator classHierarchyLocator) {
+            final ClassHierarchyLocator classHierarchyLocator, final boolean debugInfo) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.classHierarchyLocator = classHierarchyLocator;
+        this.debugInfo = debugInfo;
+        ArrayList<ClassFile.Option> options = new ArrayList<>();
+        options.add(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        if (classHierarchyLocator != null) {
+            ClassHierarchyResolver resolver = new ClassHierarchyResolver() {
+                @Override
+                public ClassHierarchyInfo getClassInfo(ClassDesc classDesc) {
+                    ClassHierarchyLocator.Result result = classHierarchyLocator.locate(classDesc);
+                    return result != null ? ((ClassHierarchyLocatorResultImpl) result).info : null;
+                }
+            };
+            options.add(ClassFile.ClassHierarchyResolverOption.of(resolver));
+        }
+        if (!debugInfo) {
+            options.add(ClassFile.DebugElementsOption.DROP_DEBUG);
+            options.add(ClassFile.LineNumbersOption.DROP_LINE_NUMBERS);
+        }
+        this.options = options.toArray(ClassFile.Option[]::new);
     }
 
     int getDefaultModifiers(ModifierLocation location) {
@@ -39,20 +60,7 @@ public final class GizmoImpl implements Gizmo {
     }
 
     ClassFile createClassFile() {
-        if (classHierarchyLocator == null) {
-            return ClassFile.of(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
-        }
-
-        ClassHierarchyResolver resolver = new ClassHierarchyResolver() {
-            @Override
-            public ClassHierarchyInfo getClassInfo(ClassDesc classDesc) {
-                ClassHierarchyLocator.Result result = classHierarchyLocator.locate(classDesc);
-                return result != null ? ((ClassHierarchyLocatorResultImpl) result).info : null;
-            }
-        };
-        return ClassFile.of(
-                ClassFile.StackMapsOption.GENERATE_STACK_MAPS,
-                ClassFile.ClassHierarchyResolverOption.of(resolver));
+        return ClassFile.of(options);
     }
 
     @Override
@@ -87,17 +95,22 @@ public final class GizmoImpl implements Gizmo {
             }
         };
         builder.accept(configurator);
-        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator);
+        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator, debugInfo);
     }
 
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
     }
 
     @Override
     public Gizmo withClassHierarchyLocator(final ClassHierarchyLocator classHierarchyLocator) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
+    }
+
+    @Override
+    public Gizmo withDebugInfo(final boolean debugInfo) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {

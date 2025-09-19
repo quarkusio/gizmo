@@ -29,6 +29,13 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withOutput(ClassOutput outputHandler);
 
     /**
+     * {@return a Gizmo instance which has debug info output enabled or disabled}
+     *
+     * @param debugInfo {@code true} to include debug info, or {@code false} to exclude debug info
+     */
+    Gizmo withDebugInfo(boolean debugInfo);
+
+    /**
      * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
      *
      * @param builder the builder for the defaults (must not be {@code null})
