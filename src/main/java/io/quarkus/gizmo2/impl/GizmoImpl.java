@@ -22,20 +22,26 @@ public final class GizmoImpl implements Gizmo {
     private final ClassOutput outputHandler;
     private final int[] modifiersByLocation;
     private final ClassHierarchyLocator classHierarchyLocator;
+    private final boolean debugInfo;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, null);
+        this(outputHandler, DEFAULTS, null, true);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
-            final ClassHierarchyLocator classHierarchyLocator) {
+            final ClassHierarchyLocator classHierarchyLocator, final boolean debugInfo) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.classHierarchyLocator = classHierarchyLocator;
+        this.debugInfo = debugInfo;
     }
 
     int getDefaultModifiers(ModifierLocation location) {
         return modifiersByLocation[location.ordinal()];
+    }
+
+    boolean debugInfo() {
+        return debugInfo;
     }
 
     ClassFile createClassFile() {
@@ -87,17 +93,21 @@ public final class GizmoImpl implements Gizmo {
             }
         };
         builder.accept(configurator);
-        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator);
+        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator, debugInfo);
     }
 
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
     }
 
     @Override
     public Gizmo withClassHierarchyLocator(final ClassHierarchyLocator classHierarchyLocator) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
+    }
+
+    public Gizmo withDebugInfo(final boolean debugInfo) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {

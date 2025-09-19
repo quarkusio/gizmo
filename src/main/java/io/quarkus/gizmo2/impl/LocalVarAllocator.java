@@ -21,13 +21,16 @@ final class LocalVarAllocator extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         int slot = cb.allocateLocal(Util.actualKindOf(localVar.typeKind()));
-        // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-        startScope = cb.newBoundLabel();
-        endScope = block.endLabel();
-        cb.localVariable(slot, localVar.name(), localVar.type(), startScope, endScope);
-        GenericType gt = localVar.genericType();
-        if (!gt.isRaw()) {
-            cb.localVariableType(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope);
+        GizmoImpl g = block.gizmo();
+        if (g.debugInfo()) {
+            // we reserve the slot for the full remainder of the block to avoid control-flow analysis
+            startScope = cb.newBoundLabel();
+            endScope = block.endLabel();
+            cb.localVariable(slot, localVar.name(), localVar.type(), startScope, endScope);
+            GenericType gt = localVar.genericType();
+            if (!gt.isRaw()) {
+                cb.localVariableType(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope);
+            }
         }
         localVar.slot = slot;
     }
