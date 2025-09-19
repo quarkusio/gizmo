@@ -5,6 +5,7 @@ import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -101,7 +102,7 @@ public sealed interface ConstructorDesc extends MemberDesc, MethodTyped permits 
      * @return the constructor descriptor (not {@code null})
      */
     static ConstructorDesc of(Class<?> owner, Class<?>... paramTypes) {
-        return of(owner, MethodType.methodType(void.class, paramTypes));
+        return of(owner, Arrays.asList(paramTypes));
     }
 
     /**
@@ -112,7 +113,12 @@ public sealed interface ConstructorDesc extends MemberDesc, MethodTyped permits 
      * @return the constructor descriptor (not {@code null})
      */
     static ConstructorDesc of(Class<?> owner, List<Class<?>> paramTypes) {
-        return of(owner, MethodType.methodType(void.class, paramTypes));
+        ClassDesc[] paramDescriptors = new ClassDesc[paramTypes.size()];
+        for (int i = 0; i < paramTypes.size(); i++) {
+            paramDescriptors[i] = Util.classDesc(paramTypes.get(i));
+        }
+
+        return of(Util.classDesc(owner), MethodTypeDesc.of(ConstantDescs.CD_void, paramDescriptors));
     }
 
     /**
