@@ -28,7 +28,9 @@ final class TryFinally extends Item {
         cleanupTemplate = new BlockCreatorImpl(body.parent());
         this.cleanupBuilder = cleanupBuilder;
         body.tryFinally = this;
-        cleanupTemplate.accept(cleanupBuilder);
+        body.parent().nesting(() -> {
+            cleanupTemplate.accept(cleanupBuilder);
+        });
     }
 
     BlockCreatorImpl body() {

@@ -37,7 +37,9 @@ public final class TryCreatorImpl implements TryCreator {
 
     public void body(final Consumer<BlockCreator> builder) {
         advanceToState(ST_BODY);
-        body.accept(builder);
+        body.parent().nesting(() -> {
+            body.accept(builder);
+        });
         advanceToState(ST_CATCH);
     }
 
@@ -88,8 +90,10 @@ public final class TryCreatorImpl implements TryCreator {
         if (tryCatch == null) {
             tryCatch = new TryCatch(body);
         }
-        tryCatch.addCatch(superType, types, caughtName).accept((b0, e) -> {
-            builder.accept(b0, b0.localVar(caughtName, e));
+        tryCatch.addCatch(superType, types).accept((b0, e) -> {
+            body.parent().nesting(() -> {
+                builder.accept(b0, b0.localVar(caughtName, e));
+            });
         });
     }
 
