@@ -1428,4 +1428,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
         return node;
     }
+
+    GizmoImpl gizmo() {
+        return owner.gizmo;
+    }
 }

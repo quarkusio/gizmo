@@ -10,6 +10,8 @@ final class LineNumber extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.lineNumber(lineNumber);
+        if (block.gizmo().debugInfo()) {
+            cb.lineNumber(lineNumber);
+        }
     }
 }

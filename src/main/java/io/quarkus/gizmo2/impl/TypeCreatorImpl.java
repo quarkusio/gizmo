@@ -155,7 +155,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     public void sourceFile(final String name) {
-        zb.with(SourceFileAttribute.of(name));
+        if (gizmo.debugInfo()) {
+            zb.with(SourceFileAttribute.of(name));
+        }
     }
 
     void extends_(final GenericType.OfClass genericType) {
