@@ -220,7 +220,9 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                     parametersInvisibleAnnotations.add(i, List.of());
                 }
             }
-            mb.with(MethodParametersAttribute.of(parameters));
+            if (typeCreator.gizmo.parameters()) {
+                mb.with(MethodParametersAttribute.of(parameters));
+            }
             if (hasVisibleAnnotations) {
                 mb.with(RuntimeVisibleParameterAnnotationsAttribute.of(parametersVisibleAnnotations));
             }

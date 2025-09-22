@@ -24,18 +24,20 @@ public final class GizmoImpl implements Gizmo {
     private final int[] modifiersByLocation;
     private final ClassHierarchyLocator classHierarchyLocator;
     private final boolean debugInfo;
+    private final boolean parameters;
     private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, null, true);
+        this(outputHandler, DEFAULTS, null, true, true);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
-            final ClassHierarchyLocator classHierarchyLocator, final boolean debugInfo) {
+            final ClassHierarchyLocator classHierarchyLocator, final boolean debugInfo, final boolean parameters) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.classHierarchyLocator = classHierarchyLocator;
         this.debugInfo = debugInfo;
+        this.parameters = parameters;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
         options.add(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
         if (classHierarchyLocator != null) {
@@ -95,22 +97,31 @@ public final class GizmoImpl implements Gizmo {
             }
         };
         builder.accept(configurator);
-        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator, debugInfo);
+        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator, debugInfo, parameters);
+    }
+
+    boolean parameters() {
+        return parameters;
     }
 
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters);
     }
 
     @Override
     public Gizmo withClassHierarchyLocator(final ClassHierarchyLocator classHierarchyLocator) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters);
     }
 
     @Override
     public Gizmo withDebugInfo(final boolean debugInfo) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo);
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters);
+    }
+
+    @Override
+    public Gizmo withParameters(final boolean parameters) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {

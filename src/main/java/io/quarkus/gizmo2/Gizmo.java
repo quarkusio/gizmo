@@ -36,6 +36,16 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withDebugInfo(boolean debugInfo);
 
     /**
+     * {@return a Gizmo instance which has parameters output enabled or disabled}
+     * This setting affects whether method parameter names are recorded in a {@code MethodParameters}
+     * attribute, which is separate from debug info and appears when using runtime reflection.
+     * Some frameworks require this attribute to be present.
+     *
+     * @param parameters {@code true} to include parameter name info, or {@code false} to exclude parameter name info
+     */
+    Gizmo withParameters(boolean parameters);
+
+    /**
      * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
      *
      * @param builder the builder for the defaults (must not be {@code null})
