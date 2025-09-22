@@ -55,7 +55,9 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
-            fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
+            if (!genericType.isRaw() || genericType.hasAnnotations()) {
+                fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
+            }
             addVisible(fb);
             addInvisible(fb);
             if (initial != null) {
