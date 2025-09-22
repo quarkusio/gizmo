@@ -1326,8 +1326,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void assert_(final Consumer<BlockCreator> assertion, final String message) {
         if_(logicalAnd(Const.ofInvoke(Const.ofMethodHandle(InvokeKind.VIRTUAL,
-                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class))), assertion),
-                __ -> throw_(AssertionError.class, message));
+                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class)), Const.of(owner.type())), assertion),
+                bc -> bc.throw_(bc.new_(ConstructorDesc.of(AssertionError.class, Object.class), Const.of(message))));
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
