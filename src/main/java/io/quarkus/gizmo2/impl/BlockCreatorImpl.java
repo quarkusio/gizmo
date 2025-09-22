@@ -860,29 +860,27 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     void block(final Expr arg, BiConsumer<BlockCreator, Expr> nested) {
         BlockCreatorImpl block = new BlockCreatorImpl(this, (Item) arg, CD_void);
-        block.accept(nested);
+        nesting(() -> {
+            block.accept(nested);
+        });
         addItem(block);
     }
 
     public void block(final Consumer<BlockCreator> nested) {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this);
-        state = ST_NESTED;
-        nestSite = Util.trackCaller();
-        block.accept(nested);
-        state = ST_ACTIVE;
-        nestSite = null;
+        nesting(() -> {
+            block.accept(nested);
+        });
         addItem(block);
     }
 
     public Expr blockExpr(final ClassDesc type, final Consumer<BlockCreator> nested) {
         checkActive();
         BlockCreatorImpl block = new BlockCreatorImpl(this, ConstImpl.ofVoid(), type);
-        state = ST_NESTED;
-        nestSite = Util.trackCaller();
-        block.accept(nested);
-        state = ST_ACTIVE;
-        nestSite = null;
+        nesting(() -> {
+            block.accept(nested);
+        });
         // inline it
         if (block.tail.item() instanceof Yield yield && yield.value().isVoid()) {
             // block should be safe to inline
@@ -984,12 +982,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private void doIf(final Expr cond, final Consumer<BlockCreator> whenTrue, final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = whenTrue == null ? null : new BlockCreatorImpl(this);
         BlockCreatorImpl wf = whenFalse == null ? null : new BlockCreatorImpl(this);
-        if (wt != null) {
-            wt.accept(whenTrue);
-        }
-        if (wf != null) {
-            wf.accept(whenFalse);
-        }
+        nesting(() -> {
+            if (wt != null) {
+                wt.accept(whenTrue);
+            }
+            if (wf != null) {
+                wf.accept(whenFalse);
+            }
+        });
         doIfInsn(CD_void, cond, wt, wf);
     }
 
@@ -997,8 +997,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             final Consumer<BlockCreator> whenFalse) {
         BlockCreatorImpl wt = new BlockCreatorImpl(this, ConstImpl.ofVoid(), type);
         BlockCreatorImpl wf = new BlockCreatorImpl(this, ConstImpl.ofVoid(), type);
-        wt.accept(whenTrue);
-        wf.accept(whenFalse);
+        nesting(() -> {
+            wt.accept(whenTrue);
+            wf.accept(whenFalse);
+        });
         return doIfInsn(type, cond, wt, wf);
     }
 
@@ -1427,5 +1429,17 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             }
         }
         return node;
+    }
+
+    void nesting(Runnable action) {
+        checkActive();
+        state = ST_NESTED;
+        nestSite = Util.trackCaller();
+        try {
+            action.run();
+        } finally {
+            state = ST_ACTIVE;
+            nestSite = null;
+        }
     }
 }

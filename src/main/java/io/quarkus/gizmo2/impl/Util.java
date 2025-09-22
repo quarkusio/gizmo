@@ -151,7 +151,9 @@ public final class Util {
 
     private static String callerOutsideGizmo() {
         return SW.walk(stream -> stream
-                .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2") || it.getClassName().endsWith("Test"))
+                .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2")
+                        && !it.getClassName().startsWith("io.github.dmlloyd.classfile")
+                        || it.getClassName().endsWith("Test"))
                 .findFirst()
                 .map(it -> it.getClassName() + "." + it.getMethodName()
                         + "(" + it.getFileName() + ":" + it.getLineNumber() + ")")

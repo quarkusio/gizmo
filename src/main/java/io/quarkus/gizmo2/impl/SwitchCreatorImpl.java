@@ -123,7 +123,9 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
             throw new IllegalStateException("Default case was already added");
         }
         default_ = new BlockCreatorImpl(enclosing, VoidConst.INSTANCE, type());
-        default_.accept(body);
+        enclosing.nesting(() -> {
+            default_.accept(body);
+        });
         if (default_.mayFallThrough()) {
             fallThrough = true;
         }
@@ -208,7 +210,9 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
             }
             state = ST_BODY;
             try {
-                body.accept(builder);
+                body.parent().nesting(() -> {
+                    body.accept(builder);
+                });
                 if (body.mayFallThrough()) {
                     fallThrough = true;
                 }

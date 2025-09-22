@@ -6,12 +6,9 @@ import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
-import io.quarkus.gizmo2.LocalVar;
-import io.quarkus.gizmo2.creator.BlockCreator;
 
 /**
  * A {@code try} block with exception catches.
@@ -28,9 +25,9 @@ final class TryCatch extends Item {
         return body.mayFallThrough() || catches.stream().map(Catch::body).anyMatch(BlockCreatorImpl::mayFallThrough);
     }
 
-    BlockCreatorImpl addCatch(final ClassDesc superType, Set<ClassDesc> types, String caughtName) {
+    BlockCreatorImpl addCatch(final ClassDesc superType, Set<ClassDesc> types) {
         BlockCreatorImpl bci = new BlockCreatorImpl(body.parent(), superType);
-        Catch catch_ = new Catch(types, caughtName, bci);
+        Catch catch_ = new Catch(types, bci);
         if (catches instanceof ArrayList<Catch> al) {
             al.add(catch_);
         } else {
@@ -64,12 +61,10 @@ final class TryCatch extends Item {
 
     static final class Catch {
         private final Set<ClassDesc> types;
-        private final String caughtName;
         private final BlockCreatorImpl body;
 
-        Catch(final Set<ClassDesc> types, final String caughtName, final BlockCreatorImpl body) {
+        Catch(final Set<ClassDesc> types, final BlockCreatorImpl body) {
             this.types = types;
-            this.caughtName = caughtName;
             this.body = body;
         }
 
@@ -79,12 +74,6 @@ final class TryCatch extends Item {
 
         BlockCreatorImpl body() {
             return body;
-        }
-
-        void accept(final BiConsumer<BlockCreator, ? super LocalVar> builder) {
-            body().accept((b, e) -> {
-                builder.accept(b, b.localVar(caughtName, e));
-            });
         }
     }
 }
