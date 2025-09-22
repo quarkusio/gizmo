@@ -193,6 +193,11 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         return genericType;
     }
 
+    boolean signatureNeeded() {
+        return !typeParameters.isEmpty() || !superSig.isRaw() || superSig.hasAnnotations()
+                || interfaceSigs.stream().anyMatch(i -> !i.isRaw() || i.hasAnnotations());
+    }
+
     ClassSignature computeSignature() {
         return ClassSignature.of(
                 typeParameters.stream().map(Util::typeParamOf).toList(),
@@ -288,7 +293,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         zb.withSuperclass(superSig.desc());
         zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
         zb.withFlags(modifiers);
-        zb.with(SignatureAttribute.of(computeSignature()));
+        if (signatureNeeded()) {
+            zb.with(SignatureAttribute.of(computeSignature()));
+        }
         addVisible(zb);
         addInvisible(zb);
         ArrayList<TypeAnnotation> visible = new ArrayList<>();

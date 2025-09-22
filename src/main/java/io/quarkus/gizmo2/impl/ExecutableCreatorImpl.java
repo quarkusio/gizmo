@@ -165,7 +165,9 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     void doBody(final Consumer<BlockCreator> builder, MethodBuilder mb) {
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
-        mb.with(SignatureAttribute.of(computeSignature()));
+        if (signatureNeeded()) {
+            mb.with(SignatureAttribute.of(computeSignature()));
+        }
         mb.withFlags(modifiers);
         addVisible(mb);
         addInvisible(mb);
@@ -253,6 +255,12 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         if (!invisible.isEmpty()) {
             mb.with(RuntimeInvisibleTypeAnnotationsAttribute.of(invisible));
         }
+    }
+
+    boolean signatureNeeded() {
+        return !typeParameters.isEmpty() || throws_.stream().anyMatch(t -> !t.isRaw() || t.hasAnnotations())
+                || !genericReturnType().isRaw() || genericReturnType().hasAnnotations()
+                || params.stream().anyMatch(p -> !p.genericType().isRaw() || p.genericType().hasAnnotations());
     }
 
     MethodSignature computeSignature() {
