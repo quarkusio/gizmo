@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static java.lang.constant.ConstantDescs.DEFAULT_NAME;
+
 import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
@@ -31,8 +33,10 @@ public final class InvokeConst extends ConstImpl {
     }
 
     public ConstantDesc desc() {
-        return DynamicConstantDesc.of(
+        return DynamicConstantDesc.ofNamed(
                 ConstantDescs.BSM_INVOKE,
+                DEFAULT_NAME,
+                type(),
                 Stream.concat(
                         Stream.of(handleConstant.desc()),
                         args.stream().map(ConstImpl::describeConstable).map(Optional::orElseThrow))
@@ -44,14 +48,14 @@ public final class InvokeConst extends ConstImpl {
     }
 
     public StringBuilder toShortString(final StringBuilder b) {
-        b.append("Invoke[");
-        handleConstant.toShortString(b).append("](");
+        b.append("Invoke:");
+        handleConstant.toShortString(b).append("(");
         Iterator<ConstImpl> iterator = args.iterator();
         if (iterator.hasNext()) {
-            handleConstant.toShortString(b);
+            iterator.next().toShortString(b);
             while (iterator.hasNext()) {
                 b.append(',');
-                handleConstant.toShortString(b);
+                iterator.next().toShortString(b);
             }
         }
         return b.append(')');

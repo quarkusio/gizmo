@@ -9,10 +9,12 @@ import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
+import io.quarkus.gizmo2.desc.MemberDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public final class MethodHandleConst extends ConstImpl {
     private final MethodHandleDesc desc;
+    private final MemberDesc member; // only for `toShortString()`
 
     MethodHandleConst(final InvokeKind kind, final MethodDesc desc) {
         this(MethodHandleDesc.ofMethod(switch (kind) {
@@ -26,11 +28,11 @@ public final class MethodHandleConst extends ConstImpl {
             case SPECIAL -> desc instanceof InterfaceMethodDesc
                     ? DirectMethodHandleDesc.Kind.INTERFACE_SPECIAL
                     : DirectMethodHandleDesc.Kind.SPECIAL;
-        }, desc.owner(), desc.name(), desc.type()));
+        }, desc.owner(), desc.name(), desc.type()), desc);
     }
 
     MethodHandleConst(final ConstructorDesc desc) {
-        this(MethodHandleDesc.ofConstructor(desc.owner(), desc.type().parameterArray()));
+        this(MethodHandleDesc.ofConstructor(desc.owner(), desc.type().parameterArray()), desc);
     }
 
     MethodHandleConst(final FieldDesc desc, final boolean static_, final boolean getter) {
@@ -39,12 +41,13 @@ public final class MethodHandleConst extends ConstImpl {
                         : getter ? DirectMethodHandleDesc.Kind.GETTER : DirectMethodHandleDesc.Kind.SETTER,
                 desc.owner(),
                 desc.name(),
-                desc.type()));
+                desc.type()), desc);
     }
 
-    MethodHandleConst(MethodHandleDesc desc) {
+    MethodHandleConst(MethodHandleDesc desc, MemberDesc member) {
         super(ConstantDescs.CD_MethodHandle);
         this.desc = desc;
+        this.member = member;
     }
 
     public boolean isNonZero() {
@@ -65,5 +68,10 @@ public final class MethodHandleConst extends ConstImpl {
 
     public Optional<MethodHandleDesc> describeConstable() {
         return Optional.of(desc);
+    }
+
+    @Override
+    public StringBuilder toShortString(StringBuilder b) {
+        return member != null ? member.toString(b) : b.append("<unknown>");
     }
 }

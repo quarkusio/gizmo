@@ -220,6 +220,7 @@ public class TestClassMaker implements ClassOutput {
 
         private TestClassLoader() {
             super("[TEST]", TestClassMaker.class.getClassLoader());
+            setDefaultAssertionStatus(true);
             cf = ClassFile.of(ClassFile.ClassHierarchyResolverOption.of(this::getClassInfo));
         }
 

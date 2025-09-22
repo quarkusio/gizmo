@@ -297,7 +297,7 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
     }
 
     public static MethodHandleConst of(MethodHandleDesc desc) {
-        return new MethodHandleConst(desc);
+        return new MethodHandleConst(desc, null);
     }
 
     public static MethodHandleConst ofMethodHandle(InvokeKind kind, MethodDesc desc) {
