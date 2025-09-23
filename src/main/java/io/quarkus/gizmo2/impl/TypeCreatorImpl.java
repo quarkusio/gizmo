@@ -194,8 +194,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     boolean signatureNeeded() {
-        return !typeParameters.isEmpty() || !superSig.isRaw() || superSig.hasAnnotations()
-                || interfaceSigs.stream().anyMatch(i -> !i.isRaw() || i.hasAnnotations());
+        return !typeParameters.isEmpty() || superSig.signatureNeeded()
+                || interfaceSigs.stream().anyMatch(GenericType::signatureNeeded);
     }
 
     ClassSignature computeSignature() {

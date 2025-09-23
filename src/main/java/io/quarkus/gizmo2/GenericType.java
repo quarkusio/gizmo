@@ -343,6 +343,13 @@ public abstract class GenericType {
     public abstract boolean isRaw();
 
     /**
+     * {@return {@code true} if a signature attribute would be needed for this generic type, or {@code false} otherwise}
+     */
+    public boolean signatureNeeded() {
+        return !isRaw();
+    }
+
+    /**
      * {@return {@code true} if this type has type annotations with given retention policy,
      * or {@code false} if it does not}
      *
@@ -979,6 +986,10 @@ public abstract class GenericType {
         public <A extends java.lang.annotation.Annotation> OfInnerClass withAnnotation(final Class<A> annotationType,
                 final Consumer<AnnotationCreator<A>> builder) {
             return (OfInnerClass) super.withAnnotation(annotationType, builder);
+        }
+
+        public boolean isRaw() {
+            return super.isRaw() && outerType.isRaw();
         }
 
         public boolean hasVisibleAnnotations() {

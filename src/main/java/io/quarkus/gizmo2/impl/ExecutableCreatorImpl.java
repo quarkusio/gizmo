@@ -2,7 +2,6 @@ package io.quarkus.gizmo2.impl;
 
 import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
-import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
@@ -260,9 +259,9 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     boolean signatureNeeded() {
-        return !typeParameters.isEmpty() || throws_.stream().anyMatch(t -> !t.isRaw() || t.hasAnnotations())
-                || !genericReturnType().isRaw() || genericReturnType().hasAnnotations()
-                || params.stream().anyMatch(p -> !p.genericType().isRaw() || p.genericType().hasAnnotations());
+        return !typeParameters.isEmpty() || throws_.stream().anyMatch(GenericType::signatureNeeded)
+                || genericReturnType().signatureNeeded()
+                || params.stream().map(ParamVarImpl::genericType).anyMatch(GenericType::signatureNeeded);
     }
 
     MethodSignature computeSignature() {
