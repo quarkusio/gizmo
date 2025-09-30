@@ -30,6 +30,8 @@ public sealed interface Gizmo permits GizmoImpl {
 
     /**
      * {@return a Gizmo instance which has debug info output enabled or disabled}
+     * <p>
+     * By default, debug info is included.
      *
      * @param debugInfo {@code true} to include debug info, or {@code false} to exclude debug info
      */
@@ -40,10 +42,27 @@ public sealed interface Gizmo permits GizmoImpl {
      * This setting affects whether method parameter names are recorded in a {@code MethodParameters}
      * attribute, which is separate from debug info and appears when using runtime reflection.
      * Some frameworks require this attribute to be present.
+     * <p>
+     * By default, parameter name info is included.
      *
      * @param parameters {@code true} to include parameter name info, or {@code false} to exclude parameter name info
      */
     Gizmo withParameters(boolean parameters);
+
+    /**
+     * {@return a Gizmo instance which emits lambdas as anonymous classes if the parameter is {@code true}}
+     * When enabled, lambda bodies are not generated into synthetic methods on the generated class,
+     * but into additional anonymous classes. Further, lambda instances are not obtained through invokedynamic,
+     * but through regular instantiation of the additional anonymous classes.
+     * <p>
+     * This doesn't affect runtime semantics of generated code, but it does affect the number
+     * of generated classes and, as of this writing, also runtime memory consumption.
+     * <p>
+     * By default, lambdas are <em>not</em> generated as anonymous classes.
+     *
+     * @param lambdasAsAnonymousClasses whether lambdas should be generated as anonymous classes
+     */
+    Gizmo withLambdasAsAnonymousClasses(boolean lambdasAsAnonymousClasses);
 
     /**
      * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
@@ -53,7 +72,7 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withDefaultModifiers(Consumer<ModifierConfigurator> builder);
 
     /**
-     * {@return a Gizmo instance which uses the given {@link ClassHierarchyLocator }}
+     * {@return a Gizmo instance which uses the given {@link ClassHierarchyLocator}}
      *
      * @param classHierarchyLocator the class hierarchy locator (must not be {@code null})
      */

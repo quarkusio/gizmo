@@ -595,6 +595,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr lambda(final MethodDesc sam, final ClassDesc samOwner, final Consumer<LambdaCreator> builder) {
+        if (owner.gizmo.lambdasAsAnonymousClasses()) {
+            return newAnonymousClass(samOwner, acc -> {
+                acc.method(sam, imc -> {
+                    builder.accept(new LambdaAsAnonClassCreatorImpl(
+                            (AnonymousClassCreatorImpl) acc, (InstanceMethodCreatorImpl) imc));
+                });
+            });
+        }
+
         // certain versions of GraalVM native image cannot handle our custom translation strategy of lambdas
         // see: https://github.com/quarkusio/quarkus/issues/49346
         // we'll need to handle it better, but for now, let's just use the "classic" translation strategy always

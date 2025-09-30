@@ -10,16 +10,27 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
+@ParameterizedClass
+@ValueSource(booleans = { false, true })
 public class LambdaTest {
+    @Parameter
+    boolean lambdasAsAnonymousClasses;
+
+    private Gizmo gizmo(TestClassMaker tcm) {
+        return Gizmo.create(tcm).withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses);
+    }
 
     @Test
     public void testSupplierLambda() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.SupplierLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static Object runTest() {
@@ -43,7 +54,7 @@ public class LambdaTest {
     @Test
     public void testRunnableLambda() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.RunnableLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
@@ -74,7 +85,7 @@ public class LambdaTest {
     @Test
     public void testConsumerLambda() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.ConsumerLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
@@ -109,7 +120,7 @@ public class LambdaTest {
     @Test
     public void testBasicLambdas() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.Lambdas", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
@@ -155,7 +166,7 @@ public class LambdaTest {
     @Test
     public void testLambdaCapturingThis() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.LambdaCapturingThis", cc -> {
             cc.defaultConstructor();
 
@@ -210,7 +221,7 @@ public class LambdaTest {
     @Test
     public void testLambdaWithManyParametersAndCaptures() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         ClassDesc lambdaType = g.interface_("io.quarkus.gizmo2.LambdaType", cc -> {
             cc.addAnnotation(FunctionalInterface.class);
             cc.method("get", mc -> {
@@ -293,7 +304,7 @@ public class LambdaTest {
     @Test
     public void testConsumerLambdaAssigningToItsParameter() {
         TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        Gizmo g = gizmo(tcm);
         g.class_("io.quarkus.gizmo2.ConsumerLambdaAssigningToItsParameter", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
