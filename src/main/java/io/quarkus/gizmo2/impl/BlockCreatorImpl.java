@@ -711,6 +711,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         List<MethodModel> methods = cm.methods();
         MethodModel ourCtor = methods.get(methods.size() - 1);
         owner.output().write(desc, bytes);
+        owner.addNestMember(desc);
         return new_(ConstructorDesc.of(desc, ourCtor.methodTypeSymbol()),
                 Stream.concat(args.stream(), captureExprs.stream()).toList());
     }

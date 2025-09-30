@@ -35,6 +35,7 @@ import io.github.dmlloyd.classfile.ClassBuilder;
 import io.github.dmlloyd.classfile.ClassSignature;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.attribute.NestMembersAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
@@ -108,6 +109,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
+    private List<ClassDesc> nestMembers = new ArrayList<>();
     private int bootstraps;
 
     /**
@@ -152,6 +154,10 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     ClassFileFormatVersion version() {
         return version;
+    }
+
+    void addNestMember(ClassDesc nestMember) {
+        nestMembers.add(nestMember);
     }
 
     public void sourceFile(final String name) {
@@ -298,6 +304,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         }
         addVisible(zb);
         addInvisible(zb);
+        if (!nestMembers.isEmpty()) {
+            zb.with(NestMembersAttribute.ofSymbols(nestMembers));
+        }
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
