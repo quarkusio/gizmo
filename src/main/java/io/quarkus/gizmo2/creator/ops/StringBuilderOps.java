@@ -14,45 +14,19 @@ import io.quarkus.gizmo2.creator.BlockCreator;
  * </ol>
  * If you need to perform other operations on the {@code StringBuilder}
  * that this class doesn't provide, you should create an instance
- * using {@link BlockCreator#withStringBuilder(Expr)}, which allows
+ * using {@link BlockCreator#withStringBuilder(Var)}, which allows
  * you to pass an already created {@code StringBuilder}. This class
  * itself doesn't provide access to the underlying object.
  */
 public final class StringBuilderOps extends ObjectOps implements ComparableOps {
-    // note that for the `public` methods to be able to `return this`, all constructors
-    // must make sure the string builder we operate upon is stored in a local variable!
-    private static Var declare(Expr obj, BlockCreator bc) {
-        return obj instanceof Var var ? var : bc.localVar("$$stringBuilder", obj);
-    }
-
     /**
      * Construct a new instance on an existing {@link StringBuilder}.
      *
      * @param bc the block creator (must not be {@code null})
-     * @param obj the receiver string builder (must not be {@code null})
+     * @param obj the string builder (must not be {@code null})
      */
-    public StringBuilderOps(final BlockCreator bc, final Expr obj) {
-        super(StringBuilder.class, bc, declare(obj, bc));
-    }
-
-    /**
-     * Construct a new instance on a newly created {@link StringBuilder}.
-     *
-     * @param bc the block creator (must not be {@code null})
-     */
-    public StringBuilderOps(final BlockCreator bc) {
-        super(StringBuilder.class, bc, declare(bc.new_(StringBuilder.class), bc));
-    }
-
-    /**
-     * Construct a new instance on a newly created {@link StringBuilder}
-     * with given {@code capacity}.
-     *
-     * @param bc the block creator (must not be {@code null})
-     * @param capacity the capacity of the newly created {@link StringBuilder}
-     */
-    public StringBuilderOps(final BlockCreator bc, final int capacity) {
-        super(StringBuilder.class, bc, declare(bc.new_(StringBuilder.class, Const.of(capacity)), bc));
+    public StringBuilderOps(final BlockCreator bc, final Var obj) {
+        super(StringBuilder.class, bc, obj);
     }
 
     /**
