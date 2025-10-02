@@ -43,7 +43,7 @@
 
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
         
-        <version.classfile>25.0</version.classfile>
+        <version.classfile>25.1</version.classfile>
         <version.junit>6.0.0</version.junit>
         <version.smallrye-common>2.13.9</version.smallrye-common>
 
