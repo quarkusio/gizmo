@@ -8,6 +8,8 @@ import java.util.List;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.instruction.LocalVariable;
+import io.github.dmlloyd.classfile.instruction.LocalVariableType;
 import io.quarkus.gizmo2.GenericType;
 
 final class LocalVarAllocator extends Item {
@@ -22,20 +24,18 @@ final class LocalVarAllocator extends Item {
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         int slot = cb.allocateLocal(Util.actualKindOf(localVar.typeKind()));
         // we reserve the slot for the full remainder of the block to avoid control-flow analysis
-        if (block.owner.gizmo.debugInfo()) {
-            startScope = cb.newBoundLabel();
-            endScope = block.endLabel();
-            cb.localVariable(slot, localVar.name(), localVar.type(), startScope, endScope);
-            GenericType gt = localVar.genericType();
-            if (!gt.isRaw()) {
-                cb.localVariableType(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope);
-            }
+        startScope = cb.newBoundLabel();
+        endScope = block.endLabel();
+        cb.with(LocalVariable.of(slot, localVar.name(), localVar.type(), startScope, endScope));
+        GenericType gt = localVar.genericType();
+        if (!gt.isRaw()) {
+            cb.with(LocalVariableType.of(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope));
         }
         localVar.slot = slot;
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-        if (startScope != null && endScope != null && localVar.genericType().hasAnnotations(retention)) {
+        if (localVar.genericType().hasAnnotations(retention)) {
             Util.computeAnnotations(localVar.genericType(), retention, TypeAnnotation.TargetInfo.ofLocalVariable(
                     List.of(
                             TypeAnnotation.LocalVarTargetInfo.of(startScope, endScope, localVar.slot))),

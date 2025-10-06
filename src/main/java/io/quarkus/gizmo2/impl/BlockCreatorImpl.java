@@ -78,7 +78,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private static final int ST_NESTED = 1;
     private static final int ST_DONE = 2;
 
-    final TypeCreatorImpl owner;
+    private final TypeCreatorImpl owner;
     /**
      * The outermost code builder.
      * This should only be used for creating new labels and other context-independent things.
