@@ -34,6 +34,11 @@ public sealed interface MethodTyped extends Typed permits MethodDesc, Constructo
     }
 
     /**
+     * {@return {@code true} if the method return type is generic, or {@code false} if it is not}
+     */
+    boolean hasGenericReturnType();
+
+    /**
      * {@return the type kind of the return type (not {@code null})}
      */
     default TypeKind returnTypeKind() {

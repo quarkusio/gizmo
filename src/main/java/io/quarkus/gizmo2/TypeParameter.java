@@ -68,7 +68,15 @@ public sealed abstract class TypeParameter implements GenericTyped {
      * {@return the generic type corresponding to this type variable (not {@code null})}
      */
     public GenericType.OfTypeVariable genericType() {
-        return GenericType.ofTypeVariable(name(), type());
+        GenericType.OfTypeVariable genericType = this.genericType;
+        if (genericType != null) {
+            return genericType;
+        }
+        return this.genericType = GenericType.ofTypeVariable(name(), type());
+    }
+
+    public boolean hasGenericType() {
+        return true;
     }
 
     /**

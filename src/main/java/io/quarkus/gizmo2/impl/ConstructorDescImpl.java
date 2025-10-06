@@ -33,6 +33,10 @@ public final class ConstructorDescImpl implements ConstructorDesc {
         return type;
     }
 
+    public boolean hasGenericReturnType() {
+        return false;
+    }
+
     public boolean equals(final Object obj) {
         return obj instanceof ConstructorDescImpl other && equals(other);
     }

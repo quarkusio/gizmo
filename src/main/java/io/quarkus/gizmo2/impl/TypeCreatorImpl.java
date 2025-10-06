@@ -45,6 +45,7 @@ import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.StaticFieldVar;
@@ -102,7 +103,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private final ClassOutput output;
     private ThisExpr this_;
     private ClassDesc superType = ConstantDescs.CD_Object;
-    private GenericType.OfClass superSig = GenericType.ofClass(Object.class);
+    private GenericType.OfClass superSig = GenericTypes.GT_Object;
     private List<GenericType.OfClass> interfaceSigs = List.of();
     private List<TypeParameter> typeParameters = List.of();
     final ClassBuilder zb;
@@ -197,6 +198,10 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
             this.genericType = genericType;
         }
         return genericType;
+    }
+
+    public boolean hasGenericType() {
+        return genericType != null;
     }
 
     boolean signatureNeeded() {

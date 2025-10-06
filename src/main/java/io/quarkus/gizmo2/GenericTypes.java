@@ -12,41 +12,41 @@ public final class GenericTypes {
     /**
      * The generic type for {@code boolean}.
      */
-    public static final GenericType GT_boolean = GenericType.of(CD_boolean);
+    public static final GenericType.OfPrimitive GT_boolean = (GenericType.OfPrimitive) GenericType.of(CD_boolean);
     /**
      * The generic type for {@code byte}.
      */
-    public static final GenericType GT_byte = GenericType.of(CD_byte);
+    public static final GenericType.OfPrimitive GT_byte = (GenericType.OfPrimitive) GenericType.of(CD_byte);
     /**
      * The generic type for {@code short}.
      */
-    public static final GenericType GT_short = GenericType.of(CD_short);
+    public static final GenericType.OfPrimitive GT_short = (GenericType.OfPrimitive) GenericType.of(CD_short);
     /**
      * The generic type for {@code char}.
      */
-    public static final GenericType GT_char = GenericType.of(CD_char);
+    public static final GenericType.OfPrimitive GT_char = (GenericType.OfPrimitive) GenericType.of(CD_char);
     /**
      * The generic type for {@code int}.
      */
-    public static final GenericType GT_int = GenericType.of(CD_int);
+    public static final GenericType.OfPrimitive GT_int = (GenericType.OfPrimitive) GenericType.of(CD_int);
     /**
      * The generic type for {@code long}.
      */
-    public static final GenericType GT_long = GenericType.of(CD_long);
+    public static final GenericType.OfPrimitive GT_long = (GenericType.OfPrimitive) GenericType.of(CD_long);
     /**
      * The generic type for {@code float}.
      */
-    public static final GenericType GT_float = GenericType.of(CD_float);
+    public static final GenericType.OfPrimitive GT_float = (GenericType.OfPrimitive) GenericType.of(CD_float);
     /**
      * The generic type for {@code double}.
      */
-    public static final GenericType GT_double = GenericType.of(CD_double);
+    public static final GenericType.OfPrimitive GT_double = (GenericType.OfPrimitive) GenericType.of(CD_double);
     /**
      * The generic type for {@code void}.
      */
-    public static final GenericType GT_void = GenericType.of(CD_void);
+    public static final GenericType.OfPrimitive GT_void = (GenericType.OfPrimitive) GenericType.of(CD_void);
     /**
      * The generic type for {@code java.lang.Object}.
      */
-    public static final GenericType GT_Object = GenericType.of(CD_Object);
+    public static final GenericType.OfClass GT_Object = (GenericType.OfClass) GenericType.of(CD_Object);
 }

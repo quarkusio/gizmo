@@ -71,6 +71,10 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
         return genericType;
     }
 
+    public boolean hasGenericType() {
+        return genericType != null;
+    }
+
     public ElementType annotationTargetType() {
         return ElementType.PARAMETER;
     }

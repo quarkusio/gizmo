@@ -31,6 +31,10 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
         return type;
     }
 
+    public boolean hasGenericReturnType() {
+        return false;
+    }
+
     public boolean equals(final Object obj) {
         return obj instanceof MethodDescImpl other && equals(other);
     }

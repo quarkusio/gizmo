@@ -14,7 +14,6 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
@@ -23,7 +22,8 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     final ClassDesc owner;
     final String name;
     final TypeCreatorImpl tc;
-    GenericType genericType = GenericTypes.GT_int;
+    ClassDesc type = CD_int;
+    GenericType genericType;
     private FieldDesc desc;
 
     public FieldCreatorImpl(final ClassDesc owner, final String name, final TypeCreatorImpl tc) {
@@ -47,6 +47,7 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
             throw new IllegalArgumentException("Fields cannot have void type");
         }
         this.genericType = genericType;
+        this.type = genericType.desc();
         desc = null;
     }
 
@@ -55,7 +56,8 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
         if (type.equals(CD_void)) {
             throw new IllegalArgumentException("Fields cannot have void type");
         }
-        genericType = GenericType.of(type);
+        this.type = type;
+        genericType = null;
         desc = null;
     }
 
@@ -68,11 +70,27 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
     }
 
     public GenericType genericType() {
+        GenericType genericType = this.genericType;
+        if (genericType == null) {
+            return this.genericType = GenericType.of(type());
+        }
         return genericType;
     }
 
+    public boolean hasGenericType() {
+        return genericType != null;
+    }
+
     public ClassDesc type() {
-        return genericType.desc();
+        ClassDesc type = this.type;
+        if (type != null) {
+            return type;
+        }
+        GenericType genericType = this.genericType;
+        if (genericType != null) {
+            return this.type = genericType.desc();
+        }
+        throw new IllegalStateException("Field type is not yet set");
     }
 
     public ElementType annotationTargetType() {
@@ -83,12 +101,14 @@ public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl impl
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
-        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofField(),
-                visible, pathStack);
-        assert pathStack.isEmpty();
-        Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofField(),
-                invisible, pathStack);
-        assert pathStack.isEmpty();
+        if (genericType != null) {
+            Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofField(),
+                    visible, pathStack);
+            assert pathStack.isEmpty();
+            Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofField(),
+                    invisible, pathStack);
+            assert pathStack.isEmpty();
+        }
         if (!visible.isEmpty()) {
             fb.with(RuntimeVisibleTypeAnnotationsAttribute.of(visible));
         }
