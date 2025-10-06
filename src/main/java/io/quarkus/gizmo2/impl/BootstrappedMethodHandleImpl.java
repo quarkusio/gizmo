@@ -27,14 +27,11 @@ public final class BootstrappedMethodHandleImpl extends Item {
 
     public BootstrappedMethodHandleImpl(final ClassDesc owner, final MethodDesc bootstrapMethodDesc,
             final MethodTypeDesc methodHandleType, final List<Const> bootstrapArguments) {
+        super(ConstantDescs.CD_MethodHandle);
         this.owner = owner;
         this.bootstrapMethodDesc = bootstrapMethodDesc;
         this.methodHandleType = methodHandleType;
         this.bootstrapArguments = bootstrapArguments;
-    }
-
-    public ClassDesc type() {
-        return ConstantDescs.CD_MethodHandle;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

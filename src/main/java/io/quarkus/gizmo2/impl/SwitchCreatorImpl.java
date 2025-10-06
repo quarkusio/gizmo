@@ -61,6 +61,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
 
     SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
             final Class<C> constantType) {
+        super(type);
         this.enclosing = enclosing;
         this.switchVal = (Item) switchVal;
         this.type = type;
@@ -87,10 +88,6 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
 
     public boolean mayFallThrough() {
         return fallThrough;
-    }
-
-    public final ClassDesc type() {
-        return type;
     }
 
     abstract int staticHash(C val);

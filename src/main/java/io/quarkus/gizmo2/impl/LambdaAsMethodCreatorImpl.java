@@ -45,6 +45,10 @@ public final class LambdaAsMethodCreatorImpl implements LambdaCreator {
             throw new IllegalStateException("All captures must be defined before parameters are defined");
         }
         captures.add(value);
-        return samCreator.parameter(name, value.genericType());
+        if (value.hasGenericType()) {
+            return samCreator.parameter(name, value.genericType());
+        } else {
+            return samCreator.parameter(name, value.type());
+        }
     }
 }

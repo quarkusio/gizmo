@@ -28,6 +28,7 @@ final class Cmp extends Item {
     private final Kind kind;
 
     Cmp(final Expr a, final Expr b, final Kind kind) {
+        super(CD_int);
         Optional<ClassDesc> promotedType = numericPromotion(a.type(), b.type());
         if (promotedType.isPresent()) {
             this.a = convert(a, promotedType.get());
@@ -45,10 +46,6 @@ final class Cmp extends Item {
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return a.process(b.process(node.prev(), op), op);
-    }
-
-    public ClassDesc type() {
-        return CD_int;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

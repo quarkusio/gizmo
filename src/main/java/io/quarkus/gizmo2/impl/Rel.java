@@ -4,7 +4,6 @@ import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -18,6 +17,7 @@ final class Rel extends Item {
     private final If.Kind kind;
 
     Rel(final Expr a, final Expr b, final If.Kind kind) {
+        super(CD_boolean);
         this.kind = kind;
         requireSameTypeKind(a, b);
         this.a = (Item) a;
@@ -41,10 +41,6 @@ final class Rel extends Item {
 
     Item right() {
         return b;
-    }
-
-    public ClassDesc type() {
-        return CD_boolean;
     }
 
     If.Kind kind() {

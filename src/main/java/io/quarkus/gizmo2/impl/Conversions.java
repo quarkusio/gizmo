@@ -12,8 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
-import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Conversions {
@@ -165,7 +163,7 @@ final class Conversions {
             // primitive widening + boxing
             ClassDesc widerType = unboxTypes.get(toDesc);
             if (primitiveWideningConversions.get(fromDesc).contains(widerType.descriptorString())) {
-                return new Box(new PrimitiveCast(item, GenericType.of(widerType)));
+                return new Box(new PrimitiveCast(item, widerType));
             }
         } else if (toType.equals(unboxTypes.get(fromDesc))) {
             // unboxing
@@ -173,18 +171,18 @@ final class Conversions {
         } else if (toType.isPrimitive() && unboxTypes.containsKey(fromDesc)
                 && primitiveWideningConversions.get(unboxTypes.get(fromDesc).descriptorString()).contains(toDesc)) {
             // unboxing + primitive widening
-            return new PrimitiveCast(new Unbox(item), GenericType.of(toType));
+            return new PrimitiveCast(new Unbox(item), toType);
         } else if (fromType.isPrimitive() && toType.isPrimitive()
                 && primitiveWideningConversions.get(fromDesc).contains(toDesc)) {
             // primitive widening
-            return new PrimitiveCast(item, GenericType.of(toType));
+            return new PrimitiveCast(item, toType);
         } else if (!fromType.isPrimitive() && DS_Object.equals(toDesc)) {
-            return new UncheckedCast(item, GenericTypes.GT_Object);
+            return new UncheckedCast(item, CD_Object, null);
         } else if (DS_Object.equals(fromDesc)) {
             if (toType.isPrimitive()) {
-                return new Unbox(new CheckCast(item, GenericType.of(boxTypes.get(toDesc))));
+                return new Unbox(new CheckCast(item, boxTypes.get(toDesc), null));
             } else {
-                return new CheckCast(item, GenericType.of(toType));
+                return new CheckCast(item, toType, null);
             }
         }
 

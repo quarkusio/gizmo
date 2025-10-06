@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -16,6 +15,7 @@ final class RelZero extends Item {
     private final If.Kind kind;
 
     RelZero(final Expr a, final If.Kind kind) {
+        super(CD_boolean);
         this.kind = kind;
         this.a = (Item) a;
         if (a.typeKind() == TypeKind.REFERENCE) {
@@ -31,10 +31,6 @@ final class RelZero extends Item {
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return a.process(node.prev(), op);
-    }
-
-    public ClassDesc type() {
-        return CD_boolean;
     }
 
     If.Kind kind() {

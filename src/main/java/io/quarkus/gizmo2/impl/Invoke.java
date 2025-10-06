@@ -20,7 +20,6 @@ final class Invoke extends Item {
     private final ClassDesc owner;
     private final String name;
     private final MethodTypeDesc type;
-    private final GenericType genericType;
     private final Item instance;
     private final List<Item> args;
     private final Opcode opcode;
@@ -39,7 +38,7 @@ final class Invoke extends Item {
 
     private Invoke(final ClassDesc owner, final String name, final MethodTypeDesc type, final Opcode opcode,
             final boolean isInterface, Item instance, final List<Item> args, final GenericType genericType) {
-        this.genericType = genericType;
+        super(type.returnType(), genericType);
         if (type.parameterCount() != args.size()) {
             String paramsStr = type.parameterCount() == 1 ? "1 parameter" : type.parameterCount() + " parameters";
             String argsStr = args.size() == 1 ? "1 argument was" : args.size() + " arguments were";
@@ -72,14 +71,6 @@ final class Invoke extends Item {
     @Override
     public String itemName() {
         return "Invoke:" + owner.displayName() + "." + name;
-    }
-
-    public ClassDesc type() {
-        return type.returnType();
-    }
-
-    public GenericType genericType() {
-        return genericType;
     }
 
     protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {

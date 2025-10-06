@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -10,6 +9,7 @@ public class NewResult extends Item {
     private final Invoke invoke;
 
     NewResult(New new_, Invoke invoke) {
+        super(new_.type(), new_.hasGenericType() ? new_.genericType() : null);
         this.new_ = new_;
         this.invoke = invoke;
     }
@@ -17,11 +17,6 @@ public class NewResult extends Item {
     @Override
     public String itemName() {
         return "NewResult:" + new_.type().displayName();
-    }
-
-    @Override
-    public ClassDesc type() {
-        return new_.type();
     }
 
     @Override

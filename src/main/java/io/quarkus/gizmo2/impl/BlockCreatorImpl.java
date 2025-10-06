@@ -201,8 +201,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return returnType;
     }
 
-    public ClassDesc type() {
-        return outputType;
+    protected void computeType() {
+        initType(outputType);
     }
 
     public boolean active() {
@@ -250,8 +250,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return this == other || parent != null && parent.isContainedBy(other);
     }
 
+    public LocalVar localVar(final String name, final ClassDesc type, final Expr value) {
+        return localVar0(new LocalVarImpl(this, name, type, null), value);
+    }
+
     public LocalVar localVar(final String name, final GenericType type, final Expr value) {
-        LocalVarImpl lv = new LocalVarImpl(this, name, type);
+        return localVar0(new LocalVarImpl(this, name, null, type), value);
+    }
+
+    private LocalVar localVar0(LocalVarImpl lv, Expr value) {
         addItem(lv.allocator());
         set(lv, value);
         return lv;
@@ -720,7 +727,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ClassDesc toType = toGenType.desc();
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
-                return addItem(new PrimitiveCast(a, toGenType));
+                return addItem(new PrimitiveCast(a, toGenType.desc()));
             } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
                 return box(a);
             } else {
@@ -734,9 +741,41 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
                         + "' to primitive type '" + toType.displayName() + "'");
             } else {
-                return addItem(new CheckCast(a, toGenType));
+                return addItem(new CheckCast(a, null, toGenType));
             }
         }
+    }
+
+    public Expr cast(final Expr a, final ClassDesc toType) {
+        if (a.type().isPrimitive()) {
+            if (toType.isPrimitive()) {
+                return addItem(new PrimitiveCast(a, toType));
+            } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
+                return box(a);
+            } else {
+                throw new IllegalArgumentException("Cannot cast primitive value of type '" + a.type().displayName()
+                        + "' to object type '" + toType.displayName() + "'");
+            }
+        } else {
+            if (toType.equals(unboxingConversion(a.type()).orElse(null))) {
+                return unbox(a);
+            } else if (toType.isPrimitive()) {
+                throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
+                        + "' to primitive type '" + toType.displayName() + "'");
+            } else {
+                return addItem(new CheckCast(a, toType, null));
+            }
+        }
+    }
+
+    public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
+        if (a.type().isPrimitive()) {
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive value: " + a.type().displayName());
+        }
+        if (toType.isPrimitive()) {
+            throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.displayName());
+        }
+        return addItem(new UncheckedCast(a, toType, null));
     }
 
     public Expr uncheckedCast(final Expr a, final GenericType toType) {
@@ -746,7 +785,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (toType.desc().isPrimitive()) {
             throw new IllegalArgumentException("Cannot apply unchecked cast to primitive type: " + toType.desc().displayName());
         }
-        return addItem(new UncheckedCast(a, toType));
+        return addItem(new UncheckedCast(a, null, toType));
     }
 
     public Expr instanceOf(final Expr obj, final GenericType type) {
@@ -755,12 +794,25 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr new_(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
+        Assert.checkNotNullParam("genericType", genericType);
+        Assert.checkNotNullParam("ctor", ctor);
+        Assert.checkNotNullParam("args", args);
         checkActive();
         if (!ctor.owner().equals(genericType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match constructor type %s".formatted(genericType, ctor.owner()));
         }
-        New new_ = new New(genericType);
+        return new0(genericType, ctor, args);
+    }
+
+    public Expr new_(final ConstructorDesc ctor, final List<? extends Expr> args) {
+        Assert.checkNotNullParam("ctor", ctor);
+        Assert.checkNotNullParam("args", args);
+        return new0(null, ctor, args);
+    }
+
+    private NewResult new0(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
+        New new_ = new New(ctor.owner(), genericType);
         Dup dup_ = new Dup(new_);
         Node node = tail.prev();
         // insert New & Dup *before* the arguments

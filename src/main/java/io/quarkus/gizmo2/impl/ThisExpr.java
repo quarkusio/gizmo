@@ -7,22 +7,12 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.This;
 
 public final class ThisExpr extends Item implements This {
-    private final GenericType type;
-
-    public ThisExpr(final GenericType type) {
-        this.type = type;
+    public ThisExpr(final ClassDesc type, final GenericType genericType) {
+        super(type, genericType);
     }
 
     public boolean bound() {
         return false;
-    }
-
-    public ClassDesc type() {
-        return type.desc();
-    }
-
-    public GenericType genericType() {
-        return type;
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

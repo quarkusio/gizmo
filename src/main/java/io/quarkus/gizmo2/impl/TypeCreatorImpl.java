@@ -286,7 +286,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     public This this_() {
         ThisExpr this_ = this.this_;
         if (this_ == null) {
-            this_ = this.this_ = new ThisExpr(genericType());
+            this_ = this.this_ = new ThisExpr(type(), genericType());
         }
         return this_;
     }

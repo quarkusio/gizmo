@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -39,13 +38,11 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
         return desc;
     }
 
-    @Override
-    public ClassDesc type() {
-        return desc.type();
-    }
-
-    public GenericType genericType() {
-        return genericType;
+    protected void computeType() {
+        initType(desc.type());
+        if (genericType != null) {
+            initGenericType(genericType);
+        }
     }
 
     public String itemName() {

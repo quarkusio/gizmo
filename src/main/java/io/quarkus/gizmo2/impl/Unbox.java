@@ -9,7 +9,6 @@ import java.lang.constant.MethodTypeDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Unbox extends Cast {
@@ -23,12 +22,12 @@ final class Unbox extends Cast {
     }
 
     Unbox(Expr a) {
-        super(a, GenericType.of(unboxing(a.type())));
+        super(a, unboxing(a.type()), null);
     }
 
     @Override
     public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
-        cb.invoke(Opcode.INVOKEVIRTUAL, a.type(), switch (TypeKind.from(toType.desc())) {
+        cb.invoke(Opcode.INVOKEVIRTUAL, a.type(), switch (TypeKind.from(type())) {
             case BOOLEAN -> "booleanValue";
             case BYTE -> "byteValue";
             case CHAR -> "charValue";
@@ -37,7 +36,7 @@ final class Unbox extends Cast {
             case LONG -> "longValue";
             case FLOAT -> "floatValue";
             case DOUBLE -> "doubleValue";
-            default -> throw impossibleSwitchCase(TypeKind.from(toType.desc()));
-        }, MethodTypeDesc.of(toType.desc()), false);
+            default -> throw impossibleSwitchCase(TypeKind.from(type()));
+        }, MethodTypeDesc.of(type()), false);
     }
 }

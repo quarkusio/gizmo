@@ -206,15 +206,17 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                     parametersInvisibleAnnotations.add(i, currentParam.invisible);
                     hasInvisibleAnnotations = hasInvisibleAnnotations || !currentParam.invisible.isEmpty();
 
-                    GenericType genericType = currentParam.genericType();
-                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
-                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                            visible, pathStack);
-                    assert pathStack.isEmpty();
-                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
-                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                            invisible, pathStack);
-                    assert pathStack.isEmpty();
+                    if (currentParam.hasGenericType()) {
+                        GenericType genericType = currentParam.genericType();
+                        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
+                                TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                                visible, pathStack);
+                        assert pathStack.isEmpty();
+                        Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
+                                TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                                invisible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
                 } else {
                     parameters.add(i, EMPTY_PI);
                     parametersVisibleAnnotations.add(i, List.of());
@@ -263,7 +265,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     boolean signatureNeeded() {
         return !typeParameters.isEmpty() || throws_.stream().anyMatch(GenericType::signatureNeeded)
                 || genericReturnType().signatureNeeded()
-                || params.stream().map(ParamVarImpl::genericType).anyMatch(GenericType::signatureNeeded);
+                || params.stream().filter(ParamVarImpl::hasGenericType).map(ParamVarImpl::genericType)
+                        .anyMatch(GenericType::signatureNeeded);
     }
 
     MethodSignature computeSignature() {

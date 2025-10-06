@@ -24,10 +24,8 @@ import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.Util;
 
 public abstract non-sealed class ConstImpl extends Item implements Const {
-    private final ClassDesc type;
-
     ConstImpl(final ClassDesc type) {
-        this.type = type;
+        super(type);
     }
 
     public static StringConst of(final String value) {
@@ -326,10 +324,6 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
 
     public static MethodTypeConst of(MethodTypeDesc desc) {
         return new MethodTypeConst(desc);
-    }
-
-    public ClassDesc type() {
-        return type;
     }
 
     public boolean bound() {

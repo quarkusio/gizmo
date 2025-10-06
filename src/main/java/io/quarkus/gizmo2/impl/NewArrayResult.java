@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -11,6 +10,7 @@ public class NewArrayResult extends Item {
     private final List<ArrayStore> elements;
 
     NewArrayResult(NewEmptyArray newEmptyArray, List<ArrayStore> elements) {
+        super(newEmptyArray.type());
         this.newEmptyArray = newEmptyArray;
         this.elements = elements;
     }
@@ -18,11 +18,6 @@ public class NewArrayResult extends Item {
     @Override
     public String itemName() {
         return "NewArrayResult:" + newEmptyArray.type().displayName();
-    }
-
-    @Override
-    public ClassDesc type() {
-        return newEmptyArray.type();
     }
 
     @Override

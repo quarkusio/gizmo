@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
-import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
@@ -16,12 +15,9 @@ final class StaticFieldGetViaHandle extends Item {
     private final MemoryOrder mode;
 
     StaticFieldGetViaHandle(final StaticFieldVarImpl staticFieldVar, final MemoryOrder mode) {
+        super(staticFieldVar.type(), staticFieldVar.hasGenericType() ? staticFieldVar.genericType() : null);
         this.staticFieldVar = staticFieldVar;
         this.mode = mode;
-    }
-
-    public ClassDesc type() {
-        return staticFieldVar.type();
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {

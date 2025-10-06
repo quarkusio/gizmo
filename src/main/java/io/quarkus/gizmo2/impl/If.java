@@ -11,20 +11,15 @@ import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 
 abstract class If extends Item {
-    private final ClassDesc type;
     final Kind kind;
     final BlockCreatorImpl whenTrue;
     final BlockCreatorImpl whenFalse;
 
     If(final ClassDesc type, final Kind kind, final BlockCreatorImpl whenTrue, final BlockCreatorImpl whenFalse) {
-        this.type = type;
+        super(type);
         this.kind = kind;
         this.whenTrue = whenTrue;
         this.whenFalse = whenFalse;
-    }
-
-    public ClassDesc type() {
-        return type;
     }
 
     private static void comparable_acmp(CodeBuilder cb, Label label) {

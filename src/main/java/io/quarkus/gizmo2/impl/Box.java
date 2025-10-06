@@ -8,7 +8,6 @@ import java.lang.constant.MethodTypeDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
-import io.quarkus.gizmo2.GenericType;
 
 final class Box extends Cast {
     private static ClassDesc boxing(ClassDesc unboxType) {
@@ -25,7 +24,7 @@ final class Box extends Cast {
     }
 
     Box(Expr a, ClassDesc toType) {
-        super(a, GenericType.of(toType));
+        super(a, toType, null);
     }
 
     @Override

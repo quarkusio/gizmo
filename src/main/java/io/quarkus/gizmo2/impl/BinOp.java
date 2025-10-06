@@ -57,8 +57,11 @@ final class BinOp extends Item {
         return a.process(b.process(node.prev(), op), op);
     }
 
-    public ClassDesc type() {
-        return a.type();
+    protected void computeType() {
+        initType(a.type());
+        if (a.hasGenericType()) {
+            initGenericType(a.genericType());
+        }
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

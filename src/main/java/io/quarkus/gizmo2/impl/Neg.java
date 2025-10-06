@@ -4,7 +4,6 @@ import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -17,6 +16,7 @@ final class Neg extends Item {
     Neg(Expr a) {
         a = convert(a, unboxingConversion(a.type()).orElse(a.type()));
         this.a = (Item) a;
+        initType(a.type());
         TypeKind typeKind = a.typeKind();
         if (typeKind == TypeKind.REFERENCE || typeKind == TypeKind.BOOLEAN || typeKind == TypeKind.VOID) {
             throw new IllegalArgumentException("Cannot negate non-numeric expression: " + a);
@@ -25,10 +25,6 @@ final class Neg extends Item {
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return a.process(node.prev(), op);
-    }
-
-    public ClassDesc type() {
-        return a.type();
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

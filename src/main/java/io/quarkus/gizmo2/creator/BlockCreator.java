@@ -146,9 +146,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param value the variable initial value (must not be {@code null})
      * @return the local variable (not {@code null})
      */
-    default LocalVar localVar(String name, ClassDesc type, Expr value) {
-        return localVar(name, GenericType.of(type), value);
-    }
+    LocalVar localVar(String name, ClassDesc type, Expr value);
 
     /**
      * Declare a local variable with given {@code name} and {@code type}, which is initialized
@@ -162,7 +160,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the local variable (not {@code null})
      */
     default LocalVar localVar(String name, Class<?> type, Expr value) {
-        return localVar(name, GenericType.of(type), value);
+        return localVar(name, Util.classDesc(type), value);
     }
 
     /**
@@ -176,7 +174,11 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the local variable (not {@code null})
      */
     default LocalVar localVar(String name, Expr value) {
-        return localVar(name, value.genericType(), value);
+        if (value.hasGenericType()) {
+            return localVar(name, value.genericType(), value);
+        } else {
+            return localVar(name, value.type(), value);
+        }
     }
 
     /**
@@ -2427,9 +2429,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @see #ifInstanceOf(Expr, ClassDesc, BiConsumer)
      * @see #ifInstanceOfElse(Expr, ClassDesc, BiConsumer, Consumer)
      */
-    default Expr cast(Expr a, ClassDesc toType) {
-        return cast(a, GenericType.of(toType));
-    }
+    Expr cast(Expr a, ClassDesc toType);
 
     /**
      * Cast a value to the given type.
@@ -2467,9 +2467,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @return the cast value (not {@code null})
      * @see #cast(Expr, ClassDesc)
      */
-    default Expr uncheckedCast(Expr a, ClassDesc toType) {
-        return uncheckedCast(a, GenericType.of(toType));
-    }
+    Expr uncheckedCast(Expr a, ClassDesc toType);
 
     /**
      * Cast an object value to the given type without a type check.
@@ -2550,9 +2548,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the constructor (must not be {@code null})
      * @return the new object (not {@code null})
      */
-    default Expr new_(ConstructorDesc ctor, List<? extends Expr> args) {
-        return new_(GenericType.of(ctor.owner()), ctor, args);
-    }
+    Expr new_(ConstructorDesc ctor, List<? extends Expr> args);
 
     /**
      * Construct a new instance.

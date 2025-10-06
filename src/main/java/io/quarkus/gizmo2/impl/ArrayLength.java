@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
+import static java.lang.constant.ConstantDescs.*;
+
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -14,9 +14,8 @@ final class ArrayLength extends Item {
         this.item = item;
     }
 
-    @Override
-    public ClassDesc type() {
-        return ConstantDescs.CD_int;
+    protected void computeType() {
+        initType(CD_int);
     }
 
     protected void bind() {

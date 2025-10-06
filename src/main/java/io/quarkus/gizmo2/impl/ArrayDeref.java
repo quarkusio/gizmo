@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static java.lang.constant.ConstantDescs.CD_int;
 
-import java.lang.constant.ClassDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -13,13 +12,11 @@ import io.quarkus.gizmo2.MemoryOrder;
 
 public final class ArrayDeref extends AssignableImpl {
     private final Item item;
-    private final GenericType componentType;
     private final Item index;
     private boolean bound;
 
-    ArrayDeref(final Item item, final GenericType componentType, final Expr index) {
+    ArrayDeref(final Item item, final Expr index) {
         this.item = item;
-        this.componentType = componentType;
         this.index = convert(index, CD_int);
     }
 
@@ -52,12 +49,11 @@ public final class ArrayDeref extends AssignableImpl {
         };
     }
 
-    public ClassDesc type() {
-        return componentType.desc();
-    }
-
-    public GenericType genericType() {
-        return componentType;
+    protected void computeType() {
+        initType(item.type().componentType());
+        if (item.hasGenericType()) {
+            initGenericType(((GenericType.OfArray) item.genericType()).componentType());
+        }
     }
 
     protected void bind() {
