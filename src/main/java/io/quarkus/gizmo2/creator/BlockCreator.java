@@ -2778,9 +2778,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    default Expr invokeStatic(MethodDesc method, List<? extends Expr> args) {
-        return invokeStatic(GenericType.of(method.returnType()), method, args);
-    }
+    Expr invokeStatic(MethodDesc method, List<? extends Expr> args);
 
     /**
      * Invoke a static method.
@@ -2845,9 +2843,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    default Expr invokeVirtual(MethodDesc method, Expr instance, List<? extends Expr> args) {
-        return invokeVirtual(GenericType.of(method.returnType()), method, instance, args);
-    }
+    Expr invokeVirtual(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke a virtual method.
@@ -2916,9 +2912,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    default Expr invokeSpecial(MethodDesc method, Expr instance, List<? extends Expr> args) {
-        return invokeSpecial(GenericType.of(method.returnType()), method, instance, args);
-    }
+    Expr invokeSpecial(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke a method using "special" semantics.

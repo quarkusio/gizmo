@@ -50,6 +50,7 @@ import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -839,6 +840,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args, genericReturnType));
     }
 
+    public Expr invokeStatic(final MethodDesc method, final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKESTATIC, method, null, args, null));
+    }
+
     public Expr invokeVirtual(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
             final List<? extends Expr> args) {
         if (!method.returnType().equals(genericReturnType.desc())) {
@@ -846,6 +851,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                     "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
         return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args, genericReturnType));
+    }
+
+    public Expr invokeVirtual(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKEVIRTUAL, method, instance, args, null));
     }
 
     public Expr invokeSpecial(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
@@ -857,8 +866,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args, genericReturnType));
     }
 
+    public Expr invokeSpecial(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
+        return addItem(new Invoke(Opcode.INVOKESPECIAL, method, instance, args, null));
+    }
+
     public Expr invokeSpecial(final ConstructorDesc ctor, final Expr instance, final List<? extends Expr> args) {
-        Invoke invoke = new Invoke(ctor, instance, args, GenericType.of(void.class));
+        Invoke invoke = new Invoke(ctor, instance, args, GenericTypes.GT_void);
         addItem(invoke);
         if (instance instanceof ThisExpr) {
             // self-init

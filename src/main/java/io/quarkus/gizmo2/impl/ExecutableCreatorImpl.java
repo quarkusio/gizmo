@@ -314,7 +314,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     boolean signatureNeeded() {
         return !typeParameters.isEmpty() || throws_.stream().anyMatch(GenericType::signatureNeeded)
-                || genericReturnType().signatureNeeded()
+                || hasGenericReturnType() && genericReturnType().signatureNeeded()
                 || params.stream().filter(ParamVarImpl::hasGenericType).map(ParamVarImpl::genericType)
                         .anyMatch(GenericType::signatureNeeded);
     }
@@ -336,48 +336,52 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.with(LocalVariable.of(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel()));
-            GenericType.OfClass genericType = typeCreator.genericType();
-            if (!genericType.isRaw()) {
-                cb.with(LocalVariableType.of(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel()));
-            }
-            if (genericType.hasVisibleAnnotations()) {
-                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        visible, pathStack);
-                assert pathStack.isEmpty();
-                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        visible, pathStack);
-                assert pathStack.isEmpty();
-            }
-            if (genericType.hasInvisibleAnnotations()) {
-                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        invisible, pathStack);
-                assert pathStack.isEmpty();
-                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        invisible, pathStack);
-                assert pathStack.isEmpty();
-            }
-        }
-        for (final ParamVarImpl param : params) {
-            if (param != null) {
-                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
-                GenericType genericType = param.genericType();
+            if (typeCreator.hasGenericType()) {
+                GenericType.OfClass genericType = typeCreator.genericType();
                 if (!genericType.isRaw()) {
-                    cb.with(LocalVariableType.of(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
-                            bc.endLabel()));
+                    cb.with(LocalVariableType.of(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel()));
                 }
                 if (genericType.hasVisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                            visible, pathStack);
+                    assert pathStack.isEmpty();
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
                             visible, pathStack);
                     assert pathStack.isEmpty();
                 }
                 if (genericType.hasInvisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
                             invisible, pathStack);
                     assert pathStack.isEmpty();
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
+                            invisible, pathStack);
+                    assert pathStack.isEmpty();
+                }
+            }
+        }
+        for (final ParamVarImpl param : params) {
+            if (param != null) {
+                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
+                if (param.hasGenericType()) {
+                    GenericType genericType = param.genericType();
+                    if (!genericType.isRaw()) {
+                        cb.with(LocalVariableType.of(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
+                                bc.endLabel()));
+                    }
+                    if (genericType.hasVisibleAnnotations()) {
+                        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                                visible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
+                    if (genericType.hasInvisibleAnnotations()) {
+                        Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                                invisible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
                 }
             }
         }

@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public sealed abstract class MethodDescImpl implements MethodDesc permits ClassMethodDescImpl, InterfaceMethodDescImpl {
@@ -29,6 +30,14 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
 
     public MethodTypeDesc type() {
         return type;
+    }
+
+    public ClassDesc returnType() {
+        return type.returnType();
+    }
+
+    public GenericType genericReturnType() {
+        return GenericType.of(type().returnType());
     }
 
     public boolean hasGenericReturnType() {
