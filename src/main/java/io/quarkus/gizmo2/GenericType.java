@@ -8,12 +8,16 @@ import java.lang.invoke.ConstantBootstraps;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
@@ -222,7 +226,25 @@ public abstract class GenericType {
         String descStr = desc.descriptorString();
         char ch = descStr.charAt(0);
         return switch (ch) {
-            case 'L' -> new OfRootClass(List.of(), List.of(), desc, List.of());
+            case 'L' -> switch (descStr) {
+                case "Ljava/lang/Class;" -> OfRootClass.GT_Class;
+                case "Ljava/lang/Exception;" -> OfRootClass.GT_Exception;
+                case "Ljava/lang/Object;" -> OfRootClass.GT_Object;
+                case "Ljava/lang/String;" -> OfRootClass.GT_String;
+                case "Ljava/lang/Throwable;" -> OfRootClass.GT_Throwable;
+                case "Ljava/util/List;" -> OfRootClass.GT_List;
+                case "Ljava/util/Map;" -> OfRootClass.GT_Map;
+                case "Ljava/util/Set;" -> OfRootClass.GT_Set;
+                // non-"core" classes that are still frequently used
+                case "Ljava/lang/RuntimeException;" -> OfRootClass.GT_RuntimeException;
+                case "Ljava/lang/Thread;" -> OfRootClass.GT_Thread;
+                case "Ljava/lang/reflect/Type;" -> OfRootClass.GT_Type;
+                case "Ljava/util/ArrayList;" -> OfRootClass.GT_ArrayList;
+                case "Ljava/util/HashMap;" -> OfRootClass.GT_HashMap;
+                case "Ljava/util/HashSet;" -> OfRootClass.GT_HashSet;
+                case "Ljava/util/function/Supplier;" -> OfRootClass.GT_Supplier;
+                default -> new OfRootClass(desc);
+            };
             case 'Z' -> OfPrimitive.GT_boolean;
             case 'B' -> OfPrimitive.GT_byte;
             case 'C' -> OfPrimitive.GT_char;
@@ -232,7 +254,7 @@ public abstract class GenericType {
             case 'J' -> OfPrimitive.GT_long;
             case 'S' -> OfPrimitive.GT_short;
             case 'V' -> OfPrimitive.GT_void;
-            case '[' -> new OfArray(List.of(), List.of(), of(desc.componentType()));
+            case '[' -> of(desc.componentType()).arrayType();
             default -> throw Assert.impossibleSwitchCase(ch);
         };
     }
@@ -860,7 +882,28 @@ public abstract class GenericType {
      * "Root" classes are top-level classes and {@code static} member classes.
      */
     public static final class OfRootClass extends OfClass {
+        private static final OfRootClass GT_Class = new OfRootClass(CD_Class);
+        private static final OfRootClass GT_Exception = new OfRootClass(CD_Exception);
+        private static final OfRootClass GT_List = new OfRootClass(CD_List);
+        private static final OfRootClass GT_Map = new OfRootClass(CD_Map);
+        private static final OfRootClass GT_Object = new OfRootClass(CD_Object);
+        private static final OfRootClass GT_Set = new OfRootClass(CD_Set);
+        private static final OfRootClass GT_String = new OfRootClass(CD_String);
+        private static final OfRootClass GT_Throwable = new OfRootClass(CD_Throwable);
+        // non-"core" classes that are still frequently used
+        private static final OfRootClass GT_ArrayList = new OfRootClass(Util.classDesc(ArrayList.class));
+        private static final OfRootClass GT_HashMap = new OfRootClass(Util.classDesc(HashMap.class));
+        private static final OfRootClass GT_HashSet = new OfRootClass(Util.classDesc(HashSet.class));
+        private static final OfRootClass GT_RuntimeException = new OfRootClass(Util.classDesc(RuntimeException.class));
+        private static final OfRootClass GT_Supplier = new OfRootClass(Util.classDesc(Supplier.class));
+        private static final OfRootClass GT_Thread = new OfRootClass(Util.classDesc(Thread.class));
+        private static final OfRootClass GT_Type = new OfRootClass(Util.classDesc(Type.class));
+
         private final ClassDesc desc;
+
+        OfRootClass(final ClassDesc desc) {
+            this(List.of(), List.of(), desc, List.of());
+        }
 
         OfRootClass(final List<Annotation> visible, final List<Annotation> invisible, final ClassDesc desc,
                 final List<TypeArgument> typeArguments) {
