@@ -104,10 +104,6 @@ public final class GizmoImpl implements Gizmo {
                 lambdasAsAnonymousClasses);
     }
 
-    boolean debugInfo() {
-        return debugInfo;
-    }
-
     boolean parameters() {
         return parameters;
     }

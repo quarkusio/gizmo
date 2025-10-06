@@ -279,58 +279,50 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 this instanceof ConstructorCreator ? "new" : name());
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if ((modifiers & ACC_STATIC) == 0) {
+            // reserve `this` for all instance methods
+            cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
             GenericType.OfClass genericType = typeCreator.genericType();
-            if (typeCreator.gizmo.debugInfo()) {
-                // reserve `this` for all instance methods
-                cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
-                if (!genericType.isRaw()) {
-                    cb.localVariableType(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel());
-                }
+            if (!genericType.isRaw()) {
+                cb.localVariableType(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel());
             }
             if (genericType.hasVisibleAnnotations()) {
-                if (typeCreator.gizmo.debugInfo()) {
-                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                            visible, pathStack);
-                    assert pathStack.isEmpty();
-                }
+                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                        visible, pathStack);
+                assert pathStack.isEmpty();
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
                         visible, pathStack);
                 assert pathStack.isEmpty();
             }
             if (genericType.hasInvisibleAnnotations()) {
-                if (typeCreator.gizmo.debugInfo()) {
-                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                            invisible, pathStack);
-                    assert pathStack.isEmpty();
-                }
+                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                        invisible, pathStack);
+                assert pathStack.isEmpty();
                 Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
                         invisible, pathStack);
                 assert pathStack.isEmpty();
             }
         }
-        if (typeCreator.gizmo.debugInfo()) {
-            for (final ParamVarImpl param : params) {
-                if (param != null) {
-                    cb.localVariable(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel());
-                    GenericType genericType = param.genericType();
-                    if (!genericType.isRaw()) {
-                        cb.localVariableType(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
-                                bc.endLabel());
-                    }
-                    if (genericType.hasVisibleAnnotations()) {
-                        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
-                                visible, pathStack);
-                        assert pathStack.isEmpty();
-                    }
-                    if (genericType.hasInvisibleAnnotations()) {
-                        Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
-                                invisible, pathStack);
-                        assert pathStack.isEmpty();
-                    }
+        for (final ParamVarImpl param : params) {
+            if (param != null) {
+                cb.localVariable(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel());
+                GenericType genericType = param.genericType();
+                if (!genericType.isRaw()) {
+                    cb.localVariableType(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
+                            bc.endLabel());
+                }
+                if (genericType.hasVisibleAnnotations()) {
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            visible, pathStack);
+                    assert pathStack.isEmpty();
+                }
+                if (genericType.hasInvisibleAnnotations()) {
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            invisible, pathStack);
+                    assert pathStack.isEmpty();
                 }
             }
         }
