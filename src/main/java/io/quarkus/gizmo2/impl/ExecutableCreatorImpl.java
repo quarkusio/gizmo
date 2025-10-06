@@ -30,6 +30,8 @@ import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsA
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.github.dmlloyd.classfile.constantpool.ClassEntry;
+import io.github.dmlloyd.classfile.instruction.LocalVariable;
+import io.github.dmlloyd.classfile.instruction.LocalVariableType;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.ParamVar;
@@ -280,10 +282,10 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
-            cb.localVariable(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel());
+            cb.with(LocalVariable.of(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel()));
             GenericType.OfClass genericType = typeCreator.genericType();
             if (!genericType.isRaw()) {
-                cb.localVariableType(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel());
+                cb.with(LocalVariableType.of(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel()));
             }
             if (genericType.hasVisibleAnnotations()) {
                 Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
@@ -306,11 +308,11 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         }
         for (final ParamVarImpl param : params) {
             if (param != null) {
-                cb.localVariable(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel());
+                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
                 GenericType genericType = param.genericType();
                 if (!genericType.isRaw()) {
-                    cb.localVariableType(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
-                            bc.endLabel());
+                    cb.with(LocalVariableType.of(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
+                            bc.endLabel()));
                 }
                 if (genericType.hasVisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
