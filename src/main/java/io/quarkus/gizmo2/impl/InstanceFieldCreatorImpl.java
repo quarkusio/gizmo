@@ -55,7 +55,7 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
-            if (!genericType.isRaw() || genericType.hasAnnotations()) {
+            if (genericType != null && !genericType.isRaw()) {
                 fb.with(SignatureAttribute.of(Util.signatureOf(genericType())));
             }
             addVisible(fb);

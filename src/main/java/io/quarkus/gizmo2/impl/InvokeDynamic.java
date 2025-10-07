@@ -1,6 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
 import java.lang.constant.DynamicCallSiteDesc;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -13,6 +12,7 @@ final class InvokeDynamic extends Item {
     private final DynamicCallSiteDesc callSiteDesc;
 
     InvokeDynamic(final List<? extends Expr> args, final DynamicCallSiteDesc callSiteDesc) {
+        super(callSiteDesc.invocationType().returnType());
         this.args = args;
         this.callSiteDesc = callSiteDesc;
     }
@@ -24,10 +24,6 @@ final class InvokeDynamic extends Item {
             node = arg.process(node, op);
         }
         return node;
-    }
-
-    public ClassDesc type() {
-        return callSiteDesc.invocationType().returnType();
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

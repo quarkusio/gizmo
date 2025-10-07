@@ -12,25 +12,20 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.IntConst;
 
 final class NewEmptyArray extends Item {
-    private final ClassDesc arrayType;
     private final Item size;
 
     NewEmptyArray(final ClassDesc componentType, final Item size) {
-        arrayType = componentType.arrayType();
+        super(componentType.arrayType());
         this.size = convert(size, CD_int);
     }
 
     @Override
     public String itemName() {
-        return "NewEmptyArray:" + arrayType.displayName();
+        return "NewEmptyArray:" + type().displayName();
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return size.process(node.prev(), op);
-    }
-
-    public ClassDesc type() {
-        return arrayType;
     }
 
     public Expr length() {

@@ -5,14 +5,8 @@ import java.lang.constant.ClassDesc;
 import io.github.dmlloyd.classfile.CodeBuilder;
 
 final class BlockExpr extends Item {
-    private final ClassDesc type;
-
     BlockExpr(final ClassDesc type) {
-        this.type = type;
-    }
-
-    public ClassDesc type() {
-        return type;
+        super(type);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

@@ -3,7 +3,6 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
-import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
@@ -20,8 +19,11 @@ final class FieldGetViaHandle extends Item {
         this.mode = mode;
     }
 
-    public ClassDesc type() {
-        return fieldDeref.type();
+    protected void computeType() {
+        initType(fieldDeref.type());
+        if (fieldDeref.hasGenericType()) {
+            initGenericType(fieldDeref.genericType());
+        }
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {

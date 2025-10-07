@@ -12,4 +12,9 @@ public sealed interface GenericTyped extends SimpleTyped permits TypeParameter, 
      * {@return the generic type of this entity (not {@code null})}
      */
     GenericType genericType();
+
+    /**
+     * {@return {@code true} if this value has a generic type, or {@code false} if it does not have one}
+     */
+    boolean hasGenericType();
 }

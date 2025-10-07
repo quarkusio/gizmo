@@ -10,7 +10,6 @@ import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.ParamVar;
 
 public final class ParamVarImpl extends AssignableImpl implements ParamVar {
-    private final GenericType type;
     private final String name;
     private final int index;
     private final int slot;
@@ -18,9 +17,9 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     final List<Annotation> visible;
     private final int flags;
 
-    public ParamVarImpl(final GenericType type, final String name, final int index, final int slot, final int flags,
-            final List<Annotation> invisible, final List<Annotation> visible) {
-        this.type = type;
+    ParamVarImpl(final ClassDesc type, final GenericType genericType, final String name, final int index,
+            final int slot, final int flags, final List<Annotation> invisible, final List<Annotation> visible) {
+        super(type, genericType);
         this.name = name;
         this.index = index;
         this.slot = slot;
@@ -52,14 +51,6 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
 
     Item emitSet(final BlockCreatorImpl block, final Item value, final MemoryOrder mode) {
         return new ParamSet(this, value);
-    }
-
-    public ClassDesc type() {
-        return type.desc();
-    }
-
-    public GenericType genericType() {
-        return type;
     }
 
     public boolean bound() {

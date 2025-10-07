@@ -1,14 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
+import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
-import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.BiFunction;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
-import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 
@@ -26,12 +24,11 @@ final class ArrayLoadViaHandle extends Item {
                 .process(arrayDeref.array().process(arrayDeref.index().process(node.prev(), op), op), op);
     }
 
-    public ClassDesc type() {
-        return arrayDeref.type();
-    }
-
-    public GenericType genericType() {
-        return arrayDeref.genericType();
+    protected void computeType() {
+        initType(arrayDeref.type());
+        if (arrayDeref.hasGenericType()) {
+            initGenericType(arrayDeref.genericType());
+        }
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {

@@ -1,10 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.GenericTypes.*;
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
@@ -18,6 +19,24 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 
 public abstract non-sealed class Item implements Expr {
     protected final String creationSite = Util.trackCaller();
+    private ClassDesc type;
+    private GenericType genericType;
+
+    protected Item() {
+    }
+
+    protected Item(final ClassDesc type) {
+        this.type = type;
+    }
+
+    protected Item(final GenericType genericType) {
+        this.genericType = genericType;
+    }
+
+    protected Item(final ClassDesc type, final GenericType genericType) {
+        this.type = type;
+        this.genericType = genericType;
+    }
 
     public String itemName() {
         return getClass().getSimpleName();
@@ -26,8 +45,73 @@ public abstract non-sealed class Item implements Expr {
     /**
      * {@return the type of this item}
      */
-    public ClassDesc type() {
-        return ConstantDescs.CD_void;
+    public final ClassDesc type() {
+        ClassDesc type = this.type;
+        if (type != null) {
+            return type;
+        }
+        GenericType genericType = this.genericType;
+        if (genericType != null) {
+            return this.type = genericType.desc();
+        }
+        computeType();
+        type = this.type;
+        if (type != null) {
+            return type;
+        }
+        genericType = this.genericType;
+        if (genericType != null) {
+            return this.type = genericType.desc();
+        }
+        throw new IllegalStateException("Type not computed");
+    }
+
+    protected final void initType(ClassDesc type) {
+        this.type = type;
+    }
+
+    protected final void initGenericType(GenericType genericType) {
+        this.genericType = genericType;
+    }
+
+    public final GenericType genericType() {
+        GenericType genericType = this.genericType;
+        if (genericType != null) {
+            return genericType;
+        }
+        ClassDesc type = this.type;
+        if (type != null) {
+            return this.genericType = GenericType.of(type);
+        }
+        computeType();
+        genericType = this.genericType;
+        if (genericType != null) {
+            return genericType;
+        }
+        type = this.type;
+        if (type != null) {
+            return this.genericType = GenericType.of(type);
+        }
+        throw new IllegalStateException("Type not computed");
+    }
+
+    public final boolean hasGenericType() {
+        GenericType genericType = this.genericType;
+        if (genericType != null) {
+            return true;
+        }
+        if (type != null) {
+            // simple type
+            return false;
+        }
+        // not initialized yet
+        computeType();
+        return this.genericType != null;
+    }
+
+    protected void computeType() {
+        initType(CD_void);
+        initGenericType(GT_void);
     }
 
     /**
@@ -236,7 +320,7 @@ public abstract non-sealed class Item implements Expr {
         if (!type().isArray()) {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
-        return new ArrayDeref(this, ((GenericType.OfArray) genericType()).componentType(), index);
+        return new ArrayDeref(this, index);
     }
 
     public Expr length() {
@@ -244,6 +328,11 @@ public abstract non-sealed class Item implements Expr {
             throw new IllegalArgumentException("Value type is not array: " + type().displayName());
         }
         return new ArrayLength(this);
+    }
+
+    public InstanceFieldVar field(final FieldDesc desc) {
+        checkNotNullParam("desc", desc);
+        return new FieldDeref(this, desc, null);
     }
 
     public InstanceFieldVar field(final FieldDesc desc, final GenericType genericType) {

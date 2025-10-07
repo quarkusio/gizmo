@@ -5,6 +5,7 @@ import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     private List<TypeParameter> typeParameters = List.of();
 
+    ClassDesc returnType;
     GenericType genericReturnType;
     boolean typeEstablished;
     MethodTypeDesc type = null;
@@ -92,10 +94,11 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 return;
             }
             // validate existing information
-            GenericType returnType = this.genericReturnType;
-            if (returnType != null && !desc.returnType().equals(returnType.desc())) {
+            GenericType genericReturnType = this.genericReturnType;
+            ClassDesc returnType = this.returnType;
+            if ((genericReturnType != null || returnType != null) && !Util.equals(returnType(), desc.returnType())) {
                 throw new IllegalArgumentException(
-                        "Type " + desc + " has a return type that does not match established return type " + returnType);
+                        "Type " + desc + " has a return type that does not match established return type " + returnType());
             }
             int paramCnt = params.size();
             int descParamCnt = desc.parameterCount();
@@ -113,7 +116,6 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
             clearType();
             type = desc;
-            this.genericReturnType = GenericType.of(desc.returnType());
             if (params.size() != descParamCnt) {
                 if (params instanceof ArrayList<ParamVarImpl> al) {
                     al.ensureCapacity(descParamCnt);
@@ -134,15 +136,39 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     public GenericType genericReturnType() {
-        GenericType returnType = this.genericReturnType;
-        if (returnType == null) {
-            return GenericTypes.GT_void;
+        GenericType genericReturnType = this.genericReturnType;
+        if (genericReturnType != null) {
+            return genericReturnType;
         }
-        return returnType;
+        ClassDesc returnType = this.returnType;
+        if (returnType != null) {
+            return this.genericReturnType = GenericType.of(returnType);
+        }
+        MethodTypeDesc type = this.type;
+        if (type != null) {
+            return this.genericReturnType = GenericType.of(type.returnType());
+        }
+        return GenericTypes.GT_void;
+    }
+
+    public boolean hasGenericReturnType() {
+        return genericReturnType != null;
     }
 
     public ClassDesc returnType() {
-        return genericReturnType().desc();
+        ClassDesc returnType = this.returnType;
+        if (returnType != null) {
+            return returnType;
+        }
+        MethodTypeDesc type = this.type;
+        if (type != null) {
+            return this.returnType = type.returnType();
+        }
+        GenericType genericReturnType = this.genericReturnType;
+        if (genericReturnType != null) {
+            return this.returnType = genericReturnType.desc();
+        }
+        return ConstantDescs.CD_void;
     }
 
     void returning(final GenericType type) {
@@ -150,17 +176,39 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         if (state >= ST_BODY) {
             throw new IllegalStateException("Return type may no longer be changed");
         }
-        GenericType returnType = this.genericReturnType;
-        if (returnType == null) {
-            assert !typeEstablished;
+        GenericType genericReturnType = this.genericReturnType;
+        if (genericReturnType != null && !genericReturnType.equals(type)) {
+            throw new IllegalArgumentException(
+                    "Generic return type " + type + " does not match previously set generic return type " + genericReturnType);
+        }
+        if (typeEstablished) {
+            if (!type.desc().equals(this.type.returnType())) {
+                throw new IllegalArgumentException(
+                        "Return type " + type + " does not match established return type " + this.type.returnType());
+            }
+        } else {
             this.genericReturnType = type;
-        } else if (!returnType.equals(type)) {
-            throw new IllegalArgumentException("Return type " + type + " does not match established return type " + returnType);
         }
     }
 
     void returning(final ClassDesc type) {
-        returning(GenericType.of(type));
+        checkNotNullParam("type", type);
+        if (state >= ST_BODY) {
+            throw new IllegalStateException("Return type may no longer be changed");
+        }
+        GenericType genericReturnType = this.genericReturnType;
+        ClassDesc returnType = this.returnType;
+        if (returnType == null && genericReturnType != null) {
+            assert !typeEstablished;
+            if (!Util.equals(type, genericReturnType.desc())) {
+                throw new IllegalArgumentException(
+                        "Return type " + type + " does not match established return type " + genericReturnType);
+            }
+        } else if (returnType != null && !returnType.equals(type)
+                || genericReturnType != null && !genericReturnType.desc().equals(type)) {
+            throw new IllegalArgumentException("Return type " + type + " does not match established return type " + returnType);
+        }
+        this.returnType = type;
     }
 
     void doBody(final Consumer<BlockCreator> builder, MethodBuilder mb) {
@@ -206,15 +254,17 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                     parametersInvisibleAnnotations.add(i, currentParam.invisible);
                     hasInvisibleAnnotations = hasInvisibleAnnotations || !currentParam.invisible.isEmpty();
 
-                    GenericType genericType = currentParam.genericType();
-                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
-                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                            visible, pathStack);
-                    assert pathStack.isEmpty();
-                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
-                            TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
-                            invisible, pathStack);
-                    assert pathStack.isEmpty();
+                    if (currentParam.hasGenericType()) {
+                        GenericType genericType = currentParam.genericType();
+                        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME,
+                                TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                                visible, pathStack);
+                        assert pathStack.isEmpty();
+                        Util.computeAnnotations(genericType, RetentionPolicy.CLASS,
+                                TypeAnnotation.TargetInfo.ofMethodFormalParameter(i),
+                                invisible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
                 } else {
                     parameters.add(i, EMPTY_PI);
                     parametersVisibleAnnotations.add(i, List.of());
@@ -231,10 +281,12 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 mb.with(RuntimeInvisibleParameterAnnotationsAttribute.of(parametersInvisibleAnnotations));
             }
         }
-        Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
-                visible, pathStack);
-        Util.computeAnnotations(genericReturnType(), RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReturn(),
-                invisible, pathStack);
+        if (hasGenericReturnType()) {
+            Util.computeAnnotations(genericReturnType(), RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReturn(),
+                    visible, pathStack);
+            Util.computeAnnotations(genericReturnType(), RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReturn(),
+                    invisible, pathStack);
+        }
         // todo: `this` type annotations and generic type
         for (int i = 0; i < typeParameters.size(); i++) {
             final TypeParameter tv = typeParameters.get(i);
@@ -262,8 +314,9 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     boolean signatureNeeded() {
         return !typeParameters.isEmpty() || throws_.stream().anyMatch(GenericType::signatureNeeded)
-                || genericReturnType().signatureNeeded()
-                || params.stream().map(ParamVarImpl::genericType).anyMatch(GenericType::signatureNeeded);
+                || hasGenericReturnType() && genericReturnType().signatureNeeded()
+                || params.stream().filter(ParamVarImpl::hasGenericType).map(ParamVarImpl::genericType)
+                        .anyMatch(GenericType::signatureNeeded);
     }
 
     MethodSignature computeSignature() {
@@ -283,48 +336,52 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
             cb.with(LocalVariable.of(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel()));
-            GenericType.OfClass genericType = typeCreator.genericType();
-            if (!genericType.isRaw()) {
-                cb.with(LocalVariableType.of(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel()));
-            }
-            if (genericType.hasVisibleAnnotations()) {
-                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        visible, pathStack);
-                assert pathStack.isEmpty();
-                Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        visible, pathStack);
-                assert pathStack.isEmpty();
-            }
-            if (genericType.hasInvisibleAnnotations()) {
-                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                        List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
-                        invisible, pathStack);
-                assert pathStack.isEmpty();
-                Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
-                        invisible, pathStack);
-                assert pathStack.isEmpty();
-            }
-        }
-        for (final ParamVarImpl param : params) {
-            if (param != null) {
-                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
-                GenericType genericType = param.genericType();
+            if (typeCreator.hasGenericType()) {
+                GenericType.OfClass genericType = typeCreator.genericType();
                 if (!genericType.isRaw()) {
-                    cb.with(LocalVariableType.of(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
-                            bc.endLabel()));
+                    cb.with(LocalVariableType.of(0, "this", Util.signatureOf(genericType), bc.startLabel(), bc.endLabel()));
                 }
                 if (genericType.hasVisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
+                            visible, pathStack);
+                    assert pathStack.isEmpty();
+                    Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofMethodReceiver(),
                             visible, pathStack);
                     assert pathStack.isEmpty();
                 }
                 if (genericType.hasInvisibleAnnotations()) {
                     Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
-                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                            List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), 0))),
                             invisible, pathStack);
                     assert pathStack.isEmpty();
+                    Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofMethodReceiver(),
+                            invisible, pathStack);
+                    assert pathStack.isEmpty();
+                }
+            }
+        }
+        for (final ParamVarImpl param : params) {
+            if (param != null) {
+                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
+                if (param.hasGenericType()) {
+                    GenericType genericType = param.genericType();
+                    if (!genericType.isRaw()) {
+                        cb.with(LocalVariableType.of(param.slot(), param.name(), Util.signatureOf(genericType), bc.startLabel(),
+                                bc.endLabel()));
+                    }
+                    if (genericType.hasVisibleAnnotations()) {
+                        Util.computeAnnotations(genericType, RetentionPolicy.RUNTIME, TypeAnnotation.TargetInfo.ofLocalVariable(
+                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                                visible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
+                    if (genericType.hasInvisibleAnnotations()) {
+                        Util.computeAnnotations(genericType, RetentionPolicy.CLASS, TypeAnnotation.TargetInfo.ofLocalVariable(
+                                List.of(TypeAnnotation.LocalVarTargetInfo.of(bc.startLabel(), bc.endLabel(), param.slot()))),
+                                invisible, pathStack);
+                        assert pathStack.isEmpty();
+                    }
                 }
             }
         }

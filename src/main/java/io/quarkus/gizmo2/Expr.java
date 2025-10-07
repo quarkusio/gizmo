@@ -17,10 +17,15 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
 
     /**
      * {@return the generic expression type (not {@code null})}
+     * If {@link #hasGenericType()} returns {@code false},
+     * the returned type will be a wrapper around {@link Typed#type() type()}.
      */
-    default GenericType genericType() {
-        return GenericType.of(type());
-    }
+    GenericType genericType();
+
+    /**
+     * {@return {@code true} if this value has a generic type, or {@code false} if it does not have one}
+     */
+    boolean hasGenericType();
 
     /**
      * {@return an assignable for an element of this array}
@@ -57,9 +62,7 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      *
      * @param desc the field descriptor (must not be {@code null})
      */
-    default InstanceFieldVar field(FieldDesc desc) {
-        return field(desc, GenericType.of(desc.type()));
-    }
+    InstanceFieldVar field(FieldDesc desc);
 
     /**
      * {@return an assignable for a field of this object}
@@ -97,7 +100,7 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      * @param desc the field descriptor (must not be {@code null})
      */
     static StaticFieldVar staticField(FieldDesc desc) {
-        return staticField(desc, GenericType.of(desc.type()));
+        return new StaticFieldVarImpl(desc, null);
     }
 
     /**

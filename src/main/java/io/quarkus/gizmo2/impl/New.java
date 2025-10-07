@@ -11,11 +11,10 @@ import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
 
 final class New extends Item {
-    private final GenericType type;
     private Label label;
 
-    New(final GenericType type) {
-        this.type = type;
+    New(final ClassDesc type, final GenericType genericType) {
+        super(type, genericType);
     }
 
     @Override
@@ -23,22 +22,14 @@ final class New extends Item {
         return "New:" + type().displayName();
     }
 
-    public GenericType genericType() {
-        return type;
-    }
-
-    public ClassDesc type() {
-        return type.desc();
-    }
-
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         label = cb.newBoundLabel();
-        cb.new_(type.desc());
+        cb.new_(type());
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-        if (type.hasAnnotations(retention)) {
-            Util.computeAnnotations(type, retention, TypeAnnotation.TargetInfo.ofNewExpr(label), annotations,
+        if (hasGenericType() && genericType().hasAnnotations(retention)) {
+            Util.computeAnnotations(genericType(), retention, TypeAnnotation.TargetInfo.ofNewExpr(label), annotations,
                     new ArrayDeque<>());
         }
     }

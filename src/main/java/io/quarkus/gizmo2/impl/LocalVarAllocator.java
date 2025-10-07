@@ -27,15 +27,17 @@ final class LocalVarAllocator extends Item {
         startScope = cb.newBoundLabel();
         endScope = block.endLabel();
         cb.with(LocalVariable.of(slot, localVar.name(), localVar.type(), startScope, endScope));
-        GenericType gt = localVar.genericType();
-        if (!gt.isRaw()) {
-            cb.with(LocalVariableType.of(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope));
+        if (localVar.hasGenericType()) {
+            GenericType gt = localVar.genericType();
+            if (!gt.isRaw()) {
+                cb.with(LocalVariableType.of(slot, localVar.name(), Util.signatureOf(gt), startScope, endScope));
+            }
         }
         localVar.slot = slot;
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-        if (localVar.genericType().hasAnnotations(retention)) {
+        if (localVar.hasGenericType() && localVar.genericType().hasAnnotations(retention)) {
             Util.computeAnnotations(localVar.genericType(), retention, TypeAnnotation.TargetInfo.ofLocalVariable(
                     List.of(
                             TypeAnnotation.LocalVarTargetInfo.of(startScope, endScope, localVar.slot))),

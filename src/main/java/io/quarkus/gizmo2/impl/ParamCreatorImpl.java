@@ -14,6 +14,7 @@ import io.quarkus.gizmo2.creator.ParamCreator;
 
 public final class ParamCreatorImpl extends ModifiableCreatorImpl implements ParamCreator {
     boolean typeEstablished;
+    ClassDesc type;
     GenericType genericType;
 
     public ParamCreatorImpl(final GizmoImpl gizmo) {
@@ -32,37 +33,46 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
 
     ParamVarImpl apply(final Consumer<ParamCreator> builder, final String name, final int index, final int slot) {
         builder.accept(this);
-        if (genericType == null) {
+        if (type == null && genericType == null) {
             throw new IllegalStateException("Parameter type was not set");
         }
         typeEstablished = true;
-        return new ParamVarImpl(genericType, name, index, slot, modifiers, List.copyOf(invisible.values()),
+        return new ParamVarImpl(type, genericType, name, index, slot, modifiers, List.copyOf(invisible.values()),
                 List.copyOf(visible.values()));
     }
 
     public void setType(final GenericType genericType) {
         checkNotNullParam("type", genericType);
-        if (genericType.desc().equals(ConstantDescs.CD_void)) {
-            throw new IllegalArgumentException("Bad genericType for parameter: " + genericType);
-        }
         if (typeEstablished && !genericType.equals(this.genericType)) {
             throw new IllegalArgumentException(
                     "Given type " + genericType + " differs from established type " + this.genericType);
         }
+        setType(genericType.desc());
         this.genericType = genericType;
     }
 
     public void setType(final ClassDesc type) {
         checkNotNullParam("type", type);
-        setType(GenericType.of(type));
+        if (type.equals(ConstantDescs.CD_void)) {
+            throw new IllegalArgumentException("Bad type for parameter: " + type);
+        }
+        if (typeEstablished && !type.equals(this.type)) {
+            throw new IllegalArgumentException(
+                    "Given type " + type + " differs from established type " + this.type);
+        }
+        this.type = type;
     }
 
     public ClassDesc type() {
-        return genericType.desc();
+        return type;
     }
 
     public GenericType genericType() {
         return genericType;
+    }
+
+    public boolean hasGenericType() {
+        return genericType != null;
     }
 
     public ElementType annotationTargetType() {

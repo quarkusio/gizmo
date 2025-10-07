@@ -66,6 +66,10 @@ public final class Util {
         return constantCache.get(clazz);
     }
 
+    public static boolean equals(ClassDesc a, ClassDesc b) {
+        return a == b || a != null && b != null && a.descriptorString().equals(b.descriptorString());
+    }
+
     private static final MethodHandle actualKind;
     private static final MethodHandle GenericType_computeAnnotations;
     private static final MethodHandle TypeParameter_computeAnnotations;

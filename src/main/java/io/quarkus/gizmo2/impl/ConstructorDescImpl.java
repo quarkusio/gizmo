@@ -1,10 +1,13 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.GenericTypes.*;
+import static java.lang.constant.ConstantDescs.*;
+
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Objects;
 
+import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 
 public final class ConstructorDescImpl implements ConstructorDesc {
@@ -13,7 +16,7 @@ public final class ConstructorDescImpl implements ConstructorDesc {
     private final int hashCode;
 
     public ConstructorDescImpl(final ClassDesc owner, final MethodTypeDesc type) {
-        if (!ConstantDescs.CD_void.equals(type.returnType())) {
+        if (!CD_void.equals(type.returnType())) {
             throw new IllegalArgumentException("Constructor descriptor must have a return type of void");
         }
         this.owner = owner;
@@ -31,6 +34,18 @@ public final class ConstructorDescImpl implements ConstructorDesc {
 
     public MethodTypeDesc type() {
         return type;
+    }
+
+    public ClassDesc returnType() {
+        return CD_void;
+    }
+
+    public GenericType genericReturnType() {
+        return GT_void;
+    }
+
+    public boolean hasGenericReturnType() {
+        return false;
     }
 
     public boolean equals(final Object obj) {

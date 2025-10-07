@@ -1,7 +1,5 @@
 package io.quarkus.gizmo2.impl;
 
-import java.lang.constant.ClassDesc;
-
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -10,23 +8,14 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 
 public final class StaticFieldVarImpl extends AssignableImpl implements StaticFieldVar {
     private final FieldDesc desc;
-    private final GenericType genericType;
 
     public StaticFieldVarImpl(FieldDesc desc, final GenericType genericType) {
+        super(desc.type(), genericType);
         this.desc = desc;
-        this.genericType = genericType;
     }
 
     public FieldDesc desc() {
         return desc;
-    }
-
-    public ClassDesc type() {
-        return desc.type();
-    }
-
-    public GenericType genericType() {
-        return genericType;
     }
 
     public boolean bound() {

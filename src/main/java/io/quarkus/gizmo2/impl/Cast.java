@@ -8,13 +8,12 @@ import io.quarkus.gizmo2.GenericType;
 
 abstract class Cast extends Item {
     final Item a;
-    final GenericType toType;
 
     private boolean bound;
 
-    public Cast(final Expr a, final GenericType toType) {
+    public Cast(final Expr a, final ClassDesc toType, final GenericType toGenericType) {
+        super(toType, toGenericType);
         this.a = (Item) a;
-        this.toType = toType;
     }
 
     @Override
@@ -29,13 +28,5 @@ abstract class Cast extends Item {
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
         return a.process(node.prev(), op);
-    }
-
-    public GenericType genericType() {
-        return toType;
-    }
-
-    public ClassDesc type() {
-        return toType.desc();
     }
 }

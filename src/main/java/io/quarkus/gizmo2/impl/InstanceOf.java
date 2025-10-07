@@ -1,7 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.annotation.RetentionPolicy;
-import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -19,12 +18,9 @@ final class InstanceOf extends Item {
     private Label label;
 
     InstanceOf(final Expr input, final GenericType type) {
+        super(ConstantDescs.CD_boolean);
         this.input = (Item) input;
         this.type = type;
-    }
-
-    public ClassDesc type() {
-        return ConstantDescs.CD_boolean;
     }
 
     protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {

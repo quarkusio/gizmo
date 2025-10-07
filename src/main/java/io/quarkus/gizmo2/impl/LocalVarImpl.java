@@ -12,13 +12,12 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;
-    private final GenericType type;
     private final BlockCreatorImpl owner;
     int slot = -1;
 
-    LocalVarImpl(final BlockCreatorImpl owner, final String name, final GenericType type) {
+    LocalVarImpl(final BlockCreatorImpl owner, final String name, final ClassDesc type, final GenericType genericType) {
+        super(type, genericType);
         this.name = name;
-        this.type = type;
         this.owner = owner;
     }
 
@@ -32,14 +31,6 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
 
     public String name() {
         return name;
-    }
-
-    public ClassDesc type() {
-        return type.desc();
-    }
-
-    public GenericType genericType() {
-        return type;
     }
 
     public boolean bound() {
