@@ -11,11 +11,13 @@ import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
-import io.quarkus.gizmo2.creator.ops.StringBuilderOps;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class EqualsHashCodeToStringGenerator {
+    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
+            "append", StringBuilder.class, String.class);
+
     private final ClassCreator cc;
     private final List<FieldDesc> fields;
 
@@ -115,8 +117,8 @@ public class EqualsHashCodeToStringGenerator {
             mc.public_();
             mc.returning(String.class);
             mc.body(b0 -> {
-                StringBuilderOps result = b0.withNewStringBuilder();
-                result.append(thisClass.displayName() + '(');
+                LocalVar result = b0.localVar("result", b0.new_(StringBuilder.class));
+                b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(thisClass.displayName() + '('));
 
                 boolean first = true;
                 for (FieldDesc field : fields) {
@@ -126,19 +128,20 @@ public class EqualsHashCodeToStringGenerator {
                     }
 
                     if (first) {
-                        result.append(field.name() + '=');
+                        b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(field.name() + '='));
                     } else {
-                        result.append(", " + field.name() + '=');
+                        b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(", " + field.name() + '='));
                     }
 
                     Expr value = b0.get(cc.this_().field(field));
-                    result.append(field.type().isArray() ? b0.arrayToString(value) : value);
+                    b0.invokeVirtual(MD_StringBuilder_append, result,
+                            field.type().isArray() ? b0.arrayToString(value) : b0.objToString(value));
 
                     first = false;
                 }
 
-                result.append(')');
-                b0.return_(result.toString_());
+                b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(")"));
+                b0.return_(b0.withObject(result).toString_());
             });
         });
     }
