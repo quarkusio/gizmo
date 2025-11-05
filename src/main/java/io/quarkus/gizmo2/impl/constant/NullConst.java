@@ -24,6 +24,8 @@ public final class NullConst extends ConstImpl {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
         cb.aconst_null();
+        // TODO: work around https://github.com/eclipse-openj9/openj9/issues/22812
+        cb.checkcast(type());
     }
 
     public ConstantDesc desc() {
