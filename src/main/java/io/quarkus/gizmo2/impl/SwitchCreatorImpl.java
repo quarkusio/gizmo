@@ -6,8 +6,9 @@ import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
@@ -74,8 +75,8 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
         }
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return switchVal.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        switchVal.process(itr, op);
     }
 
     public BlockCreatorImpl enclosing() {
@@ -120,6 +121,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
             throw new IllegalStateException("Default case was already added");
         }
         default_ = new BlockCreatorImpl(enclosing, VoidConst.INSTANCE, type());
+        default_.branchTarget();
         enclosing.nesting(() -> {
             default_.accept(body);
         });
@@ -168,6 +170,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
 
         CaseCreatorImpl(BlockCreatorImpl parent, ClassDesc outputType) {
             body = new BlockCreatorImpl(parent, ConstImpl.ofVoid(), outputType);
+            body.branchTarget();
         }
 
         public void of(final Const val) {

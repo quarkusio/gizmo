@@ -18,13 +18,16 @@ sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstImpl> extends 
         super(enclosing, switchVal, type, constantType);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Label fallOut, nonMatching;
         if (default_ == null) {
             fallOut = nonMatching = block.newLabel();
         } else {
             fallOut = default_.endLabel();
             nonMatching = default_.startLabel();
+            if (fallThrough) {
+                default_.breakTarget();
+            }
         }
 
         List<SwitchCase> switchCases = casesByConstant.entrySet().stream()
@@ -33,26 +36,38 @@ sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstImpl> extends 
                 .toList();
 
         hash(cb);
+        smb.pop(); // switch value
         if ((double) casesByConstant.size() / ((double) (max - min)) >= TABLESWITCH_DENSITY) {
             cb.tableswitch(min, max, nonMatching, switchCases);
         } else {
             cb.lookupswitch(nonMatching, switchCases);
         }
+        smb.wroteCode();
+        StackMapBuilder.Saved saved = smb.save();
 
         // now write the cases
         for (CaseCreatorImpl case_ : casesByConstant.values()) {
             // write body
-            case_.body.writeCode(cb, block);
+            case_.body.writeCode(cb, block, smb);
             if (case_.body.mayFallThrough()) {
                 cb.goto_(fallOut);
+                smb.wroteCode();
             }
+            smb.restore(saved);
         }
         // finally, the default block
         if (default_ == null) {
             // `fallOut` and `nonMatching` refer to the same object, so we need to bind it just once
             cb.labelBinding(fallOut);
+            if (fallThrough) {
+                smb.addFrameInfo(cb);
+            }
         } else {
-            default_.writeCode(cb, block);
+            default_.writeCode(cb, block, smb);
+            smb.restore(saved);
+        }
+        if (!Util.isVoid(type)) {
+            smb.push(type());
         }
     }
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class DoubleConst extends ConstImpl {
     private final double value;
@@ -14,7 +15,7 @@ public final class DoubleConst extends ConstImpl {
         this.value = value;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         long asLong = (long) value;
         int asInt = (int) value;
         if (asInt == asLong && value == (double) asLong) {
@@ -76,6 +77,8 @@ public final class DoubleConst extends ConstImpl {
         } else {
             cb.ldc(Double.valueOf(value));
         }
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public boolean isZero() {

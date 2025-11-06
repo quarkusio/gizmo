@@ -1,8 +1,9 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
+import java.util.ListIterator;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -22,24 +23,30 @@ final class Return extends Item {
         return false;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return returnValue.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        returnValue.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl from) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         ClassDesc returnType = from.returnType();
         if (tryFinally != null) {
-            cb.goto_(tryFinally.cleanup(new ReturnKey(returnType)));
+            cb.goto_(tryFinally.cleanup(new ReturnKey(returnType, smb.save())));
+            smb.wroteCode();
         } else {
             cb.return_(TypeKind.from(returnType));
+            smb.wroteCode();
+        }
+        if (!Util.isVoid(returnType)) {
+            smb.pop();
         }
     }
 
     static final class ReturnKey extends TryFinally.CleanupKey {
         private final ClassDesc returnType;
 
-        ReturnKey(final ClassDesc returnType) {
+        ReturnKey(final ClassDesc returnType, final StackMapBuilder.Saved saved) {
+            super(saved);
             this.returnType = returnType;
         }
 

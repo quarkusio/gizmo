@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
 import io.github.dmlloyd.classfile.TypeAnnotation;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.GenericType;
 
 final class New extends Item {
@@ -22,9 +23,11 @@ final class New extends Item {
         return "New:" + type().displayName();
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         label = cb.newBoundLabel();
         cb.new_(type());
+        smb.push(StackMapFrameInfo.UninitializedVerificationTypeInfo.of(label));
+        smb.wroteCode();
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {

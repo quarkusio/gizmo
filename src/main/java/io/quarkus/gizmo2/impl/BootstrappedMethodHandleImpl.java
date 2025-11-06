@@ -34,7 +34,7 @@ public final class BootstrappedMethodHandleImpl extends Item {
         this.bootstrapArguments = bootstrapArguments;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invokedynamic(DynamicCallSiteDesc.of(
                 MethodHandleDesc.ofMethod(
                         bootstrapMethodDesc instanceof InterfaceMethodDesc ? DirectMethodHandleDesc.Kind.INTERFACE_STATIC
@@ -50,5 +50,7 @@ public final class BootstrappedMethodHandleImpl extends Item {
                 ConstantDescs.CD_MethodHandle,
                 "getMethodHandle",
                 MethodTypeDesc.of(ConstantDescs.CD_MethodHandle));
+        smb.push(ConstantDescs.CD_MethodHandle);
+        smb.wroteCode();
     }
 }

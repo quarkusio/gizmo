@@ -21,6 +21,7 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Item;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 
 public abstract non-sealed class ConstImpl extends Item implements Const {
@@ -346,8 +347,10 @@ public abstract non-sealed class ConstImpl extends Item implements Const {
 
     public abstract int hashCode();
 
-    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         // most implementations are constant table entries no matter what
         cb.ldc(desc());
+        smb.push(type());
+        smb.wroteCode();
     }
 }

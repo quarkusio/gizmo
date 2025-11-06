@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.GenericType;
@@ -20,8 +21,8 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
         this.genericType = genericType;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return item.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        item.process(itr, op);
     }
 
     public boolean bound() {
@@ -67,7 +68,10 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
         };
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.getfield(owner(), name(), type());
+        smb.pop(); // receiver
+        smb.push(type()); // value
+        smb.wroteCode();
     }
 }

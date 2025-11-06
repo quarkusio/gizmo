@@ -377,7 +377,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             b0.block(init);
                         }
                     });
-                    bc.writeCode(cb, bc);
+                    bc.writeCode(cb, bc, new StackMapBuilder());
                     cb.return_();
                 });
             });

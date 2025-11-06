@@ -5,7 +5,10 @@ import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
+
+import io.github.dmlloyd.classfile.CodeBuilder;
 
 final class IfZero extends If {
     final Item a;
@@ -16,8 +19,13 @@ final class IfZero extends If {
         this.a = mustBeBoolean ? convert(a, CD_boolean) : a;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        a.process(itr, op);
+    }
+
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        smb.pop(); // a
+        super.writeCode(cb, block, smb);
     }
 
     IfOp op(final Kind kind) {

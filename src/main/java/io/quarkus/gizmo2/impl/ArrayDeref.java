@@ -1,9 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Conversions.convert;
-import static java.lang.constant.ConstantDescs.CD_int;
+import static io.quarkus.gizmo2.impl.Conversions.*;
+import static java.lang.constant.ConstantDescs.*;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -20,8 +21,9 @@ public final class ArrayDeref extends AssignableImpl {
         this.index = convert(index, CD_int);
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return item.process(index.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        index.process(itr, op);
+        item.process(itr, op);
     }
 
     public Item array() {
@@ -66,7 +68,11 @@ public final class ArrayDeref extends AssignableImpl {
         return bound;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.arrayLoad(Util.actualKindOf(typeKind()));
+        smb.pop();
+        smb.pop();
+        smb.push(Util.verificationTypeOf(type()));
+        smb.wroteCode();
     }
 }

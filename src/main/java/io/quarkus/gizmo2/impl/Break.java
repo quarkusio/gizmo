@@ -17,10 +17,10 @@ final class Break extends Goto {
         return "Break:" + outer;
     }
 
-    Label target(final BlockCreatorImpl from) {
+    Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         if (tryFinally != null) {
-            return tryFinally.cleanup(new BreakKey(outer));
+            return tryFinally.cleanup(new BreakKey(outer, smb.save()));
         } else {
             return outer.endLabel();
         }
@@ -29,7 +29,8 @@ final class Break extends Goto {
     static class BreakKey extends TryFinally.CleanupKey {
         private final BlockCreatorImpl outer;
 
-        BreakKey(final BlockCreatorImpl outer) {
+        BreakKey(final BlockCreatorImpl outer, final StackMapBuilder.Saved saved) {
+            super(saved);
             this.outer = outer;
         }
 

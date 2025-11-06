@@ -6,6 +6,7 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.List;
+import java.util.ListIterator;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
@@ -59,48 +60,62 @@ abstract class If extends Item {
         }
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         if (whenTrue != null) {
-            Node trueTail = whenTrue.tail();
+            ListIterator<Item> trueItr = whenTrue.iterator();
             if (whenFalse != null) {
                 // if-else
-                Node falseTail = whenFalse.tail();
-                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
+                ListIterator<Item> falseItr = whenFalse.iterator();
+                if (trueItr.previous() instanceof Goto goto_ && trueItr.previous() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind).accept(cb, goto_.target(block));
-                    whenFalse.writeCode(cb, block);
-                } else if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
+                    op(kind).accept(cb, goto_.target(block, smb));
+                    smb.wroteCode();
+                    whenFalse.writeCode(cb, block, smb);
+                } else if (falseItr.previous() instanceof Goto goto_ && falseItr.previous() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target(block));
-                    whenTrue.writeCode(cb, block);
+                    op(kind.invert()).accept(cb, goto_.target(block, smb));
+                    smb.wroteCode();
+                    whenTrue.writeCode(cb, block, smb);
                 } else {
                     op(kind).accept(cb, whenTrue.startLabel());
-                    whenFalse.writeCode(cb, block);
+                    smb.wroteCode();
+                    StackMapBuilder.Saved saved = smb.save();
+                    whenFalse.writeCode(cb, block, smb);
                     if (whenFalse.mayFallThrough()) {
+                        whenTrue.breakTarget();
                         cb.goto_(whenTrue.endLabel());
+                        smb.wroteCode();
                     }
-                    whenTrue.writeCode(cb, block);
+                    smb.restore(saved);
+                    whenTrue.branchTarget();
+                    whenTrue.writeCode(cb, block, smb);
                 }
             } else {
                 // if
-                if (trueTail.item() instanceof Goto goto_ && trueTail.prev().item() instanceof BlockHeader) {
+                if (trueItr.previous() instanceof Goto goto_ && trueItr.previous() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind).accept(cb, goto_.target(block));
+                    op(kind).accept(cb, goto_.target(block, smb));
+                    smb.wroteCode();
                 } else {
                     op(kind.invert()).accept(cb, whenTrue.endLabel());
-                    whenTrue.writeCode(cb, block);
+                    smb.wroteCode();
+                    whenTrue.breakTarget();
+                    whenTrue.writeCode(cb, block, smb);
                 }
             }
         } else {
             if (whenFalse != null) {
                 // if not
-                Node falseTail = whenFalse.tail();
-                if (falseTail.item() instanceof Goto goto_ && falseTail.prev().item() instanceof BlockHeader) {
+                ListIterator<Item> falseItr = whenFalse.iterator();
+                if (falseItr.previous() instanceof Goto goto_ && falseItr.previous() instanceof BlockHeader) {
                     // just steal the goto target
-                    op(kind.invert()).accept(cb, goto_.target(block));
+                    op(kind.invert()).accept(cb, goto_.target(block, smb));
+                    smb.wroteCode();
                 } else {
                     op(kind).accept(cb, whenFalse.endLabel());
-                    whenFalse.writeCode(cb, block);
+                    smb.wroteCode();
+                    whenFalse.breakTarget();
+                    whenFalse.writeCode(cb, block, smb);
                 }
             } else {
                 throw new IllegalStateException();

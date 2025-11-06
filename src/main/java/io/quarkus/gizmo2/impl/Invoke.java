@@ -6,7 +6,8 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Opcode;
@@ -73,19 +74,27 @@ final class Invoke extends Item {
         return "Invoke:" + owner.displayName() + "." + name;
     }
 
-    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-        node = node.prev();
+    protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         int size = args.size();
         for (int i = size - 1; i >= 0; i--) {
-            node = args.get(i).process(node, op);
+            args.get(i).process(itr, op);
         }
         if (instance != null) {
-            node = instance.process(node, op);
+            instance.process(itr, op);
         }
-        return node;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invoke(opcode, owner, name, type, isInterface);
+        if (opcode != Opcode.INVOKESTATIC) {
+            smb.pop(); // receiver
+        }
+        for (ClassDesc paramType : type.parameterList()) {
+            smb.pop(); // parameter
+        }
+        if (!Util.isVoid(type.returnType())) {
+            smb.push(type.returnType()); // result
+        }
+        smb.wroteCode();
     }
 }

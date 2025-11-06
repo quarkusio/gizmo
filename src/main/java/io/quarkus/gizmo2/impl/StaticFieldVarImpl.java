@@ -36,7 +36,9 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         };
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.getstatic(owner(), name(), type());
+        smb.push(type());
+        smb.wroteCode();
     }
 }

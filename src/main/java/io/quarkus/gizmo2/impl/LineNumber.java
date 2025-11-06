@@ -9,7 +9,7 @@ final class LineNumber extends Item {
         this.lineNumber = lineNumber;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.lineNumber(lineNumber);
     }
 }
