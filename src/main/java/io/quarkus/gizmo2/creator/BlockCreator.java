@@ -43,10 +43,7 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
-import io.quarkus.gizmo2.impl.ArrayDeref;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
-import io.quarkus.gizmo2.impl.FieldDeref;
-import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
 import io.quarkus.gizmo2.impl.Util;
 
 /**
@@ -508,31 +505,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
 
     // atomic
 
-    private Expr compareAndSet(Assignable var, Expr expected, Expr update, String name) {
-        final Const varHandle;
-        final List<Expr> args;
-        final MethodTypeDesc typeDesc;
-        if (var instanceof StaticFieldVarImpl sfv) {
-            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
-            args = List.of(expected, update);
-            typeDesc = MethodTypeDesc.of(CD_boolean, var.type(), var.type());
-        } else if (var instanceof FieldDeref fd) {
-            varHandle = Const.ofFieldVarHandle(fd.desc());
-            args = List.of(fd.instance(), expected, update);
-            typeDesc = MethodTypeDesc.of(CD_boolean, fd.instance().type(), var.type(), var.type());
-        } else if (var instanceof ArrayDeref ad) {
-            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
-            args = List.of(ad.array(), ad.index(), expected, update);
-            typeDesc = MethodTypeDesc.of(CD_boolean, ad.array().type(), CD_int, var.type(), var.type());
-        } else {
-            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
-        }
-        return invokeVirtual(ClassMethodDesc.of(
-                CD_VarHandle,
-                name,
-                typeDesc), varHandle, args);
-    }
-
     /**
      * Atomically sets the value of {@code var} to {@code update} if its current value
      * is equal to {@code expected}.
@@ -542,9 +514,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param update the new value to set (must not be {@code null})
      * @return a {@code boolean}-typed expression that is {@code true} if the update succeeded or {@code false} if it did not
      */
-    default Expr compareAndSet(Assignable var, Expr expected, Expr update) {
-        return compareAndSet(var, expected, update, "compareAndSet");
-    }
+    Expr compareAndSet(Assignable var, Expr expected, Expr update);
 
     /**
      * Atomically sets the value of {@code var} to {@code update} if its current value
@@ -566,16 +536,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr weakCompareAndSet(Assignable var, Expr expected, Expr update, MemoryOrder order) {
-        return compareAndSet(var, expected, update,
-                switch (order) {
-                    case Volatile -> "weakCompareAndSet";
-                    case Acquire -> "weakCompareAndSetAcquire";
-                    case Release -> "weakCompareAndSetRelease";
-                    case Plain -> "weakCompareAndSetPlain";
-                    default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-                });
-    }
+    Expr weakCompareAndSet(Assignable var, Expr expected, Expr update, MemoryOrder order);
 
     /**
      * Atomically sets the value of {@code var} to {@code update} if its current value
@@ -592,63 +553,10 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         return weakCompareAndSet(var, expected, update, MemoryOrder.Volatile);
     }
 
-    default Expr compareAndExchange(Assignable var, Expr expected, Expr update, MemoryOrder order) {
-        final Const varHandle;
-        final List<Expr> args;
-        final MethodTypeDesc typeDesc;
-        if (var instanceof StaticFieldVarImpl sfv) {
-            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
-            args = List.of(expected, update);
-            typeDesc = MethodTypeDesc.of(var.type(), var.type(), var.type());
-        } else if (var instanceof FieldDeref fd) {
-            varHandle = Const.ofFieldVarHandle(fd.desc());
-            args = List.of(fd.instance(), expected, update);
-            typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type(), var.type());
-        } else if (var instanceof ArrayDeref ad) {
-            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
-            args = List.of(ad.array(), ad.index(), expected, update);
-            typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type(), var.type());
-        } else {
-            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
-        }
-        return invokeVirtual(ClassMethodDesc.of(
-                CD_VarHandle,
-                switch (order) {
-                    case Volatile -> "compareAndExchange";
-                    case Acquire -> "compareAndExchangeAcquire";
-                    case Release -> "compareAndExchangeRelease";
-                    default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-                },
-                typeDesc), varHandle, args);
-    }
+    Expr compareAndExchange(Assignable var, Expr expected, Expr update, MemoryOrder order);
 
     default Expr compareAndExchange(Assignable var, Expr expected, Expr update) {
         return compareAndExchange(var, expected, update, MemoryOrder.Volatile);
-    }
-
-    private Expr getAndXxx(Assignable var, Expr arg, String name) {
-        final Const varHandle;
-        final List<Expr> args;
-        final MethodTypeDesc typeDesc;
-        if (var instanceof StaticFieldVarImpl sfv) {
-            varHandle = Const.ofStaticFieldVarHandle(sfv.desc());
-            args = List.of(arg);
-            typeDesc = MethodTypeDesc.of(var.type(), var.type());
-        } else if (var instanceof FieldDeref fd) {
-            varHandle = Const.ofFieldVarHandle(fd.desc());
-            args = List.of(fd.instance(), arg);
-            typeDesc = MethodTypeDesc.of(var.type(), fd.instance().type(), var.type());
-        } else if (var instanceof ArrayDeref ad) {
-            varHandle = Const.ofArrayVarHandle(ad.type().arrayType());
-            args = List.of(ad.array(), ad.index(), arg);
-            typeDesc = MethodTypeDesc.of(var.type(), ad.array().type(), CD_int, var.type());
-        } else {
-            throw new IllegalArgumentException("Unsupported target for atomic operations: " + var);
-        }
-        return invokeVirtual(ClassMethodDesc.of(
-                CD_VarHandle,
-                name,
-                typeDesc), varHandle, args);
     }
 
     /**
@@ -667,14 +575,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr getAndSet(Assignable var, Expr newValue, MemoryOrder order) {
-        return getAndXxx(var, newValue, switch (order) {
-            case Volatile -> "getAndSet";
-            case Acquire -> "getAndSetAcquire";
-            case Release -> "getAndSetRelease";
-            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-        });
-    }
+    Expr getAndSet(Assignable var, Expr newValue, MemoryOrder order);
 
     /**
      * Atomically get and set the value of the target assignable expression
@@ -705,14 +606,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr getAndAdd(Assignable var, Expr amount, MemoryOrder order) {
-        return getAndXxx(var, amount, switch (order) {
-            case Volatile -> "getAndAdd";
-            case Acquire -> "getAndAddAcquire";
-            case Release -> "getAndAddRelease";
-            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-        });
-    }
+    Expr getAndAdd(Assignable var, Expr amount, MemoryOrder order);
 
     /**
      * Atomically get, add, and store the value of the target assignable expression
@@ -743,14 +637,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr getAndBitwiseOr(Assignable var, Expr other, MemoryOrder order) {
-        return getAndXxx(var, other, switch (order) {
-            case Volatile -> "getAndBitwiseOr";
-            case Acquire -> "getAndBitwiseOrAcquire";
-            case Release -> "getAndBitwiseOrRelease";
-            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-        });
-    }
+    Expr getAndBitwiseOr(Assignable var, Expr other, MemoryOrder order);
 
     /**
      * Atomically get, bitwise-or, and store the value of the target assignable expression
@@ -781,14 +668,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr getAndBitwiseAnd(Assignable var, Expr other, MemoryOrder order) {
-        return getAndXxx(var, other, switch (order) {
-            case Volatile -> "getAndBitwiseAnd";
-            case Acquire -> "getAndBitwiseAndAcquire";
-            case Release -> "getAndBitwiseAndRelease";
-            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-        });
-    }
+    Expr getAndBitwiseAnd(Assignable var, Expr other, MemoryOrder order);
 
     /**
      * Atomically get, bitwise-and, and store the value of the target assignable expression
@@ -819,14 +699,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @throws IllegalArgumentException if the target variable cannot be accessed atomically,
      *         or if {@code order} is not one of the allowed values
      */
-    default Expr getAndBitwiseXor(Assignable var, Expr other, MemoryOrder order) {
-        return getAndXxx(var, other, switch (order) {
-            case Volatile -> "getAndBitwiseXor";
-            case Acquire -> "getAndBitwiseXorAcquire";
-            case Release -> "getAndBitwiseXorRelease";
-            default -> throw new IllegalArgumentException("Unsupported memory order " + order);
-        });
-    }
+    Expr getAndBitwiseXor(Assignable var, Expr other, MemoryOrder order);
 
     /**
      * Atomically get, bitwise-xor, and store the value of the target assignable expression

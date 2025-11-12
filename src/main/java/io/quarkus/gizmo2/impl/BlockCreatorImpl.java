@@ -394,6 +394,39 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         ((AssignableImpl) var).emitDec(this, amount);
     }
 
+    public Expr compareAndExchange(final Assignable var, final Expr expected, final Expr update, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitCompareAndExchange(this, (Item) expected, (Item) update, order));
+    }
+
+    public Expr getAndSet(final Assignable var, final Expr newValue, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitReadModifyWrite(this, "Set", (Item) newValue, order));
+    }
+
+    public Expr getAndAdd(final Assignable var, final Expr amount, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitReadModifyWrite(this, "Add", (Item) amount, order));
+    }
+
+    public Expr getAndBitwiseOr(final Assignable var, final Expr other, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitReadModifyWrite(this, "BitwiseOr", (Item) other, order));
+    }
+
+    public Expr getAndBitwiseAnd(final Assignable var, final Expr other, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitReadModifyWrite(this, "BitwiseAnd", (Item) other, order));
+    }
+
+    public Expr getAndBitwiseXor(final Assignable var, final Expr other, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitReadModifyWrite(this, "BitwiseXor", (Item) other, order));
+    }
+
+    public Expr compareAndSet(final Assignable var, final Expr expected, final Expr update) {
+        return addItem(
+                ((AssignableImpl) var).emitCompareAndSet(this, (Item) expected, (Item) update, false, MemoryOrder.Volatile));
+    }
+
+    public Expr weakCompareAndSet(final Assignable var, final Expr expected, final Expr update, final MemoryOrder order) {
+        return addItem(((AssignableImpl) var).emitCompareAndSet(this, (Item) expected, (Item) update, true, order));
+    }
+
     public Expr newEmptyArray(final ClassDesc componentType, final Expr size) {
         return addItem(new NewEmptyArray(componentType, (Item) size));
     }

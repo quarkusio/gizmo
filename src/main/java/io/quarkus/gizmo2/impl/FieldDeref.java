@@ -54,6 +54,19 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
         return item;
     }
 
+    Item emitCompareAndExchange(final BlockCreatorImpl block, final Item expect, final Item update, final MemoryOrder order) {
+        return new FieldCompareAndExchange(this, expect, update, order);
+    }
+
+    Item emitCompareAndSet(final BlockCreatorImpl block, final Item expect, final Item update, final boolean weak,
+            final MemoryOrder order) {
+        return new FieldCompareAndSet(this, expect, update, weak, order);
+    }
+
+    Item emitReadModifyWrite(final BlockCreatorImpl block, final String op, final Item newVal, final MemoryOrder order) {
+        return new FieldReadModifyWrite(this, op, newVal, order);
+    }
+
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
         return switch (mode) {
             case AsDeclared -> asBound();

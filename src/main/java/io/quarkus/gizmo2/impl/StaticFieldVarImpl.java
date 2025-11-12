@@ -22,6 +22,19 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         return false;
     }
 
+    Item emitCompareAndExchange(final BlockCreatorImpl block, final Item expect, final Item update, MemoryOrder order) {
+        return new StaticFieldCompareAndExchange(this, expect, update, order);
+    }
+
+    Item emitCompareAndSet(final BlockCreatorImpl block, final Item expect, final Item update, final boolean weak,
+            final MemoryOrder order) {
+        return new StaticFieldCompareAndSet(this, expect, update, weak, order);
+    }
+
+    Item emitReadModifyWrite(final BlockCreatorImpl block, final String op, final Item newVal, final MemoryOrder order) {
+        return new StaticFieldReadModifyWrite(this, op, newVal, order);
+    }
+
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
         return switch (mode) {
             case AsDeclared -> asBound();
