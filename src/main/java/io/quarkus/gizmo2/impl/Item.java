@@ -13,11 +13,67 @@ import java.util.function.BiConsumer;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Assignable;
+import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InstanceFieldVar;
+import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.desc.FieldDesc;
 
+/**
+ * A single item in the program list of a {@linkplain BlockCreatorImpl block}.
+ * <p>
+ * The program list is a list of logical instructions that are executed in order
+ * from top to bottom.
+ * Each item has a {@linkplain #type() type}; if the type of an item is not {@code void},
+ * then execution of that item will push its result on to the logical program stack.
+ * <p>
+ * Some items have input dependencies (also expressed as items), constrained as follows:
+ * <ul>
+ * <li>The dependency inputs of each item must appear before the consuming item in the program list</li>
+ * <li>The dependency items must appear in the same order that they are consumed</li>
+ * <li>The dependency items must appear consecutively, with no intervening non-{@code void} items
+ * (note that intervening {@code void} items may have non-{@code void} dependencies; this is allowed)</li>
+ * </ul>
+ * Each item consumes its dependencies from the logical program stack before producing its result.
+ * <p>
+ * <h3>Bound and unbound items</h3>
+ * An item may be <em>bound</em> or <em>unbound</em>.
+ * A <em>bound</em> item must be explicitly inserted into the instruction list.
+ * An <em>unbound</em> item may not initially be directly present in the instruction list,
+ * either because it is <em>reusable</em> (like a {@linkplain Var variable} or a {@linkplain Const constant})
+ * or because it is created as a part of another operation (such as an implicit {@link Cast}).
+ * <p>
+ * When an item is {@linkplain #insert inserted}, usually at the end of the instruction list,
+ * its dependencies are {@linkplain #forEachDependency(ListIterator, BiConsumer) traversed} in reverse
+ * order.
+ * If any dependency item is found to be <em>unbound</em>, it is {@linkplain #insertIfUnbound(ListIterator) inserted in turn}.
+ * This may cause the item to {@linkplain #bind() become bound} if it is not a reusable item.
+ * <p>
+ * <h3>Instruction list operations</h3>
+ * The major instruction list operations are:
+ * <ul>
+ * <li>{@link #insert} - insert this item in the instruction list at the iterator position, and {@link #bind} it</li>
+ * <li>{@link #pop} - pop the result of this item (at the iterator position) from the logical stack</li>
+ * <li>{@link #remove} - remove this item from the instruction list at the iterator position</li>
+ * <li>{@link #revoke} - remove this item, and pop all of its input dependencies, from the instruction list at the iterator
+ * position</li>
+ * <li>{@link #process} - perform an action on this item</li>
+ * <li>{@link #insertIfUnbound} - insert this item <em>if</em> it is unbound</li>
+ * <li>{@link #forEachDependency} - perform an operation on each dependency of this item</li>
+ * </ul>
+ * Instructions that are removed or revoked may be replaced with a {@linkplain Nop#FILL fill item}.
+ * Likewise, inserting an instruction at a point adjacent to a fill item will replace that item rather than inserting
+ * into the list.
+ * Fill items do not produce any bytecode and are just placeholders in the instruction list.
+ * This is done to avoid excessive array copying caused by mid-list insertion and removal.
+ * <p>
+ * <h3>Emitting the program</h3>
+ * Once the program is built, the code of the program is {@linkplain #writeCode(CodeBuilder, BlockCreatorImpl, StackMapBuilder)
+ * emitted}.
+ * Each item writes the bytecodes corresponding to its operation, and also updates the {@linkplain StackMapBuilder stack map}
+ * accordingly.
+ */
 public abstract non-sealed class Item implements Expr {
     protected final String creationSite = Util.trackCaller();
     private ClassDesc type;
