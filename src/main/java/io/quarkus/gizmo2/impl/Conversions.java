@@ -137,9 +137,6 @@ final class Conversions {
      * <li>primitive widening conversion</li>
      * <li>unboxing conversion followed by primitive widening conversion</li>
      * <li>primitive widening conversion followed by boxing conversion</li>
-     * <li>reference widening conversion (Reference widening conversion is supposed to exist
-     * from any reference type only to {@code java.lang.Object}. Gizmo does not have a type
-     * system and so does not know which class is assignable to which.)</li>
      * <li>reference narrowing conversion (Reference narrowing conversion is supposed to exist
      * only from {@code java.lang.Object} to any reference type.)</li>
      * <li>reference narrowing conversion followed by unboxing conversion</li>
@@ -176,8 +173,6 @@ final class Conversions {
                 && primitiveWideningConversions.get(fromDesc).contains(toDesc)) {
             // primitive widening
             return new PrimitiveCast(item, toType);
-        } else if (!fromType.isPrimitive() && DS_Object.equals(toDesc)) {
-            return new UncheckedCast(item, CD_Object, null);
         } else if (DS_Object.equals(fromDesc)) {
             if (toType.isPrimitive()) {
                 return new Unbox(new CheckCast(item, boxTypes.get(toDesc), null));
