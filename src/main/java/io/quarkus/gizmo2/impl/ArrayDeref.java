@@ -72,7 +72,7 @@ public final class ArrayDeref extends AssignableImpl {
         cb.arrayLoad(Util.actualKindOf(typeKind()));
         smb.pop();
         smb.pop();
-        smb.push(Util.verificationTypeOf(type()));
+        smb.push(type());
         smb.wroteCode();
     }
 }

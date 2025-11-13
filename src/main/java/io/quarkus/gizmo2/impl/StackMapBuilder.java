@@ -3,10 +3,12 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
+import io.smallrye.common.constraint.Assert;
 
 /**
  * A builder for conservative stack maps.
@@ -16,6 +18,8 @@ public final class StackMapBuilder {
     private final ArrayList<StackMapFrameInfo.VerificationTypeInfo> locals = new ArrayList<>();
     private final ArrayList<StackMapFrameInfo> frameInfos = new ArrayList<>();
     private boolean wroteCode;
+    private final HashMap<List<StackMapFrameInfo.VerificationTypeInfo>, List<StackMapFrameInfo.VerificationTypeInfo>> lists = new HashMap<>();
+    private final HashMap<String, StackMapFrameInfo.ObjectVerificationTypeInfo> vtiCache = new HashMap<>();
 
     /**
      * Construct a new instance.
@@ -65,7 +69,7 @@ public final class StackMapBuilder {
      * @param type the type to push (must not be {@code null})
      */
     public void push(final ClassDesc type) {
-        push(Util.verificationTypeOf(type));
+        push(verificationTypeOf(type));
     }
 
     /**
@@ -126,7 +130,7 @@ public final class StackMapBuilder {
      * @param type the type (must not be {@code null})
      */
     public void store(final int localIdx, final ClassDesc type) {
-        store(localIdx, Util.verificationTypeOf(type));
+        store(localIdx, verificationTypeOf(type));
     }
 
     /**
@@ -181,7 +185,7 @@ public final class StackMapBuilder {
         if (end == 0) {
             return List.of();
         } else if (end == 1) {
-            return List.of(locals.get(0));
+            return cachedList(List.of(locals.get(0)));
         }
         ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(end);
         for (int i = 0; i < end; i++) {
@@ -191,15 +195,19 @@ public final class StackMapBuilder {
                 i++;
             }
         }
-        return List.copyOf(result);
+        return cachedList(result);
     }
 
     /**
      * {@return a snapshot of the current stack types}
      */
     private List<StackMapFrameInfo.VerificationTypeInfo> snapshotStack() {
-        ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(stack.size());
-        for (int i = stack.size() - 1; i >= 0; i--) {
+        int sz = stack.size();
+        if (sz == 0) {
+            return List.of();
+        }
+        ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(sz);
+        for (int i = sz - 1; i >= 0; i--) {
             StackMapFrameInfo.VerificationTypeInfo vti = stack.get(i);
             result.add(vti);
             if (isClass2(vti)) {
@@ -207,11 +215,39 @@ public final class StackMapBuilder {
             }
         }
         Collections.reverse(result);
-        return List.copyOf(result);
+        return cachedList(result);
+    }
+
+    private List<StackMapFrameInfo.VerificationTypeInfo> cachedList(final List<StackMapFrameInfo.VerificationTypeInfo> result) {
+        List<StackMapFrameInfo.VerificationTypeInfo> list = lists.get(result);
+        if (list == null) {
+            list = List.copyOf(result);
+            lists.put(list, list);
+        }
+        return list;
     }
 
     List<StackMapFrameInfo> frameInfos() {
         return frameInfos;
+    }
+
+    private StackMapFrameInfo.VerificationTypeInfo verificationTypeOf(final ClassDesc type) {
+        String ds = type.descriptorString();
+        return switch (ds.charAt(0)) {
+            case 'I', 'Z', 'S', 'C', 'B' -> StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER;
+            case 'J' -> StackMapFrameInfo.SimpleVerificationTypeInfo.LONG;
+            case 'F' -> StackMapFrameInfo.SimpleVerificationTypeInfo.FLOAT;
+            case 'D' -> StackMapFrameInfo.SimpleVerificationTypeInfo.DOUBLE;
+            case 'L', '[' -> {
+                StackMapFrameInfo.ObjectVerificationTypeInfo vti = vtiCache.get(ds);
+                if (vti == null) {
+                    vti = StackMapFrameInfo.ObjectVerificationTypeInfo.of(type);
+                    vtiCache.put(ds, vti);
+                }
+                yield vti;
+            }
+            default -> throw Assert.impossibleSwitchCase(ds);
+        };
     }
 
     /**

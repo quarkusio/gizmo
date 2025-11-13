@@ -27,7 +27,6 @@ import io.github.dmlloyd.classfile.AnnotationElement;
 import io.github.dmlloyd.classfile.AnnotationValue;
 import io.github.dmlloyd.classfile.Signature;
 import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
@@ -482,18 +481,6 @@ public final class Util {
 
     private static IllegalArgumentException invalidType(final Object type) {
         return new IllegalArgumentException(type.getClass().toString());
-    }
-
-    public static StackMapFrameInfo.VerificationTypeInfo verificationTypeOf(final ClassDesc type) {
-        String ds = type.descriptorString();
-        return switch (ds.charAt(0)) {
-            case 'I', 'Z', 'S', 'C', 'B' -> StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER;
-            case 'J' -> StackMapFrameInfo.SimpleVerificationTypeInfo.LONG;
-            case 'F' -> StackMapFrameInfo.SimpleVerificationTypeInfo.FLOAT;
-            case 'D' -> StackMapFrameInfo.SimpleVerificationTypeInfo.DOUBLE;
-            case 'L', '[' -> StackMapFrameInfo.ObjectVerificationTypeInfo.of(type);
-            default -> throw Assert.impossibleSwitchCase(ds);
-        };
     }
 
     public static boolean isVoid(ClassDesc type) {
