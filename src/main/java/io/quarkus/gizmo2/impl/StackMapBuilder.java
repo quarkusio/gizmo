@@ -140,6 +140,11 @@ public final class StackMapBuilder {
         if (wroteCode) {
             wroteCode = false;
             frameInfos.add(StackMapFrameInfo.of(cb.newBoundLabel(), snapshotLocals(), snapshotStack()));
+        } else {
+            if (!frameInfos.isEmpty()) {
+                frameInfos.set(frameInfos.size() - 1,
+                        StackMapFrameInfo.of(cb.newBoundLabel(), snapshotLocals(), snapshotStack()));
+            }
         }
     }
 

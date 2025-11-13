@@ -61,6 +61,7 @@ abstract class If extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        StackMapBuilder.Saved saved;
         if (whenTrue != null) {
             ListIterator<Item> trueItr = whenTrue.iterator();
             if (whenFalse != null) {
@@ -70,23 +71,27 @@ abstract class If extends Item {
                     // just steal the goto target
                     op(kind).accept(cb, goto_.target(block, smb));
                     smb.wroteCode();
+                    saved = smb.save();
                     whenFalse.writeCode(cb, block, smb);
                 } else if (falseItr.previous() instanceof Goto goto_ && falseItr.previous() instanceof BlockHeader) {
                     // just steal the goto target
                     op(kind.invert()).accept(cb, goto_.target(block, smb));
                     smb.wroteCode();
+                    saved = smb.save();
                     whenTrue.writeCode(cb, block, smb);
                 } else {
                     op(kind).accept(cb, whenTrue.startLabel());
                     smb.wroteCode();
-                    StackMapBuilder.Saved saved = smb.save();
+                    saved = smb.save();
                     whenFalse.writeCode(cb, block, smb);
                     if (whenFalse.mayFallThrough()) {
                         whenTrue.breakTarget();
+                        smb.restore(saved);
                         cb.goto_(whenTrue.endLabel());
                         smb.wroteCode();
+                    } else {
+                        smb.restore(saved);
                     }
-                    smb.restore(saved);
                     whenTrue.branchTarget();
                     whenTrue.writeCode(cb, block, smb);
                 }
@@ -96,9 +101,11 @@ abstract class If extends Item {
                     // just steal the goto target
                     op(kind).accept(cb, goto_.target(block, smb));
                     smb.wroteCode();
+                    saved = smb.save();
                 } else {
                     op(kind.invert()).accept(cb, whenTrue.endLabel());
                     smb.wroteCode();
+                    saved = smb.save();
                     whenTrue.breakTarget();
                     whenTrue.writeCode(cb, block, smb);
                 }
@@ -111,15 +118,21 @@ abstract class If extends Item {
                     // just steal the goto target
                     op(kind.invert()).accept(cb, goto_.target(block, smb));
                     smb.wroteCode();
+                    saved = smb.save();
                 } else {
                     op(kind).accept(cb, whenFalse.endLabel());
                     smb.wroteCode();
+                    saved = smb.save();
                     whenFalse.breakTarget();
                     whenFalse.writeCode(cb, block, smb);
                 }
             } else {
                 throw new IllegalStateException();
             }
+        }
+        smb.restore(saved);
+        if (!Util.isVoid(type())) {
+            smb.push(type());
         }
     }
 

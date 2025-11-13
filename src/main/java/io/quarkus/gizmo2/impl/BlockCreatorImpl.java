@@ -91,7 +91,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     /**
      * All the items to emit, in order.
      */
-    private final ArrayList<Item> items = new ArrayList<Item>(8);
+    private final ArrayList<Item> items = new ArrayList<Item>(40);
     private boolean breakTarget;
     private boolean branchTarget;
     /**
@@ -955,15 +955,19 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         checkActive();
         Expr input = getFirst();
         handler.accept(this, input);
-        ListIterator<Item> itr = iterator();
-        Util.peekPrevious(itr).verify(itr);
-        cleanStack(itr);
-        markDone();
+        finish();
     }
 
     public void accept(final Consumer<? super BlockCreatorImpl> handler) {
         checkActive();
         handler.accept(this);
+        finish();
+    }
+
+    private void finish() {
+        if (!done()) {
+            addItem(Yield.YIELD_VOID);
+        }
         ListIterator<Item> itr = iterator();
         Item last = Util.peekPrevious(itr);
         if (last instanceof Yield yield) {
@@ -978,7 +982,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 }
             }
         }
-        last.process(itr, Item::verify);
+        last.verify(itr);
         // clean stack with fresh iterator
         cleanStack(iterator());
         markDone();
@@ -1006,10 +1010,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 if (cond instanceof Rel rel) {
                     IfRel ifRel = new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right());
                     itr.set(ifRel);
+                    if (!ifRel.mayFallThrough()) {
+                        markDone();
+                    }
                     return ifRel;
                 } else if (cond instanceof RelZero rz) {
                     IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input(), false);
                     itr.set(ifZero);
+                    if (!ifZero.mayFallThrough()) {
+                        markDone();
+                    }
                     return ifZero;
                 }
             }
@@ -1433,7 +1443,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private <I extends Item> I addItemUnchecked(final I item, final ListIterator<Item> itr) {
         item.insert(itr);
         item.forEachDependency(itr, Item::insertIfUnbound);
-        if (!item.mayFallThrough()) {
+        if (!item.mayFallThrough() || item instanceof Yield) {
             markDone();
         }
         return item;
