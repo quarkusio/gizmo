@@ -2390,9 +2390,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the type to test against (must not be {@code null})
      * @return the boolean result of the check (not {@code null})
      */
-    default Expr instanceOf(Expr obj, ClassDesc type) {
-        return instanceOf(obj, GenericType.of(type));
-    }
+    Expr instanceOf(Expr obj, ClassDesc type);
 
     /**
      * Test whether the given object implements the given type.

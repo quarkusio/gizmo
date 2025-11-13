@@ -813,9 +813,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new UncheckedCast(a, null, toType));
     }
 
+    public Expr instanceOf(final Expr obj, final ClassDesc type) {
+        Assert.checkNotNullParam("type", type);
+        return addItem(new InstanceOf(obj, type, null));
+    }
+
     public Expr instanceOf(final Expr obj, final GenericType type) {
         Assert.checkNotNullParam("type", type);
-        return addItem(new InstanceOf(obj, type));
+        return addItem(new InstanceOf(obj, null, type));
     }
 
     public Expr new_(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
