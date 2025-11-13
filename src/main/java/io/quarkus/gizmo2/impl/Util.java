@@ -485,14 +485,14 @@ public final class Util {
     }
 
     public static StackMapFrameInfo.VerificationTypeInfo verificationTypeOf(final ClassDesc type) {
-        TypeKind kind = TypeKind.from(type);
-        return switch (kind) {
-            case INT, BOOLEAN, BYTE, CHAR, SHORT -> StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER;
-            case LONG -> StackMapFrameInfo.SimpleVerificationTypeInfo.LONG;
-            case FLOAT -> StackMapFrameInfo.SimpleVerificationTypeInfo.FLOAT;
-            case DOUBLE -> StackMapFrameInfo.SimpleVerificationTypeInfo.DOUBLE;
-            case REFERENCE -> StackMapFrameInfo.ObjectVerificationTypeInfo.of(type);
-            case VOID -> throw Assert.impossibleSwitchCase(kind);
+        String ds = type.descriptorString();
+        return switch (ds.charAt(0)) {
+            case 'I', 'Z', 'S', 'C', 'B' -> StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER;
+            case 'J' -> StackMapFrameInfo.SimpleVerificationTypeInfo.LONG;
+            case 'F' -> StackMapFrameInfo.SimpleVerificationTypeInfo.FLOAT;
+            case 'D' -> StackMapFrameInfo.SimpleVerificationTypeInfo.DOUBLE;
+            case 'L', '[' -> StackMapFrameInfo.ObjectVerificationTypeInfo.of(type);
+            default -> throw Assert.impossibleSwitchCase(ds);
         };
     }
 
