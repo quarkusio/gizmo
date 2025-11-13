@@ -748,7 +748,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr cast(final Expr a, final ClassDesc toType) {
-        if (a.type().isPrimitive()) {
+        if (Util.equals(a.type(), toType)) {
+            return a;
+        } else if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
                 return addItem(new PrimitiveCast(a, toType));
             } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
@@ -770,7 +772,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr uncheckedCast(final Expr a, final ClassDesc toType) {
-        if (a.type().isPrimitive()) {
+        if (Util.equals(a.type(), toType)) {
+            return a;
+        } else if (a.type().isPrimitive()) {
             throw new IllegalArgumentException("Cannot apply unchecked cast to primitive value: " + a.type().displayName());
         }
         if (toType.isPrimitive()) {
