@@ -376,9 +376,11 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                         for (Consumer<BlockCreator> init : staticInits) {
                             b0.block(init);
                         }
+                        if (!b0.done()) {
+                            b0.return_();
+                        }
                     });
                     bc.writeCode(cb, bc, new StackMapBuilder());
-                    cb.return_();
                 });
             });
         }
