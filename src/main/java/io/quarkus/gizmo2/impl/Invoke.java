@@ -86,6 +86,10 @@ final class Invoke extends Item {
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invoke(opcode, owner, name, type, isInterface);
+        if (opcode == Opcode.INVOKESPECIAL && instance instanceof ThisExpr) {
+            // we are now initialized; replace UNINITIALIZED_THIS
+            smb.store(0, instance.type());
+        }
         if (opcode != Opcode.INVOKESTATIC) {
             smb.pop(); // receiver
         }
