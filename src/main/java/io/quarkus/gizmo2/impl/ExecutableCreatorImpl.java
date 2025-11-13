@@ -476,7 +476,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             if (position < params.size()) {
                 throw new IllegalStateException("Parameter already defined at position " + position);
             }
-            pc = new ParamCreatorImpl(typeCreator.gizmo, GenericType.of(type.parameterType(position)));
+            pc = new ParamCreatorImpl(typeCreator.gizmo, type.parameterType(position));
             slot = firstSlot() + IntStream.range(0, position).mapToObj(type::parameterType).map(TypeKind::from)
                     .mapToInt(TypeKind::slotSize).sum();
         }

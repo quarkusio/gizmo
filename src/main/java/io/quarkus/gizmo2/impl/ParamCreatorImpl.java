@@ -21,9 +21,9 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
         super(gizmo);
     }
 
-    public ParamCreatorImpl(final GizmoImpl gizmo, final GenericType type) {
+    public ParamCreatorImpl(final GizmoImpl gizmo, final ClassDesc type) {
         super(gizmo);
-        this.genericType = type;
+        this.type = type;
         typeEstablished = true;
     }
 
