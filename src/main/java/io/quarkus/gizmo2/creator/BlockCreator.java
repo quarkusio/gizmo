@@ -2909,9 +2909,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    default Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args) {
-        return invokeInterface(GenericType.of(method.returnType()), method, instance, args);
-    }
+    Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke an interface method.

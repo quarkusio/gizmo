@@ -923,6 +923,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args, genericReturnType));
     }
 
+    public Expr invokeInterface(final MethodDesc method, final Expr instance, final List<? extends Expr> args) {
+        if (!(method instanceof InterfaceMethodDesc)) {
+            throw new IllegalArgumentException("Cannot emit `invokeinterface` for " + method + "; must be InterfaceMethodDesc");
+        }
+        return addItem(new Invoke(Opcode.INVOKEINTERFACE, method, instance, args, null));
+    }
+
     public Expr invokeDynamic(final DynamicCallSiteDesc callSiteDesc, final List<? extends Expr> args) {
         return addItem(new InvokeDynamic(args, callSiteDesc));
     }
