@@ -27,7 +27,8 @@ jobs:
           java-version: |
             17
             21
+            25
           cache: maven
 
       - name: Build with Maven
-        run: mvn -B clean package -Dno-format -Djava17.home="${{env.JAVA_HOME_17_X64}}${{env.JAVA_HOME_17_ARM64}}" -Djava21.home="${{env.JAVA_HOME_21_X64}}${{env.JAVA_HOME_21_ARM64}}"
+        run: mvn -B clean package -Dno-format -Djava17.home="${{env.JAVA_HOME_17_X64}}${{env.JAVA_HOME_17_ARM64}}" -Djava21.home="${{env.JAVA_HOME_21_X64}}${{env.JAVA_HOME_21_ARM64}}" -Djava25.home="${{env.JAVA_HOME_25_X64}}${{env.JAVA_HOME_25_ARM64}}"
