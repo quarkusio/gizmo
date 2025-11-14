@@ -42,7 +42,7 @@ public class EqualsHashCodeToStringGenerator {
 
                 Expr otherCast = b0.localVar("other", b0.cast(other, thisClass));
                 for (FieldDesc field : fields) {
-                    if (!field.owner().equals(thisClass)) {
+                    if (!Util.equals(field.owner(), thisClass)) {
                         throw new IllegalArgumentException(
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
@@ -94,7 +94,7 @@ public class EqualsHashCodeToStringGenerator {
 
                 LocalVar result = b0.localVar("result", Const.of(1));
                 for (FieldDesc field : fields) {
-                    if (!field.owner().equals(thisClass)) {
+                    if (!Util.equals(field.owner(), thisClass)) {
                         throw new IllegalArgumentException(
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }
@@ -122,7 +122,7 @@ public class EqualsHashCodeToStringGenerator {
 
                 boolean first = true;
                 for (FieldDesc field : fields) {
-                    if (!field.owner().equals(thisClass)) {
+                    if (!Util.equals(field.owner(), thisClass)) {
                         throw new IllegalArgumentException(
                                 "Field does not belong to " + thisClass.displayName() + ": " + field);
                     }

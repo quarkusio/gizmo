@@ -68,7 +68,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
         this.type = type;
         this.constantType = constantType;
 
-        if (!type.equals(CD_void)) {
+        if (!Util.isVoid(type)) {
             // switch expressions may always fall through, even if all branches actually may not
             // this allows (and, in fact, requires) using them as actual expressions
             fallThrough = true;
@@ -99,7 +99,7 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
         try {
             builder.accept(this);
             if (default_ == null) {
-                if (type.equals(CD_void)) {
+                if (Util.isVoid(type)) {
                     fallThrough = true;
                 } else {
                     throw new IllegalStateException("Missing default branch on switch expression");

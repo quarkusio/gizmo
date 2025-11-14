@@ -15,7 +15,7 @@ public final class FieldDescImpl implements FieldDesc {
         this.owner = owner;
         this.name = name;
         this.type = type;
-        hashCode = Objects.hash(owner, name, type);
+        hashCode = Objects.hash(owner.descriptorString(), name, type.descriptorString());
     }
 
     public ClassDesc owner() {
@@ -36,7 +36,7 @@ public final class FieldDescImpl implements FieldDesc {
 
     public boolean equals(final FieldDescImpl other) {
         return this == other || other != null && hashCode == other.hashCode && name.equals(other.name)
-                && owner.equals(other.owner) && type.equals(other.type);
+                && Util.equals(owner, other.owner) && Util.equals(type, other.type);
     }
 
     public int hashCode() {

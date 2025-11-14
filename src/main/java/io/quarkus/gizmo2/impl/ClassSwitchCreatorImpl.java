@@ -19,7 +19,7 @@ public final class ClassSwitchCreatorImpl extends HashSwitchCreatorImpl<ClassCon
     }
 
     boolean staticEquals(final ClassConst a, final ClassConst b) {
-        return a.desc().equals(b.desc());
+        return Util.equals(a.desc(), b.desc());
     }
 
     void equaller(final CodeBuilder cb, final ClassConst value, final Label ifEq, final StackMapBuilder smb) {

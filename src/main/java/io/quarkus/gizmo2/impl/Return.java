@@ -63,7 +63,7 @@ final class Return extends Item {
         }
 
         public boolean equals(final ReturnKey other) {
-            return this == other || other != null && returnType.equals(other.returnType);
+            return this == other || other != null && Util.equals(returnType, other.returnType);
         }
 
         public int hashCode() {

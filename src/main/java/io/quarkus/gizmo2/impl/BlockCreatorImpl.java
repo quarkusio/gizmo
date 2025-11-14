@@ -56,6 +56,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
@@ -150,7 +151,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         startLabel = newLabel();
         endLabel = newLabel();
         this.input = input;
-        if (inputType.equals(CD_void)) {
+        if (Util.isVoid(inputType)) {
             items.add(BlockHeader.VOID);
         } else {
             items.add(new BlockHeader(inputType));
@@ -343,18 +344,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr switch_(final ClassDesc outputType, final Expr expr, final Consumer<SwitchCreator> builder) {
-        SwitchCreatorImpl<? extends ConstImpl> sci = switch (expr.typeKind().asLoadable()) {
-            case INT -> new IntSwitchCreatorImpl(this, expr, outputType);
-            case LONG -> new LongSwitchCreatorImpl(this, expr, outputType);
-            case REFERENCE -> {
-                if (expr.type().equals(CD_String)) {
-                    yield new StringSwitchCreatorImpl(this, expr, outputType);
-                } else if (expr.type().equals(CD_Class)) {
-                    yield new ClassSwitchCreatorImpl(this, expr, outputType);
-                } else {
-                    throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
-                }
-            }
+        SwitchCreatorImpl<? extends ConstImpl> sci = switch (expr.type().descriptorString()) {
+            case "I", "S", "B", "Z", "C" -> new IntSwitchCreatorImpl(this, expr, outputType);
+            case "J" -> new LongSwitchCreatorImpl(this, expr, outputType);
+            case "Ljava/lang/String;" -> new StringSwitchCreatorImpl(this, expr, outputType);
+            case "Ljava/lang/Class;" -> new ClassSwitchCreatorImpl(this, expr, outputType);
             default -> throw new UnsupportedOperationException("Switch type " + expr.type() + " not supported");
         };
         sci.accept(builder);
@@ -749,14 +743,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
                 return addItem(new PrimitiveCast(a, toGenType.desc()));
-            } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
+            } else if (Util.equals(toType, boxingConversion(a.type()).orElse(null))) {
                 return box(a);
             } else {
                 throw new IllegalArgumentException("Cannot cast primitive value of type '" + a.type().displayName()
                         + "' to object type '" + toType.displayName() + "'");
             }
         } else {
-            if (toType.equals(unboxingConversion(a.type()).orElse(null))) {
+            if (Util.equals(toType, unboxingConversion(a.type()).orElse(null))) {
                 return unbox(a);
             } else if (toType.isPrimitive()) {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
@@ -773,14 +767,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         } else if (a.type().isPrimitive()) {
             if (toType.isPrimitive()) {
                 return addItem(new PrimitiveCast(a, toType));
-            } else if (toType.equals(boxingConversion(a.type()).orElse(null))) {
+            } else if (Util.equals(toType, boxingConversion(a.type()).orElse(null))) {
                 return box(a);
             } else {
                 throw new IllegalArgumentException("Cannot cast primitive value of type '" + a.type().displayName()
                         + "' to object type '" + toType.displayName() + "'");
             }
         } else {
-            if (toType.equals(unboxingConversion(a.type()).orElse(null))) {
+            if (Util.equals(toType, unboxingConversion(a.type()).orElse(null))) {
                 return unbox(a);
             } else if (toType.isPrimitive()) {
                 throw new IllegalArgumentException("Cannot cast object value of type '" + a.type().displayName()
@@ -828,7 +822,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         Assert.checkNotNullParam("ctor", ctor);
         Assert.checkNotNullParam("args", args);
         checkActive();
-        if (!ctor.owner().equals(genericType.desc())) {
+        if (!Util.equals(ctor.owner(), genericType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match constructor type %s".formatted(genericType, ctor.owner()));
         }
@@ -862,7 +856,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr invokeStatic(final GenericType genericReturnType, final MethodDesc method, final List<? extends Expr> args) {
-        if (!method.returnType().equals(genericReturnType.desc())) {
+        if (!Util.equals(method.returnType(), genericReturnType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
@@ -875,7 +869,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr invokeVirtual(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
             final List<? extends Expr> args) {
-        if (!method.returnType().equals(genericReturnType.desc())) {
+        if (!Util.equals(method.returnType(), genericReturnType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
@@ -888,7 +882,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr invokeSpecial(final GenericType genericReturnType, final MethodDesc method, final Expr instance,
             final List<? extends Expr> args) {
-        if (!method.returnType().equals(genericReturnType.desc())) {
+        if (!Util.equals(method.returnType(), genericReturnType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
@@ -916,7 +910,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (!(method instanceof InterfaceMethodDesc)) {
             throw new IllegalArgumentException("Cannot emit `invokeinterface` for " + method + "; must be InterfaceMethodDesc");
         }
-        if (!method.returnType().equals(genericReturnType.desc())) {
+        if (!Util.equals(method.returnType(), genericReturnType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match method return type %s".formatted(genericReturnType, method.returnType()));
         }
@@ -1255,7 +1249,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void return_(Expr val) {
-        if (returnType.equals(CD_void) && !val.isVoid()) {
+        if (Util.isVoid(returnType) && !val.isVoid()) {
             // Gizmo 1 automatically dropped the provided value in this case
             // let's at least provide a proper error message
             throw new IllegalArgumentException("Attempted to return a value from a `void`-returning method");
@@ -1303,17 +1297,22 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         };
     }
 
+    private static final MethodDesc stringValueOfInt = ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_int);
+    private static final Map<String, MethodDesc> stringValueOfDescs = Map.of(
+            CD_boolean.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_boolean),
+            CD_byte.descriptorString(), stringValueOfInt,
+            CD_short.descriptorString(), stringValueOfInt,
+            CD_int.descriptorString(), stringValueOfInt,
+            CD_char.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_char),
+            CD_long.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_long),
+            CD_float.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_float),
+            CD_double.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_double),
+            CD_char.arrayType().descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_char.arrayType()));
+    private static final MethodDesc stringValueOfObject = ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_Object);
+
     public Expr objToString(final Expr expr) {
-        return invokeStatic(MethodDesc.of(String.class, "valueOf", String.class, switch (expr.typeKind()) {
-            case BOOLEAN -> boolean.class;
-            case BYTE, SHORT, INT -> int.class;
-            case CHAR -> char.class;
-            case LONG -> long.class;
-            case FLOAT -> float.class;
-            case DOUBLE -> double.class;
-            case REFERENCE -> expr.type().equals(CD_char.arrayType()) ? char[].class : Object.class;
-            default -> throw new IllegalArgumentException("Invalid type for `toString`: " + expr);
-        }), expr);
+        MethodDesc desc = stringValueOfDescs.getOrDefault(expr.type().descriptorString(), stringValueOfObject);
+        return invokeStatic(desc, expr);
     }
 
     public Expr arrayHashCode(final Expr expr) {

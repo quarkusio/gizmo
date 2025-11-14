@@ -111,7 +111,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             List<ParamVarImpl> params = this.params;
             for (int i = 0; i < paramCnt; i++) {
                 final ParamVarImpl param = params.get(i);
-                if (param != null && !param.type().equals(desc.parameterType(i))) {
+                if (param != null && !Util.equals(param.type(), desc.parameterType(i))) {
                     throw new IllegalArgumentException(
                             "Defined parameter " + i + " has a type of " + param.type() + " which conflicts with " + desc);
                 }
@@ -184,7 +184,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                     "Generic return type " + type + " does not match previously set generic return type " + genericReturnType);
         }
         if (typeEstablished) {
-            if (!type.desc().equals(this.type.returnType())) {
+            if (!Util.equals(type.desc(), this.type.returnType())) {
                 throw new IllegalArgumentException(
                         "Return type " + type + " does not match established return type " + this.type.returnType());
             }
@@ -206,7 +206,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 throw new IllegalArgumentException(
                         "Return type " + type + " does not match established return type " + genericReturnType);
             }
-        } else if (returnType != null && !returnType.equals(type)
+        } else if (returnType != null && !Util.equals(returnType, type)
                 || genericReturnType != null && !genericReturnType.desc().equals(type)) {
             throw new IllegalArgumentException("Return type " + type + " does not match established return type " + returnType);
         }
