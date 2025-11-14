@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.annotation.RetentionPolicy;
@@ -11,13 +12,10 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
@@ -891,12 +889,12 @@ public abstract class GenericType {
         private static final OfRootClass GT_String = new OfRootClass(CD_String);
         private static final OfRootClass GT_Throwable = new OfRootClass(CD_Throwable);
         // non-"core" classes that are still frequently used
-        private static final OfRootClass GT_ArrayList = new OfRootClass(Util.classDesc(ArrayList.class));
-        private static final OfRootClass GT_HashMap = new OfRootClass(Util.classDesc(HashMap.class));
-        private static final OfRootClass GT_HashSet = new OfRootClass(Util.classDesc(HashSet.class));
-        private static final OfRootClass GT_RuntimeException = new OfRootClass(Util.classDesc(RuntimeException.class));
-        private static final OfRootClass GT_Supplier = new OfRootClass(Util.classDesc(Supplier.class));
-        private static final OfRootClass GT_Thread = new OfRootClass(Util.classDesc(Thread.class));
+        private static final OfRootClass GT_ArrayList = new OfRootClass(CD_ArrayList);
+        private static final OfRootClass GT_HashMap = new OfRootClass(CD_HashMap);
+        private static final OfRootClass GT_HashSet = new OfRootClass(CD_HashSet);
+        private static final OfRootClass GT_RuntimeException = new OfRootClass(CD_RuntimeException);
+        private static final OfRootClass GT_Supplier = new OfRootClass(CD_Supplier);
+        private static final OfRootClass GT_Thread = new OfRootClass(CD_Thread);
         private static final OfRootClass GT_Type = new OfRootClass(Util.classDesc(Type.class));
 
         private final ClassDesc desc;

@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2;
 
-import static java.lang.constant.ConstantDescs.*;
+import static io.quarkus.gizmo2.desc.Descs.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
@@ -10,7 +10,6 @@ import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +17,6 @@ import java.util.stream.Stream;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.Util;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
@@ -489,18 +487,12 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const of(List<?> items) {
         items = List.copyOf(items);
-        if (items.size() > 254) {
+        int size = items.size();
+        if (size > 254) {
             throw new IllegalArgumentException(
-                    "List is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+                    "List is too big (%d elements, max is 254)".formatted(Integer.valueOf(size)));
         }
-        ClassDesc[] paramDescs = items.size() <= 10 ? Collections.nCopies(items.size(), CD_Object).toArray(ClassDesc[]::new)
-                : new ClassDesc[] { CD_Object.arrayType() };
-        return ofInvoke(
-                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
-                        CD_List,
-                        "of",
-                        MethodTypeDesc.of(CD_List, paramDescs))),
-                consts(items));
+        return ofInvoke(ofMethodHandle(InvokeKind.STATIC, size > 10 ? MD_List.of_array : MD_List.of_n(size)), consts(items));
     }
 
     /**
@@ -515,18 +507,12 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const of(Set<?> items) {
         items = Set.copyOf(items);
-        if (items.size() > 254) {
+        int size = items.size();
+        if (size > 254) {
             throw new IllegalArgumentException(
-                    "Set is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+                    "Set is too big (%d elements, max is 254)".formatted(Integer.valueOf(size)));
         }
-        ClassDesc[] paramDescs = items.size() <= 10 ? Collections.nCopies(items.size(), CD_Object).toArray(ClassDesc[]::new)
-                : new ClassDesc[] { CD_Object.arrayType() };
-        return ofInvoke(
-                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
-                        CD_Set,
-                        "of",
-                        MethodTypeDesc.of(CD_Set, paramDescs))),
-                consts(items));
+        return ofInvoke(ofMethodHandle(InvokeKind.STATIC, size > 10 ? MD_Set.of_array : MD_Set.of_n(size)), consts(items));
     }
 
     /**
@@ -541,30 +527,20 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const of(Map<?, ?> items) {
         items = Map.copyOf(items);
-        if (items.size() > 254) {
+        int size = items.size();
+        if (size > 254) {
             throw new IllegalArgumentException(
-                    "Map is too big (%d elements, max is 254)".formatted(Integer.valueOf(items.size())));
+                    "Map is too big (%d elements, max is 254)".formatted(Integer.valueOf(size)));
         }
-        if (items.size() <= 10) {
+        if (size <= 10) {
             // use the simple factory
-            ClassDesc[] paramDescs = Collections.nCopies(items.size() * 2, CD_Object).toArray(ClassDesc[]::new);
             Const[] args = items.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).map(Const::of)
                     .toArray(Const[]::new);
-            return ofInvoke(
-                    ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
-                            CD_Map,
-                            "of",
-                            MethodTypeDesc.of(CD_Map, paramDescs))),
-                    args);
+            return ofInvoke(ofMethodHandle(InvokeKind.STATIC, MD_Map.of_n(size)), args);
         } else {
             // create map entry constants
             Const[] args = items.entrySet().stream().map(Const::of).toArray(Const[]::new);
-            return ofInvoke(
-                    ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
-                            CD_Map,
-                            "ofEntries",
-                            MethodTypeDesc.of(CD_Map, Util.classDesc(Map.Entry.class).arrayType()))),
-                    args);
+            return ofInvoke(ofMethodHandle(InvokeKind.STATIC, MD_Map.ofEntries), args);
         }
     }
 
@@ -577,10 +553,7 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
      */
     static Const of(Map.Entry<?, ?> entry) {
         return ofInvoke(
-                ofMethodHandle(InvokeKind.STATIC, InterfaceMethodDesc.of(
-                        CD_Map,
-                        "entry",
-                        MethodTypeDesc.of(Util.classDesc(Map.Entry.class), CD_Object, CD_Object))),
+                ofMethodHandle(InvokeKind.STATIC, MD_Map.entry),
                 of(entry.getKey()),
                 of(entry.getValue()));
     }

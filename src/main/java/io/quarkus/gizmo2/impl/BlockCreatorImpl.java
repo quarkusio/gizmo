@@ -1,12 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static io.quarkus.gizmo2.impl.Conversions.*;
 import static io.quarkus.gizmo2.impl.Preconditions.*;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
-import static java.util.Collections.*;
 
-import java.io.PrintStream;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
@@ -14,18 +13,11 @@ import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.DynamicCallSiteDesc;
 import java.lang.constant.MethodHandleDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.lang.invoke.LambdaMetafactory;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -56,9 +48,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
-import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
@@ -369,15 +359,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr iterate(final Expr items) {
-        return invokeInterface(MethodDesc.of(Iterable.class, "iterator", Iterator.class), items);
+        return invokeInterface(MD_Iterable.iterator, items);
     }
 
     public Expr currentThread() {
-        return invokeStatic(MethodDesc.of(Thread.class, "currentThread", Thread.class));
+        return invokeStatic(MD_Thread.currentThread);
     }
 
     public void close(final Expr closeable) {
-        invokeInterface(MethodDesc.of(AutoCloseable.class, "close", void.class), closeable);
+        invokeInterface(MD_AutoCloseable.close, closeable);
     }
 
     public void inc(final Assignable var, Const amount) {
@@ -695,7 +685,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             builder.accept(new LambdaAsMethodCreatorImpl(samOwner, samType, (MethodCreatorImpl) mc, captures));
         });
         return invokeDynamic(DynamicCallSiteDesc.of(
-                ConstantDescs.ofCallsiteBootstrap(Util.classDesc(LambdaMetafactory.class), "metafactory",
+                ConstantDescs.ofCallsiteBootstrap(CD_LambdaMetafactory, "metafactory",
                         CD_CallSite, CD_MethodType, CD_MethodHandle, CD_MethodType),
                 sam.name(),
                 MethodTypeDesc.of(samOwner, captures.stream().map(Expr::type).toArray(ClassDesc[]::new)),
@@ -1232,10 +1222,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public void locked(final Expr jucLock, final Consumer<BlockCreator> body) {
         block(jucLock, (b0, lock) -> {
             LocalVar lv = b0.localVar("$$lock" + depth, lock);
-            b0.invokeInterface(MethodDesc.of(Lock.class, "lock", void.class), lv);
+            b0.invokeInterface(MD_Lock.lock, lv);
             b0.try_(t1 -> {
                 t1.body(body);
-                t1.finally_(b2 -> b2.invokeInterface(MethodDesc.of(Lock.class, "unlock", void.class), lv));
+                t1.finally_(b2 -> b2.invokeInterface(MD_Lock.unlock, lv));
             });
         });
     }
@@ -1270,15 +1260,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public Expr objHashCode(final Expr expr) {
         return switch (expr.typeKind()) {
-            case BOOLEAN -> invokeStatic(MethodDesc.of(Boolean.class, "hashCode", int.class, boolean.class), expr);
-            case BYTE -> invokeStatic(MethodDesc.of(Byte.class, "hashCode", int.class, byte.class), expr);
-            case SHORT -> invokeStatic(MethodDesc.of(Short.class, "hashCode", int.class, short.class), expr);
-            case CHAR -> invokeStatic(MethodDesc.of(Character.class, "hashCode", int.class, char.class), expr);
-            case INT -> invokeStatic(MethodDesc.of(Integer.class, "hashCode", int.class, int.class), expr);
-            case LONG -> invokeStatic(MethodDesc.of(Long.class, "hashCode", int.class, long.class), expr);
-            case FLOAT -> invokeStatic(MethodDesc.of(Float.class, "hashCode", int.class, float.class), expr);
-            case DOUBLE -> invokeStatic(MethodDesc.of(Double.class, "hashCode", int.class, double.class), expr);
-            case REFERENCE -> invokeStatic(MethodDesc.of(Objects.class, "hashCode", int.class, Object.class), expr);
+            case BOOLEAN -> invokeStatic(MD_Boolean.hashCode, expr);
+            case BYTE -> invokeStatic(MD_Byte.hashCode, expr);
+            case SHORT -> invokeStatic(MD_Short.hashCode, expr);
+            case CHAR -> invokeStatic(MD_Character.hashCode, expr);
+            case INT -> invokeStatic(MD_Integer.hashCode, expr);
+            case LONG -> invokeStatic(MD_Long.hashCode, expr);
+            case FLOAT -> invokeStatic(MD_Float.hashCode, expr);
+            case DOUBLE -> invokeStatic(MD_Double.hashCode, expr);
+            case REFERENCE -> invokeStatic(MD_Objects.hashCode, expr);
             case VOID -> Const.of(0); // null constant
         };
     }
@@ -1286,8 +1276,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public Expr objEquals(final Expr a, final Expr b) {
         return switch (a.typeKind()) {
             case REFERENCE -> switch (b.typeKind()) {
-                case REFERENCE ->
-                    invokeStatic(MethodDesc.of(Objects.class, "equals", boolean.class, Object.class, Object.class), a, b);
+                case REFERENCE -> invokeStatic(MD_Objects.equals, a, b);
                 default -> objEquals(a, box(b));
             };
             default -> switch (b.typeKind()) {
@@ -1297,22 +1286,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         };
     }
 
-    private static final MethodDesc stringValueOfInt = ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_int);
-    private static final Map<String, MethodDesc> stringValueOfDescs = Map.of(
-            CD_boolean.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_boolean),
-            CD_byte.descriptorString(), stringValueOfInt,
-            CD_short.descriptorString(), stringValueOfInt,
-            CD_int.descriptorString(), stringValueOfInt,
-            CD_char.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_char),
-            CD_long.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_long),
-            CD_float.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_float),
-            CD_double.descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_double),
-            CD_char.arrayType().descriptorString(), ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_char.arrayType()));
-    private static final MethodDesc stringValueOfObject = ClassMethodDesc.of(CD_String, "valueOf", CD_String, CD_Object);
-
     public Expr objToString(final Expr expr) {
-        MethodDesc desc = stringValueOfDescs.getOrDefault(expr.type().descriptorString(), stringValueOfObject);
-        return invokeStatic(desc, expr);
+        return invokeStatic(MD_String.valueOf(expr.type()), expr);
     }
 
     public Expr arrayHashCode(final Expr expr) {
@@ -1320,10 +1295,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
         ClassDesc componentType = expr.type().componentType();
         if (componentType.isArray()) {
-            return invokeStatic(MethodDesc.of(Arrays.class, "deepHashCode", int.class, Object[].class), expr);
+            return invokeStatic(MD_Arrays.deepHashCode, expr);
         } else {
-            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : expr.type();
-            return invokeStatic(MethodDesc.of(Arrays.class, "hashCode", MethodTypeDesc.of(CD_int, type)), expr);
+            return invokeStatic(MD_Arrays.hashCode(componentType), expr);
         }
     }
 
@@ -1334,10 +1308,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
         ClassDesc componentType = a.type().componentType();
         if (componentType.isArray()) {
-            return invokeStatic(MethodDesc.of(Arrays.class, "deepEquals", boolean.class, Object[].class, Object[].class), a, b);
+            return invokeStatic(MD_Arrays.deepEquals, a, b);
         } else {
-            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : a.type();
-            return invokeStatic(MethodDesc.of(Arrays.class, "equals", MethodTypeDesc.of(CD_boolean, type, type)), a, b);
+            return invokeStatic(MD_Arrays.equals(componentType), a, b);
         }
     }
 
@@ -1346,15 +1319,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
         ClassDesc componentType = expr.type().componentType();
         if (componentType.isArray()) {
-            return invokeStatic(MethodDesc.of(Arrays.class, "deepToString", String.class, Object[].class), expr);
+            return invokeStatic(MD_Arrays.deepToString, expr);
         } else {
-            ClassDesc type = TypeKind.from(componentType) == TypeKind.REFERENCE ? CD_Object.arrayType() : expr.type();
-            return invokeStatic(MethodDesc.of(Arrays.class, "toString", MethodTypeDesc.of(CD_String, type)), expr);
+            return invokeStatic(MD_Arrays.toString(componentType), expr);
         }
     }
 
     public Expr classForName(final Expr className) {
-        return invokeStatic(MethodDesc.of(Class.class, "forName", Class.class, String.class), className);
+        return invokeStatic(MD_Class.forName, className);
     }
 
     @Override
@@ -1366,9 +1338,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
         int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, nCopies(size, Object.class)), exprs);
+            return invokeStatic(MD_List.of_n(size), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(List.class, "of", List.class, Object[].class), newArray(Object.class, exprs));
+            return invokeStatic(MD_List.of_array, newArray(Object.class, exprs));
         }
     }
 
@@ -1381,9 +1353,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
         int size = exprs.size();
         if (size <= 10) {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, nCopies(size, Object.class)), exprs);
+            return invokeStatic(MD_Set.of_n(size), exprs);
         } else {
-            return invokeStatic(MethodDesc.of(Set.class, "of", Set.class, Object[].class), newArray(Object.class, exprs));
+            return invokeStatic(MD_Set.of_array, newArray(Object.class, exprs));
         }
     }
 
@@ -1395,24 +1367,24 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             throw new IllegalArgumentException("Invalid number of items: " + items);
         }
         if (size <= 20) {
-            return invokeStatic(MethodDesc.of(Map.class, "of", Map.class, nCopies(items.size(), Object.class)), items);
+            return invokeStatic(MD_Map.of_n(size >> 1), items);
         } else {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
     }
 
     public Expr mapEntry(final Expr key, final Expr value) {
-        return invokeStatic(MethodDesc.of(Map.class, "entry", Map.Entry.class, Object.class, Object.class), key, value);
+        return invokeStatic(MD_Map.entry, key, value);
     }
 
     @Override
     public Expr optionalOf(Expr value) {
-        return invokeStatic(MethodDesc.of(Optional.class, "of", Optional.class, Object.class), value);
+        return invokeStatic(MD_Optional.of, value);
     }
 
     @Override
     public Expr optionalOfNullable(Expr value) {
-        return invokeStatic(MethodDesc.of(Optional.class, "ofNullable", Optional.class, Object.class), value);
+        return invokeStatic(MD_Optional.ofNullable, value);
     }
 
     public void line(final int lineNumber) {
@@ -1421,15 +1393,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     public void printf(final String format, final List<? extends Expr> values) {
         invokeVirtual(
-                MethodDesc.of(PrintStream.class, "printf", PrintStream.class, String.class, Object[].class),
-                Expr.staticField(FieldDesc.of(System.class, "out")),
+                MD_PrintStream.printf,
+                Expr.staticField(FD_System.out),
                 Const.of(format),
                 newArray(CD_Object, values));
     }
 
     public void assert_(final Consumer<BlockCreator> assertion, final String message) {
         if_(logicalAnd(Const.ofInvoke(Const.ofMethodHandle(InvokeKind.VIRTUAL,
-                MethodDesc.of(Class.class, "desiredAssertionStatus", boolean.class)), Const.of(owner.type())), assertion),
+                MD_Class.desiredAssertionStatus), Const.of(owner.type())), assertion),
                 bc -> bc.throw_(bc.new_(ConstructorDesc.of(AssertionError.class, Object.class), Const.of(message))));
     }
 

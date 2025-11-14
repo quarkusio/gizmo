@@ -1,6 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static io.smallrye.common.constraint.Assert.*;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
 import java.util.List;
@@ -12,11 +14,8 @@ import io.quarkus.gizmo2.ParamVar;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.desc.MethodDesc;
 
 public class EqualsHashCodeToStringGenerator {
-    private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
-            "append", StringBuilder.class, String.class);
 
     private final ClassCreator cc;
     private final List<FieldDesc> fields;
@@ -27,15 +26,13 @@ public class EqualsHashCodeToStringGenerator {
     }
 
     public void generateEquals() {
-        MethodDesc floatToIntBits = MethodDesc.of(Float.class, "floatToIntBits", int.class, float.class);
-        MethodDesc doubleToLongBits = MethodDesc.of(Double.class, "doubleToLongBits", long.class, double.class);
 
         ClassDesc thisClass = cc.type();
 
         cc.method("equals", mc -> {
             mc.public_();
-            mc.returning(boolean.class);
-            ParamVar other = mc.parameter("other", Object.class);
+            mc.returning(CD_boolean);
+            ParamVar other = mc.parameter("other", CD_Object);
             mc.body(b0 -> {
                 b0.if_(b0.eq(cc.this_(), other), BlockCreator::returnTrue);
                 b0.ifNotInstanceOf(other, thisClass, BlockCreator::returnFalse);
@@ -56,15 +53,15 @@ public class EqualsHashCodeToStringGenerator {
                         // float
                         case 'F' -> {
                             // this is consistent with Arrays.equals() and it's also what IntelliJ generates
-                            Expr thisBits = b0.invokeStatic(floatToIntBits, thisValue);
-                            Expr thatBits = b0.invokeStatic(floatToIntBits, thatValue);
+                            Expr thisBits = b0.invokeStatic(MD_Float.floatToIntBits, thisValue);
+                            Expr thatBits = b0.invokeStatic(MD_Float.floatToIntBits, thatValue);
                             b0.if_(b0.ne(thisBits, thatBits), BlockCreator::returnFalse);
                         }
                         // double
                         case 'D' -> {
                             // this is consistent with Arrays.equals() and it's also what IntelliJ generates
-                            Expr thisBits = b0.invokeStatic(doubleToLongBits, thisValue);
-                            Expr thatBits = b0.invokeStatic(doubleToLongBits, thatValue);
+                            Expr thisBits = b0.invokeStatic(MD_Double.doubleToLongBits, thisValue);
+                            Expr thatBits = b0.invokeStatic(MD_Double.doubleToLongBits, thatValue);
                             b0.if_(b0.ne(thisBits, thatBits), BlockCreator::returnFalse);
                         }
                         // Object
@@ -117,8 +114,8 @@ public class EqualsHashCodeToStringGenerator {
             mc.public_();
             mc.returning(String.class);
             mc.body(b0 -> {
-                LocalVar result = b0.localVar("result", b0.new_(StringBuilder.class));
-                b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(thisClass.displayName() + '('));
+                LocalVar result = b0.localVar("result", b0.new_(CD_StringBuilder));
+                b0.invokeVirtual(MD_StringBuilder.append_String, result, Const.of(thisClass.displayName() + '('));
 
                 boolean first = true;
                 for (FieldDesc field : fields) {
@@ -128,19 +125,19 @@ public class EqualsHashCodeToStringGenerator {
                     }
 
                     if (first) {
-                        b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(field.name() + '='));
+                        b0.invokeVirtual(MD_StringBuilder.append_String, result, Const.of(field.name() + '='));
                     } else {
-                        b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(", " + field.name() + '='));
+                        b0.invokeVirtual(MD_StringBuilder.append_String, result, Const.of(", " + field.name() + '='));
                     }
 
                     Expr value = b0.get(cc.this_().field(field));
-                    b0.invokeVirtual(MD_StringBuilder_append, result,
+                    b0.invokeVirtual(MD_StringBuilder.append_String, result,
                             field.type().isArray() ? b0.arrayToString(value) : b0.objToString(value));
 
                     first = false;
                 }
 
-                b0.invokeVirtual(MD_StringBuilder_append, result, Const.of(")"));
+                b0.invokeVirtual(MD_StringBuilder.append_String, result, Const.of(")"));
                 b0.return_(b0.withObject(result).toString_());
             });
         });

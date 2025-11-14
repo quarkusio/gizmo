@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
@@ -23,7 +24,6 @@ import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
 
 final class Cmp extends Item {
-    static final ClassDesc CD_Comparable = Util.classDesc(Comparable.class);
 
     private final Item a;
     private final Item b;
