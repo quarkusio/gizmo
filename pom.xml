@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>49</version>
+        <version>51</version>
     </parent>
 
     <groupId>io.quarkus.gizmo</groupId>
@@ -42,6 +42,10 @@
         <maven.compiler.release>17</maven.compiler.release>
 
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+
+        <!-- maven-release-plugin -->
+        <releaseProfiles>release</releaseProfiles>
+        <signTag>false</signTag><!-- we don't sign tags as we don't want GPG secrets available in repository -->
         
         <version.classfile>25.1</version.classfile>
         <version.junit>6.0.1</version.junit>
