@@ -15,8 +15,10 @@ public final class ThisExpr extends Item implements This {
         return false;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.aload(0);
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public String name() {

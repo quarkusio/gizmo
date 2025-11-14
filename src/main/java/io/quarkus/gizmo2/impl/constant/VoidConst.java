@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class VoidConst extends ConstImpl {
     public static final VoidConst INSTANCE = new VoidConst();
@@ -26,7 +27,7 @@ public final class VoidConst extends ConstImpl {
         throw new IllegalArgumentException("No constant description for void");
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         // no operation (invisible)
     }
 

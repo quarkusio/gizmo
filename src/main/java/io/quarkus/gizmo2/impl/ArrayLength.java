@@ -2,9 +2,11 @@ package io.quarkus.gizmo2.impl;
 
 import static java.lang.constant.ConstantDescs.*;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 
 final class ArrayLength extends Item {
     private final Item item;
@@ -29,11 +31,14 @@ final class ArrayLength extends Item {
         return bound;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return item.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        item.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.arraylength();
+        smb.pop();
+        smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+        smb.wroteCode();
     }
 }

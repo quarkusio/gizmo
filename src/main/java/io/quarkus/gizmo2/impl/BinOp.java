@@ -7,8 +7,9 @@ import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
+import java.util.ListIterator;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -53,8 +54,9 @@ final class BinOp extends Item {
         }
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(b.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        b.process(itr, op);
+        a.process(itr, op);
     }
 
     protected void computeType() {
@@ -64,11 +66,15 @@ final class BinOp extends Item {
         }
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Operation op = kind.opFor(typeKind());
         // we validated op above
         assert op != null;
         op.apply(cb);
+        smb.pop(); // left
+        smb.pop(); // right
+        smb.push(type()); // result
+        smb.wroteCode();
     }
 
     public StringBuilder toShortString(final StringBuilder sb) {

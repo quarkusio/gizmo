@@ -12,7 +12,9 @@ final class UncheckedCast extends Cast {
         super(a, toType, toGenericType);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         // nothing
+        smb.pop();
+        smb.push(type());
     }
 }

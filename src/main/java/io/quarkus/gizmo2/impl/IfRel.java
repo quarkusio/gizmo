@@ -3,7 +3,10 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
+
+import io.github.dmlloyd.classfile.CodeBuilder;
 
 final class IfRel extends If {
     final Item a, b;
@@ -15,8 +18,15 @@ final class IfRel extends If {
         this.b = b;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(b.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        b.process(itr, op);
+        a.process(itr, op);
+    }
+
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        smb.pop(); // a
+        smb.pop(); // b
+        super.writeCode(cb, block, smb);
     }
 
     IfOp op(final Kind kind) {

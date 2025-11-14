@@ -1,7 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
@@ -26,7 +27,7 @@ abstract class Cast extends Item {
         bound = true;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        a.process(itr, op);
     }
 }

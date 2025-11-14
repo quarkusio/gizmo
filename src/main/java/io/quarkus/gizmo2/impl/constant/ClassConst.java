@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 
 public final class ClassConst extends ConstImpl {
@@ -62,7 +63,7 @@ public final class ClassConst extends ConstImpl {
     }
 
     @Override
-    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         if (value.isPrimitive()) {
             // use the javac translation strategy: read the `TYPE` field from the wrapper class
             // by default, condy would be used, which we don't want
@@ -79,8 +80,10 @@ public final class ClassConst extends ConstImpl {
                 default -> throw impossibleSwitchCase(value);
             };
             cb.getstatic(wrapper, "TYPE", CD_Class);
+            smb.push(type());
+            smb.wroteCode();
         } else {
-            super.writeCode(cb, block);
+            super.writeCode(cb, block, smb);
         }
     }
 }

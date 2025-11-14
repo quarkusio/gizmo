@@ -22,8 +22,8 @@ public final class LongSwitchCreatorImpl extends HashSwitchCreatorImpl<LongConst
         return a.longValue() == b.longValue();
     }
 
-    void equaller(final CodeBuilder cb, final LongConst value, final Label ifEq) {
-        value.writeCode(cb, enclosing);
+    void equaller(final CodeBuilder cb, final LongConst value, final Label ifEq, final StackMapBuilder smb) {
+        value.writeCode(cb, enclosing, smb);
         cb.lcmp();
         cb.ifeq(ifEq);
     }

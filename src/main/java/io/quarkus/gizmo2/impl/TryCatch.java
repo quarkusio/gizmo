@@ -27,7 +27,8 @@ final class TryCatch extends Item {
 
     BlockCreatorImpl addCatch(final ClassDesc superType, Set<ClassDesc> types) {
         BlockCreatorImpl bci = new BlockCreatorImpl(body.parent(), superType);
-        Catch catch_ = new Catch(types, bci);
+        bci.branchTarget();
+        Catch catch_ = new Catch(superType, types, bci);
         if (catches instanceof ArrayList<Catch> al) {
             al.add(catch_);
         } else {
@@ -36,17 +37,26 @@ final class TryCatch extends Item {
         return bci;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Label after = cb.newLabel();
-        body.writeCode(cb, block);
+        StackMapBuilder.Saved saved = smb.save();
+        body.writeCode(cb, block, smb);
+        smb.restore(saved);
+        boolean afterFrameInfo = false;
         if (body.mayFallThrough()) {
             cb.goto_(after);
+            smb.wroteCode();
+            afterFrameInfo = true;
         }
         for (Catch catch_ : catches) {
             BlockCreatorImpl catchBody = catch_.body();
-            catchBody.writeCode(cb, block);
+            smb.push(catch_.superType());
+            catchBody.writeCode(cb, block, smb);
+            smb.restore(saved);
             if (catchBody.mayFallThrough()) {
                 cb.goto_(after);
+                afterFrameInfo = true;
+                smb.wroteCode();
             }
             for (ClassDesc type : catch_.types()) {
                 if (type.equals(CD_Throwable)) {
@@ -57,23 +67,11 @@ final class TryCatch extends Item {
             }
         }
         cb.labelBinding(after);
+        if (afterFrameInfo) {
+            smb.addFrameInfo(cb);
+        }
     }
 
-    static final class Catch {
-        private final Set<ClassDesc> types;
-        private final BlockCreatorImpl body;
-
-        Catch(final Set<ClassDesc> types, final BlockCreatorImpl body) {
-            this.types = types;
-            this.body = body;
-        }
-
-        Set<ClassDesc> types() {
-            return types;
-        }
-
-        BlockCreatorImpl body() {
-            return body;
-        }
+    record Catch(ClassDesc superType, Set<ClassDesc> types, BlockCreatorImpl body) {
     }
 }

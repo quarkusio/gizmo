@@ -37,10 +37,12 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
         return false;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         checkSlot();
         // write the reference to the var
         cb.loadLocal(Util.actualKindOf(typeKind()), slot);
+        smb.push(type()); // variable type
+        smb.wroteCode();
     }
 
     void checkSlot() {

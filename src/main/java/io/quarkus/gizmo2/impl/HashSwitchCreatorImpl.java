@@ -26,15 +26,19 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
 
     abstract boolean staticEquals(C a, C b);
 
-    abstract void equaller(final CodeBuilder cb, C value, Label ifEq);
+    abstract void equaller(final CodeBuilder cb, C value, Label ifEq, StackMapBuilder smb);
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Label fallOut, nonMatching;
+        ClassDesc type = type();
         if (default_ == null) {
             fallOut = nonMatching = block.newLabel();
         } else {
             fallOut = default_.endLabel();
             nonMatching = default_.startLabel();
+            if (fallThrough) {
+                default_.breakTarget();
+            }
         }
 
         // `cases` is a linked map, so this sort is stable
@@ -61,12 +65,15 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
         int idx = cb.allocateLocal(tk);
         doDup(cb);
         cb.storeLocal(tk, idx);
+        smb.store(idx, switchVal.type());
         hash(cb);
+        smb.pop(); // switch value
         if ((double) casesByConstant.size() / ((double) (max - min)) >= TABLESWITCH_DENSITY) {
             cb.tableswitch(min, max, nonMatching, switchCases);
         } else {
             cb.lookupswitch(nonMatching, switchCases);
         }
+        smb.wroteCode();
 
         if (!casesByConstant.isEmpty()) {
             // now write the cases
@@ -77,9 +84,13 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
             int hash = staticHash(entry.getKey());
             assert hash == hashes[hashIdx];
             // start the initial series
-            cb.labelBinding(caseLabels[hashIdx++]);
+            Label caseLabel = caseLabels[hashIdx++];
+            cb.labelBinding(caseLabel);
+            smb.wroteCode();
+            smb.addFrameInfo(cb);
             cb.loadLocal(tk, idx);
-            equaller(cb, entry.getKey(), entry.getValue().body.startLabel());
+            smb.push(switchVal.type());
+            equaller(cb, entry.getKey(), entry.getValue().body.startLabel(), smb);
             while (iterator.hasNext()) {
                 entry = iterator.next();
                 int nextHash = staticHash(entry.getKey());
@@ -87,22 +98,30 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
                     // end the current series
                     cb.goto_(nonMatching);
                     // start the new series
-                    cb.labelBinding(caseLabels[hashIdx++]);
+                    caseLabel = caseLabels[hashIdx++];
+                    cb.labelBinding(caseLabel);
+                    smb.wroteCode();
+                    smb.addFrameInfo(cb);
                     hash = nextHash;
                 }
 
                 cb.loadLocal(tk, idx);
-                equaller(cb, entry.getKey(), entry.getValue().body.startLabel());
+                smb.push(switchVal.type());
+                equaller(cb, entry.getKey(), entry.getValue().body.startLabel(), smb);
             }
             // end the final series
             cb.goto_(nonMatching);
+            smb.wroteCode();
+            StackMapBuilder.Saved saved = smb.save();
 
             // now the case blocks themselves
             for (CaseCreatorImpl case_ : cases) {
-                case_.body.writeCode(cb, block);
+                case_.body.branchTarget();
+                case_.body.writeCode(cb, block, smb);
                 if (case_.body.mayFallThrough()) {
                     cb.goto_(fallOut);
                 }
+                smb.restore(saved);
             }
         }
 
@@ -110,8 +129,14 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
         if (default_ == null) {
             // `fallOut` and `nonMatching` refer to the same object, so we need to bind it just once
             cb.labelBinding(fallOut);
+            if (fallThrough) {
+                smb.addFrameInfo(cb);
+            }
         } else {
-            default_.writeCode(cb, block);
+            default_.writeCode(cb, block, smb);
+        }
+        if (!Util.isVoid(type)) {
+            smb.push(type());
         }
     }
 

@@ -18,9 +18,12 @@ final class CheckCast extends Cast {
         super(a, toType, toGenericType);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         label = cb.newBoundLabel();
         cb.checkcast(type());
+        smb.pop(); // uncast
+        smb.push(type()); // cast
+        smb.wroteCode();
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {

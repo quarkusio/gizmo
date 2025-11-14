@@ -21,7 +21,7 @@ final class LocalVarAllocator extends Item {
         this.localVar = localVar;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         int slot = cb.allocateLocal(Util.actualKindOf(localVar.typeKind()));
         // we reserve the slot for the full remainder of the block to avoid control-flow analysis
         startScope = cb.newBoundLabel();
@@ -34,6 +34,7 @@ final class LocalVarAllocator extends Item {
             }
         }
         localVar.slot = slot;
+        smb.store(slot, localVar.type());
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {

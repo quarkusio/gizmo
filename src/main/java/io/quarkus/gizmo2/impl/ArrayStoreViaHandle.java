@@ -3,7 +3,8 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.MethodTypeDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -21,12 +22,14 @@ final class ArrayStoreViaHandle extends Item {
         this.mode = mode;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return ConstImpl.ofArrayVarHandle(arrayDeref.array().type())
-                .process(arrayDeref.array().process(arrayDeref.index().process(value.process(node.prev(), op), op), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        value.process(itr, op);
+        arrayDeref.index().process(itr, op);
+        arrayDeref.array().process(itr, op);
+        ConstImpl.ofArrayVarHandle(arrayDeref.array().type()).process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invokevirtual(CD_VarHandle, switch (mode) {
             case Plain -> "set";
             case Opaque -> "setOpaque";
@@ -34,5 +37,10 @@ final class ArrayStoreViaHandle extends Item {
             case Volatile -> "setVolatile";
             default -> throw Assert.impossibleSwitchCase(mode);
         }, MethodTypeDesc.of(CD_void, arrayDeref.array().type(), CD_int, arrayDeref.type()));
+        smb.pop(); // VarHandle constant
+        smb.pop(); // array
+        smb.pop(); // index
+        smb.pop(); // value
+        smb.wroteCode();
     }
 }

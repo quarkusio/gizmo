@@ -30,6 +30,8 @@ import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttr
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
+import io.github.dmlloyd.classfile.attribute.StackMapTableAttribute;
 import io.github.dmlloyd.classfile.constantpool.ClassEntry;
 import io.github.dmlloyd.classfile.instruction.LocalVariable;
 import io.github.dmlloyd.classfile.instruction.LocalVariableType;
@@ -301,7 +303,22 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         }
         if (builder != null) {
             mb.withCode(cb -> {
-                doCode(builder, cb);
+                StackMapBuilder smb = new StackMapBuilder();
+                if ((modifiers & ACC_STATIC) == 0) {
+                    if (this instanceof ConstructorCreatorImpl) {
+                        smb.store(0, StackMapFrameInfo.SimpleVerificationTypeInfo.UNINITIALIZED_THIS);
+                    } else {
+                        smb.store(0, typeCreator.type());
+                    }
+                }
+                for (ParamVarImpl param : params) {
+                    smb.store(param.slot(), param.type());
+                }
+                doCode(builder, cb, smb);
+                List<StackMapFrameInfo> infos = smb.frameInfos();
+                if (!infos.isEmpty()) {
+                    cb.with(StackMapTableAttribute.of(infos));
+                }
             });
         }
         if (!visible.isEmpty()) {
@@ -327,7 +344,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
                 params.stream().map(ParamVarImpl::genericType).map(Util::signatureOf).toArray(Signature[]::new));
     }
 
-    void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb) {
+    void doCode(final Consumer<BlockCreator> builder, final CodeBuilder cb, final StackMapBuilder smb) {
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType(),
@@ -386,7 +403,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
         }
         bc.accept(builder);
-        bc.writeCode(cb, bc);
+        bc.writeCode(cb, bc, smb);
+
         if (bc.mayFallThrough()) {
             if (creationSite == null) {
                 throw new IllegalStateException("Outermost block of an executable member must not fall out"

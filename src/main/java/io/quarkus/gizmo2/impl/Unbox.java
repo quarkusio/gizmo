@@ -26,7 +26,7 @@ final class Unbox extends Cast {
     }
 
     @Override
-    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invoke(Opcode.INVOKEVIRTUAL, a.type(), switch (TypeKind.from(type())) {
             case BOOLEAN -> "booleanValue";
             case BYTE -> "byteValue";
@@ -38,5 +38,8 @@ final class Unbox extends Cast {
             case DOUBLE -> "doubleValue";
             default -> throw impossibleSwitchCase(TypeKind.from(type()));
         }, MethodTypeDesc.of(type()), false);
+        smb.pop(); // boxed
+        smb.push(type()); // unboxed
+        smb.wroteCode();
     }
 }

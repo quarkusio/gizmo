@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
@@ -13,11 +14,15 @@ final class FieldSet extends Item {
         this.value = value;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return fieldDeref.instance().process(value.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        value.process(itr, op);
+        fieldDeref.instance().process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.putfield(fieldDeref.owner(), fieldDeref.name(), fieldDeref.desc().type());
+        smb.pop(); // receiver
+        smb.pop(); // value
+        smb.wroteCode();
     }
 }

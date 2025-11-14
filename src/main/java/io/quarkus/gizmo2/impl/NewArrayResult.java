@@ -1,7 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
@@ -21,31 +22,27 @@ public class NewArrayResult extends Item {
     }
 
     @Override
-    protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
-        node = node.prev();
+    protected void forEachDependency(ListIterator<Item> itr, BiConsumer<Item, ListIterator<Item>> op) {
         int size = elements.size();
         for (int i = size - 1; i >= 0; i--) {
             // processes the `Dup`, index, element and `ArrayStore`
-            node = elements.get(i).process(node, op);
+            elements.get(i).process(itr, op);
         }
-        node = newEmptyArray.process(node, op);
-        return node;
+        newEmptyArray.process(itr, op);
     }
 
-    public Node pop(Node ourNode) {
-        Node node = ourNode.prev();
-        remove(ourNode);
+    public void pop(ListIterator<Item> itr) {
+        remove(itr);
         int size = elements.size();
         for (int i = size - 1; i >= 0; i--) {
             // delete the array store and pop the things being stored
-            node = elements.get(i).revoke(node);
+            elements.get(i).revoke(itr);
         }
-        node = newEmptyArray.pop(node);
-        return node;
+        newEmptyArray.pop(itr);
     }
 
     @Override
-    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         // nothing
     }
 }

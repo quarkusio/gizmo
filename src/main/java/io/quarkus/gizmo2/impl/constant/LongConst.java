@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class LongConst extends ConstImpl {
     private final Long value;
@@ -23,7 +24,7 @@ public final class LongConst extends ConstImpl {
         return value.longValue();
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         long unboxed = value.longValue();
         if (Short.MIN_VALUE <= unboxed && unboxed <= Short.MAX_VALUE) {
             int asInt = (int) unboxed;
@@ -82,6 +83,8 @@ public final class LongConst extends ConstImpl {
         } else {
             cb.ldc(Long.valueOf(unboxed));
         }
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public boolean isZero() {

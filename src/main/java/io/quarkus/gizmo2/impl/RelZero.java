@@ -3,10 +3,12 @@ package io.quarkus.gizmo2.impl;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
 
@@ -29,25 +31,34 @@ final class RelZero extends Item {
         return a;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        a.process(itr, op);
     }
 
     If.Kind kind() {
         return kind;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Label true_ = cb.newLabel();
         Label end = cb.newLabel();
+        smb.pop(); // a
         switch (a.typeKind().asLoadable()) {
-            case INT -> kind.if_.accept(cb, true_);
-            case REFERENCE -> kind.if_acmpnull.accept(cb, true_);
+            case INT -> {
+                kind.if_.accept(cb, true_);
+                smb.wroteCode();
+            }
+            case REFERENCE -> {
+                kind.if_acmpnull.accept(cb, true_);
+                smb.wroteCode();
+            }
             case LONG -> {
                 cb.lconst_0();
                 cb.lcmp();
                 cb.iconst_1();
                 cb.iand();
+                smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+                smb.wroteCode();
                 return;
             }
             case FLOAT -> {
@@ -55,6 +66,8 @@ final class RelZero extends Item {
                 cb.fcmpg();
                 cb.iconst_1();
                 cb.iand();
+                smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+                smb.wroteCode();
                 return;
             }
             case DOUBLE -> {
@@ -62,6 +75,8 @@ final class RelZero extends Item {
                 cb.dcmpg();
                 cb.iconst_1();
                 cb.iand();
+                smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+                smb.wroteCode();
                 return;
             }
             default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
@@ -69,7 +84,11 @@ final class RelZero extends Item {
         cb.iconst_0();
         cb.goto_(end);
         cb.labelBinding(true_);
+        smb.addFrameInfo(cb);
         cb.iconst_1();
+        smb.wroteCode();
+        smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
         cb.labelBinding(end);
+        smb.addFrameInfo(cb);
     }
 }

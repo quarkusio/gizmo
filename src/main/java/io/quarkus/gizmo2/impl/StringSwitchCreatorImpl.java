@@ -22,11 +22,13 @@ public final class StringSwitchCreatorImpl extends HashSwitchCreatorImpl<StringC
         return a.desc().equals(b.desc());
     }
 
-    void equaller(final CodeBuilder cb, final StringConst value, final Label ifEq) {
-        value.writeCode(cb, enclosing);
+    void equaller(final CodeBuilder cb, final StringConst value, final Label ifEq, final StackMapBuilder smb) {
+        value.writeCode(cb, enclosing, smb);
         cb.invokevirtual(CD_String, "equals", MethodTypeDesc.of(CD_boolean, CD_Object));
         // returns 1 if equal
         cb.ifne(ifEq);
+        smb.pop();
+        smb.pop();
     }
 
     int staticHash(final StringConst val) {

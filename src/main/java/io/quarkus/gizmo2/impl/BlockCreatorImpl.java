@@ -1,13 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Conversions.boxingConversion;
-import static io.quarkus.gizmo2.impl.Conversions.convert;
-import static io.quarkus.gizmo2.impl.Conversions.numericPromotion;
-import static io.quarkus.gizmo2.impl.Conversions.numericPromotionRequired;
-import static io.quarkus.gizmo2.impl.Conversions.unboxingConversion;
-import static io.quarkus.gizmo2.impl.Preconditions.requireArray;
-import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
-import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
+import static io.quarkus.gizmo2.impl.Conversions.*;
+import static io.quarkus.gizmo2.impl.Preconditions.*;
+import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 import static java.util.Collections.*;
 
@@ -25,13 +20,13 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -68,7 +63,6 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 import io.quarkus.gizmo2.impl.constant.IntConst;
 import io.quarkus.gizmo2.impl.constant.NullConst;
-import io.quarkus.gizmo2.impl.constant.VoidConst;
 import io.smallrye.common.constraint.Assert;
 
 /**
@@ -97,14 +91,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     /**
      * All the items to emit, in order.
      */
-    private final Node head;
-    private final Node tail;
+    private final ArrayList<Item> items = new ArrayList<Item>(40);
     private boolean breakTarget;
+    private boolean branchTarget;
     /**
      * Set if this block is an outermost body block of a {@code try} that also has a {@code finally}.
      * Note that this is only set when the {@code finally} block is added, so when generating the
      * {@code try} body, this is still {@code null}. Call {@link #tryFinally()} to find the enclosing
-     * {@code TryFinally} inside {@link #writeCode(CodeBuilder, BlockCreatorImpl)}.
+     * {@code TryFinally} inside {@link Item#writeCode(CodeBuilder, BlockCreatorImpl, StackMapBuilder)}.
      */
     TryFinally tryFinally;
     private int state;
@@ -156,21 +150,13 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         startLabel = newLabel();
         endLabel = newLabel();
         this.input = input;
-        head = Node.newList(BlockHeader.INSTANCE, Yield.YIELD_VOID);
-        tail = head.next();
-        if (!inputType.equals(CD_void)) {
-            head.insertNext(new BlockExpr(inputType));
+        if (inputType.equals(CD_void)) {
+            items.add(BlockHeader.VOID);
+        } else {
+            items.add(new BlockHeader(inputType));
         }
         this.outputType = outputType;
         this.returnType = returnType;
-    }
-
-    Node head() {
-        return head;
-    }
-
-    Node tail() {
-        return tail;
     }
 
     BlockCreatorImpl parent() {
@@ -179,7 +165,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     /**
      * This method should be used to look up the enclosing {@code TryFinally} inside
-     * {@link #writeCode(CodeBuilder, BlockCreatorImpl)}. The {@code tryFinally} field is set late
+     * {@link Item#writeCode(CodeBuilder, BlockCreatorImpl, StackMapBuilder)}. The {@code tryFinally} field is set late
      * (when the {@code finally} block is being added), so all blocks within the {@code try} body,
      * except of the outermost one, do <em>not</em> have it set correctly.
      */
@@ -202,6 +188,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return returnType;
     }
 
+    public void breakTarget() {
+        breakTarget = true;
+    }
+
+    public void branchTarget() {
+        branchTarget = true;
+    }
+
     protected void computeType() {
         initType(outputType);
     }
@@ -218,27 +212,28 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (active()) {
             //throw new IllegalStateException();
         }
-        return breakTarget || tail.item().mayFallThrough();
+        return breakTarget || getLast().mayFallThrough();
     }
 
-    public Node pop(final Node node) {
-        assert this == node.item();
+    public void pop(final ListIterator<Item> itr) {
         if (isVoid()) {
-            return super.pop(node);
+            super.pop(itr);
+            return;
         }
         assert mayFallThrough();
         // else, pop *our* result
         if (breakTarget) {
             // need an explicit pop node
-            return super.pop(node);
+            super.pop(itr);
+            return;
         }
-        Item tailItem = tail.item();
+        Item tailItem = getLast();
         if (tailItem instanceof Yield yield && !yield.value().isVoid()) {
-            tail.set(Yield.YIELD_VOID);
-            cleanStack(tail);
-            return node.prev();
+            ListIterator<Item> subItr = iterator();
+            tailItem.revoke(subItr); // remove the old yield
+            addItemUnchecked(Yield.YIELD_VOID, subItr); // add a new one
         } else {
-            return super.pop(node);
+            super.pop(itr);
         }
     }
 
@@ -403,48 +398,40 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return addItem(new NewEmptyArray(componentType, (Item) size));
     }
 
-    private void insertNewArrayStore(NewEmptyArray nea, List<ArrayStore> stores, Node node, List<Item> values, int idx) {
-        if (idx == 0) {
-            // all elements processed
-            nea.forEachDependency(nea.insert(node), Item::insertIfUnbound);
-        } else {
-            ArrayStore store = stores.get(idx - 1);
-            Node storeNode = store.insert(node);
-            // skip predecessor (value)
-            Node beforeValNode = storeNode.prev();
-            Item value = values.get(idx - 1);
-            if (value.bound()) {
-                beforeValNode = value.verify(beforeValNode);
-            }
-            // (skip index for now)
-            // insert dup before value
-            Dup dup = (Dup) stores.get(idx - 1).arrayExpr();
-            Node prev = dup.insert(beforeValNode.next());
-            insertNewArrayStore(nea, stores, prev, values, idx - 1);
-            // post-process (inserts index)
-            store.forEachDependency(storeNode, Item::insertIfUnbound);
-        }
-    }
-
     @Override
     public <T> Expr newArray(final ClassDesc componentType, final List<T> values, final Function<T, ? extends Expr> mapper) {
         checkActive();
         // build the object graph
         int size = values.size();
-        List<Expr> mappedValues = new ArrayList<>(size);
-        List<ArrayStore> stores = new ArrayList<>(size);
         NewEmptyArray nea = new NewEmptyArray(componentType, ConstImpl.of(size));
+        if (size == 0) {
+            return addItem(nea);
+        }
+        // make the stores list
+        List<ArrayStore> stores = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
             Expr mapped = mapper.apply(values.get(i));
-            mappedValues.add(mapped);
             stores.add(new ArrayStore(new Dup(nea), ConstImpl.of(i), (Item) mapped, componentType));
         }
         // stitch the object graph into our list
-        insertNewArrayStore(nea, stores, tail, Util.reinterpretCast(mappedValues), size);
-        Item result = nea;
-        if (size > 0) {
-            result = addItem(new NewArrayResult(nea, Util.reinterpretCast(stores)));
+        ListIterator<Item> itr = iterator();
+        // start at end
+        NewArrayResult result = new NewArrayResult(nea, Util.reinterpretCast(stores));
+        result.insert(itr);
+        // reverse order stores and dups
+        for (int i = size - 1; i >= 0; i--) {
+            ArrayStore store = stores.get(i);
+            store.insert(itr);
+            // now the value to be stored
+            store.value().insertIfUnbound(itr);
+            // now the index
+            store.index().insert(itr);
+            // now the Dup
+            store.arrayExpr().insert(itr);
         }
+        // last, add the empty array
+        nea.insert(itr);
+        ((Item) nea.length()).insert(itr);
         return result;
     }
 
@@ -819,16 +806,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private NewResult new0(final GenericType genericType, final ConstructorDesc ctor, final List<? extends Expr> args) {
         New new_ = new New(ctor.owner(), genericType);
         Dup dup_ = new Dup(new_);
-        Node node = tail.prev();
+        ListIterator<Item> itr = iterator();
         // insert New & Dup *before* the arguments
         for (int i = args.size() - 1; i >= 0; i--) {
             Item arg = (Item) args.get(i);
             if (arg.bound()) {
-                node = arg.verify(node);
+                arg.verify(itr);
             }
         }
-        Node dupNode = dup_.insert(node.next());
-        new_.insert(dupNode);
+        dup_.insert(itr);
+        new_.insert(itr);
         // add the invoke at tail
         Invoke invoke = new Invoke(ctor, dup_, args, genericType);
         addItem(invoke);
@@ -960,39 +947,30 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         nesting(() -> {
             block.accept(nested);
         });
-        // inline it
-        if (block.tail.item() instanceof Yield yield && yield.value().isVoid()) {
-            // block should be safe to inline
-            Node node = block.head.next();
-            while (node.item() != yield) {
-                tail.insertPrev(node.item());
-                node = node.next();
-            }
-            return tail.prev().item();
-        } else {
-            addItem(block);
-            return block;
-        }
+        addItem(block);
+        return block;
     }
 
     public void accept(final BiConsumer<? super BlockCreatorImpl, Expr> handler) {
         checkActive();
-        Expr input;
-        if (head.next().item() instanceof BlockExpr be) {
-            input = be;
-        } else {
-            // void-input-typed block
-            input = VoidConst.INSTANCE;
-        }
+        Expr input = getFirst();
         handler.accept(this, input);
-        cleanStack(tail.item().process(tail, Item::verify));
-        markDone();
+        finish();
     }
 
     public void accept(final Consumer<? super BlockCreatorImpl> handler) {
         checkActive();
         handler.accept(this);
-        if (tail.item() instanceof Yield yield) {
+        finish();
+    }
+
+    private void finish() {
+        if (!done()) {
+            addItem(Yield.YIELD_VOID);
+        }
+        ListIterator<Item> itr = iterator();
+        Item last = Util.peekPrevious(itr);
+        if (last instanceof Yield yield) {
             Expr val = yield.value();
             if (val.typeKind() != typeKind()) {
                 if (val.typeKind() == TypeKind.VOID) {
@@ -1004,7 +982,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 }
             }
         }
-        cleanStack(tail.item().process(tail, Item::verify));
+        last.verify(itr);
+        // clean stack with fresh iterator
+        cleanStack(iterator());
         markDone();
     }
 
@@ -1024,24 +1004,21 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private If doIfInsn(final ClassDesc type, final Expr cond, final BlockCreatorImpl wt, final BlockCreatorImpl wf) {
         // try to combine the condition into the `if`
         if (((Item) cond).bound()) {
-            Item prevItem = tail.prev().item();
+            ListIterator<Item> itr = iterator();
+            Item prevItem = Util.peekPrevious(itr);
             if (prevItem == cond) {
                 if (cond instanceof Rel rel) {
                     IfRel ifRel = new IfRel(type, rel.kind(), wt, wf, rel.left(), rel.right());
-                    if (ifRel.mayFallThrough()) {
-                        rel.replace(tail.prev(), ifRel);
-                    } else {
-                        rel.remove(tail.prev());
-                        replaceLastItem(ifRel);
+                    itr.set(ifRel);
+                    if (!ifRel.mayFallThrough()) {
+                        markDone();
                     }
                     return ifRel;
                 } else if (cond instanceof RelZero rz) {
                     IfZero ifZero = new IfZero(type, rz.kind(), wt, wf, rz.input(), false);
-                    if (ifZero.mayFallThrough()) {
-                        rz.replace(tail.prev(), ifZero);
-                    } else {
-                        rz.remove(tail.prev());
-                        replaceLastItem(ifZero);
+                    itr.set(ifZero);
+                    if (!ifZero.mayFallThrough()) {
+                        markDone();
                     }
                     return ifZero;
                 }
@@ -1113,6 +1090,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void goto_(final BlockCreator outer) {
+        ((BlockCreatorImpl) outer).branchTarget = true;
         if (!outer.contains(this)) {
             throw new IllegalStateException("Invalid block nesting");
         }
@@ -1228,7 +1206,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void return_() {
-        replaceLastItem(Return.RETURN_VOID);
+        addItem(Return.RETURN_VOID);
     }
 
     public void return_(Expr val) {
@@ -1239,16 +1217,16 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
 
         val = convert(val, returnType);
-        replaceLastItem(val.equals(Const.ofVoid()) ? Return.RETURN_VOID : new Return(val));
+        addItem(val.equals(Const.ofVoid()) ? Return.RETURN_VOID : new Return(val));
     }
 
     public void throw_(final Expr val) {
-        replaceLastItem(new Throw(val));
+        addItem(new Throw(val));
     }
 
     public void yield(Expr val) {
         val = convert(val, outputType);
-        replaceLastItem(val.equals(Const.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
+        addItem(val.equals(Const.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
     public Expr objHashCode(final Expr expr) {
@@ -1411,27 +1389,43 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
                 bc -> bc.throw_(bc.new_(ConstructorDesc.of(AssertionError.class, Object.class), Const.of(message))));
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return input.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        input.process(itr, op);
     }
 
-    public void writeCode(CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        StackMapBuilder.Saved saved = smb.save();
+        if (branchTarget) {
+            smb.addFrameInfo(cb);
+        }
         cb.block(bcb -> {
             bcb.labelBinding(startLabel);
-            Node node = head;
-            while (node != null) {
-                node.item().writeCode(bcb, this);
-                node = node.next();
+            List<Item> items = this.items;
+            int sz = items.size();
+            for (int i = 0; i < sz; i++) {
+                items.get(i).writeCode(bcb, this, smb);
             }
             bcb.labelBinding(endLabel);
         });
+        smb.restore(saved);
+        if (!Util.isVoid(input.type())) {
+            // consume argument
+            smb.pop();
+        }
+        if (!Util.isVoid(outputType)) {
+            // produce output type
+            smb.push(outputType);
+        }
+        if (breakTarget) {
+            smb.addFrameInfo(cb);
+        }
     }
 
     public void writeAnnotations(final RetentionPolicy retention, final ArrayList<TypeAnnotation> annotations) {
-        Node node = head;
-        while (node != null) {
-            node.item().writeAnnotations(retention, annotations);
-            node = node.next();
+        List<Item> items = this.items;
+        int sz = items.size();
+        for (int i = 0; i < sz; i++) {
+            items.get(i).writeAnnotations(retention, annotations);
         }
     }
 
@@ -1443,24 +1437,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     <I extends Item> I addItem(I item) {
         checkActive();
-        Node node = item.insert(tail);
-        item.bind();
-        item.forEachDependency(node, Item::insertIfUnbound);
-        if (!item.mayFallThrough()) {
-            assert tail.item() instanceof Yield;
-            tail.set(item);
-            node.remove();
-            markDone();
-        }
-        return item;
+        return addItemUnchecked(item, iterator());
     }
 
-    <I extends Item> I replaceLastItem(I item) {
-        checkActive();
-        assert tail.item() instanceof Yield;
-        tail.set(item);
-        item.forEachDependency(tail, Item::insertIfUnbound);
-        markDone();
+    private <I extends Item> I addItemUnchecked(final I item, final ListIterator<Item> itr) {
+        item.insert(itr);
+        item.forEachDependency(itr, Item::insertIfUnbound);
+        if (!item.mayFallThrough() || item instanceof Yield) {
+            markDone();
+        }
         return item;
     }
 
@@ -1495,19 +1480,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return endLabel;
     }
 
-    static Node cleanStack(Node node) {
-        if (node == null) {
-            throw new IllegalStateException();
-        }
-        // clean the block stack before node
-        while (node.hasPrev()) {
+    static void cleanStack(ListIterator<Item> itr) {
+        // clean the block stack before the current iterator position
+        while (itr.hasPrevious()) {
             // pop every unused item in the list, skipping void nodes
-            node = node.item().pop(node);
-            if (node == null) {
-                throw new IllegalStateException();
-            }
+            Util.peekPrevious(itr).pop(itr);
         }
-        return node;
     }
 
     void nesting(Runnable action) {
@@ -1520,5 +1498,32 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             state = ST_ACTIVE;
             nestSite = null;
         }
+    }
+
+    ListIterator<Item> iterator() {
+        return items.listIterator(items.size());
+    }
+
+    protected void insert(final ListIterator<Item> itr) {
+        if (items.size() == 2) {
+            Item last = items.get(1);
+            if (last.type().descriptorString().equals(input.type().descriptorString())) {
+                last.insert(itr);
+                return;
+            }
+        }
+        super.insert(itr);
+    }
+
+    Item getFirst() {
+        return items.get(0);
+    }
+
+    Item getLast() {
+        return items.get(items.size() - 1);
+    }
+
+    void setLast(final Item item) {
+        items.set(items.size() - 1, item);
     }
 }

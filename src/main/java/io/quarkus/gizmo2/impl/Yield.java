@@ -1,6 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -18,13 +19,11 @@ final class Yield extends Item {
         this.value = (Item) value;
     }
 
-    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-        node = node.prev();
-        node = value.isVoid() ? node : value.process(node, op);
-        return node;
+    protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        value.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         // no operation
     }
 

@@ -4,7 +4,8 @@ import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.MethodTypeDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -26,11 +27,12 @@ final class FieldGetViaHandle extends Item {
         }
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return ConstImpl.ofFieldVarHandle(fieldDeref.desc()).process(fieldDeref.instance().process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        fieldDeref.instance().process(itr, op);
+        ConstImpl.ofFieldVarHandle(fieldDeref.desc()).process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invokevirtual(CD_VarHandle, switch (mode) {
             case Plain -> "get";
             case Opaque -> "getOpaque";
@@ -38,5 +40,9 @@ final class FieldGetViaHandle extends Item {
             case Volatile -> "getVolatile";
             default -> throw impossibleSwitchCase(mode);
         }, MethodTypeDesc.of(type(), fieldDeref.instance().type()));
+        smb.pop(); // VarHandle
+        smb.pop(); // receiver
+        smb.push(type()); // value
+        smb.wroteCode();
     }
 }

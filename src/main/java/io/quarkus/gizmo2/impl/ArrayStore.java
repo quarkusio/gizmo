@@ -1,10 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Conversions.convert;
-import static java.lang.constant.ConstantDescs.CD_int;
+import static io.quarkus.gizmo2.impl.Conversions.*;
+import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -34,11 +35,17 @@ final class ArrayStore extends Item {
         return value;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return arrayExpr.process(index.process(value.process(node.prev(), op), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        value.process(itr, op);
+        index.process(itr, op);
+        arrayExpr.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.arrayStore(TypeKind.from(componentType));
+        smb.pop(); // array
+        smb.pop(); // index
+        smb.pop(); // value
+        smb.wroteCode();
     }
 }

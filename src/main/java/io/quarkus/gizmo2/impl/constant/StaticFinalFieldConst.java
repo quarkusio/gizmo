@@ -14,6 +14,7 @@ import java.util.Optional;
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class StaticFinalFieldConst extends ConstImpl {
     private static final DirectMethodHandleDesc BSM_GET_STATIC_FINAL2 = ConstantDescs.ofConstantBootstrap(CD_ConstantBootstraps,
@@ -38,8 +39,10 @@ public final class StaticFinalFieldConst extends ConstImpl {
         return fieldDesc.hashCode();
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.getstatic(fieldDesc.owner(), fieldDesc.name(), fieldDesc.type());
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public ConstantDesc desc() {

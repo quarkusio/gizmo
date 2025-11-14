@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 
 public final class EnumConst extends ConstImpl {
@@ -44,8 +45,10 @@ public final class EnumConst extends ConstImpl {
         return hashCode;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.getstatic(desc.constantType(), desc.constantName(), desc.constantType());
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public Optional<Enum.EnumDesc<?>> describeConstable() {

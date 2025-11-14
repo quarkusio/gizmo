@@ -17,10 +17,10 @@ final class GotoStart extends Goto {
         return "GotoStart:" + outer;
     }
 
-    Label target(final BlockCreatorImpl from) {
+    Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         if (tryFinally != null) {
-            return tryFinally.cleanup(new GotoStartKey(outer));
+            return tryFinally.cleanup(new GotoStartKey(outer, smb.save()));
         } else {
             return outer.startLabel();
         }
@@ -29,7 +29,8 @@ final class GotoStart extends Goto {
     static class GotoStartKey extends TryFinally.CleanupKey {
         private final BlockCreatorImpl outer;
 
-        GotoStartKey(final BlockCreatorImpl outer) {
+        GotoStartKey(final BlockCreatorImpl outer, final StackMapBuilder.Saved saved) {
+            super(saved);
             this.outer = outer;
         }
 
