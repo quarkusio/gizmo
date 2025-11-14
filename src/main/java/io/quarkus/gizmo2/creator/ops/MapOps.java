@@ -1,8 +1,8 @@
 package io.quarkus.gizmo2.creator.ops;
 
-import java.util.Collection;
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import java.util.Map;
-import java.util.Set;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -39,7 +39,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr get(Expr key) {
-        return invokeInstance(Object.class, "get", Object.class, key);
+        return bc.invokeInterface(MD_Map.get, obj, key);
     }
 
     /**
@@ -50,7 +50,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr put(Expr key, Expr value) {
-        return invokeInstance(Object.class, "put", Object.class, Object.class, key, value);
+        return bc.invokeInterface(MD_Map.put, obj, key, value);
     }
 
     /**
@@ -60,7 +60,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr remove(Expr key) {
-        return invokeInstance(Object.class, "remove", Object.class, key);
+        return bc.invokeInterface(MD_Map.remove, obj, key);
     }
 
     /**
@@ -69,7 +69,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr isEmpty() {
-        return invokeInstance(boolean.class, "isEmpty");
+        return bc.invokeInterface(MD_Map.isEmpty, obj);
     }
 
     /**
@@ -78,7 +78,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr size() {
-        return invokeInstance(int.class, "size");
+        return bc.invokeInterface(MD_Map.size, obj);
     }
 
     /**
@@ -87,14 +87,14 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr containsKey(Expr key) {
-        return invokeInstance(boolean.class, "containsKey", Object.class, key);
+        return bc.invokeInterface(MD_Map.containsKey, obj, key);
     }
 
     /**
      * Generate a call to {@link Map#clear()}.
      */
     public void clear() {
-        invokeInstance(void.class, "clear");
+        bc.invokeInterface(MD_Map.clear, obj);
     }
 
     /**
@@ -103,7 +103,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr keySet() {
-        return invokeInstance(Set.class, "keySet");
+        return bc.invokeInterface(MD_Map.keySet, obj);
     }
 
     /**
@@ -112,7 +112,7 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr values() {
-        return invokeInstance(Collection.class, "values");
+        return bc.invokeInterface(MD_Map.values, obj);
     }
 
     /**
@@ -121,6 +121,6 @@ public class MapOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr entrySet() {
-        return invokeInstance(Set.class, "entrySet");
+        return bc.invokeInterface(MD_Map.entrySet, obj);
     }
 }

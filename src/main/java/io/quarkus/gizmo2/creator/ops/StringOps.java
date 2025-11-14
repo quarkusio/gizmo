@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -15,7 +17,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @param obj the receiver string (must not be {@code null})
      */
     public StringOps(final BlockCreator bc, final Expr obj) {
-        super(String.class, bc, obj);
+        super(bc, obj);
     }
 
     /**
@@ -24,7 +26,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr isEmpty() {
-        return invokeInstance(boolean.class, "isEmpty");
+        return bc.invokeVirtual(MD_String.isEmpty, obj);
     }
 
     /**
@@ -33,7 +35,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr length() {
-        return invokeInstance(int.class, "length");
+        return bc.invokeVirtual(MD_String.length, obj);
     }
 
     /**
@@ -43,7 +45,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr substring(Expr start) {
-        return invokeInstance(String.class, "substring", int.class, start);
+        return bc.invokeVirtual(MD_String.substring_1, obj, start);
     }
 
     /**
@@ -64,7 +66,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr substring(Expr start, Expr end) {
-        return invokeInstance(String.class, "substring", int.class, int.class, start, end);
+        return bc.invokeVirtual(MD_String.substring_2, obj, start, end);
     }
 
     /**
@@ -85,7 +87,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr charAt(Expr index) {
-        return invokeInstance(char.class, "charAt", int.class, index);
+        return bc.invokeVirtual(MD_String.charAt, obj, index);
     }
 
     /**
@@ -105,7 +107,7 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr codePointAt(Expr index) {
-        return invokeInstance(int.class, "codePointAt", int.class, index);
+        return bc.invokeVirtual(MD_String.codePointAt, obj, index);
     }
 
     /**
@@ -126,8 +128,8 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      */
     public Expr indexOf(Expr item) {
         return switch (item.typeKind().asLoadable()) {
-            case INT -> invokeInstance(int.class, "indexOf", int.class, item);
-            case REFERENCE -> invokeInstance(int.class, "indexOf", String.class, item);
+            case INT -> bc.invokeVirtual(MD_String.indexOf_int, obj, item);
+            case REFERENCE -> bc.invokeVirtual(MD_String.indexOf_String, obj, item);
             default -> throw new IllegalArgumentException("Invalid item type " + item.type());
         };
     }
@@ -160,8 +162,8 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      */
     public Expr lastIndexOf(Expr item) {
         return switch (item.typeKind().asLoadable()) {
-            case INT -> invokeInstance(int.class, "lastIndexOf", int.class, item);
-            case REFERENCE -> invokeInstance(int.class, "lastIndexOf", String.class, item);
+            case INT -> bc.invokeVirtual(MD_String.lastIndexOf_int, obj, item);
+            case REFERENCE -> bc.invokeVirtual(MD_String.lastIndexOf_String, obj, item);
             default -> throw new IllegalArgumentException("Invalid item type " + item.type());
         };
     }
@@ -193,11 +195,11 @@ public final class StringOps extends ObjectOps implements ComparableOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr concat(final Expr other) {
-        return invokeInstance(String.class, "concat", String.class, other);
+        return bc.invokeVirtual(MD_String.concat, obj, other);
     }
 
     @Override
     public Expr compareTo(final Expr other) {
-        return invokeInstance(int.class, "compareTo", String.class, other);
+        return bc.invokeVirtual(MD_String.compareTo, obj, other);
     }
 }

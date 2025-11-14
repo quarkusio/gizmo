@@ -1,12 +1,12 @@
 package io.quarkus.gizmo2.creator;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.Constable;
 import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicCallSiteDesc;
-import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
 import java.lang.ref.Reference;
 import java.util.Collection;
@@ -39,7 +39,6 @@ import io.quarkus.gizmo2.creator.ops.OptionalOps;
 import io.quarkus.gizmo2.creator.ops.SetOps;
 import io.quarkus.gizmo2.creator.ops.StringOps;
 import io.quarkus.gizmo2.creator.ops.ThrowableOps;
-import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -720,35 +719,35 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * Emit a {@linkplain VarHandle#fullFence() full fence}.
      */
     default void fullFence() {
-        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "fullFence", MethodTypeDesc.of(CD_void)));
+        invokeStatic(MD_VarHandle.fullFence);
     }
 
     /**
      * Emit an {@linkplain VarHandle#acquireFence() acquire fence}.
      */
     default void acquireFence() {
-        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "acquireFence", MethodTypeDesc.of(CD_void)));
+        invokeStatic(MD_VarHandle.acquireFence);
     }
 
     /**
      * Emit a {@linkplain VarHandle#releaseFence() release fence}.
      */
     default void releaseFence() {
-        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "release", MethodTypeDesc.of(CD_void)));
+        invokeStatic(MD_VarHandle.releaseFence);
     }
 
     /**
      * Emit a {@linkplain VarHandle#loadLoadFence() <em>LoadLoad</em> fence}.
      */
     default void loadLoadFence() {
-        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "loadLoadFence", MethodTypeDesc.of(CD_void)));
+        invokeStatic(MD_VarHandle.loadLoadFence);
     }
 
     /**
      * Emit a {@linkplain VarHandle#loadLoadFence() <em>StoreStore</em> fence}.
      */
     default void storeStoreFence() {
-        invokeStatic(ClassMethodDesc.of(CD_VarHandle, "storeStoreFence", MethodTypeDesc.of(CD_void)));
+        invokeStatic(MD_VarHandle.storeStoreFence);
     }
 
     /**
@@ -762,7 +761,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
         if (obj.typeKind() != TypeKind.REFERENCE) {
             throw new IllegalArgumentException("Reachability fence can only be emitted for reference types");
         }
-        invokeStatic(MethodDesc.of(Reference.class, "reachabilityFence", MethodTypeDesc.of(CD_void, CD_Object)), obj);
+        invokeStatic(MD_Reference.reachabilityFence, obj);
     }
 
     // arrays

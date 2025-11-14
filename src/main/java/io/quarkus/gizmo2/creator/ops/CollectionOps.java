@@ -1,7 +1,8 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import java.util.Collection;
-import java.util.Iterator;
 
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -37,7 +38,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr size() {
-        return invokeInstance(int.class, "size");
+        return bc.invokeInterface(MD_Collection.size, obj);
     }
 
     /**
@@ -46,7 +47,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr isEmpty() {
-        return invokeInstance(boolean.class, "isEmpty");
+        return bc.invokeInterface(MD_Collection.isEmpty, obj);
     }
 
     /**
@@ -56,7 +57,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr add(Expr item) {
-        return invokeInstance(boolean.class, "add", Object.class, item);
+        return bc.invokeInterface(MD_Collection.add, obj, item);
     }
 
     /**
@@ -66,14 +67,14 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr addAll(Expr other) {
-        return invokeInstance(boolean.class, "addAll", Collection.class, other);
+        return bc.invokeInterface(MD_Collection.addAll, obj, other);
     }
 
     /**
      * Generate a call to {@link Collection#clear()}.
      */
     public void clear() {
-        invokeInstance("clear");
+        bc.invokeInterface(MD_Collection.clear, obj);
     }
 
     /**
@@ -83,7 +84,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr contains(Expr item) {
-        return invokeInstance(boolean.class, "contains", Object.class, item);
+        return bc.invokeInterface(MD_Collection.contains, obj, item);
     }
 
     /**
@@ -93,7 +94,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr containsAll(Expr other) {
-        return invokeInstance(boolean.class, "containsAll", Collection.class, other);
+        return bc.invokeInterface(MD_Collection.containsAll, obj, other);
     }
 
     /**
@@ -102,7 +103,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr iterator() {
-        return invokeInstance(Iterator.class, "iterator");
+        return bc.invokeInterface(MD_Iterable.iterator, obj);
     }
 
     /**
@@ -112,7 +113,7 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr remove(Expr item) {
-        return invokeInstance(boolean.class, "remove", Object.class, item);
+        return bc.invokeInterface(MD_Collection.remove, obj, item);
     }
 
     /**
@@ -122,6 +123,6 @@ public class CollectionOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr removeAll(Expr other) {
-        return invokeInstance(boolean.class, "removeAll", Collection.class, other);
+        return bc.invokeInterface(MD_Collection.removeAll, obj, other);
     }
 }
