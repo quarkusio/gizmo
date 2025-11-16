@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class BooleanConst extends ConstImpl {
     private final boolean value;
@@ -15,12 +16,14 @@ public final class BooleanConst extends ConstImpl {
         this.value = value;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         if (value) {
             cb.iconst_1();
         } else {
             cb.iconst_0();
         }
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public static final BooleanConst FALSE = new BooleanConst(false);

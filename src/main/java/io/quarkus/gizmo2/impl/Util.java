@@ -16,6 +16,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -480,5 +481,67 @@ public final class Util {
 
     private static IllegalArgumentException invalidType(final Object type) {
         return new IllegalArgumentException(type.getClass().toString());
+    }
+
+    public static boolean isVoid(ClassDesc type) {
+        return "V".equals(type.descriptorString());
+    }
+
+    /**
+     * Assert that the next item is the given item,
+     * <em>and</em> set up the iterator so that its {@code remove()/set()} methods
+     * will target the given item.
+     *
+     * @param itr the list iterator (must not be {@code null})
+     * @param item the item to check (must not be {@code null})
+     */
+    public static void ensureBefore(ListIterator<Item> itr, Item item) {
+        assert itr.hasNext();
+        Item check = itr.next();
+        assert item.equals(check);
+        itr.previous();
+    }
+
+    /**
+     * Assert that the previous item is the given item,
+     * <em>and</em> set up the iterator so that its {@code remove()/set()} methods
+     * will target the given item.
+     *
+     * @param itr the list iterator (must not be {@code null})
+     * @param item the item to check (must not be {@code null})
+     */
+    public static void ensureAfter(ListIterator<Item> itr, final Item item) {
+        assert itr.hasPrevious();
+        Item check = itr.previous();
+        assert item.equals(check);
+        itr.next();
+    }
+
+    /**
+     * Peek at the next item for this iterator,
+     * <em>and</em> set up the iterator so that its {@code remove()/set()} methods
+     * will target the returned item.
+     *
+     * @param itr the list iterator (must not be {@code null})
+     * @return the next item (not {@code null})
+     */
+    public static Item peekNext(ListIterator<Item> itr) {
+        assert itr.hasNext();
+        itr.next();
+        return itr.previous();
+    }
+
+    /**
+     * Peek at the previous item for this iterator,
+     * <em>and</em> set up the iterator so that its {@code remove()/set()} methods
+     * will target the returned item.
+     *
+     * @param itr the list iterator (must not be {@code null})
+     * @return the previous item (not {@code null})
+     */
+    public static Item peekPrevious(ListIterator<Item> itr) {
+        assert itr.hasPrevious();
+        itr.previous();
+        return itr.next();
     }
 }

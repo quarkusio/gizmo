@@ -4,10 +4,12 @@ import static io.quarkus.gizmo2.impl.Preconditions.requireSameTypeKind;
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import static java.lang.constant.ConstantDescs.CD_boolean;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.Label;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
 
@@ -31,8 +33,9 @@ final class Rel extends Item {
         }
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(b.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        b.process(itr, op);
+        a.process(itr, op);
     }
 
     Item left() {
@@ -47,7 +50,7 @@ final class Rel extends Item {
         return kind;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Label true_ = cb.newLabel();
         Label end = cb.newLabel();
         switch (a.typeKind().asLoadable()) {
@@ -55,10 +58,18 @@ final class Rel extends Item {
             case REFERENCE -> kind.if_acmp.accept(cb, true_);
             default -> throw impossibleSwitchCase(typeKind().asLoadable());
         }
+        smb.pop(); // a
+        smb.pop(); // b
         cb.iconst_0();
         cb.goto_(end);
+        smb.wroteCode();
         cb.labelBinding(true_);
+        smb.addFrameInfo(cb);
         cb.iconst_1();
+        smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+        smb.wroteCode();
         cb.labelBinding(end);
+        smb.addFrameInfo(cb);
+        smb.wroteCode();
     }
 }

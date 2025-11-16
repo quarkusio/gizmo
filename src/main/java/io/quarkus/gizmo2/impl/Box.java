@@ -28,8 +28,11 @@ final class Box extends Cast {
     }
 
     @Override
-    public void writeCode(CodeBuilder cb, BlockCreatorImpl block) {
+    public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         ClassDesc boxType = boxing(a.type());
         cb.invoke(Opcode.INVOKESTATIC, boxType, "valueOf", MethodTypeDesc.of(boxType, a.type()), false);
+        smb.pop(); // unboxed type
+        smb.push(type()); // boxed type
+        smb.wroteCode();
     }
 }

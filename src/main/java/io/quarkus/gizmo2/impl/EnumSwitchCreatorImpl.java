@@ -22,8 +22,8 @@ public final class EnumSwitchCreatorImpl extends HashSwitchCreatorImpl<EnumConst
         return a.equals(b);
     }
 
-    void equaller(final CodeBuilder cb, final EnumConst value, final Label ifEq) {
-        value.writeCode(cb, enclosing);
+    void equaller(final CodeBuilder cb, final EnumConst value, final Label ifEq, final StackMapBuilder smb) {
+        value.writeCode(cb, enclosing, smb);
         cb.if_acmpeq(ifEq);
     }
 

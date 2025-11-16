@@ -7,7 +7,8 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeAnnotation;
@@ -126,97 +127,129 @@ public abstract non-sealed class Item implements Expr {
      * Return the node before this item iterating backwards from the given item, popping any unused values in between.
      * If the item is not found, an exception is thrown.
      *
-     * @param node a node which is either equal to, or after, the node containing this item (not {@code null})
-     * @return the node previous to this item (not {@code null})
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
      */
-    Node verify(Node node) {
-        while (node.item() != BlockHeader.INSTANCE) {
-            Item actual = node.item();
+    void verify(ListIterator<Item> itr) {
+        while (itr.hasPrevious()) {
+            Item actual = itr.previous();
             if (equals(actual)) {
                 // found it
-                return forEachDependency(node, Item::verify);
+                forEachDependency(itr, Item::verify);
+                return;
             }
             // we don't care about this one
-            node = actual.pop(node);
+            itr.next();
+            actual.pop(itr);
         }
         throw missing();
     }
 
     /**
      * Pop or skip this item's result from the stack during a stack cleanup.
+     * On return, the iterator is positioned before this item's location.
      *
-     * @param node the current item's node (not {@code null})
-     * @return the node before the popped node (not {@code null})
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
      */
-    public Node pop(Node node) {
-        assert this == node.item();
-        if (!bound()) {
+    public void pop(ListIterator<Item> itr) {
+        if (isVoid()) {
+            // skip myself (no pop needed for void items)
+            verify(itr);
+            return;
+        } else if (!bound()) {
+            if (itr.hasPrevious()) {
+                Item test = Util.peekPrevious(itr);
+                while (test.isVoid()) {
+                    // skip over void items
+                    test.verify(itr);
+                    test = Util.peekPrevious(itr);
+                }
+                if (equals(test)) {
+                    // found
+                    itr.set(Nop.FILL);
+                    itr.previous();
+                }
+            }
             // remove our dependencies
-            Node result = forEachDependency(node, Item::pop);
-            if (result == null) {
-                throw new IllegalStateException();
-            }
-            // remove ourselves
-            node.remove();
-            return result;
-        } else if (isVoid()) {
-            // no operation; skip over dependencies
-            Node result = forEachDependency(node, Item::verify);
-            if (result == null) {
-                throw new IllegalStateException();
-            }
-            return result;
+            forEachDependency(itr, Item::pop);
+            return;
         } else {
             // add an explicit pop
             Pop pop = new Pop(this);
-            pop.insert(node.next());
-
-            // skip over dependencies
-            Node result = forEachDependency(node, Item::verify);
-            if (result == null) {
-                throw new IllegalStateException();
-            }
-
-            return result;
+            pop.insert(itr);
+            // move before our node
+            verify(itr);
+            return;
         }
     }
 
     /**
      * Revoke this node from the instruction list, popping any dependencies that became unused as a result.
+     * The iterator is positioned before the first dependency.
      *
-     * @param node the current item's node (not {@code null})
-     * @return the node before the first dependency of this node (not {@code null})
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
      */
-    public Node revoke(Node node) {
-        assert this == node.item();
-        Node prev = forEachDependency(node, Item::pop);
-        remove(node);
-        return prev;
+    public void revoke(ListIterator<Item> itr) {
+        remove(itr);
+        forEachDependency(itr, Item::pop);
     }
 
     /**
-     * Insert this item into the instruction list before the given node.
+     * Remove this node from the instruction list.
+     * The iterator is positioned before the former position of this node.
      *
-     * @param node the node which this item should be inserted before (must not be {@code null})
-     * @return the node for the newly inserted item (not {@code null})
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
      */
-    protected Node insert(Node node) {
-        return node.insertPrev(this);
+    protected void remove(ListIterator<Item> itr) {
+        while (itr.hasPrevious()) {
+            Item actual = itr.previous();
+            if (equals(actual)) {
+                // found
+                itr.set(Nop.FILL);
+                return;
+            } else if (actual.isVoid()) {
+                // skip it
+                itr.next();
+                actual.verify(itr);
+            } else {
+                throw missing();
+            }
+        }
+        throw missing();
     }
 
     /**
-     * If unbound, insert this node into the list after the given node; otherwise, verify this node.
+     * Insert this item into the instruction list at the given position.
+     * On return, the iterator should be positioned just before the newly inserted item.
      *
-     * @param node the node where this item is expected to be (must not be {@code null})
-     * @return the node before the first dependency of this node (not {@code null})
+     * @param itr the iterator whose cursor is positioned <em>before</em> this item's new position (must not be {@code null})
      */
-    protected Node insertIfUnbound(Node node) {
-        if (!bound()) {
-            Node prev = forEachDependency(node.insertNext(this), Item::insertIfUnbound);
-            bind();
-            return prev;
+    protected void insert(ListIterator<Item> itr) {
+        if (itr.hasNext() && Util.peekNext(itr) == Nop.FILL) {
+            // avoid array copies
+            itr.set(this);
+        } else if (itr.hasPrevious() && Util.peekPrevious(itr) == Nop.FILL) {
+            // avoid array copies
+            itr.set(this);
+            itr.previous();
         } else {
-            return verify(node);
+            itr.add(this);
+            itr.previous();
+        }
+        bind();
+        Util.ensureBefore(itr, this);
+    }
+
+    /**
+     * If unbound, insert this node into the list; otherwise, verify this node.
+     *
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
+     */
+    protected void insertIfUnbound(final ListIterator<Item> itr) {
+        if (!bound()) {
+            insert(itr);
+            forEachDependency(itr, Item::insertIfUnbound);
+        } else {
+            verify(itr);
         }
     }
 
@@ -227,41 +260,20 @@ public abstract non-sealed class Item implements Expr {
     }
 
     /**
-     * Replace this item with the given replacement.
-     *
-     * @param node the item's node (must not be {@code null})
-     * @param replacement the replacement item (must not be {@code null})
-     */
-    protected void replace(Node node, Item replacement) {
-        assert this == node.item();
-        node.set(replacement);
-    }
-
-    /**
-     * Delete this item from the list.
-     *
-     * @param node the item's node (must not be {@code null})
-     */
-    protected void remove(Node node) {
-        assert this == node.item();
-        node.remove();
-    }
-
-    /**
      * Process a single item and recurse to its dependencies in reverse order.
      * Any intervening {@code void}-typed expressions are automatically skipped.
      * Any intervening non-{@code void}-typed expressions are popped from the stack.
+     * After this call, the iterator should be positioned just before this node's first dependency.
      *
-     * @param node this item's node (not {@code null})
+     * @param itr the iterator whose cursor is positioned after this item (must not be {@code null})
      * @param op the operation (not {@code null})
-     * @return the node previous to this one (not {@code null})
      */
-    protected Node process(Node node, BiFunction<Item, Node, Node> op) {
-        return op.apply(this, node);
+    protected void process(ListIterator<Item> itr, BiConsumer<Item, ListIterator<Item>> op) {
+        op.accept(this, itr);
     }
 
     /**
-     * Process this item's dependencies in the item list by calling {@link #process(Node, BiFunction)}
+     * Process this item's dependencies in the item list by calling {@link #process)}
      * on each one.
      * Dependencies must be processed from "right to left", which is to say that items that should be on the top
      * of the stack should be processed first.
@@ -269,16 +281,14 @@ public abstract non-sealed class Item implements Expr {
      * The node passed into each previous dependency should be the node previous to the next dependency.
      * This can normally be done by nesting the method calls.
      *
-     * @param node the node for this current item (not {@code null})
+     * @param itr the iterator whose cursor is positioned before this item (must not be {@code null})
      * @param op the operation (not {@code null})
-     * @return the node previous to the first dependency (must not be {@code null})
      */
-    protected Node forEachDependency(Node node, BiFunction<Item, Node, Node> op) {
-        if (node == null) {
+    protected void forEachDependency(ListIterator<Item> itr, BiConsumer<Item, ListIterator<Item>> op) {
+        if (!itr.hasPrevious()) {
             throw missing();
         }
         // no dependencies
-        return node.prev();
     }
 
     private IllegalStateException missing() {
@@ -291,7 +301,7 @@ public abstract non-sealed class Item implements Expr {
         }
     }
 
-    public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block);
+    public abstract void writeCode(CodeBuilder cb, BlockCreatorImpl block, StackMapBuilder smb);
 
     public void writeAnnotations(final RetentionPolicy retention, ArrayList<TypeAnnotation> annotations) {
     }

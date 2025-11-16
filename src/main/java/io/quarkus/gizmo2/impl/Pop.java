@@ -1,8 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.common.constraint.Assert;
 
 public final class Pop extends Item {
     private final Item expr;
@@ -11,15 +13,25 @@ public final class Pop extends Item {
         this.expr = expr;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return expr.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        expr.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        if (expr.typeKind().slotSize() == 2) {
-            cb.pop2();
-        } else {
-            cb.pop();
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        switch (expr.typeKind().slotSize()) {
+            case 0 -> {
+            }
+            case 1 -> {
+                cb.pop();
+                smb.pop();
+                smb.wroteCode();
+            }
+            case 2 -> {
+                cb.pop2();
+                smb.pop();
+                smb.wroteCode();
+            }
+            default -> throw Assert.impossibleSwitchCase(expr.typeKind());
         }
     }
 }

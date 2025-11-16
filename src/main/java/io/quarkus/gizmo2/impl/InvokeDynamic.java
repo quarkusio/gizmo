@@ -1,8 +1,11 @@
 package io.quarkus.gizmo2.impl;
 
+import java.lang.constant.ClassDesc;
 import java.lang.constant.DynamicCallSiteDesc;
+import java.lang.constant.MethodTypeDesc;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
@@ -17,16 +20,21 @@ final class InvokeDynamic extends Item {
         this.callSiteDesc = callSiteDesc;
     }
 
-    protected Node forEachDependency(Node node, final BiFunction<Item, Node, Node> op) {
-        node = node.prev();
+    protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         for (int i = args.size() - 1; i >= 0; i--) {
-            final Item arg = (Item) args.get(i);
-            node = arg.process(node, op);
+            ((Item) args.get(i)).process(itr, op);
         }
-        return node;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invokedynamic(callSiteDesc);
+        MethodTypeDesc type = callSiteDesc.invocationType();
+        for (ClassDesc classDesc : type.parameterList()) {
+            smb.pop(); // argument
+        }
+        if (!Util.isVoid(type.returnType())) {
+            smb.push(type.returnType()); // result
+        }
+        smb.wroteCode();
     }
 }

@@ -16,11 +16,11 @@ class GotoCase extends Goto {
         this.case_ = case_;
     }
 
-    Label target(final BlockCreatorImpl from) {
+    Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
         if (tryFinally != null) {
-            return tryFinally.cleanup(new GotoCaseKey(sci, case_));
+            return tryFinally.cleanup(new GotoCaseKey(sci, case_, smb.save()));
         } else {
             return findBlock(sci, case_).startLabel();
         }
@@ -38,7 +38,8 @@ class GotoCase extends Goto {
         private final SwitchCreatorImpl<?> switch_;
         private final Const case_;
 
-        GotoCaseKey(final SwitchCreatorImpl<?> switch_, final Const case_) {
+        GotoCaseKey(final SwitchCreatorImpl<?> switch_, final Const case_, final StackMapBuilder.Saved saved) {
+            super(saved);
             this.switch_ = switch_;
             this.case_ = case_;
         }

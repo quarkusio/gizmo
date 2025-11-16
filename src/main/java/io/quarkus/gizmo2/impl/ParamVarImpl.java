@@ -57,8 +57,10 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
         return false;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.loadLocal(Util.actualKindOf(typeKind()), slot);
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public String name() {

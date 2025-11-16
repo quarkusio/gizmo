@@ -2,7 +2,8 @@ package io.quarkus.gizmo2.impl;
 
 import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 
@@ -20,29 +21,40 @@ final class Dup extends Item {
         }
     }
 
-    public Node pop(final Node node) {
+    public void pop(final ListIterator<Item> itr) {
         // a dup can always be safely removed in lieu of a pop
-        Node prev = node.prev();
-        node.remove();
-        return prev;
+        Util.ensureAfter(itr, this);
+        itr.set(Nop.FILL);
     }
 
-    Node verify(Node node) {
-        super.verify(node);
-        // re-process the node
-        return node.prev();
+    void verify(ListIterator<Item> itr) {
+        super.verify(itr);
+        // wind it forward
+        while (itr.hasNext() && !itr.next().equals(this)) {
+        }
+        itr.previous();
     }
 
-    protected Node process(final Node node, final BiFunction<Item, Node, Node> op) {
-        Node prev = node.prev();
-        super.process(node, op);
-        return prev;
+    protected void process(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        super.process(itr, op);
+        // wind it forward
+        while (itr.hasNext() && !itr.next().equals(this)) {
+        }
+        itr.previous();
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         switch (typeKind().slotSize()) {
-            case 2 -> cb.dup2();
-            case 1 -> cb.dup();
+            case 2 -> {
+                cb.dup2();
+                smb.push(type());
+                smb.wroteCode();
+            }
+            case 1 -> {
+                cb.dup();
+                smb.push(type());
+                smb.wroteCode();
+            }
             case 0 -> {
             }
             default -> throw impossibleSwitchCase(typeKind().asLoadable());

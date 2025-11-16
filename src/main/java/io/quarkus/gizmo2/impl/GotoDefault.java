@@ -13,11 +13,11 @@ class GotoDefault extends Goto {
         this.switch_ = switch_;
     }
 
-    Label target(final BlockCreatorImpl from) {
+    Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;
         if (tryFinally != null) {
-            return tryFinally.cleanup(new GotoDefaultKey(sci));
+            return tryFinally.cleanup(new GotoDefaultKey(sci, smb.save()));
         } else {
             return sci.findDefault().startLabel();
         }
@@ -26,7 +26,8 @@ class GotoDefault extends Goto {
     static class GotoDefaultKey extends TryFinally.CleanupKey {
         private final SwitchCreatorImpl<?> switch_;
 
-        GotoDefaultKey(final SwitchCreatorImpl<?> switch_) {
+        GotoDefaultKey(final SwitchCreatorImpl<?> switch_, final StackMapBuilder.Saved saved) {
+            super(saved);
             this.switch_ = switch_;
         }
 

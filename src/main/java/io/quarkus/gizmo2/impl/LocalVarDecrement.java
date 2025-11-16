@@ -13,8 +13,9 @@ final class LocalVarDecrement extends Item {
         this.amount = amount;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         localVar.checkSlot();
         cb.iinc(localVar.slot, -((IntBasedConst) amount).intValue());
+        smb.wroteCode();
     }
 }

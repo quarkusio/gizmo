@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public abstract class IntBasedConst extends ConstImpl {
     IntBasedConst(ClassDesc type) {
@@ -12,7 +13,7 @@ public abstract class IntBasedConst extends ConstImpl {
 
     public abstract int intValue();
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         int i = intValue();
         switch (i) {
             case -5 -> {
@@ -33,6 +34,8 @@ public abstract class IntBasedConst extends ConstImpl {
             }
             default -> cb.loadConstant(i);
         }
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public boolean isZero() {

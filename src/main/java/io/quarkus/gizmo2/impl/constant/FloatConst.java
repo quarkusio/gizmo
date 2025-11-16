@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 
 public final class FloatConst extends ConstImpl {
     private final float value;
@@ -14,7 +15,7 @@ public final class FloatConst extends ConstImpl {
         this.value = value;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         int asInt = (int) value;
         if (value == (float) asInt) {
             switch (asInt) {
@@ -72,6 +73,8 @@ public final class FloatConst extends ConstImpl {
         } else {
             cb.ldc(Float.valueOf(value));
         }
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public boolean isZero() {

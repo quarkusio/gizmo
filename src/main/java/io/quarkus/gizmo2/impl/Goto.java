@@ -13,13 +13,15 @@ abstract class Goto extends Item {
 
     /**
      * {@return the target label}
-     * Must only be called from {@link Item#writeCode(CodeBuilder, BlockCreatorImpl)}.
+     * Must only be called from {@link Item#writeCode(CodeBuilder, BlockCreatorImpl, StackMapBuilder)}.
      *
      * @param from the block that is the originating point of the jump (must not be {@code null})
+     * @param smb the stack map builder (must not be {@code null})
      */
-    abstract Label target(BlockCreatorImpl from);
+    abstract Label target(BlockCreatorImpl from, StackMapBuilder smb);
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
-        cb.goto_(target(block));
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
+        cb.goto_(target(block, smb));
+        smb.wroteCode();
     }
 }

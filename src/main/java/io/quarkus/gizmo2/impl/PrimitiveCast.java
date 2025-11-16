@@ -12,7 +12,10 @@ final class PrimitiveCast extends Cast {
         super(a, toType, null);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.conversion(Util.actualKindOf(a.typeKind()), TypeKind.from(type()));
+        smb.pop(); // old value
+        smb.push(type()); // result
+        smb.wroteCode();
     }
 }

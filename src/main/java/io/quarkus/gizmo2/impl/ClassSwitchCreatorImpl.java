@@ -22,9 +22,12 @@ public final class ClassSwitchCreatorImpl extends HashSwitchCreatorImpl<ClassCon
         return a.desc().equals(b.desc());
     }
 
-    void equaller(final CodeBuilder cb, final ClassConst value, final Label ifEq) {
-        value.writeCode(cb, enclosing);
+    void equaller(final CodeBuilder cb, final ClassConst value, final Label ifEq, final StackMapBuilder smb) {
+        value.writeCode(cb, enclosing, smb);
         cb.if_acmpeq(ifEq);
+        smb.pop();
+        smb.pop();
+        smb.wroteCode();
     }
 
     int staticHash(final ClassConst val) {

@@ -4,7 +4,8 @@ import static io.quarkus.gizmo2.impl.Conversions.convert;
 import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.github.dmlloyd.classfile.TypeKind;
@@ -24,15 +25,15 @@ final class NewEmptyArray extends Item {
         return "NewEmptyArray:" + type().displayName();
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return size.process(node.prev(), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        size.process(itr, op);
     }
 
     public Expr length() {
         return size instanceof IntConst ? size : super.length();
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         ClassDesc componentType = type().componentType();
         TypeKind typeKind = TypeKind.from(componentType);
         if (typeKind == TypeKind.REFERENCE) {
@@ -40,5 +41,8 @@ final class NewEmptyArray extends Item {
         } else {
             cb.newarray(typeKind);
         }
+        smb.pop(); // size
+        smb.push(type());
+        smb.wroteCode();
     }
 }

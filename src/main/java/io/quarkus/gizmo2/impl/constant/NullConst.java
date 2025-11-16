@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 
 public final class NullConst extends ConstImpl {
@@ -22,8 +23,10 @@ public final class NullConst extends ConstImpl {
         return true;
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.aconst_null();
+        smb.push(type());
+        smb.wroteCode();
     }
 
     public ConstantDesc desc() {

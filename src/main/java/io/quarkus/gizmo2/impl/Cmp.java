@@ -13,10 +13,12 @@ import static java.lang.constant.ConstantDescs.CD_int;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
+import java.util.ListIterator;
 import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
+import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
 
@@ -44,11 +46,12 @@ final class Cmp extends Item {
         this.kind = kind;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return a.process(b.process(node.prev(), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        b.process(itr, op);
+        a.process(itr, op);
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         switch (a.typeKind().asLoadable()) {
             case INT -> kind.intOp.apply(cb);
             case LONG -> kind.longOp.apply(cb);
@@ -57,6 +60,10 @@ final class Cmp extends Item {
             case REFERENCE -> kind.refOp.apply(cb);
             default -> throw impossibleSwitchCase(a.typeKind().asLoadable());
         }
+        smb.pop(); // a
+        smb.pop(); // b
+        smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
+        smb.wroteCode();
     }
 
     enum Kind {

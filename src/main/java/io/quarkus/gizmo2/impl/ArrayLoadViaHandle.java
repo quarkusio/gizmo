@@ -4,7 +4,8 @@ import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.MethodTypeDesc;
-import java.util.function.BiFunction;
+import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
 import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
@@ -19,9 +20,10 @@ final class ArrayLoadViaHandle extends Item {
         this.mode = mode;
     }
 
-    protected Node forEachDependency(final Node node, final BiFunction<Item, Node, Node> op) {
-        return ConstImpl.ofArrayVarHandle(arrayDeref.array().type())
-                .process(arrayDeref.array().process(arrayDeref.index().process(node.prev(), op), op), op);
+    protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
+        arrayDeref.index().process(itr, op);
+        arrayDeref.array().process(itr, op);
+        ConstImpl.ofArrayVarHandle(arrayDeref.array().type()).process(itr, op);
     }
 
     protected void computeType() {
@@ -31,7 +33,7 @@ final class ArrayLoadViaHandle extends Item {
         }
     }
 
-    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block) {
+    public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.invokevirtual(CD_VarHandle, switch (mode) {
             case Plain -> "get";
             case Opaque -> "getOpaque";
@@ -39,5 +41,9 @@ final class ArrayLoadViaHandle extends Item {
             case Volatile -> "getVolatile";
             default -> throw impossibleSwitchCase(mode);
         }, MethodTypeDesc.of(type(), arrayDeref.array().type(), CD_int));
+        smb.pop(); // array
+        smb.pop(); // index
+        smb.push(type()); // result
+        smb.wroteCode();
     }
 }

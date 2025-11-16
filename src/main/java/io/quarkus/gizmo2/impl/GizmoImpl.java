@@ -42,7 +42,7 @@ public final class GizmoImpl implements Gizmo {
         this.parameters = parameters;
         this.lambdasAsAnonymousClasses = lambdasAsAnonymousClasses;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
-        options.add(ClassFile.StackMapsOption.GENERATE_STACK_MAPS);
+        options.add(ClassFile.StackMapsOption.DROP_STACK_MAPS);
         if (classHierarchyLocator != null) {
             ClassHierarchyResolver resolver = new ClassHierarchyResolver() {
                 @Override
