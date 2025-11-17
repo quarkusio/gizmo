@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.quarkus.gizmo2.impl.Cmp.*;
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;

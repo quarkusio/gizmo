@@ -26,7 +26,7 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
         setType(initial.type());
-        if (initial.type().isPrimitive() || initial.type().equals(CD_String)) {
+        if (initial.type().isPrimitive() || Util.equals(initial.type(), CD_String)) {
             this.initial = initial;
         } else {
             initializer = bc -> bc.setStaticField(desc(), initial);

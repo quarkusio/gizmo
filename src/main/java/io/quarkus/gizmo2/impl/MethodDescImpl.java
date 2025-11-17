@@ -50,7 +50,7 @@ public sealed abstract class MethodDescImpl implements MethodDesc permits ClassM
 
     public boolean equals(final MethodDescImpl other) {
         return this == other || other != null && hashCode == other.hashCode && name.equals(other.name)
-                && owner.equals(other.owner) && type.equals(other.type);
+                && Util.equals(owner, other.owner) && type.equals(other.type);
     }
 
     public int hashCode() {

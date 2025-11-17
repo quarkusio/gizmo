@@ -150,7 +150,7 @@ final class Conversions {
         if (fromDesc.equals(toDesc)) {
             // identity
             return item;
-        } else if (toType.equals(boxTypes.get(fromDesc))) {
+        } else if (Util.equals(toType, boxTypes.get(fromDesc))) {
             // boxing
             return new Box(item);
         } else if (fromType.isPrimitive() && additionalBoxTypes.get(fromDesc).contains(toDesc)) {
@@ -162,7 +162,7 @@ final class Conversions {
             if (primitiveWideningConversions.get(fromDesc).contains(widerType.descriptorString())) {
                 return new Box(new PrimitiveCast(item, widerType));
             }
-        } else if (toType.equals(unboxTypes.get(fromDesc))) {
+        } else if (Util.equals(toType, unboxTypes.get(fromDesc))) {
             // unboxing
             return new Unbox(item);
         } else if (toType.isPrimitive() && unboxTypes.containsKey(fromDesc)

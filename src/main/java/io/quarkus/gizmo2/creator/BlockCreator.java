@@ -2390,9 +2390,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param type the type to test against (must not be {@code null})
      * @return the boolean result of the check (not {@code null})
      */
-    default Expr instanceOf(Expr obj, ClassDesc type) {
-        return instanceOf(obj, GenericType.of(type));
-    }
+    Expr instanceOf(Expr obj, ClassDesc type);
 
     /**
      * Test whether the given object implements the given type.
@@ -2911,9 +2909,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param args the arguments to pass to the method (must not be {@code null})
      * @return the method call result (not {@code null})
      */
-    default Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args) {
-        return invokeInterface(GenericType.of(method.returnType()), method, instance, args);
-    }
+    Expr invokeInterface(MethodDesc method, Expr instance, List<? extends Expr> args);
 
     /**
      * Invoke an interface method.

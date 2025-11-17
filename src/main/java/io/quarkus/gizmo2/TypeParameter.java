@@ -15,6 +15,7 @@ import io.github.dmlloyd.classfile.Annotation;
 import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.common.constraint.Assert;
 
 /**
@@ -194,7 +195,7 @@ public sealed abstract class TypeParameter implements GenericTyped {
         }
 
         public boolean visibleIn(final ClassDesc desc) {
-            return owner.equals(desc);
+            return Util.equals(owner, desc);
         }
 
         public boolean visibleIn(final MethodDesc desc) {
@@ -213,7 +214,7 @@ public sealed abstract class TypeParameter implements GenericTyped {
          * {@return {@code true} if this object is equal to the given object, or {@code false} if it is not}
          */
         public boolean equals(final OfType other) {
-            return this == other || super.equals(other) && owner.equals(other.owner);
+            return this == other || super.equals(other) && Util.equals(owner, other.owner);
         }
 
         public int hashCode() {

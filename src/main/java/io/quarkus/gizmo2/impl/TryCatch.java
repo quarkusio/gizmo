@@ -59,7 +59,7 @@ final class TryCatch extends Item {
                 smb.wroteCode();
             }
             for (ClassDesc type : catch_.types()) {
-                if (type.equals(CD_Throwable)) {
+                if (Util.equals(type, CD_Throwable)) {
                     cb.exceptionCatchAll(body.startLabel(), body.endLabel(), catchBody.startLabel());
                 } else {
                     cb.exceptionCatch(body.startLabel(), body.endLabel(), catchBody.startLabel(), type);

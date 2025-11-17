@@ -1,16 +1,16 @@
 package io.quarkus.gizmo2.impl.constant;
 
+import static java.lang.constant.ConstantDescs.*;
+
 import java.lang.constant.ConstantDesc;
 import java.lang.invoke.VarHandle;
 import java.util.Optional;
-
-import io.quarkus.gizmo2.impl.Util;
 
 public abstract class VarHandleConst extends ConstImpl {
     final VarHandle.VarHandleDesc desc;
 
     VarHandleConst(final VarHandle.VarHandleDesc desc) {
-        super(Util.classDesc(VarHandle.class));
+        super(CD_VarHandle);
         this.desc = desc;
     }
 

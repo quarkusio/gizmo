@@ -1,27 +1,23 @@
 package io.quarkus.gizmo2.impl;
 
 import static io.github.dmlloyd.classfile.ClassFile.*;
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
+import static java.lang.invoke.MethodHandles.Lookup.ClassOption.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.DynamicConstantDesc;
 import java.lang.constant.MethodTypeDesc;
-import java.lang.invoke.ConstantCallSite;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,58 +57,15 @@ import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
-import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl implements TypeCreator
         permits ClassCreatorImpl, InterfaceCreatorImpl {
 
-    private static final ClassDesc CD_InputStream = Util.classDesc(InputStream.class);
-    private static final ClassDesc CD_StringBuilder = Util.classDesc(StringBuilder.class);
-    private static final ClassDesc CD_ArrayList = Util.classDesc(ArrayList.class);
-    private static final ClassDesc CD_Map_Entry = Util.classDesc(Map.Entry.class);
-    private static final ClassMethodDesc MD_InputStream_read = ClassMethodDesc.of(
-            CD_InputStream,
-            "read",
-            MethodTypeDesc.of(
-                    CD_int));
-    private static final InterfaceMethodDesc MD_List_copyOf = InterfaceMethodDesc.of(
-            CD_List,
-            "copyOf",
-            MethodTypeDesc.of(
-                    CD_List,
-                    CD_Collection));
-    private static final InterfaceMethodDesc MD_Set_copyOf = InterfaceMethodDesc.of(
-            CD_Set,
-            "copyOf",
-            MethodTypeDesc.of(
-                    CD_Set,
-                    CD_Collection));
-    private static final InterfaceMethodDesc MD_Map_ofEntries = InterfaceMethodDesc.of(
-            CD_Map,
-            "ofEntries",
-            MethodTypeDesc.of(
-                    CD_Map,
-                    CD_Map_Entry.arrayType()));
-    private static final ClassMethodDesc MD_StringBuilder_append = ClassMethodDesc.of(
-            CD_StringBuilder,
-            "append",
-            MethodTypeDesc.of(
-                    CD_StringBuilder,
-                    CD_char));
-    private static final ClassMethodDesc MD_StringBuilder_appendCodePoint = ClassMethodDesc.of(
-            CD_StringBuilder,
-            "appendCodePoint",
-            MethodTypeDesc.of(
-                    CD_StringBuilder,
-                    CD_int));
-    private static final ClassMethodDesc MD_StringBuilder_setLength = ClassMethodDesc.of(
-            CD_StringBuilder,
-            "setLength",
-            MethodTypeDesc.of(
-                    CD_void,
-                    CD_int));
+    // invoke is sigpoly, so don't make a shared constant for now
+    private static final ClassMethodDesc MD_invoke_returning_Object = ClassMethodDesc.of(ConstantDescs.CD_MethodHandle,
+            "invoke", ConstantDescs.CD_Object);
 
     final GizmoImpl gizmo;
     private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
@@ -416,87 +369,43 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);
                         smc.body(b0 -> {
-                            var decoder = b0.localVar("decoder", b0.invokeStatic(MethodDesc.of(
-                                    Base64.class,
-                                    "getUrlDecoder",
-                                    Base64.Decoder.class)));
-                            var bytes = b0.localVar("bytes", b0.invokeVirtual(MethodDesc.of(
-                                    Base64.Decoder.class,
-                                    "decode",
-                                    byte[].class,
-                                    String.class), decoder, base64));
-                            var definedLookup = b0.localVar("definedLookup", b0.invokeVirtual(MethodDesc.of(
-                                    MethodHandles.Lookup.class,
-                                    "defineHiddenClass",
-                                    MethodHandles.Lookup.class,
-                                    byte[].class,
-                                    boolean.class,
-                                    MethodHandles.Lookup.ClassOption[].class),
+                            var decoder = b0.localVar("decoder", b0.invokeStatic(MD_Base64.getUrlDecoder));
+                            var bytes = b0.localVar("bytes", b0.invokeVirtual(MD_Base64.Decoder.decode_1, decoder, base64));
+                            var definedLookup = b0.localVar("definedLookup", b0.invokeVirtual(
+                                    MD_MethodHandles.Lookup.defineHiddenClass,
                                     lookup,
                                     bytes,
                                     Const.of(false),
-                                    b0.newArray(MethodHandles.Lookup.ClassOption.class,
-                                            Const.of(MethodHandles.Lookup.ClassOption.NESTMATE))));
+                                    b0.newArray(CD_MethodHandles_Lookup_ClassOption, Const.of(NESTMATE))));
                             var definedClass = b0.localVar("definedClass", b0.invokeVirtual(
-                                    MethodDesc.of(
-                                            MethodHandles.Lookup.class,
-                                            "lookupClass",
-                                            Class.class),
+                                    MD_MethodHandles.Lookup.lookupClass,
                                     definedLookup));
                             var ctorType = b0.localVar("ctorType", b0.invokeVirtual(
-                                    MethodDesc.of(
-                                            MethodType.class,
-                                            "changeReturnType",
-                                            MethodType.class,
-                                            Class.class),
+                                    MD_MethodType.changeReturnType,
                                     methodType,
                                     Const.of(void.class)));
                             var ctorHandle = b0.localVar("ctorHandle", b0.invokeVirtual(
-                                    MethodDesc.of(
-                                            MethodHandles.Lookup.class,
-                                            "findConstructor",
-                                            MethodHandle.class,
-                                            Class.class,
-                                            MethodType.class),
+                                    MD_MethodHandles.Lookup.findConstructor,
                                     definedLookup,
                                     definedClass,
                                     ctorType));
                             b0.ifElse(b0.eq(
-                                    b0.invokeVirtual(
-                                            MethodDesc.of(
-                                                    MethodType.class,
-                                                    "parameterCount",
-                                                    int.class),
-                                            methodType),
+                                    b0.invokeVirtual(MD_MethodType.parameterCount, methodType),
                                     0), t1 -> {
-                                        // no parameters, so it should be a singleton
                                         LocalVar instance = t1.localVar("instance", t1.invokeVirtual(
-                                                MethodDesc.of(MethodHandle.class, "invoke", Object.class),
+                                                MD_invoke_returning_Object,
                                                 ctorHandle));
                                         LocalVar constHandle = t1.localVar("constHandle", t1.invokeStatic(
-                                                MethodDesc.of(
-                                                        MethodHandles.class,
-                                                        "constant",
-                                                        MethodHandle.class,
-                                                        Class.class,
-                                                        Object.class),
+                                                MD_MethodHandles.constant,
                                                 definedClass,
                                                 instance));
-                                        t1.return_(t1.new_(ConstantCallSite.class, t1.invokeVirtual(
-                                                MethodDesc.of(
-                                                        MethodHandle.class,
-                                                        "asType",
-                                                        MethodHandle.class,
-                                                        MethodType.class),
+                                        t1.return_(t1.new_(CD_ConstantCallSite, t1.invokeVirtual(
+                                                MD_MethodHandle.asType,
                                                 constHandle,
                                                 methodType)));
                                     }, f1 -> {
-                                        f1.return_(f1.new_(ConstantCallSite.class, f1.invokeVirtual(
-                                                MethodDesc.of(
-                                                        MethodHandle.class,
-                                                        "asType",
-                                                        MethodHandle.class,
-                                                        MethodType.class),
+                                        f1.return_(f1.new_(CD_ConstantCallSite, f1.invokeVirtual(
+                                                MD_MethodHandle.asType,
                                                 ctorHandle,
                                                 methodType)));
                                     });
@@ -557,7 +466,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                 ParamVar is = mc.parameter("is", CD_InputStream);
                 mc.body(b0 -> {
                     // first byte of the line
-                    LocalVar a = b0.localVar("a", b0.invokeVirtual(MD_InputStream_read, is));
+                    LocalVar a = b0.localVar("a", b0.invokeVirtual(MD_InputStream.read, is));
                     // EOF (expected)
                     b0.if_(b0.eq(a, -1), BlockCreator::returnNull);
                     b0.loop(b1 -> {
@@ -568,13 +477,13 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                 // end of string
                                 Expr toString = b3.withObject(sb).toString_();
                                 // this is safe because this statement does not use or leave anything on the stack
-                                b3.invokeVirtual(MD_StringBuilder_setLength, sb, Const.of(0));
+                                b3.invokeVirtual(MD_StringBuilder.setLength, sb, Const.of(0));
                                 b3.return_(toString);
                             });
                             // parse code point
                             b2.if_(b2.lt(a, 0x80), b3 -> {
                                 // one-byte sequence
-                                b3.invokeVirtual(MD_StringBuilder_append, sb, b3.cast(a, CD_char));
+                                b3.invokeVirtual(MD_StringBuilder.append_char, sb, b3.cast(a, CD_char));
                                 b3.break_(b2);
                             });
                             // validate prefix
@@ -583,7 +492,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                 b3.throw_(CharConversionException.class);
                             });
                             // at least two bytes
-                            LocalVar b = b2.localVar("b", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar b = b2.localVar("b", b2.invokeVirtual(MD_InputStream.read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(b, -1), b3 -> {
                                 // eof (unexpected)
@@ -597,14 +506,14 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for two-byte sequence
                             b2.if_(b2.lt(a, 0xE0), b3 -> {
                                 // two-byte sequence
-                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
+                                b3.invokeVirtual(MD_StringBuilder.appendCodePoint, sb,
                                         b3.or(
                                                 b3.shl(b3.and(a, 0x1F), 6),
                                                 b3.and(b, 0x3F)));
                                 b3.break_(b2);
                             });
                             // at least three bytes
-                            LocalVar c = b2.localVar("c", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar c = b2.localVar("c", b2.invokeVirtual(MD_InputStream.read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(c, -1), b3 -> {
                                 // eof (unexpected)
@@ -618,7 +527,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for three-byte sequence
                             b2.if_(b2.lt(a, 0xF0), b3 -> {
                                 // three-byte sequence
-                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
+                                b3.invokeVirtual(MD_StringBuilder.appendCodePoint, sb,
                                         b3.or(
                                                 b3.or(
                                                         b3.shl(b3.and(a, 0x0F), 12),
@@ -627,7 +536,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                 b3.break_(b2);
                             });
                             // four bytes (or invalid)
-                            LocalVar d = b2.localVar("d", b2.invokeVirtual(MD_InputStream_read, is));
+                            LocalVar d = b2.localVar("d", b2.invokeVirtual(MD_InputStream.read, is));
                             // check for eof (unexpected)
                             b2.if_(b2.eq(d, -1), b3 -> {
                                 // eof (unexpected)
@@ -641,7 +550,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // test for four-byte sequence
                             b2.if_(b2.lt(a, 0xF8), b3 -> {
                                 // four-byte sequence
-                                b3.invokeVirtual(MD_StringBuilder_appendCodePoint, sb,
+                                b3.invokeVirtual(MD_StringBuilder.appendCodePoint, sb,
                                         b3.or(
                                                 b3.or(
                                                         b3.shl(b3.and(a, 0x07), 18),
@@ -654,7 +563,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             // invalid sequence (unexpected)
                             b2.throw_(CharConversionException.class);
                         });
-                        b1.set(a, b1.invokeVirtual(MD_InputStream_read, is));
+                        b1.set(a, b1.invokeVirtual(MD_InputStream.read, is));
                         b1.if_(b1.eq(a, -1), b2 -> {
                             b2.throw_(EOFException.class);
                         });
@@ -679,12 +588,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     });
                     // load resource
                     LocalVar is = b0.localVar("is", b0.invokeVirtual(
-                            ClassMethodDesc.of(
-                                    CD_Class,
-                                    "getResourceAsStream",
-                                    MethodTypeDesc.of(
-                                            CD_InputStream,
-                                            CD_String)),
+                            MD_Class.getResourceAsStream,
                             Const.of(type),
                             b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
                                     .concat(Const.of(".txt"))));
@@ -714,7 +618,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                             CD_InputStream)),
                                     sb, is));
                         });
-                        b1.return_(b1.invokeStatic(MD_List_copyOf, list));
+                        b1.return_(b1.invokeStatic(MD_List.copyOf, list));
                     });
                 });
             });
@@ -750,12 +654,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     });
                     // load resource
                     LocalVar is = b0.localVar("is", b0.invokeVirtual(
-                            ClassMethodDesc.of(
-                                    CD_Class,
-                                    "getResourceAsStream",
-                                    MethodTypeDesc.of(
-                                            CD_InputStream,
-                                            CD_String)),
+                            MD_Class.getResourceAsStream,
                             Const.of(type),
                             b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
                                     .concat(Const.of(".txt"))));
@@ -785,7 +684,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                             CD_InputStream)),
                                     sb, is));
                         });
-                        b1.return_(b1.invokeStatic(MD_Set_copyOf, list));
+                        b1.return_(b1.invokeStatic(MD_Set.copyOf, list));
                     });
                 });
             });
@@ -821,12 +720,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     });
                     // load resource
                     LocalVar is = b0.localVar("is", b0.invokeVirtual(
-                            ClassMethodDesc.of(
-                                    CD_Class,
-                                    "getResourceAsStream",
-                                    MethodTypeDesc.of(
-                                            CD_InputStream,
-                                            CD_String)),
+                            MD_Class.getResourceAsStream,
                             Const.of(type),
                             b0.withString(b0.withString(Const.of(type.displayName() + "$")).concat(name))
                                     .concat(Const.of(".txt"))));
@@ -840,36 +734,24 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                         LocalVar key = b1.localVar("key", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
-                                MethodTypeDesc.of(
-                                        CD_String,
-                                        CD_StringBuilder,
-                                        CD_InputStream)),
+                                MethodTypeDesc.of(CD_String, CD_StringBuilder, CD_InputStream)),
                                 sb, is));
                         LocalVar value = b1.localVar("value", b1.invokeStatic(ClassMethodDesc.of(
                                 type,
                                 "$readUtfLine",
-                                MethodTypeDesc.of(
-                                        CD_String,
-                                        CD_StringBuilder,
-                                        CD_InputStream)),
+                                MethodTypeDesc.of(CD_String, CD_StringBuilder, CD_InputStream)),
                                 sb, is));
                         b1.while_(b2 -> b2.yield(b2.isNotNull(key)), b2 -> {
                             b2.withCollection(list).add(b2.mapEntry(key, value));
                             b2.set(key, b2.invokeStatic(ClassMethodDesc.of(
                                     type,
                                     "$readUtfLine",
-                                    MethodTypeDesc.of(
-                                            CD_String,
-                                            CD_StringBuilder,
-                                            CD_InputStream)),
+                                    MethodTypeDesc.of(CD_String, CD_StringBuilder, CD_InputStream)),
                                     sb, is));
                             b2.set(value, b2.invokeStatic(ClassMethodDesc.of(
                                     type,
                                     "$readUtfLine",
-                                    MethodTypeDesc.of(
-                                            CD_String,
-                                            CD_StringBuilder,
-                                            CD_InputStream)),
+                                    MethodTypeDesc.of(CD_String, CD_StringBuilder, CD_InputStream)),
                                     sb, is));
                         });
                         Expr array = b1.newEmptyArray(CD_Map_Entry, b1.withList(list).size());
@@ -880,7 +762,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                                         CD_Object.arrayType(),
                                         CD_Object.arrayType())),
                                 list, array);
-                        b1.return_(b1.invokeStatic(MD_Map_ofEntries, array));
+                        b1.return_(b1.invokeStatic(MD_Map.ofEntries, array));
                     });
                 });
             });

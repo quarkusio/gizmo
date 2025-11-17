@@ -5,6 +5,7 @@ import java.lang.constant.ClassDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.StaticFieldVarImpl;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * An expression.
@@ -110,7 +111,7 @@ public sealed interface Expr extends SimpleTyped permits Const, Assignable, This
      * @param genericType the field's expected generic type (must not be {@code null})
      */
     static StaticFieldVar staticField(FieldDesc desc, GenericType genericType) {
-        if (!desc.type().equals(genericType.desc())) {
+        if (!Util.equals(desc.type(), genericType.desc())) {
             throw new IllegalArgumentException(
                     "Generic type %s does not match field type %s".formatted(genericType, desc.type()));
         }

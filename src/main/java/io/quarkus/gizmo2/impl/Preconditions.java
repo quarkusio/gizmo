@@ -10,7 +10,7 @@ public class Preconditions {
     }
 
     public static void requireSameType(final Expr a, final Expr b) {
-        if (!a.type().equals(b.type())) {
+        if (!Util.equals(a.type(), b.type())) {
             throw new IllegalArgumentException(
                     "Type mismatch between " + a.type().displayName() + " and " + b.type().displayName());
         }

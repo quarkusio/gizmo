@@ -16,8 +16,14 @@ import io.quarkus.gizmo2.impl.Util;
 public class ObjectOps {
     final Class<?> receiverType;
     final ClassDesc receiverTypeDesc;
-    final BlockCreator bc;
-    final Expr obj;
+    /**
+     * The block creator (not {@code null}).
+     */
+    protected final BlockCreator bc;
+    /**
+     * The receiver object (not {@code null}).
+     */
+    protected final Expr obj;
 
     /**
      * Construct a new instance.

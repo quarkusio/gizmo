@@ -115,7 +115,7 @@ final class TryFinally extends Item {
         smb.clearStack();
         smb.push(CD_Throwable);
         smb.addFrameInfo(cb);
-        if (!cleanupTemplate.mayFallThrough() && body.type().equals(CD_void)) {
+        if (!cleanupTemplate.mayFallThrough() && Util.isVoid(body.type())) {
             // cleanup cannot fall through; go to the simple case
             cb.pop();
             smb.pop();

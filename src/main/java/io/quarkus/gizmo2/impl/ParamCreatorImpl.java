@@ -4,7 +4,6 @@ import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.ElementType;
 import java.lang.constant.ClassDesc;
-import java.lang.constant.ConstantDescs;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -21,9 +20,9 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
         super(gizmo);
     }
 
-    public ParamCreatorImpl(final GizmoImpl gizmo, final GenericType type) {
+    public ParamCreatorImpl(final GizmoImpl gizmo, final ClassDesc type) {
         super(gizmo);
-        this.genericType = type;
+        this.type = type;
         typeEstablished = true;
     }
 
@@ -53,10 +52,10 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
 
     public void setType(final ClassDesc type) {
         checkNotNullParam("type", type);
-        if (type.equals(ConstantDescs.CD_void)) {
+        if (Util.isVoid(type)) {
             throw new IllegalArgumentException("Bad type for parameter: " + type);
         }
-        if (typeEstablished && !type.equals(this.type)) {
+        if (typeEstablished && !Util.equals(type, this.type)) {
             throw new IllegalArgumentException(
                     "Given type " + type + " differs from established type " + this.type);
         }

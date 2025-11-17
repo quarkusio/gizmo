@@ -6,6 +6,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.impl.Util;
 
 /**
  * A typed thing whose type is a simple type.
@@ -35,7 +36,7 @@ public sealed interface SimpleTyped extends Typed
      * {@return {@code true} if this entity has {@code void} type, or {@code false} otherwise}
      */
     default boolean isVoid() {
-        return typeKind() == TypeKind.VOID;
+        return Util.isVoid(type());
     }
 
     /**

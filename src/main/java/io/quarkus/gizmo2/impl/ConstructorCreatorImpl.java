@@ -39,7 +39,7 @@ public final class ConstructorCreatorImpl extends ExecutableCreatorImpl implemen
     }
 
     public void setType(final MethodTypeDesc desc) {
-        if (!desc.returnType().equals(CD_void)) {
+        if (!Util.isVoid(desc.returnType())) {
             throw new IllegalArgumentException("Constructors must return void");
         }
         super.setType(desc);

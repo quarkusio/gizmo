@@ -16,7 +16,7 @@ public final class ConstructorDescImpl implements ConstructorDesc {
     private final int hashCode;
 
     public ConstructorDescImpl(final ClassDesc owner, final MethodTypeDesc type) {
-        if (!CD_void.equals(type.returnType())) {
+        if (!Util.isVoid(type.returnType())) {
             throw new IllegalArgumentException("Constructor descriptor must have a return type of void");
         }
         this.owner = owner;
@@ -54,7 +54,7 @@ public final class ConstructorDescImpl implements ConstructorDesc {
 
     public boolean equals(final ConstructorDescImpl other) {
         return this == other
-                || other != null && hashCode == other.hashCode && owner.equals(other.owner) && type.equals(other.type);
+                || other != null && hashCode == other.hashCode && Util.equals(owner, other.owner) && type.equals(other.type);
     }
 
     public int hashCode() {
