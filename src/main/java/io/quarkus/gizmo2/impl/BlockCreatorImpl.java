@@ -1523,7 +1523,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     protected void insert(final ListIterator<Item> itr) {
         if (items.size() == 2) {
             Item last = items.get(1);
-            if (last.type().descriptorString().equals(input.type().descriptorString())) {
+            if (Util.equals(last.type(), input.type())) {
                 last.insert(itr);
                 return;
             }
@@ -1537,9 +1537,5 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     Item getLast() {
         return items.get(items.size() - 1);
-    }
-
-    void setLast(final Item item) {
-        items.set(items.size() - 1, item);
     }
 }
