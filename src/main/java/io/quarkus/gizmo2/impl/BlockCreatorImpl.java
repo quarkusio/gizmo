@@ -1400,9 +1400,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public void assert_(final Consumer<BlockCreator> assertion, final String message) {
-        if_(logicalAnd(Const.ofInvoke(Const.ofMethodHandle(InvokeKind.VIRTUAL,
-                MD_Class.desiredAssertionStatus), Const.of(owner.type())), assertion),
-                bc -> bc.throw_(bc.new_(ConstructorDesc.of(AssertionError.class, Object.class), Const.of(message))));
+        if_(Const.ofInvoke(Const.ofMethodHandle(InvokeKind.VIRTUAL, MD_Class.desiredAssertionStatus),
+                Const.of(owner.type())),
+                b0 -> b0.ifNot(b0.blockExpr(CD_boolean, assertion),
+                        b1 -> b1.throw_(b1.new_(ConstructorDesc.of(AssertionError.class, Object.class), Const.of(message)))));
     }
 
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
