@@ -6,6 +6,7 @@ import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
+import io.smallrye.common.constraint.Assert;
 
 public non-sealed abstract class AssignableImpl extends Item implements Assignable {
     AssignableImpl() {
@@ -21,6 +22,18 @@ public non-sealed abstract class AssignableImpl extends Item implements Assignab
 
     AssignableImpl(final ClassDesc type, final GenericType genericType) {
         super(type, genericType);
+    }
+
+    Item emitCompareAndExchange(BlockCreatorImpl block, Item expect, Item update, MemoryOrder order) {
+        throw Assert.unsupported();
+    }
+
+    Item emitCompareAndSet(BlockCreatorImpl block, Item expect, Item update, boolean weak, MemoryOrder order) {
+        throw Assert.unsupported();
+    }
+
+    Item emitReadModifyWrite(BlockCreatorImpl block, String op, Item newVal, MemoryOrder order) {
+        throw Assert.unsupported();
     }
 
     abstract Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode);

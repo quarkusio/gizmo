@@ -34,6 +34,19 @@ public final class ArrayDeref extends AssignableImpl {
         return index;
     }
 
+    Item emitCompareAndExchange(final BlockCreatorImpl block, final Item expect, final Item update, final MemoryOrder order) {
+        return new ArrayCompareAndExchange(this, expect, update, order);
+    }
+
+    Item emitCompareAndSet(final BlockCreatorImpl block, final Item expect, final Item update, final boolean weak,
+            final MemoryOrder order) {
+        return new ArrayCompareAndSet(this, expect, update, weak, order);
+    }
+
+    Item emitReadModifyWrite(final BlockCreatorImpl block, final String op, final Item newVal, final MemoryOrder order) {
+        return new ArrayReadModifyWrite(this, op, newVal, order);
+    }
+
     Item emitGet(final BlockCreatorImpl block, final MemoryOrder mode) {
         if (!mode.validForReads()) {
             throw new IllegalArgumentException("Invalid mode " + mode);
