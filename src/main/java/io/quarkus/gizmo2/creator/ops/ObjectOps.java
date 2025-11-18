@@ -1,5 +1,6 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
 import static io.smallrye.common.constraint.Assert.checkNotNullParam;
 
 import java.lang.constant.ClassDesc;
@@ -159,7 +160,7 @@ public class ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getClass_() {
-        return invokeInstance(Class.class, "getClass");
+        return bc.invokeVirtual(MD_Object.getClass, obj);
     }
 
     /**
@@ -169,7 +170,7 @@ public class ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr toString_() {
-        return invokeInstance(String.class, "toString");
+        return bc.invokeVirtual(MD_Object.toString, obj);
     }
 
     /**
@@ -180,7 +181,7 @@ public class ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr equals_(Expr otherObj) {
-        return invokeInstance(boolean.class, "equals", Object.class, otherObj);
+        return bc.invokeVirtual(MD_Object.equals, obj, otherObj);
     }
 
     /**
@@ -190,6 +191,6 @@ public class ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr hashCode_() {
-        return invokeInstance(int.class, "hashCode");
+        return bc.invokeVirtual(MD_Object.hashCode, obj);
     }
 }

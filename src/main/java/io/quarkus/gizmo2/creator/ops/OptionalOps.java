@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import java.util.Optional;
 
 import io.quarkus.gizmo2.Expr;
@@ -8,7 +10,7 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 /**
  * Operations on {@link Optional}.
  */
-public class OptionalOps extends ObjectOps {
+public final class OptionalOps extends ObjectOps {
 
     /**
      * Construct a new instance.
@@ -17,7 +19,7 @@ public class OptionalOps extends ObjectOps {
      * @param obj the optional object (must not be {@code null})
      */
     public OptionalOps(BlockCreator bc, Expr obj) {
-        super(Optional.class, bc, obj);
+        super(bc, obj);
     }
 
     /**
@@ -26,7 +28,7 @@ public class OptionalOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr get() {
-        return invokeInstance(Object.class, "get");
+        return bc.invokeVirtual(MD_Optional.get, obj);
     }
 
     /**
@@ -35,7 +37,7 @@ public class OptionalOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr isPresent() {
-        return invokeInstance(boolean.class, "isPresent");
+        return bc.invokeVirtual(MD_Optional.isPresent, obj);
     }
 
     /**
@@ -44,7 +46,7 @@ public class OptionalOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr isEmpty() {
-        return invokeInstance(boolean.class, "isEmpty");
+        return bc.invokeVirtual(MD_Optional.isEmpty, obj);
     }
 
     /**
@@ -54,7 +56,7 @@ public class OptionalOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr orElse(Expr other) {
-        return invokeInstance(Object.class, "orElse", Object.class, other);
+        return bc.invokeVirtual(MD_Optional.orElse, obj, other);
     }
 
 }

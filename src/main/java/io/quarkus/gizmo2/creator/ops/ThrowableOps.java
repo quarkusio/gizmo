@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
 
@@ -34,7 +36,7 @@ public class ThrowableOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getMessage() {
-        return invokeInstance(String.class, "getMessage");
+        return bc.invokeVirtual(MD_Throwable.getMessage, obj);
     }
 
     /**
@@ -43,7 +45,7 @@ public class ThrowableOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getLocalizedMessage() {
-        return invokeInstance(String.class, "getLocalizedMessage");
+        return bc.invokeVirtual(MD_Throwable.getLocalizedMessage, obj);
     }
 
     /**
@@ -52,7 +54,7 @@ public class ThrowableOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getCause() {
-        return invokeInstance(Throwable.class, "getCause");
+        return bc.invokeVirtual(MD_Throwable.getCause, obj);
     }
 
     /**
@@ -61,7 +63,7 @@ public class ThrowableOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getSuppressed() {
-        return invokeInstance(Throwable[].class, "getSuppressed");
+        return bc.invokeVirtual(MD_Throwable.getSuppressed, obj);
     }
 
     /**
@@ -70,6 +72,6 @@ public class ThrowableOps extends ObjectOps {
      * @param exception the expression of the exception to add (must not be {@code null})
      */
     public void addSuppressed(Expr exception) {
-        invokeInstance(void.class, "addSuppressed", Throwable.class, exception);
+        bc.invokeVirtual(MD_Throwable.addSuppressed, obj, exception);
     }
 }

@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import java.util.Iterator;
 import java.util.function.Consumer;
 
@@ -37,7 +39,7 @@ public class IteratorOps extends ObjectOps {
      * @return the boolean result of the method call (not {@code null})
      */
     public Expr hasNext() {
-        return invokeInstance(boolean.class, "hasNext");
+        return bc.invokeInterface(MD_Iterator.hasNext, obj);
     }
 
     /**
@@ -46,14 +48,14 @@ public class IteratorOps extends ObjectOps {
      * @return the next iterator item (not {@code null})
      */
     public Expr next() {
-        return invokeInstance(Object.class, "next");
+        return bc.invokeInterface(MD_Iterator.next, obj);
     }
 
     /**
      * Call {@link Iterator#remove}.
      */
     public void remove() {
-        invokeInstance(void.class, "remove");
+        bc.invokeInterface(MD_Iterator.remove, obj);
     }
 
     /**
@@ -62,6 +64,6 @@ public class IteratorOps extends ObjectOps {
      * @param action the consumer to pass to the function (not {@code null})
      */
     public void forEachRemaining(Expr action) {
-        invokeInstance(void.class, "forEachRemaining", Consumer.class, action);
+        bc.invokeInterface(MD_Iterator.forEachRemaining, obj, action);
     }
 }

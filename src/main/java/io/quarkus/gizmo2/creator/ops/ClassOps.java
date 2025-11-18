@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -15,7 +17,7 @@ public final class ClassOps extends ObjectOps {
      * @param clazz the receiver class (must not be {@code null})
      */
     public ClassOps(final BlockCreator bc, final Expr clazz) {
-        super(Class.class, bc, clazz);
+        super(bc, clazz);
     }
 
     /**
@@ -24,16 +26,16 @@ public final class ClassOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getName() {
-        return invokeInstance(String.class, "getName");
+        return bc.invokeVirtual(MD_Class.getName, obj);
     }
 
     /**
-     * Generate a call to {@link Class#isInterface()} ()}.
+     * Generate a call to {@link Class#isInterface()}.
      *
      * @return the expression of the result (not {@code null})
      */
     public Expr isInterface() {
-        return invokeInstance(boolean.class, "isInterface");
+        return bc.invokeVirtual(MD_Class.isInterface, obj);
     }
 
     /**
@@ -42,7 +44,7 @@ public final class ClassOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr getClassLoader() {
-        return invokeInstance(ClassLoader.class, "getClassLoader");
+        return bc.invokeVirtual(MD_Class.getClassLoader, obj);
     }
 
     /**
@@ -52,7 +54,7 @@ public final class ClassOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr asSubclass(Expr subclass) {
-        return invokeInstance(Class.class, "asSubclass", Class.class, subclass);
+        return bc.invokeVirtual(MD_Class.asSubclass, obj, subclass);
     }
 
     /**
@@ -72,6 +74,6 @@ public final class ClassOps extends ObjectOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr cast(Expr object) {
-        return invokeInstance(Object.class, "cast", Object.class, object);
+        return bc.invokeVirtual(MD_Class.cast, obj, object);
     }
 }

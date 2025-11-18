@@ -1,5 +1,7 @@
 package io.quarkus.gizmo2.creator.ops;
 
+import static io.quarkus.gizmo2.desc.Descs.*;
+
 import java.util.List;
 
 import io.quarkus.gizmo2.Const;
@@ -38,7 +40,7 @@ public class ListOps extends CollectionOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr get(Expr index) {
-        return invokeInstance(Object.class, "get", int.class, index);
+        return bc.invokeInterface(MD_List.get, obj, index);
     }
 
     /**
@@ -48,7 +50,7 @@ public class ListOps extends CollectionOps {
      * @return the expression of the result (not {@code null})
      */
     public Expr get(int index) {
-        return invokeInstance(Object.class, "get", int.class, Const.of(index));
+        return get(Const.of(index));
     }
 
 }
