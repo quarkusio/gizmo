@@ -18,18 +18,7 @@ public class CollectionOps extends ObjectOps {
      * @param obj the collection instance (must not be {@code null})
      */
     public CollectionOps(final BlockCreator bc, final Expr obj) {
-        super(Collection.class, bc, obj);
-    }
-
-    /**
-     * Construct a new subclass instance.
-     *
-     * @param receiverType the type of the receiver (must not be {@code null})
-     * @param bc the block creator (must not be {@code null})
-     * @param obj the receiver object (must not be {@code null})
-     */
-    protected CollectionOps(final Class<?> receiverType, final BlockCreator bc, final Expr obj) {
-        super(receiverType.asSubclass(Collection.class), bc, obj);
+        super(bc, obj);
     }
 
     /**
