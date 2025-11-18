@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.ClassHierarchyResolver;
-import io.quarkus.gizmo2.ClassHierarchyLocator;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.ModifierConfigurator;
@@ -22,37 +20,25 @@ public final class GizmoImpl implements Gizmo {
 
     private final ClassOutput outputHandler;
     private final int[] modifiersByLocation;
-    private final ClassHierarchyLocator classHierarchyLocator;
     private final boolean debugInfo;
     private final boolean parameters;
     private final boolean lambdasAsAnonymousClasses;
     private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, null, true, true, false);
+        this(outputHandler, DEFAULTS, true, true, false);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
-            final ClassHierarchyLocator classHierarchyLocator, final boolean debugInfo, final boolean parameters,
+            final boolean debugInfo, final boolean parameters,
             final boolean lambdasAsAnonymousClasses) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
-        this.classHierarchyLocator = classHierarchyLocator;
         this.debugInfo = debugInfo;
         this.parameters = parameters;
         this.lambdasAsAnonymousClasses = lambdasAsAnonymousClasses;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
         options.add(ClassFile.StackMapsOption.DROP_STACK_MAPS);
-        if (classHierarchyLocator != null) {
-            ClassHierarchyResolver resolver = new ClassHierarchyResolver() {
-                @Override
-                public ClassHierarchyInfo getClassInfo(ClassDesc classDesc) {
-                    ClassHierarchyLocator.Result result = classHierarchyLocator.locate(classDesc);
-                    return result != null ? ((ClassHierarchyLocatorResultImpl) result).info : null;
-                }
-            };
-            options.add(ClassFile.ClassHierarchyResolverOption.of(resolver));
-        }
         if (!debugInfo) {
             options.add(ClassFile.DebugElementsOption.DROP_DEBUG);
             options.add(ClassFile.LineNumbersOption.DROP_LINE_NUMBERS);
@@ -100,7 +86,7 @@ public final class GizmoImpl implements Gizmo {
             }
         };
         builder.accept(configurator);
-        return new GizmoImpl(outputHandler, flags.clone(), classHierarchyLocator, debugInfo, parameters,
+        return new GizmoImpl(outputHandler, flags.clone(), debugInfo, parameters,
                 lambdasAsAnonymousClasses);
     }
 
@@ -114,31 +100,25 @@ public final class GizmoImpl implements Gizmo {
 
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters,
-                lambdasAsAnonymousClasses);
-    }
-
-    @Override
-    public Gizmo withClassHierarchyLocator(final ClassHierarchyLocator classHierarchyLocator) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters,
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
                 lambdasAsAnonymousClasses);
     }
 
     @Override
     public Gizmo withDebugInfo(final boolean debugInfo) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters,
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
                 lambdasAsAnonymousClasses);
     }
 
     @Override
     public Gizmo withParameters(final boolean parameters) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters,
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
                 lambdasAsAnonymousClasses);
     }
 
     @Override
     public Gizmo withLambdasAsAnonymousClasses(boolean lambdasAsAnonymousClasses) {
-        return new GizmoImpl(outputHandler, modifiersByLocation, classHierarchyLocator, debugInfo, parameters,
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
                 lambdasAsAnonymousClasses);
     }
 
