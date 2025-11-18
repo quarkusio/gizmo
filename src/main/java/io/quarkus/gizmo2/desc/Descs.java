@@ -5,6 +5,13 @@ import static java.lang.constant.ConstantDescs.*;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.invoke.ConstantCallSite;
@@ -101,6 +108,18 @@ public final class Descs {
     // throwable types
 
     public static final ClassDesc CD_RuntimeException = Util.classDesc(RuntimeException.class);
+
+    //-----------------------------------------------------
+    // java.lang.annotation
+    //-----------------------------------------------------
+
+    public static final ClassDesc CD_Annotation = Util.classDesc(Annotation.class);
+    public static final ClassDesc CD_Inherited = Util.classDesc(Inherited.class);
+    public static final ClassDesc CD_Repeatable = Util.classDesc(Repeatable.class);
+    public static final ClassDesc CD_Retention = Util.classDesc(Retention.class);
+    public static final ClassDesc CD_Target = Util.classDesc(Target.class);
+    public static final ClassDesc CD_ElementType = Util.classDesc(ElementType.class);
+    public static final ClassDesc CD_RetentionPolicy = Util.classDesc(RetentionPolicy.class);
 
     //-----------------------------------------------------
     // java.lang.invoke
