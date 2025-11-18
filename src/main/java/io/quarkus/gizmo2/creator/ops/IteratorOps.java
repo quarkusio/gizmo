@@ -19,18 +19,7 @@ public class IteratorOps extends ObjectOps {
      * @param obj the iterator object (must not be {@code null})
      */
     public IteratorOps(final BlockCreator bc, final Expr obj) {
-        super(Iterator.class, bc, obj);
-    }
-
-    /**
-     * Construct a new instance.
-     *
-     * @param receiverType the type class of the receiver (must not be {@code null})
-     * @param bc the block creator to wrap (must not be {@code null})
-     * @param obj the iterator object (must not be {@code null})
-     */
-    protected IteratorOps(final Class<?> receiverType, final BlockCreator bc, final Expr obj) {
-        super(receiverType, bc, obj);
+        super(bc, obj);
     }
 
     /**

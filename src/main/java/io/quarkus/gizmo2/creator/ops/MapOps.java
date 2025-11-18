@@ -18,18 +18,7 @@ public class MapOps extends ObjectOps {
      * @param obj the list instance (must not be {@code null})
      */
     public MapOps(final BlockCreator bc, final Expr obj) {
-        super(Map.class, bc, obj);
-    }
-
-    /**
-     * Construct a new subclass instance.
-     *
-     * @param receiverType the type of the receiver (must not be {@code null})
-     * @param bc the block creator (must not be {@code null})
-     * @param obj the receiver object (must not be {@code null})
-     */
-    protected MapOps(final Class<?> receiverType, final BlockCreator bc, final Expr obj) {
-        super(receiverType.asSubclass(Map.class), bc, obj);
+        super(bc, obj);
     }
 
     /**
