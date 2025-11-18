@@ -72,6 +72,13 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withDefaultModifiers(Consumer<ModifierConfigurator> builder);
 
     /**
+     * {@return a Gizmo instance which uses the given {@link ClassHierarchyLocator}}
+     *
+     * @param classHierarchyLocator the class hierarchy locator (must not be {@code null})
+     */
+    Gizmo withClassHierarchyLocator(ClassHierarchyLocator classHierarchyLocator);
+
+    /**
      * Add a new class.
      *
      * @param name the fully qualified (dot-separated) binary class name (must not be {@code null})
