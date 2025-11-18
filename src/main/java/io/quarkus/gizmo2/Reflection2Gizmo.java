@@ -47,6 +47,15 @@ public final class Reflection2Gizmo {
     }
 
     /**
+     * {@return {@code true} if the two descriptors are equal, or {@code false} if they are not}
+     * Generally more efficient than calling {@link Object#equals ClassDesc.equals(other)} on the
+     * descriptor itself.
+     */
+    public static boolean equals(ClassDesc d1, ClassDesc d2) {
+        return Util.equals(d1, d2);
+    }
+
+    /**
      * {@return an erasure of the given {@code type}}
      *
      * @param type the type (must not be {@code null})
