@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.constant.ClassDesc;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 public class AssertTest {
@@ -16,13 +17,13 @@ public class AssertTest {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
                     b0.assert_(b1 -> {
-                        b1.yield(Const.of(true));
+                        b1.yield(Const.of(false));
                     }, "assertion");
                     b0.return_();
                 });
             });
         });
-
+        Assumptions.assumeTrue(tcm.definedClass().desiredAssertionStatus());
         AssertionError e = assertThrows(AssertionError.class, () -> {
             tcm.staticMethod("hello", Runnable.class).run();
         });
