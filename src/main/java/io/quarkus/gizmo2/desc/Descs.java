@@ -95,84 +95,85 @@ public final class Descs {
     // java.lang
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_AutoCloseable = Util.classDesc(AutoCloseable.class);
-    public static final ClassDesc CD_CharSequence = Util.classDesc(CharSequence.class);
-    public static final ClassDesc CD_ClassLoader = Util.classDesc(ClassLoader.class);
-    public static final ClassDesc CD_Comparable = Util.classDesc(Comparable.class);
-    public static final ClassDesc CD_Iterable = Util.classDesc(Iterable.class);
-    public static final ClassDesc CD_StringBuilder = Util.classDesc(StringBuilder.class);
-    public static final ClassDesc CD_System = Util.classDesc(System.class);
-    public static final ClassDesc CD_Thread = Util.classDesc(Thread.class);
+    public static final ClassDesc CD_AutoCloseable = Util.Uncached.classDesc(AutoCloseable.class);
+    public static final ClassDesc CD_CharSequence = Util.Uncached.classDesc(CharSequence.class);
+    public static final ClassDesc CD_ClassLoader = Util.Uncached.classDesc(ClassLoader.class);
+    public static final ClassDesc CD_Comparable = Util.Uncached.classDesc(Comparable.class);
+    public static final ClassDesc CD_Iterable = Util.Uncached.classDesc(Iterable.class);
+    public static final ClassDesc CD_StringBuilder = Util.Uncached.classDesc(StringBuilder.class);
+    public static final ClassDesc CD_System = Util.Uncached.classDesc(System.class);
+    public static final ClassDesc CD_Thread = Util.Uncached.classDesc(Thread.class);
     public static final ClassDesc CD_Throwable_array = CD_Throwable.arrayType();
 
     // throwable types
 
-    public static final ClassDesc CD_RuntimeException = Util.classDesc(RuntimeException.class);
+    public static final ClassDesc CD_RuntimeException = Util.Uncached.classDesc(RuntimeException.class);
 
     //-----------------------------------------------------
     // java.lang.annotation
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_Annotation = Util.classDesc(Annotation.class);
-    public static final ClassDesc CD_Inherited = Util.classDesc(Inherited.class);
-    public static final ClassDesc CD_Repeatable = Util.classDesc(Repeatable.class);
-    public static final ClassDesc CD_Retention = Util.classDesc(Retention.class);
-    public static final ClassDesc CD_Target = Util.classDesc(Target.class);
-    public static final ClassDesc CD_ElementType = Util.classDesc(ElementType.class);
-    public static final ClassDesc CD_RetentionPolicy = Util.classDesc(RetentionPolicy.class);
+    public static final ClassDesc CD_Annotation = Util.Uncached.classDesc(Annotation.class);
+    public static final ClassDesc CD_Inherited = Util.Uncached.classDesc(Inherited.class);
+    public static final ClassDesc CD_Repeatable = Util.Uncached.classDesc(Repeatable.class);
+    public static final ClassDesc CD_Retention = Util.Uncached.classDesc(Retention.class);
+    public static final ClassDesc CD_Target = Util.Uncached.classDesc(Target.class);
+    public static final ClassDesc CD_ElementType = Util.Uncached.classDesc(ElementType.class);
+    public static final ClassDesc CD_RetentionPolicy = Util.Uncached.classDesc(RetentionPolicy.class);
 
     //-----------------------------------------------------
     // java.lang.invoke
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_ConstantCallSite = Util.classDesc(ConstantCallSite.class);
-    public static final ClassDesc CD_LambdaMetafactory = Util.classDesc(LambdaMetafactory.class);
-    public static final ClassDesc CD_MethodHandles_Lookup_ClassOption = Util.classDesc(MethodHandles.Lookup.ClassOption.class);
+    public static final ClassDesc CD_ConstantCallSite = Util.Uncached.classDesc(ConstantCallSite.class);
+    public static final ClassDesc CD_LambdaMetafactory = Util.Uncached.classDesc(LambdaMetafactory.class);
+    public static final ClassDesc CD_MethodHandles_Lookup_ClassOption = Util.Uncached
+            .classDesc(MethodHandles.Lookup.ClassOption.class);
     public static final ClassDesc CD_MethodHandles_Lookup_ClassOption_array = CD_MethodHandles_Lookup_ClassOption.arrayType();
 
     //-----------------------------------------------------
     // java.lang.ref
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_Reference = Util.classDesc(Reference.class);
+    public static final ClassDesc CD_Reference = Util.Uncached.classDesc(Reference.class);
 
     //-----------------------------------------------------
     // java.util
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_ArrayList = Util.classDesc(ArrayList.class);
-    public static final ClassDesc CD_Arrays = Util.classDesc(Arrays.class);
-    public static final ClassDesc CD_Collection = Util.classDesc(Collection.class);
-    public static final ClassDesc CD_HashMap = Util.classDesc(HashMap.class);
-    public static final ClassDesc CD_HashSet = Util.classDesc(HashSet.class);
-    public static final ClassDesc CD_Iterator = Util.classDesc(Iterator.class);
-    public static final ClassDesc CD_Map_Entry = Util.classDesc(Map.Entry.class);
+    public static final ClassDesc CD_ArrayList = Util.Uncached.classDesc(ArrayList.class);
+    public static final ClassDesc CD_Arrays = Util.Uncached.classDesc(Arrays.class);
+    public static final ClassDesc CD_Collection = Util.Uncached.classDesc(Collection.class);
+    public static final ClassDesc CD_HashMap = Util.Uncached.classDesc(HashMap.class);
+    public static final ClassDesc CD_HashSet = Util.Uncached.classDesc(HashSet.class);
+    public static final ClassDesc CD_Iterator = Util.Uncached.classDesc(Iterator.class);
+    public static final ClassDesc CD_Map_Entry = Util.Uncached.classDesc(Map.Entry.class);
     public static final ClassDesc CD_Map_Entry_array = CD_Map_Entry.arrayType();
-    public static final ClassDesc CD_Objects = Util.classDesc(Objects.class);
-    public static final ClassDesc CD_Optional = Util.classDesc(Optional.class);
-    public static final ClassDesc CD_Base64 = Util.classDesc(Base64.class);
-    public static final ClassDesc CD_Base64_Decoder = Util.classDesc(Base64.Decoder.class);
+    public static final ClassDesc CD_Objects = Util.Uncached.classDesc(Objects.class);
+    public static final ClassDesc CD_Optional = Util.Uncached.classDesc(Optional.class);
+    public static final ClassDesc CD_Base64 = Util.Uncached.classDesc(Base64.class);
+    public static final ClassDesc CD_Base64_Decoder = Util.Uncached.classDesc(Base64.Decoder.class);
 
     //-----------------------------------------------------
     // java.util.concurrent
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_Lock = Util.classDesc(Lock.class);
+    public static final ClassDesc CD_Lock = Util.Uncached.classDesc(Lock.class);
 
     //-----------------------------------------------------
     // java.util.function
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_Consumer = Util.classDesc(Consumer.class);
-    public static final ClassDesc CD_Supplier = Util.classDesc(Supplier.class);
+    public static final ClassDesc CD_Consumer = Util.Uncached.classDesc(Consumer.class);
+    public static final ClassDesc CD_Supplier = Util.Uncached.classDesc(Supplier.class);
 
     //-----------------------------------------------------
     // java.io
     //-----------------------------------------------------
 
-    public static final ClassDesc CD_InputStream = Util.classDesc(InputStream.class);
-    public static final ClassDesc CD_OutputStream = Util.classDesc(OutputStream.class);
-    public static final ClassDesc CD_PrintStream = Util.classDesc(PrintStream.class);
+    public static final ClassDesc CD_InputStream = Util.Uncached.classDesc(InputStream.class);
+    public static final ClassDesc CD_OutputStream = Util.Uncached.classDesc(OutputStream.class);
+    public static final ClassDesc CD_PrintStream = Util.Uncached.classDesc(PrintStream.class);
 
     //=====================================================
     // Method descriptors
