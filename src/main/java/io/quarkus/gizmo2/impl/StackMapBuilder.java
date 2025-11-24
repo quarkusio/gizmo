@@ -173,6 +173,16 @@ public final class StackMapBuilder {
         } else if (end == 1) {
             return cachedList(List.of(locals.get(0)));
         }
+        boolean hasClass2 = false;
+        for (int i = 0; i < end; i++) {
+            if (isClass2(locals.get(i))) {
+                hasClass2 = true;
+                break;
+            }
+        }
+        if (! hasClass2) {
+            return cachedList(locals.subList(0, end - 1));
+        }
         ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(end);
         for (int i = 0; i < end; i++) {
             StackMapFrameInfo.VerificationTypeInfo vti = locals.get(i);
