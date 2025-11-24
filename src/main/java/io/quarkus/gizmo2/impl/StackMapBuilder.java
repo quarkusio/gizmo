@@ -173,25 +173,22 @@ public final class StackMapBuilder {
         } else if (end == 1) {
             return cachedList(List.of(locals.get(0)));
         }
-        boolean hasClass2 = false;
         for (int i = 0; i < end; i++) {
             if (isClass2(locals.get(i))) {
-                hasClass2 = true;
-                break;
+                // slow path: we have to copy the list due to long or double being present
+                ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(end - 1);
+                for (i = 0; i < end; i++) {
+                    StackMapFrameInfo.VerificationTypeInfo vti = locals.get(i);
+                    result.add(vti);
+                    if (isClass2(vti)) {
+                        i++;
+                    }
+                }
+                return cachedList(result);
             }
         }
-        if (! hasClass2) {
-            return cachedList(locals.subList(0, end - 1));
-        }
-        ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(end);
-        for (int i = 0; i < end; i++) {
-            StackMapFrameInfo.VerificationTypeInfo vti = locals.get(i);
-            result.add(vti);
-            if (isClass2(vti)) {
-                i++;
-            }
-        }
-        return cachedList(result);
+        // fast path: just copy our list (or a sublist of our list)
+        return cachedList(end == locals.size() ? locals : locals.subList(0, end - 1));
     }
 
     /**
