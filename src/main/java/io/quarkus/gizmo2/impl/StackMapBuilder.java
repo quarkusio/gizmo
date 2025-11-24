@@ -55,9 +55,6 @@ public final class StackMapBuilder {
      * @param vti the type information to push (must not be {@code null})
      */
     public void push(StackMapFrameInfo.VerificationTypeInfo vti) {
-        if (isClass2(vti)) {
-            stack.add(StackMapFrameInfo.SimpleVerificationTypeInfo.TOP);
-        }
         stack.add(vti);
     }
 
@@ -88,12 +85,7 @@ public final class StackMapBuilder {
      */
     public StackMapFrameInfo.VerificationTypeInfo pop() {
         try {
-            StackMapFrameInfo.VerificationTypeInfo result = stack.remove(stack.size() - 1);
-            if (isClass2(result)) {
-                StackMapFrameInfo.VerificationTypeInfo top = stack.remove(stack.size() - 1);
-                assert top == StackMapFrameInfo.SimpleVerificationTypeInfo.TOP;
-            }
-            return result;
+            return stack.remove(stack.size() - 1);
         } catch (IndexOutOfBoundsException e) {
             throw new IllegalStateException("Stack underflow");
         }
@@ -113,14 +105,8 @@ public final class StackMapBuilder {
      * @param vti the type information (must not be {@code null})
      */
     public void store(int localIdx, StackMapFrameInfo.VerificationTypeInfo vti) {
-        if (isClass2(vti)) {
-            growLocals(localIdx + 1);
-            locals.set(localIdx, vti);
-            locals.set(localIdx + 1, StackMapFrameInfo.SimpleVerificationTypeInfo.TOP);
-        } else {
-            growLocals(localIdx);
-            locals.set(localIdx, vti);
-        }
+        growLocals(isClass2(vti) ? localIdx + 1 : localIdx);
+        locals.set(localIdx, vti);
     }
 
     /**
@@ -205,17 +191,9 @@ public final class StackMapBuilder {
         int sz = stack.size();
         if (sz == 0) {
             return List.of();
+        } else {
+            return cachedList(stack);
         }
-        ArrayList<StackMapFrameInfo.VerificationTypeInfo> result = new ArrayList<>(sz);
-        for (int i = sz - 1; i >= 0; i--) {
-            StackMapFrameInfo.VerificationTypeInfo vti = stack.get(i);
-            result.add(vti);
-            if (isClass2(vti)) {
-                i--;
-            }
-        }
-        Collections.reverse(result);
-        return cachedList(result);
     }
 
     private List<StackMapFrameInfo.VerificationTypeInfo> cachedList(final List<StackMapFrameInfo.VerificationTypeInfo> result) {
