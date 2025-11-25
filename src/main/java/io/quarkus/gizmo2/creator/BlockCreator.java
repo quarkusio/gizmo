@@ -3356,7 +3356,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param resource the resource to automatically close (must not be {@code null})
      * @param body the creator for the body of the resource operation (must not be {@code null})
      */
-    void autoClose(LocalVar resource, Consumer<BlockCreator> body);
+    void autoClose(Var resource, Consumer<BlockCreator> body);
 
     /**
      * Create a {@code synchronized} block. When the given {@code body} is executed,
