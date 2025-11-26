@@ -1180,7 +1180,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         }
     }
 
-    public void autoClose(final LocalVar resource, final Consumer<BlockCreator> body) {
+    public void autoClose(final Var resource, final Consumer<BlockCreator> body) {
         try_(t1 -> {
             t1.body(body);
             t1.catch_(CD_Throwable, "e2", (b2, e2) -> {
