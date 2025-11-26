@@ -5,15 +5,18 @@ import static java.lang.constant.ConstantDescs.*;
 import java.io.Serializable;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -31,6 +34,7 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.TypeParameter;
+import io.quarkus.gizmo2.desc.Descs;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
@@ -51,9 +55,11 @@ public final class Util {
 
     private static final ClassValue<ClassDesc> constantCache = new ClassValue<ClassDesc>() {
         protected ClassDesc computeValue(final Class<?> type) {
-            return type.describeConstable().orElseThrow(IllegalArgumentException::new);
+            return Uncached.classDesc(type);
         }
     };
+
+    private static final Map<Class<?>, ClassDesc> fastCache;
 
     public static StringBuilder descName(StringBuilder b, ClassDesc desc) {
         if (desc.packageName().isEmpty()) {
@@ -64,7 +70,79 @@ public final class Util {
     }
 
     public static ClassDesc classDesc(Class<?> clazz) {
-        return constantCache.get(clazz);
+        ClassDesc desc = fastCache.get(clazz);
+        if (desc == null) {
+            desc = constantCache.get(clazz);
+        }
+        return desc;
+    }
+
+    /**
+     * Separate class for uncached class desc creation to avoid class init loops.
+     */
+    public static final class Uncached {
+        private Uncached() {
+        }
+
+        public static ClassDesc classDesc(Class<?> clazz) {
+            return clazz.describeConstable().orElseThrow(IllegalArgumentException::new);
+        }
+    }
+
+    static {
+        HashMap<Class<?>, ClassDesc> map = new HashMap<>();
+        for (Class<?> owner : List.of(ConstantDescs.class, Descs.class)) {
+            Field[] fields = owner.getFields();
+            for (Field field : fields) {
+                if (field.getType() == ClassDesc.class) {
+                    int mods = field.getModifiers();
+                    if (Modifier.isStatic(mods) && Modifier.isPublic(mods)) {
+                        ClassDesc desc = readDescField(field);
+                        map.putIfAbsent(doLoad(desc), desc);
+                    }
+                }
+            }
+        }
+        fastCache = Map.copyOf(map);
+    }
+
+    private static ClassDesc readDescField(Field f) {
+        try {
+            return (ClassDesc) f.get(null);
+        } catch (IllegalAccessException e) {
+            IllegalAccessError error = new IllegalAccessError(e.getMessage());
+            error.setStackTrace(e.getStackTrace());
+            throw error;
+        }
+    }
+
+    private static Class<?> doLoad(ClassDesc desc) {
+        if (desc.isClassOrInterface()) {
+            String ds = desc.descriptorString();
+            try {
+                return Class.forName(ds.substring(1, ds.length() - 1).replace('/', '.'), false, Util.class.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
+                error.setStackTrace(e.getStackTrace());
+                throw error;
+            }
+        } else if (desc.isArray()) {
+            return doLoad(desc.componentType()).arrayType();
+        } else {
+            assert desc.isPrimitive();
+            return switch (desc.descriptorString().charAt(0)) {
+                case 'B' -> byte.class;
+                case 'C' -> char.class;
+                case 'D' -> double.class;
+                case 'F' -> float.class;
+                case 'I' -> int.class;
+                case 'J' -> long.class;
+                case 'S' -> short.class;
+                case 'Z' -> boolean.class;
+                case 'V' -> void.class;
+                default -> throw Assert.impossibleSwitchCase(desc.descriptorString());
+            };
+        }
     }
 
     public static boolean equals(ClassDesc a, ClassDesc b) {
