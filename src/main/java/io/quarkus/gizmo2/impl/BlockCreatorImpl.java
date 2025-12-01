@@ -1387,6 +1387,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MD_Optional.ofNullable, value);
     }
 
+    @Override
+    public Expr optionalEmpty() {
+        return invokeStatic(MD_Optional.empty);
+    }
+
     public void line(final int lineNumber) {
         addItem(new LineNumber(lineNumber));
     }

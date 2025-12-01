@@ -3822,6 +3822,13 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr optionalOfNullable(Expr value);
 
     /**
+     * Generate a call to {@link Optional#empty()}.
+     *
+     * @return the empty optional expression (not {@code null})
+     */
+    Expr optionalEmpty();
+
+    /**
      * Iterate the given target.
      * In other words, generate a call to {@link Iterable#iterator()}.
      *
