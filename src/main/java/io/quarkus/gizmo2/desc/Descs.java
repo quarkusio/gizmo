@@ -850,6 +850,7 @@ public final class Descs {
 
         public static final ClassMethodDesc of = ClassMethodDesc.of(CD_Optional, "of", CD_Optional, CD_Object);
         public static final ClassMethodDesc ofNullable = ClassMethodDesc.of(CD_Optional, "ofNullable", CD_Optional, CD_Object);
+        public static final ClassMethodDesc empty = ClassMethodDesc.of(CD_Optional, "empty", CD_Optional);
 
         public static final ClassMethodDesc get = ClassMethodDesc.of(CD_Optional, "get", CD_Object);
         public static final ClassMethodDesc isPresent = ClassMethodDesc.of(CD_Optional, "isPresent", CD_boolean);
