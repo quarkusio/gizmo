@@ -889,12 +889,12 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * The arguments must be of the same {@linkplain TypeKind type kind}.
      * This works equivalently to the {@code ==} operator in Java
      * for primitive and reference values.
-     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
+     * For object equality using {@link Object#equals}, see {@link #exprEquals(Expr, Expr)}.
      *
      * @param a the left-hand argument (must not be {@code null})
      * @param b the right-hand argument (must not be {@code null})
      * @return the boolean result expression
-     * @see #objEquals(Expr, Expr)
+     * @see #exprEquals(Expr, Expr)
      */
     Expr eq(Expr a, Expr b);
 
@@ -959,12 +959,12 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * The arguments must be of the same {@linkplain TypeKind type kind}.
      * This works equivalently to the {@code !=} operator in Java
      * for primitive and reference values.
-     * For object equality using {@link Object#equals}, see {@link #objEquals(Expr, Expr)}.
+     * For object equality using {@link Object#equals}, see {@link #exprEquals(Expr, Expr)}.
      *
      * @param a the left-hand argument (must not be {@code null})
      * @param b the right-hand argument (must not be {@code null})
      * @return the boolean result expression
-     * @see #objEquals(Expr, Expr)
+     * @see #exprEquals(Expr, Expr)
      */
     Expr ne(Expr a, Expr b);
 
@@ -3540,7 +3540,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param expr the expression, which can be of any type (must not be {@code null})
      * @return an {@code int} expression representing the hash code of given expression (not {@code null})
      */
-    Expr objHashCode(Expr expr);
+    Expr exprHashCode(Expr expr);
 
     /**
      * Generates call to the {@code Objects#equals(a, b)} method if at least one
@@ -3551,7 +3551,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param b the second expression (must not be {@code null})
      * @return a {@code boolean} expression representing the equality between the two values (not {@code null})
      */
-    Expr objEquals(Expr a, Expr b);
+    Expr exprEquals(Expr a, Expr b);
 
     /**
      * Generates call to one of the {@code String#valueOf(expr)} overloads, based on the type of the argument.
@@ -3559,7 +3559,7 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
      * @param expr the expression, which can be of any type
      * @return a {@code String} expression representing the string value of given expression (not {@code null})
      */
-    Expr objToString(Expr expr);
+    Expr exprToString(Expr expr);
 
     /**
      * Generates call to one of the {@code Arrays#hashCode(expr)} overloads, based on the type of the argument,

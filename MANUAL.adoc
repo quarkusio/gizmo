@@ -3525,7 +3525,7 @@ public class AutoCloseExample {
                     LocalVar found = b0.localVar("found", false);
                     b0.autoClose(ds, b1 -> {
                         b1.forEach(ds, (b2, path) -> {
-                            b2.if_(b2.objEquals(b2.objToString(path), Const.of("./MANUAL.adoc")), b3 -> {
+                            b2.if_(b2.exprEquals(b2.exprToString(path), Const.of("./MANUAL.adoc")), b3 -> {
                                 b3.set(found, true);
                                 b3.break_(b1);
                             });
@@ -3643,7 +3643,7 @@ public class AssertionExample {
                 ParamVar args = mc.parameter("args", String[].class);
                 mc.body(b0 -> {
                     b0.assert_(b1 -> {
-                        b1.yield(b1.objEquals(
+                        b1.yield(b1.exprEquals(
                             Const.of("Assertion"),
                             b1.invokeVirtual(MD_Class.getName, Const.of(cc.type()))
                         ));
@@ -3663,7 +3663,9 @@ public class AssertionExample {
 
 The basic methods on `Object` for equality, hashing, and stringifying are among the most frequently
 used methods in the Java language.
-They may be easily invoked on any object using helper methods found directly on the block creator.
+They may be easily invoked on any value using helper methods found directly on the block creator.
+If the value is not an `Object` of some sort,
+the corresponding static method on its box type will automatically be used instead.
 
 //TEST:BEGIN
 .Example of `exprEquals`, `exprHashCode`, and `exprToString`
@@ -3686,8 +3688,8 @@ public class BasicMethodsExample {
                 ParamVar args = mc.parameter("args", String[].class);
                 mc.body(b0 -> {
                     LocalVar arg = b0.localVar("arg", args.elem(0));
-                    b0.printf("Hash of %s is %s%n", arg, b0.objToString(b0.objHashCode(arg)));
-                    b0.if_(b0.objEquals(Const.of("ARcZguv"), arg), b1 -> {
+                    b0.printf("Hash of %s is %s%n", arg, b0.exprToString(b0.exprHashCode(arg)));
+                    b0.if_(b0.exprEquals(Const.of("ARcZguv"), arg), b1 -> {
                         b1.printf("You found the secret string!%n");
                     });
                     b0.return_();

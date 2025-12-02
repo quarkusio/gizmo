@@ -1258,7 +1258,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         addItem(val.equals(Const.ofVoid()) ? Yield.YIELD_VOID : new Yield(val));
     }
 
-    public Expr objHashCode(final Expr expr) {
+    public Expr exprHashCode(final Expr expr) {
         return switch (expr.typeKind()) {
             case BOOLEAN -> invokeStatic(MD_Boolean.hashCode, expr);
             case BYTE -> invokeStatic(MD_Byte.hashCode, expr);
@@ -1273,20 +1273,20 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         };
     }
 
-    public Expr objEquals(final Expr a, final Expr b) {
+    public Expr exprEquals(final Expr a, final Expr b) {
         return switch (a.typeKind()) {
             case REFERENCE -> switch (b.typeKind()) {
                 case REFERENCE -> invokeStatic(MD_Objects.equals, a, b);
-                default -> objEquals(a, box(b));
+                default -> exprEquals(a, box(b));
             };
             default -> switch (b.typeKind()) {
-                case REFERENCE -> objEquals(box(a), b);
+                case REFERENCE -> exprEquals(box(a), b);
                 default -> eq(a, b);
             };
         };
     }
 
-    public Expr objToString(final Expr expr) {
+    public Expr exprToString(final Expr expr) {
         return invokeStatic(MD_String.valueOf(expr.type()), expr);
     }
 

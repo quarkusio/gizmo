@@ -40,7 +40,7 @@ public class ArraysTest {
                     var arr = bc.localVar("arr", bc.newEmptyArray(String.class, Const.of(5)));
                     bc.set(arr.elem(0), Const.of("foo"));
                     bc.set(arr.elem(Const.of(1)), Const.of("bar"));
-                    bc.ifNot(bc.objEquals(arr.elem(Integer.valueOf(1)), Const.of("bar")), fail -> fail.return_(-1));
+                    bc.ifNot(bc.exprEquals(arr.elem(Integer.valueOf(1)), Const.of("bar")), fail -> fail.return_(-1));
                     bc.return_(arr.length());
                 });
             });

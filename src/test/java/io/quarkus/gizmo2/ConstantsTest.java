@@ -63,7 +63,7 @@ public class ConstantsTest {
                 mc.body(bc -> {
                     Const c = bytecode.get();
                     LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(c));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(c));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("|"));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of(c.type().descriptorString()));
                     bc.return_(bc.withObject(result).toString_());

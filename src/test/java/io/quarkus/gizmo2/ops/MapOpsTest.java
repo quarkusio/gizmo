@@ -59,9 +59,9 @@ public class MapOpsTest {
                     bc.if_(bc.ne(size, 2), fail -> fail.return_(1));
                     bc.if_(mapOps.isEmpty(), fail -> fail.return_(2));
                     bc.ifNot(mapOps.containsKey(Const.of("foo")), fail -> fail.return_(3));
-                    bc.ifNot(bc.objEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
+                    bc.ifNot(bc.exprEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
                             fail -> fail.return_(4));
-                    bc.ifNot(bc.objEquals(mapOps.remove(Const.of("alpha")), Const.of("bravo")),
+                    bc.ifNot(bc.exprEquals(mapOps.remove(Const.of("alpha")), Const.of("bravo")),
                             fail -> fail.return_(5));
                     bc.if_(bc.ne(mapOps.size(), 1), fail -> fail.return_(6));
                     mapOps.clear();
@@ -91,7 +91,7 @@ public class MapOpsTest {
                     assertThrows(IllegalArgumentException.class, () -> bc.mapOf(Const.of("foo")));
                     var map = bc.localVar("map", bc.mapOf(Const.of("foo"), Const.of("bar")));
                     MapOps mapOps = bc.withMap(map);
-                    bc.ifNot(bc.objEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
+                    bc.ifNot(bc.exprEquals(mapOps.get(Const.of("foo")), Const.of("bar")),
                             fail -> fail.return_(-1));
                     bc.return_(mapOps.size());
                 });
