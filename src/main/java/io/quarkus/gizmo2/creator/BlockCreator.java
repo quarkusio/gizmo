@@ -3543,6 +3543,17 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr exprHashCode(Expr expr);
 
     /**
+     * @deprecated use {@link #exprHashCode(Expr)} instead.
+     *
+     * @param expr the expression, which can be of any type (must not be {@code null})
+     * @return an {@code int} expression representing the hash code of given expression (not {@code null})
+     */
+    @Deprecated
+    default Expr objHashCode(Expr expr) {
+        return exprHashCode(expr);
+    }
+
+    /**
      * Generates call to the {@code Objects#equals(a, b)} method if at least one
      * of the given expressions is of a reference type (boxing the other if primitive).
      * If both expressions are of a primitive type, this is equivalent to {@link #eq(Expr, Expr)}.
@@ -3554,12 +3565,35 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr exprEquals(Expr a, Expr b);
 
     /**
+     * @deprecated use {@link #exprEquals(Expr, Expr)} instead.
+     *
+     * @param a the first expression (must not be {@code null})
+     * @param b the second expression (must not be {@code null})
+     * @return a {@code boolean} expression representing the equality between the two values (not {@code null})
+     */
+    @Deprecated
+    default Expr objEquals(Expr a, Expr b) {
+        return exprEquals(a, b);
+    }
+
+    /**
      * Generates call to one of the {@code String#valueOf(expr)} overloads, based on the type of the argument.
      *
      * @param expr the expression, which can be of any type
      * @return a {@code String} expression representing the string value of given expression (not {@code null})
      */
     Expr exprToString(Expr expr);
+
+    /**
+     * @deprecated use {@link #exprToString(Expr)} instead.
+     *
+     * @param expr the expression, which can be of any type
+     * @return a {@code String} expression representing the string value of given expression (not {@code null})
+     */
+    @Deprecated
+    default Expr objToString(Expr expr) {
+        return exprToString(expr);
+    }
 
     /**
      * Generates call to one of the {@code Arrays#hashCode(expr)} overloads, based on the type of the argument,
