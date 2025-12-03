@@ -4205,7 +4205,7 @@ of generic type:
 **** `GenericType.OfClass` - the base type of all class generic types, which may have type arguments
 ***** `GenericType.OfInnerClass` - representing inner class types
 ***** `GenericType.OfRootClass` - representing top-level and static nested class types
-**** `GenericType.OfTypeVariable` - representing the type of type variables
+**** `GenericType.OfTypeVariable` - representing type variables
 
 All `GenericType` subclasses are annotatable.
 
