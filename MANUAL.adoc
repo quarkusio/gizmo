@@ -3421,7 +3421,6 @@ public class TryExample {
 //TEST:RUN Try 1234
 //= The integer value is 1234
 //= Thanks for playing!
-//TEST:END
 //TEST:RUN Try foobar
 //= Value is not a number!
 //= Thanks for playing!
@@ -4291,7 +4290,7 @@ public class GenericTypeExample {
     }
 }
 ----
-//TEST:RUN GenericTypeExample
+//TEST:OUTPUT GenericTypeExample
 //= Our map type is: java.util.Map<java.util.@Silly List<@Serious(seriousness=2) ? extends java.lang.@Silly String>, @Serious int @Silly []>
 //TEST:END
 
