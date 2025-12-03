@@ -3179,83 +3179,1154 @@ public class LoopExample {
 //TEST:END
 
 [id=while]
-=== `while`/`doWhile`
+=== `while_`/`doWhile`
+
+A loop with a conditional clause can be created using the `while_(...)` and `doWhile(...)` constructs.
+Note that like in Java, `while_(...)` accepts the conditional _before_ the loop body, whereas `doWhile(...)`
+accepts the conditional _after_ the loop body.
+
+//TEST:BEGIN
+.Example of `while`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class WhileExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("While", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar count = b0.localVar("count", 0);
+                    b0.while_(b1 -> b1.yield(b1.lt(count, 5)), b1 -> {
+                        b1.printf("Count is %d!%n", count);
+                        b1.inc(count);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN While
+//= Count is 0!
+//= Count is 1!
+//= Count is 2!
+//= Count is 3!
+//= Count is 4!
+//TEST:END
+
+//TEST:BEGIN
+.Example of `doWhile`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class DoWhileExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("DoWhile", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar count = b0.localVar("count", 0);
+                    b0.doWhile(b1 -> {
+                        b1.printf("Count is %d!%n", count);
+                        b1.inc(count);
+                    }, b1 -> b1.yield(b1.lt(count, 5)));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN DoWhile
+//= Count is 0!
+//= Count is 1!
+//= Count is 2!
+//= Count is 3!
+//= Count is 4!
+//TEST:END
 
 [id=for-each]
 === `forEach`
 
+The `forEach(...)` construct is similar to the corresponding Java language structure.
+It can be used to iterate over collections or arrays.
+A parameter is used to specify the name of a local variable which will contain the current item in the block.
+The `LocalVar` instance is passed into the block builder as its second argument.
+
+//TEST:BEGIN
+.Example of `forEach`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class ForEachExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ForEach", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.forEach(args, (b1, arg) -> {
+                        b1.printf("Argument is %s%n", arg);
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN ForEach foo bar baz
+//= Argument is foo
+//= Argument is bar
+//= Argument is baz
+//TEST:END
+
 [id=continue]
 === `continue_`
+
+A loop can be resumed early using `continue_(...)`.
+This works much like the `continue` keyword in Java.
+
+The difference between `continue_(...)` and `gotoStart(...)` is that `continue_(...)`
+will always reinterpret the loop condition (if any),
+whereas `gotoStart` will go to the top of the block regardless of the loop condition.
+
+//TEST:BEGIN
+.Example of `continue_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+
+public class ContinueExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Continue", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar count = b0.localVar("count", 0);
+                    b0.doWhile(b1 -> {
+                        b1.printf("Count is %d!%n", count);
+                        b1.if_(b1.ne(b1.rem(count, 3), 0), b2 -> {
+                            b2.inc(count);
+                            b2.continue_(b1);
+                        });
+                        b1.printf("...divisible by 3!%n");
+                        b1.inc(count);
+                    }, b1 -> b1.yield(b1.lt(count, 5)));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Continue
+//= Count is 0!
+//= ...divisible by 3!
+//= Count is 1!
+//= Count is 2!
+//= Count is 3!
+//= ...divisible by 3!
+//= Count is 4!
+//TEST:END
 
 [id=try]
 === `try_`
 
+The `try_(...)` operation encapsulates a block of code which may throw an exception
+and allows for the equivalent of `catch` and `finally` clauses to be defined.
+
+The `try_(...)` method itself accepts a `TryCreator`, which in turn has methods to define
+`catch_(...)` cases and a `finally_(...)` case.
+These work similarly to their Java language equivalents.
+
+For `catch_(...)` clauses, you may specific either a single throwable type or a set of throwable types.
+If a set of throwable types is given as `ClassDesc` values, then the `ClassDesc` of a common
+supertype of all the given types must also be given.
+Otherwise, the type is automatically detected.
+A local variable containing the caught exception will be given to the catch block builder as its second argument.
+The name of the variable is provided to the `catch_(...) method as an argument.
+
+The `finally_(...)` clause, if given, is run at every possible exit path from the body of the `try_(...)`.
+
+//TEST:BEGIN
+.Example of `try_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class TryExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Try", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar word = b0.localVar("word", args.elem(0));
+                    b0.try_(t1 -> {
+                        t1.body(b2 -> {
+                            b2.printf("The integer value is %d%n", b2.invokeStatic(
+                                MethodDesc.of(Integer.class, "parseInt", int.class, String.class),
+                                word)
+                            );
+                        });
+                        t1.catch_(NumberFormatException.class, "e", (b2, e) -> {
+                            b2.printf("Value is not a number!%n");
+                        });
+                        t1.finally_(b2 -> {
+                            b2.printf("Thanks for playing!%n");
+                        });
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Try 1234
+//= The integer value is 1234
+//= Thanks for playing!
+//TEST:RUN Try foobar
+//= Value is not a number!
+//= Thanks for playing!
+//TEST:END
+
+
 [id=synchronized]
 === `synchronized_`
+
+Use the `synchronized_(...)` method to run the given block with the monitor of the given object held.
+
+//TEST:BEGIN
+.Example of `synchronized_`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class SynchronizedExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Synchronized", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar obj = b0.localVar("obj", b0.new_(Object.class));
+                    MethodDesc holdsLock = MethodDesc.of(Thread.class, "holdsLock", boolean.class, Object.class);
+                    b0.printf("Lock held = %s%n", b0.invokeStatic(holdsLock, obj));
+                    b0.synchronized_(obj, b1 -> {
+                        b1.printf("Lock held = %s%n", b1.invokeStatic(holdsLock, obj));
+                    });
+                    b0.printf("Lock held = %s%n", b0.invokeStatic(holdsLock, obj));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Synchronized
+//= Lock held = false
+//= Lock held = true
+//= Lock held = false
+//TEST:END
 
 [id=auto-close]
 === `autoClose`
 
+The `autoClose(...)` operation accepts a block that is executed using a given closeable resource.
+When the block exits, the resource is safely closed, even if the exit is exceptional.
+
+There are two forms of `autoClose(...)`.
+One accepts a `Var` which contains the resource to be closed after the block.
+The other accepts an arbitrary `Expr` which is stored into a `LocalVar` with the given name
+which in turn is passed in to the block builder as its second argument.
+
+//TEST:BEGIN
+.Example of `autoClose`
+[source,java]
+----
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AutoCloseExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("AutoClose", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    MethodDesc MD_newDirectoryStream = MethodDesc.of(
+                        Files.class,
+                        "newDirectoryStream",
+                        DirectoryStream.class,
+                        Path.class);
+                    MethodDesc MD_Path_of = MethodDesc.of(
+                        Path.class,
+                        "of",
+                        Path.class,
+                        String.class,
+                        String[].class
+                    );
+                    LocalVar ds = b0.localVar("ds",
+                        b0.invokeStatic(MD_newDirectoryStream,
+                            b0.invokeStatic(MD_Path_of, Const.of("."),
+                                b0.newEmptyArray(String.class, 0)
+                        )));
+                    LocalVar found = b0.localVar("found", false);
+                    b0.autoClose(ds, b1 -> {
+                        b1.forEach(ds, (b2, path) -> {
+                            b2.if_(b2.exprEquals(b2.exprToString(path), Const.of("./MANUAL.adoc")), b3 -> {
+                                b3.set(found, true);
+                                b3.break_(b1);
+                            });
+                        });
+                    });
+                    b0.printf("Found = %s%n", found);
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN AutoClose
+//= Found = true
+//TEST:END
+
 [id=annotations]
 == Adding annotations
 
-(TODO more detail)
+Any element or type that can be annotated implements the `AnnotatableCreator` interface.
+This interface defines several `addAnnotation(...)` methods which allow annotations to
+be added to the element or type based on one of:
+
+* An existing Java annotation instance (i.e. implementing `java.lang.annotation.Annotation`)
+* The `Class` object of an annotation type
+* The descriptor of an annotation type
+
+In the latter two cases, you may also define annotation property values using a builder
+which accepts an instance of `AnnotationCreator`.
+With this creator, the builder may define annotation properties in a type-safe manner
+using the `add(...)` and `addArray(...)` methods.
+
+When adding annotations of annotation type, the `add(...)` method accepts a nested
+`AnnotationCreator` to define the properties of the inner annotation.
+
+//TEST:BEGIN
+.Example of annotating elements
+[source,java]
+----
+import java.lang.annotation.Annotation;
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AnnotationExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Annotation", cc -> {
+            cc.addAnnotation(Deprecated.class, a0 -> {
+                a0.add(Deprecated::since, "The beginning");
+                a0.add(Deprecated::forRemoval, false);
+            });
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar ann = b0.localVar("ann", b0.invokeVirtual(
+                        MethodDesc.of(Class.class, "getAnnotation", Annotation.class, Class.class),
+                        Const.of(cc.type()),
+                        Const.of(Deprecated.class)
+                    ));
+                    b0.printf("Found %s%n", b0.invokeInterface(
+                        MethodDesc.of(Annotation.class, "annotationType", Class.class),
+                        ann
+                    ));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Annotation
+//= Found interface java.lang.Deprecated
+//TEST:END
 
 [id=helpers]
 == Helper methods
 
+There are many helper methods on `BlockCreator` which are designed to simplify
+the most repetitive method calls and constructs.
+
 [id=assertions]
 === Assertions
+
+Assertions in Gizmo are more or less equivalent to Java's `assert` keyword.
+One difference is that class assertion status for Gizmo classes is computed lazily
+rather than at class initialization time.
+
+//TEST:BEGIN
+.Example of assertions
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class AssertionExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Assertion", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.assert_(b1 -> {
+                        b1.yield(b1.exprEquals(
+                            Const.of("Assertion"),
+                            b1.invokeVirtual(MD_Class.getName, Const.of(cc.type()))
+                        ));
+                    }, "Class name was unexpected");
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Assertion
+//TEST:END
 
 [id=expr-equals]
 === `exprEquals`/`exprHashCode`/`exprToString`
 
+The basic methods on `Object` for equality, hashing, and stringifying are among the most frequently
+used methods in the Java language.
+They may be easily invoked on any value using helper methods found directly on the block creator.
+If the value is not an `Object` of some sort,
+the corresponding static method on its box type will automatically be used instead.
+
+//TEST:BEGIN
+.Example of `exprEquals`, `exprHashCode`, and `exprToString`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class BasicMethodsExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("BasicMethods", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar arg = b0.localVar("arg", args.elem(0));
+                    b0.printf("Hash of %s is %s%n", arg, b0.exprToString(b0.exprHashCode(arg)));
+                    b0.if_(b0.exprEquals(Const.of("ARcZguv"), arg), b1 -> {
+                        b1.printf("You found the secret string!%n");
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN BasicMethods YYHCCTL
+//= Hash of YYHCCTL is 0
+//TEST:RUN BasicMethods HelloWorld
+//= Hash of HelloWorld is 439329280
+//TEST:RUN BasicMethods ARcZguv
+//= Hash of ARcZguv is 0
+//= You found the secret string!
+//TEST:END
+
 [id=array-equals]
 === `arrayEquals`/`arrayHashCode`/`arrayToString`
+
+The `arrayEquals`, `arrayHashCode`, and `arrayToString` methods wrap
+the corresponding methods on `java.util.Arrays` for convenience.
+
+//TEST:BEGIN
+.Example of `arrayEquals`, `arrayHashCode`, and `arrayToString`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ArrayBasicMethodsExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ArrayBasicMethods", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Arguments are %s%n", b0.arrayToString(args));
+                    b0.printf("Hash of arguments is %s%n", b0.arrayHashCode(args));
+                    b0.printf("Equal to \"foo bar baz\": %s%n", b0.arrayEquals(
+                        args,
+                        b0.newArray(String.class, Const.of("foo"), Const.of("bar"), Const.of("baz"))
+                    ));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN ArrayBasicMethods Hello world goodbye
+//= Arguments are [Hello, world, goodbye]
+//= Hash of arguments is 1895331920
+//= Equal to "foo bar baz": false
+//TEST:RUN ArrayBasicMethods foo bar baz
+//= Arguments are [foo, bar, baz]
+//= Hash of arguments is 100755981
+//= Equal to "foo bar baz": true
+//TEST:END
 
 [id=class-for-name]
 === `classForName`
 
+The `Class.forName(...)` method can be called directly by using `classForName(...)` on the block creator.
+
+//TEST:BEGIN
+.Example of `classForName`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class ClassForNameExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("ClassForName", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Loaded %s%n", b0.classForName(args.elem(0)));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN ClassForName ClassForName
+//= Loaded class ClassForName
+//TEST:RUN ClassForName java.io.Serializable
+//= Loaded interface java.io.Serializable
+//TEST:END
+
 [id=close]
-=== `close`/`autoClose`
+=== `close`
+
+The `close(...)` method on `BlockCreator` simply closes its argument.
+
+See also <<auto-close>>.
+
+//TEST:BEGIN
+.Example of `close`
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class CloseExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Close", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    // close System.out
+                    b0.close(b0.getStaticField(FD_System.out));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Close
+//TEST:END
 
 [id=iterate]
 === `iterate`
 
+The `iterate` method of the `java.lang.Iterable` interface can be invoked directly on an object
+by calling `iterate(...)` on the block creator.
+
+//TEST:BEGIN
+.Example of `iterate`
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class IterateExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Iterate", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar argsList = b0.localVar("argsList", b0.invokeStatic(MD_List.of_array, args));
+                    LocalVar itr = b0.localVar("itr", b0.iterate(argsList));
+                    b0.printf("Has at least one: %s%n", b0.invokeInterface(MD_Iterator.hasNext, itr));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Iterate
+//= Has at least one: false
+//TEST:RUN Iterate foo bar baz
+//= Has at least one: true
+//TEST:END
+
 [id=current-thread]
 === `currentThread`
 
+The current thread expression can be acquired using `currentThread(...)`.
+
+//TEST:BEGIN
+.Example of `currentThread`
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class CurrentThreadExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("CurrentThread", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Current thread is %s%n", b0.currentThread());
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN CurrentThread
+//~ Current thread is .*?main.*
+//TEST:END
+
 [id=optional]
-=== `optionalOf`/`optionalOfNullable`
+=== `optionalOf`/`optionalOfNullable`/`optionalEmpty`
+
+To easily wrap an object expression with `Optional`, use `optionalOf(...)` and `optionalOfNullable(...)`.
+They are equivalent to calling `Optional.of(...)` and `Optional.ofNullable(...)`, respectively.
+
+The `optionalEmpty(...)` is equivalent to calling `Optional.empty()`.
+
+//TEST:BEGIN
+.Example of `optionalOf`/`optionalOfNullable`/`optionalEmpty`
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class OptionalExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Optional", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Example 1: %s%n", b0.optionalOf(Const.of("Hello")));
+                    b0.printf("Example 2: %s%n", b0.optionalOfNullable(Const.of("Hello again")));
+                    b0.printf("Example 3: %s%n", b0.optionalOfNullable(Const.ofNull(String.class)));
+                    b0.printf("Example 4: %s%n", b0.optionalEmpty());
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Optional
+//= Example 1: Optional[Hello]
+//= Example 2: Optional[Hello again]
+//= Example 3: Optional.empty
+//= Example 4: Optional.empty
+//TEST:END
 
 [id=collection-of]
-=== `mapOf`/`setOf`/`listOf`/`mapEntryOf`
+=== `mapOf`/`setOf`/`listOf`/`mapEntry`
+
+Collections can be constructed in a similar way to <<new-array,arrays>> using the following helper methods:
+
+* `mapOf(...)` as a shortcut for calling `Map.of(...)`
+* `setOf(...)` as a shortcut for calling `Set.of(...)`
+* `listOf(...)` as a shortcut for calling `List.of(...)`
+* `mapEntry(...)` as a shortcut for calling `Map.entry(...)`
+
+Note that it is also possible to create these values <<const,as constants>> if desired.
+
+//TEST:BEGIN
+.Example of `mapOf`/`setOf`/`listOf`/`mapEntry`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class CollectionExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Collection", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("List example: %s%n", b0.listOf(
+                        Const.of("foo"),
+                        Const.of("bar"),
+                        Const.of("baz")
+                    ));
+                    b0.printf("Set example: %s%n", b0.setOf(
+                        Const.of("hello"),
+                        Const.of("goodbye")
+                    ));
+                    b0.printf("Map example: %s%n", b0.mapOf(
+                        Const.of("foo"), Const.of("hello"),
+                        Const.of("bar"), Const.of("goodbye")
+                    ));
+                    b0.printf("Map entry example: %s%n", b0.mapEntry(
+                        Const.of("foo"), Const.of("hello")
+                    ));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Collection
+//= List example: [foo, bar, baz]
+//~ Set example: \[(?:hello, goodbye|goodbye, hello)\]
+//~ Map example: \{(?:foo=hello, bar=goodbye|bar=goodbye, foo=hello)\}
+//= Map entry example: foo=hello
+//TEST:END
 
 [id=boxing]
 === `box`/`unbox`
 
+While Gizmo is able to auto-box/auto-unbox values in most situations,
+sometimes it is necessary, useful, or desirable to explicitly box or unbox values.
+The `box` and `unbox` methods explicitly box primitive values
+or unbox primitive wrapper objects.
+
+//TEST:BEGIN
+.Example of `box`/`unbox`
+[source,java]
+----
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class BoxExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Box", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    b0.printf("Explicitly boxed: %d%n", b0.box(Const.of(123)));
+                    b0.printf("Box, unbox, rebox: %d%n", b0.box(b0.unbox(b0.box(Const.of(456)))));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Box
+//= Explicitly boxed: 123
+//= Box, unbox, rebox: 456
+//TEST:END
+
 [id=locked]
 === `locked`
+
+The `locked(...)` method works exactly like the <<synchronized>> method,
+except that it operates on `java.util.concurrent.locks.Lock` instead of an object monitor.
+
+//TEST:BEGIN
+.Example of `locked`
+[source,java]
+----
+import java.nio.file.Path;
+import java.util.concurrent.locks.ReentrantLock;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class LockedExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Locked", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar lock = b0.localVar("lock", b0.new_(ReentrantLock.class));
+                    b0.locked(lock, b1 -> {
+                        b1.printf("This is inside the lock");
+                    });
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Locked
+//= This is inside the lock
+//TEST:END
+
 
 [id=fences]
 === Fences
 
+When writing advanced concurrent code, it is sometimes necessary to emit an explicit fence.
+The following fence types are supported:
+
+* `loadLoadFence()` - equivalent to `VarHandle.loadLoadFence()`
+* `storeStoreFence()` - equivalent to `VarHandle.storeStoreFence()`
+* `acquireFence()` - equivalent to `VarHandle.acquireFence()`
+* `releaseFence()` - equivalent to `VarHandle.releaseFence()`
+* `fullFence()` - equivalent to `VarHandle.fullFence()`
+* `reachabilityFence(...)` - equivalent to `Reference.reachabilityFence(...)`
+
 [id=wrappers]
 == Object wrappers
 
-(TODO list them)
+Gizmo provides operation wrappers around expressions of common object types to allow for a more
+fluent and readable invocation style.
+The methods to instantiate the wrappers start with `with` and accept the receiver expression.
 
-[id=generic-type]
+Object wrappers are not normally able to be reused since they directly wrap their expressions,
+and are bound to the block which created them.
+
+//TEST:BEGIN
+.Example of object wrappers
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LocalVar;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class OpsExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.class_("Ops", cc -> {
+            cc.staticMethod("main", mc -> {
+                ParamVar args = mc.parameter("args", String[].class);
+                mc.body(b0 -> {
+                    LocalVar arg = b0.localVar("arg", args.elem(0));
+                    // b0.invokeVirtual(MD_String.length, arg);
+                    b0.printf("Argument length is %d%n", b0.withString(arg).length());
+                    // b0.invokeVirtual(MD_Object.getClass, arg);
+                    b0.printf("Argument type is %s%n", b0.withObject(arg).getClass_());
+                    // b0.invokeVirtual(MD_String.concat, arg, Const.of(...));
+                    b0.printf("Improved argument is %s%n", b0.withString(arg).concat(Const.of("... but better")));
+                    b0.return_();
+                });
+            });
+        });
+    }
+}
+----
+//TEST:RUN Ops foobar
+//= Argument length is 6
+//= Argument type is class java.lang.String
+//= Improved argument is foobar... but better
+//TEST:END
+
+[id=generics]
 == Generic types and type annotations
 
-[id=building-generic-types]
-=== Building generic types
+A generated element may need to have (possibly annotated) generic type information.
+This may be due to a generated class needing to interact with `javac`,
+or because of a framework that will consume the class.
 
-[id=type-variables]
-=== Adding type variables
+Gizmo provides mechanisms to insert generic types in places where the JVM
+supports generic type information and/or type annotations in a way that
+naturally integrates with the Gizmo type system.
+Methods which accept a type in the form of `ClassDesc` and/or `Class<?>`,
+but which also support generic or annotated types,
+generally have an overloaded variant which accepts a `GenericType` instead.
 
-[id=debugging]
-== Debugging tips
+[id=generic-types]
+=== Generic type representation
 
-[id=source-file-line]
-=== Adding source file name and line numbers
+Generic types are represented by the `GenericType` class.
+A `GenericType` instance may be annotated with type annotations, and
+(depending on its type) may contain type arguments.
+If a generic type reflects a class and does not contain type annotations
+or type arguments, then it will generally be omitted from the target class
+file for efficiency reasons.
+
+The `GenericType` class has several subclasses to represent the different kinds
+of generic type:
+
+* `GenericType` - the base type
+** `GenericType.OfPrimitive` - representing primitive types
+** `GenericType.OfReference` - the base type of generic referenceable types
+*** `GenericType.OfArray` - representing all generic array types
+*** `GenericType.OfThrows` - the base type of all generic types that can appear in a `throws` declaration
+**** `GenericType.OfClass` - the base type of all class generic types, which may have type arguments
+***** `GenericType.OfInnerClass` - representing inner class types
+***** `GenericType.OfRootClass` - representing top-level and static nested class types
+**** `GenericType.OfTypeVariable` - representing type variables
+
+All `GenericType` subclasses are annotatable.
+
+[id=type-arguments]
+=== Type argument representation
+
+Type arguments are represented by instances of `TypeArgument`, which may
+represent exact or wildcard types.
+There are subclasses to represent each kind of `TypeArgument`:
+
+* `TypeArgument` - the base type
+** `TypeArgument.OfExact` - a type argument of one exact type, which must be a `GenericType.OfReference`
+** `TypeArgument.OfWildcard` - the base type of all wildcard type argument types; wildcard types may be annotated
+*** `TypeArgument.OfExtends` - a type argument with an upper bound, which must be a `GenericType.OfReference`; for example: `? extends CharSequence`
+*** `TypeArguments.OfSuper` - a type argument with a lower bound, which must be a `GenericType.OfReference`; for example: `? super String`
+*** `TypeArguments.OfUnbounded` - the unbounded type argument (`?`)
+
+Additionally, there is an interface `TypeArgument.OfTyped` which is implemented by the two bounded wildcard types and by `OfExact`, indicating that the type argument has a real-typed bound.
+
+NOTE: While the Java language makes no distinction between a wildcard with no bound (`?`) and a wildcard with an `Object`-typed upper bound (`? extends Object`), the JVM specification does make such a distinction. Furthermore, the Java compiler `javac` will emit different attribute content in either case.
+
+[id=constructing-generic-types]
+=== Constructing generic types
+
+Instances of `GenericType`, are built
+using factory methods found on that class,
+or by creating derived instances using instance methods
+which yield new instances.
+Instances of `GenericType` are themselves immutable.
+
+Like `GenericType`, instances of `TypeArgument` are instantiated using
+factory methods or by acquiring derived instances from existing instances.
+
+//TEST:BEGIN
+.Example of constructing a complex generic type
+[source,java]
+----
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.List;
+import java.util.Map;
+
+import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.TypeArgument;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE_USE)
+@interface Silly {
+    int silliness() default 1;
+}
+
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.TYPE_USE)
+@interface Serious {
+    int seriousness() default 1;
+}
+
+public class GenericTypeExample {
+    public static void main(String[] args) {
+        // simple type: @Serious int
+        GenericType.OfPrimitive seriousInt = GenericType.ofPrimitive(int.class).withAnnotation(Serious.class);
+        // array type: @Serious int @Silly []
+        GenericType.OfArray sillyArraySeriousInt = seriousInt.arrayType().withAnnotation(Silly.class);
+        // simple type: @Silly String
+        GenericType.OfClass sillyString = GenericType.ofClass(String.class).withAnnotation(Silly.class);
+        // type bound: @Serious(seriousness = 2) ? extends @Silly String
+        TypeArgument.OfExtends extendsSillyString =
+                TypeArgument.ofExtends(sillyString).withAnnotation(Serious.class, ac -> ac.add(Serious::seriousness, 2));
+        // type: @Silly List<@Serious(seriousness = 2) ? extends @Silly String
+        GenericType.OfClass sillyList =
+                GenericType.ofClass(List.class).withAnnotation(Silly.class).withArguments(List.of(extendsSillyString));
+        // construct the following complex type:
+        // Map<@Silly List<@Serious(seriousness = 2) ? extends @Silly String>, @Serious int @Silly []>
+        GenericType.OfClass mapType = GenericType.ofClass(Map.class)
+            .withArguments(List.of(
+                TypeArgument.ofExact(sillyList),
+                TypeArgument.ofExact(sillyArraySeriousInt)
+            ));
+        System.out.printf("Our map type is: %s%n", mapType);
+    }
+}
+----
+//TEST:OUTPUT GenericTypeExample
+//= Our map type is: java.util.Map<java.util.@Silly List<@Serious(seriousness=2) ? extends java.lang.@Silly String>, @Serious int @Silly []>
+//TEST:END
+
+[id=type-parameters]
+=== Adding type parameters
+
+Classes and methods may define type parameters, optionally with bounds,
+and then use those type parameters as generic types.
+
+//TEST:BEGIN
+.Example of a class with type parameters
+[source,java]
+----
+import static io.quarkus.gizmo2.desc.Descs.*;
+
+import java.nio.file.Path;
+import java.util.List;
+
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.GenericType;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.ParamVar;
+import io.quarkus.gizmo2.TypeArgument;
+import io.quarkus.gizmo2.desc.MethodDesc;
+
+public class TypeParamExample {
+    public static void main(String[] ignored) {
+        Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
+        gizmo.interface_("CharSequenceList", cc -> {
+            GenericType.OfTypeVariable tee = cc.typeParameter("T", tpc -> tpc.setFirstBound(GenericType.ofClass(CharSequence.class)));
+            cc.extends_(GenericType.ofClass(List.class).withArguments(List.of(
+                TypeArgument.ofExact(tee)
+            )));
+        });
+    }
+}
+----
+//TEST:COMPILE
+//TEST:END

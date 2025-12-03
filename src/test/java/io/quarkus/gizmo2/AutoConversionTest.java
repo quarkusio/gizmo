@@ -53,13 +53,13 @@ public class AutoConversionTest {
                 mc.returning(String.class);
                 mc.body(bc -> {
                     LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(a));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(b));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(c));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(c));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(d));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(d));
                     bc.return_(bc.withObject(result).toString_());
                 });
             });
@@ -93,9 +93,9 @@ public class AutoConversionTest {
                 mc.returning(String.class);
                 mc.body(bc -> {
                     LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(a));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(b));
                     bc.return_(bc.withObject(result).toString_());
                 });
             });
@@ -128,9 +128,9 @@ public class AutoConversionTest {
                 mc.returning(String.class);
                 mc.body(bc -> {
                     LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(a));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(b));
                     bc.return_(bc.withObject(result).toString_());
                 });
             });
@@ -164,9 +164,9 @@ public class AutoConversionTest {
                 mc.returning(String.class);
                 mc.body(bc -> {
                     LocalVar result = bc.localVar("result", bc.new_(StringBuilder.class));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(a));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(a));
                     bc.invokeVirtual(MD_StringBuilder_append, result, Const.of("_"));
-                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.objToString(b));
+                    bc.invokeVirtual(MD_StringBuilder_append, result, bc.exprToString(b));
                     bc.return_(bc.withObject(result).toString_());
                 });
             });
