@@ -4330,3 +4330,314 @@ public class TypeParamExample {
 ----
 //TEST:COMPILE
 //TEST:END
+
+[id=gizmo1]
+== Migration from Gizmo 1
+
+The differences between Gizmo 1 and Gizmo 2 do not end on the API level.
+There are conceptual differences that make the transition less of a mechanical process and more of a creative endeavor.
+
+This chapter lists those differences and illustrates them with some good and bad code patterns.
+
+=== Values and variables
+
+To represent values, Gizmo 1 has the venerable `ResultHandle` class, which is almost always a local variable (not absolutely always, which is why the API doesn't let you assign to it; you have to use `AssignableResultHandle` for that).
+This means you don't really have to care about order in which you produce values or about using them multiple times -- everything just works.
+There's obvious overhead though: for each use of the value, it needs to be loaded from the variable to the stack.
+
+On the other hand, Gizmo 2 represents values as ``Expr``s, which are very often not local variables.
+An `Expr` is a value that is, at the time of its creation, on top of the stack, nothing more.
+This means the order of producing values suddenly matters and they may not be reused!
+To create a local variable (`LocalVar`) out of an expression, you have to call `BlockCreator.localVar()`.
+
+In Gizmo 2, only `Var`, `Const` and `This` expressions are reusable and order of their creation doesn't matter.
+All other kinds of ``Expr``s _may not_ be reused and must be created in the correct order.
+
+As a general rule, you should use plain ``Expr``s in a single Java expression, such as a method call on the `BlockCreator`.
+
+*DO:*
+
+[source,java]
+----
+BlockCreator bc = ...;
+
+bc.printf("1 + 2 * 3 / 4 = %s", bc.exprToString(
+        bc.add(Const.of(1), bc.div(bc.mul(Const.of(2), Const.of(3)), Const.of(4)))));
+----
+
+However, when you have to create a Java local variable, it should usually _not_ be an `Expr`, but a `LocalVar`.
+
+*DO:*
+
+[source,java]
+----
+BlockCreator bc = ...;
+
+LocalVar interim = bc.localVar("interim",
+        bc.add(Const.of(1), bc.div(bc.mul(Const.of(2), Const.of(3)), Const.of(4))));
+
+bc.printf("1 + 2 * 3 / 4 = %s", bc.exprToString(interim));
+----
+
+*DON'T:*
+
+[source,java]
+----
+BlockCreator bc = ...;
+
+Expr interim = bc.add(Const.of(1), bc.div(bc.mul(Const.of(2), Const.of(3)), Const.of(4)));
+
+bc.printf("1 + 2 * 3 / 4 = %s", bc.exprToString(interim));
+----
+
+Note that this last example would work just fine.
+However, if you created _another_ `Expr` between `interim` and the call to `printf()`, the code would no longer work and you would get an exception.
+
+*DON'T:*
+
+[source,java]
+----
+BlockCreator bc = ...;
+
+Expr interim = bc.add(Const.of(1), bc.div(bc.mul(Const.of(2), Const.of(3)), Const.of(4)));
+
+Expr somethingElse = bc.add(Const.of(5), Const.of(6));
+
+bc.printf("1 + 2 * 3 / 4 = %s", bc.exprToString(interim));
+----
+
+This is because, as mentioned above, values that are not reusable are simply stored on the stack.
+Whatever is on the top of the stack must be used first.
+If you do store ``Expr``s into variables, you're leaning into an advanced territory and Gizmo at least verifies that you follow the "stack-like" usage policy.
+
+=== Callbacks should be pure functions
+
+The Gizmo 2 API uses callbacks heavily: `Gizmo.class_()` accepts a callback, `ClassCreator.method()` accepts a callback, `MethodCreator.body()` accepts a callback, and so on.
+You should remember that these callbacks _may be invoked multiple times_.
+This may happen due to the ClassFile API decisions, but the most common case is when generating `try`/`finally`: the callback passed to `finally_()` will be called once for each exit point in the `try_()` body.
+Therefore, all these callbacks should be pure functions, which means:
+
+- they should only take immutable inputs from the outside
+- they should not have side effects
+
+*DO:*
+
+[source,java]
+----
+BlockCreator b0 = ...;
+
+b0.try_(tc -> {
+    tc.body(b1 -> {
+        ...
+    });
+    tc.finally_(b1 -> {
+        ...
+    });
+});
+----
+
+*DON'T:*
+
+[source,java]
+----
+AtomicInteger counter = new AtomicInteger();
+
+BlockCreator b0 = ...;
+
+b0.try_(tc -> {
+    tc.body(b1 -> {
+        ...
+    });
+    tc.finally_(b1 -> {
+        ...
+        counter.incrementAndGet();
+    });
+});
+
+if (counter.get() > 1) {
+    ...
+}
+----
+
+Side effects are often not that obvious, but they must be avoided nevertheless!
+
+=== Explicit type casts
+
+Gizmo 2 does some type conversions automatically:
+
+* boxing (e.g. from `int` to `Integer` or to `Number`)
+* unboxing (e.g. from `Integer` to `int`)
+* primitive widening (e.g. from `int` to `long`)
+* reference narrowing, but only from `Object`
+* combinations
+** primitive widening followed by boxing (e.g. from `int` through `long` to `Long`)
+** unboxing followed by primitive widening (e.g. from `Integer` through `int` to `long`)
+** reference narrowing (only from `Object`) followed by unboxing (e.g. from `Object` through `Integer` to `int`)
+
+All other type conversions you have to do explicitly.
+This is in contrast to Gizmo 1, where references were always cast automatically.
+
+*DO:*
+
+[source,java]
+----
+BlockCreator b0 = ...;
+
+// call a method that declares a return type of `Number`
+LocalVar number = b0.localVar("number", b0.invokeVirtual(...));
+
+// but we know it actually is an `Integer`
+LocalVar integer = b0.localVar("integer", b0.cast(number, Integer.class));
+
+// call a method that declares a parameter type of `Integer`
+b0.invokeVirtual(..., integer);
+----
+
+*DON'T:*
+
+[source,java]
+----
+BlockCreator b0 = ...;
+
+// call a method that declares a return type of `Number`
+LocalVar number = b0.localVar("number", b0.invokeVirtual(...));
+
+// call a method that declares a parameter type of `Integer`
+b0.invokeVirtual(..., number);
+----
+
+=== Explicit captures in lambdas
+
+When generating lambda expressions, you _must not_ use variables that belong to enclosing scopes.
+Instead, you _have to capture them explicitly_ and use the captured variables instead.
+
+This sounds super opaque, so let's illustrate with classic Java code first.
+
+[source,java]
+----
+AtomicInteger counter = new AtomicInteger();
+
+List<String> list = List.of("foo", "bar", "baz", "quux");
+list.forEach(element -> {
+    ... process element ...
+    counter.incrementAndGet();
+});
+----
+
+In this example, the `counter` variable is _captured_ in the lambda expression passed to `list.forEach()`.
+The capture is _implicit_: you don't have to do anything extra, the Java compiler figures it all out for you.
+The same happened in Gizmo 1: if you were creating a lambda expression (an anonymous class, in fact), you could use ``ResultHandle``s from the outside and Gizmo 1 figured it all out.
+
+In Gizmo 2, captures are explicit.
+At the beginning of creating a lambda, before creating its body, before even declaring its parameters, you have to capture all variables used in the lambda.
+
+Assuming:
+
+[source,java]
+----
+MethodDesc MD_Iterable_forEach = MethodDesc.of(Iterable.class,
+        "forEach", void.class, Consumer.class);
+MethodDesc MD_AtomicInteger_incrementAndGet = MethodDesc.of(AtomicInteger.class,
+        "incrementAndGet", int.class);
+
+BlockCreator b0 = ...;
+
+LocalVar counter = b0.localVar("counter", b0.new_(AtomicInteger.class)).
+
+LocalVar list = b0.localVar("list",
+        b0.listOf(Const.of("foo"), Const.of("bar"), Const.of("baz"), Const.of("quux")));
+----
+
+*DO:*
+
+[source,java]
+----
+b0.invokeInterface(MD_forEach, list, b0.lambda(Consumer.class, lc -> {
+    Var capturedCounter = lc.capture("counter", counter);
+    ParamVar element = lc.parameter("element", 0);
+    lc.body(b1 -> {
+        ... process element ...
+        // using `capturedCounter` correctly
+        b1.invokeVirtual(MD_AtomicInteger_incrementAndGet, capturedCounter);
+    });
+}));
+----
+
+*DON'T:*
+
+[source,java]
+----
+b0.invokeInterface(MD_forEach, list, b0.lambda(Consumer.class, lc -> {
+    ParamVar element = lc.parameter("element", 0);
+    lc.body(b1 -> {
+        ... process element ...
+        // using `counter` incorrectly
+        b1.invokeVirtual(MD_AtomicInteger_incrementAndGet, counter);
+    });
+}));
+----
+
+=== Methods that return `void`
+
+If you generate a method that returns `void`, you must either call `return_()` without any parameter, or pass `Const.ofVoid()` to `return_()`.
+Attempting to return a value from a `void`-returning method leads to an exception.
+
+This is in contrast to Gizmo 1, which automatically drops such value.
+
+*DO:*
+
+[source,java]
+----
+ClassCreator cc = ...;
+
+ClassDesc returnType = ...;
+
+cc.method("doSomething", mc -> {
+    mc.returning(returnType);
+    mc.body(bc -> {
+        Expr value = ... do something ...;
+        bc.return_(mc.isVoidReturn() ? Const.ofVoid() : value);
+    });
+});
+----
+
+*DON'T:*
+
+[source,java]
+----
+ClassCreator cc = ...;
+
+ClassDesc returnType = ...;
+
+cc.method("doSomething", mc -> {
+    mc.returning(returnType);
+    mc.body(bc -> {
+        Expr value = ... do something ...;
+        bc.return_(value);
+    });
+});
+----
+
+=== Invoking inherited methods
+
+The bytecode instruction `invokespecial` is used to generate a "special" invocation.
+This is most often used to invoke an inherited method, similarly to:
+
+[source,java]
+----
+@Override
+public void doSomething() {
+    super.doSomething();
+    ... do something else ...
+}
+----
+
+Both Gizmo 1 and Gizmo 2 have a method to generate the `invokespecial` instruction.
+In Gizmo 1, that is `invokeSpecialMethod()`, while in Gizmo 2, it is `invokeSpecial()`.
+
+However, in Gizmo 1, `invokeSpecialMethod()` always assumes that the method is inherited from a _class_ and you have to use `invokeSpecialInterfaceMethod()` if the method is inherited from an _interface_.
+
+In Gizmo 2, the `invokeSpecial()` method makes no such assumption.
+Instead, it inspects the descriptor of the method to invoke: if it is a `ClassMethodDesc`, the method is inherited from a class, and if it is an `InterfaceMethodDesc`, the method is inherited from an interface.
+
+Pay extra attention to this whenever you're rewriting an `invokeSpecialMethod()` call from Gizmo 1!
