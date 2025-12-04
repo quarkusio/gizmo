@@ -2,7 +2,7 @@
  * A simplified bytecode generator.
  */
 module io.quarkus.gizmo2 {
-    requires io.github.dmlloyd.classfile;
+    requires io.smallrye.classfile;
     requires io.smallrye.common.constraint;
     requires io.smallrye.common.resource;
 

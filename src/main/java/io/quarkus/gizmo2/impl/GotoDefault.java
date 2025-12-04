@@ -2,9 +2,9 @@ package io.quarkus.gizmo2.impl;
 
 import java.util.Objects;
 
-import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.SwitchCreator;
+import io.smallrye.classfile.Label;
 
 class GotoDefault extends Goto {
     private final SwitchCreator switch_;

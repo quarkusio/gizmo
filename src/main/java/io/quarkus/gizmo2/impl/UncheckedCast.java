@@ -2,9 +2,9 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.smallrye.classfile.CodeBuilder;
 
 final class UncheckedCast extends Cast {
 

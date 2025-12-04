@@ -4,11 +4,11 @@ import java.lang.constant.ClassDesc;
 import java.util.Comparator;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.instruction.SwitchCase;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.instruction.SwitchCase;
 
 sealed abstract class PerfectHashSwitchCreatorImpl<C extends ConstImpl> extends SwitchCreatorImpl<C>
         permits EnumOrdinalSwitchCreatorImpl, IntSwitchCreatorImpl {

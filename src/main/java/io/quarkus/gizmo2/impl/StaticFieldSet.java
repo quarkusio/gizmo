@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 final class StaticFieldSet extends Item {
     private final StaticFieldVarImpl staticFieldVar;

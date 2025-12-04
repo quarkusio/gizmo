@@ -11,10 +11,10 @@ import java.lang.constant.DirectMethodHandleDesc;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class StaticFinalFieldConst extends ConstImpl {
     private static final DirectMethodHandleDesc BSM_GET_STATIC_FINAL2 = ConstantDescs.ofConstantBootstrap(CD_ConstantBootstraps,

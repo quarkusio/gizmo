@@ -1,10 +1,10 @@
 package io.quarkus.gizmo2.impl;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.StaticFieldVar;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class StaticFieldVarImpl extends AssignableImpl implements StaticFieldVar {
     private final FieldDesc desc;

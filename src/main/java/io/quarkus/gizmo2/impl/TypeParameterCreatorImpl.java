@@ -9,12 +9,12 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.List;
 import java.util.Optional;
 
-import io.github.dmlloyd.classfile.Annotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.TypeParameterCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.Annotation;
 import io.smallrye.common.constraint.Assert;
 
 public final class TypeParameterCreatorImpl extends AnnotatableCreatorImpl implements TypeParameterCreator {

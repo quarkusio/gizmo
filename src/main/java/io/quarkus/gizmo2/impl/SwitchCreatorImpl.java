@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
@@ -19,6 +18,7 @@ import io.quarkus.gizmo2.creator.CaseCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 import io.quarkus.gizmo2.impl.constant.VoidConst;
+import io.smallrye.classfile.CodeBuilder;
 
 public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item implements SwitchCreator
         permits HashSwitchCreatorImpl, PerfectHashSwitchCreatorImpl {

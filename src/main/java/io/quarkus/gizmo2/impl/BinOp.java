@@ -11,9 +11,9 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
+import io.smallrye.classfile.CodeBuilder;
 
 final class BinOp extends Item {
     private final Item a;

@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
+import static io.smallrye.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 
 import java.lang.annotation.RetentionPolicy;
@@ -15,26 +15,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.MethodBuilder;
-import io.github.dmlloyd.classfile.MethodSignature;
-import io.github.dmlloyd.classfile.Signature;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.TypeKind;
-import io.github.dmlloyd.classfile.attribute.ExceptionsAttribute;
-import io.github.dmlloyd.classfile.attribute.MethodParameterInfo;
-import io.github.dmlloyd.classfile.attribute.MethodParametersAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
-import io.github.dmlloyd.classfile.attribute.StackMapTableAttribute;
-import io.github.dmlloyd.classfile.constantpool.ClassEntry;
-import io.github.dmlloyd.classfile.instruction.LocalVariable;
-import io.github.dmlloyd.classfile.instruction.LocalVariableType;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.GenericTypes;
 import io.quarkus.gizmo2.ParamVar;
@@ -44,6 +24,26 @@ import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ConstructorCreator;
 import io.quarkus.gizmo2.creator.ExecutableCreator;
 import io.quarkus.gizmo2.creator.ParamCreator;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.MethodBuilder;
+import io.smallrye.classfile.MethodSignature;
+import io.smallrye.classfile.Signature;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.TypeKind;
+import io.smallrye.classfile.attribute.ExceptionsAttribute;
+import io.smallrye.classfile.attribute.MethodParameterInfo;
+import io.smallrye.classfile.attribute.MethodParametersAttribute;
+import io.smallrye.classfile.attribute.RuntimeInvisibleParameterAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleParameterAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.SignatureAttribute;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
+import io.smallrye.classfile.attribute.StackMapTableAttribute;
+import io.smallrye.classfile.constantpool.ClassEntry;
+import io.smallrye.classfile.instruction.LocalVariable;
+import io.smallrye.classfile.instruction.LocalVariableType;
 
 public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl implements ExecutableCreator
         permits ConstructorCreatorImpl, MethodCreatorImpl {

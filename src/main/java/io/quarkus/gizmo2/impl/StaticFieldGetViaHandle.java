@@ -7,9 +7,9 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.smallrye.classfile.CodeBuilder;
 
 final class StaticFieldGetViaHandle extends Item {
     private final StaticFieldVarImpl staticFieldVar;

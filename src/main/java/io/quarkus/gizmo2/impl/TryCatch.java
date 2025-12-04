@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
 
 /**
  * A {@code try} block with exception catches.

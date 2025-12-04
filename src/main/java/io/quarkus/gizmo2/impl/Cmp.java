@@ -18,10 +18,10 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
 
 final class Cmp extends Item {
 

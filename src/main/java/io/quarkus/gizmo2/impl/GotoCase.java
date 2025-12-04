@@ -2,10 +2,10 @@ package io.quarkus.gizmo2.impl;
 
 import java.util.Objects;
 
-import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.SwitchCreator;
+import io.smallrye.classfile.Label;
 
 class GotoCase extends Goto {
     private final SwitchCreator switch_;

@@ -5,11 +5,11 @@ import java.lang.constant.ClassDesc;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.TypeAnnotation;
 
 final class CheckCast extends Cast {
     private Label label;

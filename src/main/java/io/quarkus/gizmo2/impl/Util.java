@@ -22,16 +22,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.AnnotationElement;
-import io.github.dmlloyd.classfile.AnnotationValue;
-import io.github.dmlloyd.classfile.Signature;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.AnnotationElement;
+import io.smallrye.classfile.AnnotationValue;
+import io.smallrye.classfile.Signature;
+import io.smallrye.classfile.TypeAnnotation;
 import io.smallrye.common.constraint.Assert;
 import sun.reflect.ReflectionFactory;
 
@@ -78,7 +78,7 @@ public final class Util {
     static {
         try {
             actualKind = MethodHandles.privateLookupIn(TypeKind.class, MethodHandles.lookup()).findGetter(TypeKind.class,
-                    "actualKind", io.github.dmlloyd.classfile.TypeKind.class);
+                    "actualKind", io.smallrye.classfile.TypeKind.class);
             MethodHandles.Lookup genericTypeLookup = MethodHandles.privateLookupIn(GenericType.class, MethodHandles.lookup());
             GenericType_computeAnnotations = genericTypeLookup.findVirtual(
                     GenericType.class, "computeAnnotations", MethodType.methodType(
@@ -103,9 +103,9 @@ public final class Util {
         }
     }
 
-    public static io.github.dmlloyd.classfile.TypeKind actualKindOf(TypeKind kind) {
+    public static io.smallrye.classfile.TypeKind actualKindOf(TypeKind kind) {
         try {
-            return (io.github.dmlloyd.classfile.TypeKind) actualKind.invokeExact(kind);
+            return (io.smallrye.classfile.TypeKind) actualKind.invokeExact(kind);
         } catch (RuntimeException | Error e) {
             throw e;
         } catch (Throwable t) {
@@ -157,7 +157,7 @@ public final class Util {
     private static String callerOutsideGizmo() {
         return SW.walk(stream -> stream
                 .filter(it -> !it.getClassName().startsWith("io.quarkus.gizmo2")
-                        && !it.getClassName().startsWith("io.github.dmlloyd.classfile")
+                        && !it.getClassName().startsWith("io.smallrye.classfile")
                         || it.getClassName().endsWith("Test"))
                 .findFirst()
                 .map(it -> it.getClassName() + "." + it.getMethodName()

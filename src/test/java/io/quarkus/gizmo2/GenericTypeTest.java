@@ -17,19 +17,19 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.Attributes;
-import io.github.dmlloyd.classfile.ClassModel;
-import io.github.dmlloyd.classfile.CodeModel;
-import io.github.dmlloyd.classfile.FieldModel;
-import io.github.dmlloyd.classfile.MethodModel;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.LocalVariableTypeInfo;
-import io.github.dmlloyd.classfile.attribute.LocalVariableTypeTableAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.Attributes;
+import io.smallrye.classfile.ClassModel;
+import io.smallrye.classfile.CodeModel;
+import io.smallrye.classfile.FieldModel;
+import io.smallrye.classfile.MethodModel;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.attribute.LocalVariableTypeInfo;
+import io.smallrye.classfile.attribute.LocalVariableTypeTableAttribute;
+import io.smallrye.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.SignatureAttribute;
 
 public final class GenericTypeTest {
 

@@ -7,11 +7,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.TypeKind;
 
 /**
  * A {@code try}-{@code finally} block.

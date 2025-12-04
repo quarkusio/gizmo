@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.TypeAnnotation;
 
 final class InstanceOf extends Item {
     private final Item input;

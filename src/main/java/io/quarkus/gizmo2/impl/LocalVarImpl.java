@@ -2,13 +2,13 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.LocalVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.TypeKind;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class LocalVarImpl extends AssignableImpl implements LocalVar {
     private final String name;

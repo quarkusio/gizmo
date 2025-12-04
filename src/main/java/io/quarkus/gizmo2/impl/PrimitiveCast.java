@@ -2,9 +2,9 @@ package io.quarkus.gizmo2.impl;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.TypeKind;
 
 final class PrimitiveCast extends Cast {
 

@@ -3,11 +3,11 @@ package io.quarkus.gizmo2.impl;
 import java.lang.constant.ClassDesc;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.ParamVar;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     private final String name;

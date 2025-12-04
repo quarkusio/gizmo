@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
 
 abstract class Goto extends Item {
     Goto() {

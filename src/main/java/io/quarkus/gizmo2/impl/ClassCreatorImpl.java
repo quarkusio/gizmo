@@ -7,7 +7,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.reflect.Modifier;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.ClassBuilder;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
@@ -21,6 +20,7 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.ClassBuilder;
 
 public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
     public ClassCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {

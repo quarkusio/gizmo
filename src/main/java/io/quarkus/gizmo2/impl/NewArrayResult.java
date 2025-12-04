@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 public class NewArrayResult extends Item {
     private final NewEmptyArray newEmptyArray;

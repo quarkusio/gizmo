@@ -5,12 +5,12 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.attribute.ConstantValueAttribute;
-import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.attribute.ConstantValueAttribute;
+import io.smallrye.classfile.attribute.SignatureAttribute;
 import io.smallrye.common.constraint.Assert;
 
 public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator

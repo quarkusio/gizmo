@@ -7,10 +7,10 @@ import java.lang.constant.ClassDesc;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.IntConst;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.TypeKind;
 
 final class NewEmptyArray extends Item {
     private final Item size;

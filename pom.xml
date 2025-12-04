@@ -47,7 +47,7 @@
         <releaseProfiles>release</releaseProfiles>
         <signTag>false</signTag><!-- we don't sign tags as we don't want GPG secrets available in repository -->
         
-        <version.classfile>25.1</version.classfile>
+        <version.classfile>26.cr1</version.classfile>
         <version.junit>6.0.1</version.junit>
         <version.smallrye-common>2.14.0</version.smallrye-common>
 
@@ -70,7 +70,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.dmlloyd</groupId>
+            <groupId>io.smallrye.classfile</groupId>
             <artifactId>jdk-classfile-backport</artifactId>
             <version>${version.classfile}</version>
         </dependency>

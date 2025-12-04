@@ -23,16 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.ClassModel;
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.MethodModel;
-import io.github.dmlloyd.classfile.Opcode;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.InnerClassInfo;
-import io.github.dmlloyd.classfile.attribute.InnerClassesAttribute;
-import io.github.dmlloyd.classfile.attribute.NestHostAttribute;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
@@ -54,6 +44,16 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
 import io.quarkus.gizmo2.impl.constant.IntConst;
 import io.quarkus.gizmo2.impl.constant.NullConst;
+import io.smallrye.classfile.ClassFile;
+import io.smallrye.classfile.ClassModel;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.MethodModel;
+import io.smallrye.classfile.Opcode;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.attribute.InnerClassInfo;
+import io.smallrye.classfile.attribute.InnerClassesAttribute;
+import io.smallrye.classfile.attribute.NestHostAttribute;
 import io.smallrye.common.constraint.Assert;
 
 /**

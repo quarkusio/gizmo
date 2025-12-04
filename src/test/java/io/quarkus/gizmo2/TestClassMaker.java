@@ -25,10 +25,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.ClassFile;
-import io.github.dmlloyd.classfile.ClassHierarchyResolver;
-import io.github.dmlloyd.classfile.ClassModel;
 import io.quarkus.gizmo2.impl.Util;
+import io.smallrye.classfile.ClassFile;
+import io.smallrye.classfile.ClassHierarchyResolver;
+import io.smallrye.classfile.ClassModel;
 
 /**
  * Can accept arbitrarily many classes, but note that the following helper methods

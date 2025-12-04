@@ -6,8 +6,6 @@ import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.ClassFile;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.AbstractMethodCreator;
@@ -16,6 +14,8 @@ import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.ClassBuilder;
+import io.smallrye.classfile.ClassFile;
 
 public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
 

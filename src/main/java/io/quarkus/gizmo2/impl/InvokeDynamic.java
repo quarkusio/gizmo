@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
+import io.smallrye.classfile.CodeBuilder;
 
 final class InvokeDynamic extends Item {
     private final List<? extends Expr> args;

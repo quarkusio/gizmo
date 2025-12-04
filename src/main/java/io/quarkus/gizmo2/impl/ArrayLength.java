@@ -5,8 +5,8 @@ import static java.lang.constant.ConstantDescs.*;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
 
 final class ArrayLength extends Item {
     private final Item item;

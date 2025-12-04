@@ -12,7 +12,6 @@ import java.lang.constant.MethodTypeDesc;
 import java.lang.invoke.VarHandle;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.InvokeKind;
 import io.quarkus.gizmo2.TypeKind;
@@ -23,6 +22,7 @@ import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.Item;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
+import io.smallrye.classfile.CodeBuilder;
 
 public abstract non-sealed class ConstImpl extends Item implements Const {
     ConstImpl(final ClassDesc type) {

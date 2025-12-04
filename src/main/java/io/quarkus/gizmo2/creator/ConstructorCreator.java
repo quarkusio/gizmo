@@ -1,8 +1,8 @@
 package io.quarkus.gizmo2.creator;
 
-import io.github.dmlloyd.classfile.extras.constant.ExtraConstantDescs;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.impl.ConstructorCreatorImpl;
+import io.smallrye.classfile.extras.constant.ExtraConstantDescs;
 
 /**
  * A creator for an instance constructor.
