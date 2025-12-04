@@ -1,13 +1,12 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
+import static io.smallrye.classfile.ClassFile.*;
 
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.ClassBuilder;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.InstanceFieldVar;
@@ -21,6 +20,7 @@ import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.quarkus.gizmo2.creator.ModifierLocation;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.ClassBuilder;
 
 /**
  * A capturing class creator.

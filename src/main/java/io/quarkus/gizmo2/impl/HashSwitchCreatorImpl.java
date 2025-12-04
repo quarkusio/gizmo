@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeKind;
-import io.github.dmlloyd.classfile.instruction.SwitchCase;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.TypeKind;
+import io.smallrye.classfile.instruction.SwitchCase;
 
 /**
  * A hashing switch implementation.

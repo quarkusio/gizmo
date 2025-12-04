@@ -9,13 +9,13 @@ import java.lang.constant.ClassDesc;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 
-import io.github.dmlloyd.classfile.FieldBuilder;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.creator.FieldCreator;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.FieldBuilder;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.attribute.RuntimeInvisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 
 public abstract sealed class FieldCreatorImpl extends ModifiableCreatorImpl implements FieldCreator
         permits StaticFieldCreatorImpl, InstanceFieldCreatorImpl {

@@ -5,12 +5,12 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.instruction.LocalVariable;
-import io.github.dmlloyd.classfile.instruction.LocalVariableType;
 import io.quarkus.gizmo2.GenericType;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.instruction.LocalVariable;
+import io.smallrye.classfile.instruction.LocalVariableType;
 
 final class LocalVarAllocator extends Item {
     private final LocalVarImpl localVar;

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.EnumConst;
+import io.smallrye.classfile.CodeBuilder;
 
 /**
  * A switch over a single {@code enum} type by ordinal value.

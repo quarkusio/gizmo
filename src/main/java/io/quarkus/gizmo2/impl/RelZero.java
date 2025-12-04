@@ -6,11 +6,11 @@ import static java.lang.constant.ConstantDescs.CD_boolean;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
 
 final class RelZero extends Item {
     private final Item a;

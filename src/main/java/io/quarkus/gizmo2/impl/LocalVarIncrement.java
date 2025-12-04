@@ -1,8 +1,8 @@
 package io.quarkus.gizmo2.impl;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.impl.constant.IntBasedConst;
+import io.smallrye.classfile.CodeBuilder;
 
 final class LocalVarIncrement extends Item {
     private final LocalVarImpl localVar;

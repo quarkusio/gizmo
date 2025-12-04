@@ -3,9 +3,9 @@ package io.quarkus.gizmo2.impl;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.smallrye.classfile.CodeBuilder;
 
 /**
  * A node that yields a result value to the enclosing block.

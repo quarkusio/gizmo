@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.impl;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 /**
  * A no-operation node.

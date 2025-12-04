@@ -5,10 +5,10 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.TypeKind;
 
 final class Return extends Item {
     static final Return RETURN_VOID = new Return(ConstImpl.ofVoid());

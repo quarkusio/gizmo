@@ -4,7 +4,6 @@ import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.ClassFile;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.ModifierConfigurator;
@@ -13,6 +12,7 @@ import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.quarkus.gizmo2.creator.ModifierLocation;
+import io.smallrye.classfile.ClassFile;
 
 public final class GizmoImpl implements Gizmo {
     private static final int[] DEFAULTS = ModifierLocation.values.stream().mapToInt(ModifierLocation::defaultModifierBits)

@@ -3,7 +3,7 @@ package io.quarkus.gizmo2.impl;
 import java.lang.annotation.ElementType;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.Annotation;
+import io.smallrye.classfile.Annotation;
 
 public final class TypeAnnotatableCreatorImpl extends AnnotatableCreatorImpl {
 

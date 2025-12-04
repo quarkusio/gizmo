@@ -1,6 +1,6 @@
 package io.quarkus.gizmo2.creator;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
+import static io.smallrye.classfile.ClassFile.*;
 
 import java.util.List;
 import java.util.function.Consumer;

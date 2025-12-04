@@ -8,8 +8,8 @@ import java.lang.constant.MethodTypeDesc;
 import java.util.List;
 import java.util.ListIterator;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
 
 abstract class If extends Item {
     final Kind kind;

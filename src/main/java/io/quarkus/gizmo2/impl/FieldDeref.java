@@ -3,11 +3,11 @@ package io.quarkus.gizmo2.impl;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.MemoryOrder;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class FieldDeref extends AssignableImpl implements InstanceFieldVar {
     private final Item item;

@@ -17,13 +17,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.AnnotationElement;
-import io.github.dmlloyd.classfile.AnnotationValue;
-import io.github.dmlloyd.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.AnnotationElement;
+import io.smallrye.classfile.AnnotationValue;
+import io.smallrye.classfile.attribute.RuntimeInvisibleAnnotationsAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleAnnotationsAttribute;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class AnnotatableCreatorImpl implements AnnotatableCreator

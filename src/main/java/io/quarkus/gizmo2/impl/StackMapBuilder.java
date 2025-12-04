@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.attribute.StackMapFrameInfo;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
 import io.smallrye.common.constraint.Assert;
 
 /**

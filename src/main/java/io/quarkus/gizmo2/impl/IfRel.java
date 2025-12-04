@@ -6,7 +6,7 @@ import java.lang.constant.ClassDesc;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 final class IfRel extends If {
     final Item a, b;

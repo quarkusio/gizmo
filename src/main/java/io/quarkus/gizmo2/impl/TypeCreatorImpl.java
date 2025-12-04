@@ -1,7 +1,7 @@
 package io.quarkus.gizmo2.impl;
 
-import static io.github.dmlloyd.classfile.ClassFile.*;
 import static io.quarkus.gizmo2.desc.Descs.*;
+import static io.smallrye.classfile.ClassFile.*;
 import static io.smallrye.common.constraint.Assert.*;
 import static java.lang.constant.ConstantDescs.*;
 import static java.lang.invoke.MethodHandles.Lookup.ClassOption.*;
@@ -27,15 +27,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import io.github.dmlloyd.classfile.ClassBuilder;
-import io.github.dmlloyd.classfile.ClassSignature;
-import io.github.dmlloyd.classfile.Signature;
-import io.github.dmlloyd.classfile.TypeAnnotation;
-import io.github.dmlloyd.classfile.attribute.NestMembersAttribute;
-import io.github.dmlloyd.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
-import io.github.dmlloyd.classfile.attribute.SignatureAttribute;
-import io.github.dmlloyd.classfile.attribute.SourceFileAttribute;
-import io.github.dmlloyd.classfile.extras.reflect.ClassFileFormatVersion;
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Const;
@@ -58,6 +49,15 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.ClassBuilder;
+import io.smallrye.classfile.ClassSignature;
+import io.smallrye.classfile.Signature;
+import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.attribute.NestMembersAttribute;
+import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
+import io.smallrye.classfile.attribute.SignatureAttribute;
+import io.smallrye.classfile.attribute.SourceFileAttribute;
+import io.smallrye.classfile.extras.reflect.ClassFileFormatVersion;
 import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl implements TypeCreator

@@ -7,8 +7,8 @@ import java.lang.constant.ClassDesc;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeKind;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.TypeKind;
 
 final class ArrayStore extends Item {
     private final Item arrayExpr;

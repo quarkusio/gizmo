@@ -7,9 +7,9 @@ import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.TypeKind;
+import io.smallrye.classfile.CodeBuilder;
 
 final class Neg extends Item {
     private final Item a;

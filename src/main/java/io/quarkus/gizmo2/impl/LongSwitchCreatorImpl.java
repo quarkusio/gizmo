@@ -5,10 +5,10 @@ import static java.lang.constant.ConstantDescs.*;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.impl.constant.LongConst;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Label;
 
 /**
  * A switch over {@code long} values.

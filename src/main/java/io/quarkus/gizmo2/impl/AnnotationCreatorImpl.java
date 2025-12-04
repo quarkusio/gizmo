@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import io.github.dmlloyd.classfile.AnnotationElement;
-import io.github.dmlloyd.classfile.AnnotationValue;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
+import io.smallrye.classfile.AnnotationElement;
+import io.smallrye.classfile.AnnotationValue;
 
 public final class AnnotationCreatorImpl<A extends Annotation> implements AnnotationCreator<A> {
     /**
@@ -23,14 +23,14 @@ public final class AnnotationCreatorImpl<A extends Annotation> implements Annota
      * @return the constructed annotation (not {@code null})
      * @param <A> the annotation type
      */
-    static <A extends Annotation> io.github.dmlloyd.classfile.Annotation makeAnnotation(Class<A> type,
+    static <A extends Annotation> io.smallrye.classfile.Annotation makeAnnotation(Class<A> type,
             Consumer<AnnotationCreator<A>> builder) {
         checkNotNullParam("type", type);
         checkNotNullParam("builder", builder);
 
         AnnotationCreatorImpl<A> creator = new AnnotationCreatorImpl<>(type);
         builder.accept(creator);
-        return io.github.dmlloyd.classfile.Annotation.of(Util.classDesc(type), creator.elements);
+        return io.smallrye.classfile.Annotation.of(Util.classDesc(type), creator.elements);
     }
 
     /**
@@ -40,14 +40,14 @@ public final class AnnotationCreatorImpl<A extends Annotation> implements Annota
      * @param builder the builder for the annotation contents (must not be {@code null})
      * @return the constructed annotation (not {@code null})
      */
-    static io.github.dmlloyd.classfile.Annotation makeAnnotation(ClassDesc type,
+    static io.smallrye.classfile.Annotation makeAnnotation(ClassDesc type,
             Consumer<AnnotationCreator<Annotation>> builder) {
         checkNotNullParam("type", type);
         checkNotNullParam("builder", builder);
 
         AnnotationCreatorImpl<Annotation> creator = new AnnotationCreatorImpl<>(null);
         builder.accept(creator);
-        return io.github.dmlloyd.classfile.Annotation.of(type, creator.elements);
+        return io.smallrye.classfile.Annotation.of(type, creator.elements);
     }
 
     // The `annotationClass` field is `null` when the `ClassDesc` variant of `makeAnnotation()`

@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.Assignable;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Expr;
@@ -19,6 +17,8 @@ import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.InstanceFieldVar;
 import io.quarkus.gizmo2.Var;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.TypeAnnotation;
 
 /**
  * A single item in the program list of a {@linkplain BlockCreatorImpl block}.

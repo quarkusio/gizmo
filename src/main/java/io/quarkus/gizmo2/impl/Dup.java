@@ -5,7 +5,7 @@ import static io.smallrye.common.constraint.Assert.impossibleSwitchCase;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 final class Dup extends Item {
     private final Item input;

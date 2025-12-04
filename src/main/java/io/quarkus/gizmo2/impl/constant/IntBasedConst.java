@@ -2,9 +2,9 @@ package io.quarkus.gizmo2.impl.constant;
 
 import java.lang.constant.ClassDesc;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
+import io.smallrye.classfile.CodeBuilder;
 
 public abstract class IntBasedConst extends ConstImpl {
     IntBasedConst(ClassDesc type) {

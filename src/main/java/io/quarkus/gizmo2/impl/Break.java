@@ -2,9 +2,9 @@ package io.quarkus.gizmo2.impl;
 
 import java.util.Objects;
 
-import io.github.dmlloyd.classfile.Label;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.smallrye.classfile.Label;
 
 final class Break extends Goto {
     private final BlockCreatorImpl outer;

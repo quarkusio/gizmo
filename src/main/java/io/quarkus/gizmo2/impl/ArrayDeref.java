@@ -6,10 +6,10 @@ import static java.lang.constant.ConstantDescs.*;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.MemoryOrder;
+import io.smallrye.classfile.CodeBuilder;
 
 public final class ArrayDeref extends AssignableImpl {
     private final Item item;

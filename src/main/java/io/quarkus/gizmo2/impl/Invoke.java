@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.BiConsumer;
 
-import io.github.dmlloyd.classfile.CodeBuilder;
-import io.github.dmlloyd.classfile.Opcode;
 import io.quarkus.gizmo2.Expr;
 import io.quarkus.gizmo2.GenericType;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.CodeBuilder;
+import io.smallrye.classfile.Opcode;
 
 final class Invoke extends Item {
     private final ClassDesc owner;

@@ -11,11 +11,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntFunction;
 
-import io.github.dmlloyd.classfile.Annotation;
-import io.github.dmlloyd.classfile.TypeAnnotation;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.Util;
+import io.smallrye.classfile.Annotation;
+import io.smallrye.classfile.TypeAnnotation;
 import io.smallrye.common.constraint.Assert;
 
 /**
