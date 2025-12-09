@@ -1268,7 +1268,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             case LONG -> invokeStatic(MD_Long.hashCode, expr);
             case FLOAT -> invokeStatic(MD_Float.hashCode, expr);
             case DOUBLE -> invokeStatic(MD_Double.hashCode, expr);
-            case REFERENCE -> invokeStatic(MD_Objects.hashCode, expr);
+            case REFERENCE -> {
+                if (expr instanceof ConstImpl c && c.isNonZero()) {
+                    yield invokeVirtual(MD_Object.hashCode, c);
+                }
+                yield invokeStatic(MD_Objects.hashCode, expr);
+            }
             case VOID -> Const.of(0); // null constant
         };
     }
@@ -1276,7 +1281,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     public Expr exprEquals(final Expr a, final Expr b) {
         return switch (a.typeKind()) {
             case REFERENCE -> switch (b.typeKind()) {
-                case REFERENCE -> invokeStatic(MD_Objects.equals, a, b);
+                case REFERENCE -> {
+                    if (a instanceof ConstImpl c && c.isNonZero()) {
+                        yield invokeVirtual(MD_Object.equals, c, b);
+                    }
+                    if (b instanceof ConstImpl c && c.isNonZero()) {
+                        yield invokeVirtual(MD_Object.equals, c, a);
+                    }
+                    yield invokeStatic(MD_Objects.equals, a, b);
+                }
                 default -> exprEquals(a, box(b));
             };
             default -> switch (b.typeKind()) {
@@ -1287,6 +1300,9 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     }
 
     public Expr exprToString(final Expr expr) {
+        if (expr.typeKind() == TypeKind.REFERENCE && expr instanceof ConstImpl c && c.isNonZero()) {
+            return invokeVirtual(MD_Object.toString, c);
+        }
         return invokeStatic(MD_String.valueOf(expr.type()), expr);
     }
 

@@ -1,16 +1,25 @@
 package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.ClassModel;
+import io.smallrye.classfile.constantpool.MemberRefEntry;
+import io.smallrye.classfile.instruction.InvokeInstruction;
 
 public class EqualsHashCodeToStringTest {
     @Test
@@ -157,5 +166,111 @@ public class EqualsHashCodeToStringTest {
         assertEquals(
                 "TestClass(booleanValue=false, byteValue=1, shortValue=2, intValue=3, longValue=4, floatValue=5.0, doubleValue=6.0, charValue=a, stringValue=bc, booleanArrayValue=[true], byteArrayValue=[7], shortArrayValue=[8], intArrayValue=[9], longArrayValue=[10], floatArrayValue=[11.0], doubleArrayValue=[12.0], charArrayValue=[d, e], stringArrayValue=[fg], boolean2DArrayValue=[[true], [true]], byte2DArrayValue=[[13], [14]], short2DArrayValue=[[15], [16]], int2DArrayValue=[[17], [18]], long2DArrayValue=[[19], [20]], float2DArrayValue=[[21.0], [22.0]], double2DArrayValue=[[23.0], [24.0]], char2DArrayValue=[[h, i], [j, k]], string2DArrayValue=[[lm, no], [pq, rs]])",
                 obj3.toString());
+    }
+
+    @Test
+    public void testConstants() {
+        TestClassMaker tcm = new TestClassMaker();
+        Gizmo g = Gizmo.create(tcm);
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Constants", cc -> {
+            cc.staticMethod("equalsWithConstant", mc -> {
+                ParamVar val = mc.parameter("val", String.class);
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprEquals(Const.of("foobar"), val));
+                });
+            });
+            cc.staticMethod("hashCodeOfConstant", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprHashCode(Const.of("foobar")));
+                });
+            });
+            cc.staticMethod("toStringOfConstant", mc -> {
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprToString(Const.of("foobar")));
+                });
+            });
+
+            MethodDesc foobar = cc.staticMethod("foobar", mc -> {
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(Const.of("foobar"));
+                });
+            });
+            cc.staticMethod("equalsWithNonConstant", mc -> {
+                ParamVar val = mc.parameter("val", String.class);
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprEquals(bc.invokeStatic(foobar), val));
+                });
+            });
+            cc.staticMethod("hashCodeOfNonConstant", mc -> {
+                mc.returning(int.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprHashCode(bc.invokeStatic(foobar)));
+                });
+            });
+            cc.staticMethod("toStringOfNonConstant", mc -> {
+                mc.returning(String.class);
+                mc.body(bc -> {
+                    bc.return_(bc.exprToString(bc.invokeStatic(foobar)));
+                });
+            });
+        });
+
+        Predicate<MemberRefEntry> objectsEquals = method -> method.owner().name().equalsString("java/util/Objects")
+                && method.name().equalsString("equals");
+        Predicate<MemberRefEntry> objectsHashCode = method -> method.owner().name().equalsString("java/util/Objects")
+                && method.name().equalsString("hashCode");
+        Predicate<MemberRefEntry> stringValueOf = method -> method.owner().name().equalsString("java/lang/String")
+                && method.name().equalsString("valueOf");
+
+        Predicate<MemberRefEntry> objectEquals = method -> method.owner().name().equalsString("java/lang/Object")
+                && method.name().equalsString("equals");
+        Predicate<MemberRefEntry> objectHashCode = method -> method.owner().name().equalsString("java/lang/Object")
+                && method.name().equalsString("hashCode");
+        Predicate<MemberRefEntry> objectToString = method -> method.owner().name().equalsString("java/lang/Object")
+                && method.name().equalsString("toString");
+
+        ClassModel model = tcm.forClass(desc).getModel();
+
+        assertMethod(model, "equalsWithConstant", objectEquals, objectsEquals);
+        assertMethod(model, "hashCodeOfConstant", objectHashCode, objectsHashCode);
+        assertMethod(model, "toStringOfConstant", objectToString, stringValueOf);
+
+        assertMethod(model, "equalsWithNonConstant", objectsEquals, objectEquals);
+        assertMethod(model, "hashCodeOfNonConstant", objectsHashCode, objectHashCode);
+        assertMethod(model, "toStringOfNonConstant", stringValueOf, objectToString);
+    }
+
+    private void assertMethod(ClassModel model, String methodName,
+            Predicate<MemberRefEntry> mustInvoke,
+            Predicate<MemberRefEntry> mayNotInvoke) {
+        AtomicBoolean mustInvokeOccurs = new AtomicBoolean();
+        AtomicBoolean mayNotInvokeOccurs = new AtomicBoolean();
+
+        model.methods()
+                .stream()
+                .filter(m -> m.methodName().equalsString(methodName))
+                .findFirst()
+                .orElseThrow()
+                .code()
+                .orElseThrow()
+                .elementStream()
+                .filter(it -> it instanceof InvokeInstruction)
+                .map(InvokeInstruction.class::cast)
+                .forEach(insn -> {
+                    if (mustInvoke.test(insn.method())) {
+                        mustInvokeOccurs.set(true);
+                    }
+                    if (mayNotInvoke.test(insn.method())) {
+                        mayNotInvokeOccurs.set(true);
+                    }
+                });
+
+        assertTrue(mustInvokeOccurs.get());
+        assertFalse(mayNotInvokeOccurs.get());
     }
 }
