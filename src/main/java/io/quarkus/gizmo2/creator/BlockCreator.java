@@ -3743,6 +3743,16 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr classForName(Expr className);
 
     /**
+     * Generate a call to {@link Class#forName(String,boolean,ClassLoader)}.
+     *
+     * @param className the class name (must not be {@code null})
+     * @param initialize a boolean expression which determines whether the loaded class is eagerly initialized
+     * @param classLoader the class loader to use (must not be {@code null})
+     * @return the loaded class expression (not {@code null})
+     */
+    Expr classForName(Expr className, Expr initialize, Expr classLoader);
+
+    /**
      * Generate a call to {@link List#of()} or one of its variants, based on the number of arguments.
      *
      * @param items the items to add to the list after mapping (must not be {@code null})

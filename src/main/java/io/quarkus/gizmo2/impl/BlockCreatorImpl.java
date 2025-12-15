@@ -1345,6 +1345,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         return invokeStatic(MD_Class.forName, className);
     }
 
+    public Expr classForName(final Expr className, final Expr initialize, Expr classLoader) {
+        return invokeStatic(MD_Class.forName_3, className, initialize, classLoader);
+    }
+
     @Override
     public <T> Expr listOf(final List<T> items, final Function<T, ? extends Expr> mapper) {
         List<Expr> exprs = new ArrayList<>();

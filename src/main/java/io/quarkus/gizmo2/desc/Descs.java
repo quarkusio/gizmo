@@ -212,6 +212,8 @@ public final class Descs {
         public static final ClassMethodDesc getName = ClassMethodDesc.of(CD_Class, "getName", CD_String);
         public static final ClassMethodDesc isInterface = ClassMethodDesc.of(CD_Class, "isInterface", CD_boolean);
         public static final ClassMethodDesc forName = ClassMethodDesc.of(CD_Class, "forName", CD_Class, CD_String);
+        public static final ClassMethodDesc forName_3 = ClassMethodDesc.of(CD_Class, "forName", CD_Class, CD_String,
+                CD_boolean, CD_ClassLoader);
         public static final ClassMethodDesc desiredAssertionStatus = ClassMethodDesc.of(CD_Class, "desiredAssertionStatus",
                 CD_boolean);
         public static final ClassMethodDesc getResourceAsStream = ClassMethodDesc.of(CD_Class, "getResourceAsStream",
