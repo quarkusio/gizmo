@@ -13,11 +13,13 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public final class CollectionConstantsTest {
     @Test
     public void testConstantStringList() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallList");
         List<Object> emptyList = List.of();
         List<String> threeList = List.of("Foo", "Bar", "Baz");
@@ -49,15 +51,15 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(emptyList, tcm.staticMethod("test0", StringListTest.class).get());
-        assertEquals(threeList, tcm.staticMethod("test1", StringListTest.class).get());
-        assertEquals(elevenList, tcm.staticMethod("test2", StringListTest.class).get());
+        assertEquals(emptyList, tcm.staticMethod(desc, "test0", StringListTest.class).get());
+        assertEquals(threeList, tcm.staticMethod(desc, "test1", StringListTest.class).get());
+        assertEquals(elevenList, tcm.staticMethod(desc, "test2", StringListTest.class).get());
     }
 
     @Test
     public void testConstantClassList() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallList");
         List<Class<?>> threeList = List.of(Object.class, String.class, Class.class);
         List<Class<?>> elevenList = List.of(Object.class, String.class, Class.class, Integer.class,
@@ -81,14 +83,14 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(threeList, tcm.staticMethod("test0", ClassListTest.class).get());
-        assertEquals(elevenList, tcm.staticMethod("test1", ClassListTest.class).get());
+        assertEquals(threeList, tcm.staticMethod(desc, "test0", ClassListTest.class).get());
+        assertEquals(elevenList, tcm.staticMethod(desc, "test1", ClassListTest.class).get());
     }
 
     @Test
     public void testConstantStringSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallSet");
         Set<Object> emptySet = Set.of();
         Set<String> threeSet = Set.of("Foo", "Bar", "Baz");
@@ -120,15 +122,15 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(emptySet, tcm.staticMethod("test0", StringSetTest.class).get());
-        assertEquals(threeSet, tcm.staticMethod("test1", StringSetTest.class).get());
-        assertEquals(elevenSet, tcm.staticMethod("test2", StringSetTest.class).get());
+        assertEquals(emptySet, tcm.staticMethod(desc, "test0", StringSetTest.class).get());
+        assertEquals(threeSet, tcm.staticMethod(desc, "test1", StringSetTest.class).get());
+        assertEquals(elevenSet, tcm.staticMethod(desc, "test2", StringSetTest.class).get());
     }
 
     @Test
     public void testConstantClassSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallSet");
         Set<Class<?>> threeSet = Set.of(Object.class, String.class, Class.class);
         Set<Class<?>> elevenSet = Set.of(Object.class, String.class, Class.class, Integer.class,
@@ -152,14 +154,14 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(threeSet, tcm.staticMethod("test0", ClassSetTest.class).get());
-        assertEquals(elevenSet, tcm.staticMethod("test1", ClassSetTest.class).get());
+        assertEquals(threeSet, tcm.staticMethod(desc, "test0", ClassSetTest.class).get());
+        assertEquals(elevenSet, tcm.staticMethod(desc, "test1", ClassSetTest.class).get());
     }
 
     @Test
     public void testConstantStringMap() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallMap");
         Map<String, String> emptyMap = Map.of();
         Collector<String, ?, Map<String, String>> collector = Collectors.toMap(Function.identity(), Function.identity());
@@ -193,15 +195,15 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(emptyMap, tcm.staticMethod("test0", StringMapTest.class).get());
-        assertEquals(threeMap, tcm.staticMethod("test1", StringMapTest.class).get());
-        assertEquals(elevenMap, tcm.staticMethod("test2", StringMapTest.class).get());
+        assertEquals(emptyMap, tcm.staticMethod(desc, "test0", StringMapTest.class).get());
+        assertEquals(threeMap, tcm.staticMethod(desc, "test1", StringMapTest.class).get());
+        assertEquals(elevenMap, tcm.staticMethod(desc, "test2", StringMapTest.class).get());
     }
 
     @Test
     public void testConstantClassMap() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallMap");
         Collector<Class<?>, ?, Map<String, Class<?>>> collector = Collectors.toMap(Class::getName, Function.identity());
         Map<String, Class<?>> threeMap = Stream.of(Object.class, String.class, Class.class).collect(collector);
@@ -226,15 +228,15 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(threeMap, tcm.staticMethod("test0", ClassMapTest.class).get());
-        assertEquals(elevenMap, tcm.staticMethod("test1", ClassMapTest.class).get());
+        assertEquals(threeMap, tcm.staticMethod(desc, "test0", ClassMapTest.class).get());
+        assertEquals(elevenMap, tcm.staticMethod(desc, "test1", ClassMapTest.class).get());
     }
 
     @SuppressWarnings("SpellCheckingInspection")
     @Test
     public void testResourceStringList() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallList");
         List<String> big1 = List.of(
                 "Lorem ipsum dolor sit amet,",
@@ -263,14 +265,14 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(big1, tcm.staticMethod("test0", StringListTest.class).get());
+        assertEquals(big1, tcm.staticMethod(desc, "test0", StringListTest.class).get());
     }
 
     @SuppressWarnings("SpellCheckingInspection")
     @Test
     public void testResourceStringSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallSet");
         Set<String> big1 = Set.of(
                 "Lorem ipsum dolor sit amet,",
@@ -291,14 +293,14 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(big1, tcm.staticMethod("test0", StringSetTest.class).get());
+        assertEquals(big1, tcm.staticMethod(desc, "test0", StringSetTest.class).get());
     }
 
     @SuppressWarnings("SpellCheckingInspection")
     @Test
     public void testResourceStringMap() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestSmallMap");
         Map<String, String> big1 = Stream.of(
                 "Lorem ipsum dolor sit amet,",
@@ -321,7 +323,7 @@ public final class CollectionConstantsTest {
                 });
             });
         });
-        assertEquals(big1, tcm.staticMethod("test0", StringMapTest.class).get());
+        assertEquals(big1, tcm.staticMethod(desc, "test0", StringMapTest.class).get());
     }
 
     public interface StringListTest {

@@ -2,6 +2,7 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -9,13 +10,14 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class CollectionTest {
     @Test
     public void testCreateList() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CreateList", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.CreateList", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class); // always `List`
                 mc.body(bc -> {
@@ -23,14 +25,14 @@ public class CollectionTest {
                 });
             });
         });
-        assertEquals(List.of("foo", "bar"), tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(List.of("foo", "bar"), tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void testCreateListByMapping() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CreateListByMapping", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.CreateListByMapping", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class); // always `List`
                 mc.body(bc -> {
@@ -41,14 +43,14 @@ public class CollectionTest {
                 });
             });
         });
-        assertEquals(List.of("FOO", "BAR"), tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(List.of("FOO", "BAR"), tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void testCreateSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CreateSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.CreateSet", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class); // always `Set`
                 mc.body(bc -> {
@@ -56,14 +58,14 @@ public class CollectionTest {
                 });
             });
         });
-        assertEquals(Set.of("foo", "bar"), tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(Set.of("foo", "bar"), tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void testCreateSetByMapping() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CreateSetByMapping", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.CreateSetByMapping", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class); // always `Set`
                 mc.body(bc -> {
@@ -74,6 +76,6 @@ public class CollectionTest {
                 });
             });
         });
-        assertEquals(Set.of("FOO", "BAR"), tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(Set.of("FOO", "BAR"), tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 }

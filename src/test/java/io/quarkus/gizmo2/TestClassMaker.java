@@ -44,7 +44,10 @@ import io.smallrye.classfile.ClassModel;
  *
  * Call {@link #forClass(ClassDesc)} to obtain a helper object that contains the same
  * methods, except they operate on the given class.
+ *
+ * @deprecated Use {@link io.quarkus.gizmo2.testing.TestClassMaker} instead.
  */
+@Deprecated(forRemoval = true)
 public class TestClassMaker implements ClassOutput {
     private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 

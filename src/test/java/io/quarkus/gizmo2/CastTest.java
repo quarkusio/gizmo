@@ -2,16 +2,20 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.constant.ClassDesc;
+
 import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public final class CastTest {
     // n.b. box/unbox casts are covered by BoxUnboxTest
 
     @Test
     public void testCheckCast() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CheckCast", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.CheckCast", cc -> {
             cc.staticMethod("test", smc -> {
                 smc.returning(String.class);
                 ParamVar input = smc.parameter("input", Object.class);
@@ -20,7 +24,7 @@ public final class CastTest {
                 });
             });
         });
-        assertEquals("Hello", tcm.staticMethod("test", CheckCast.class).run("Hello"));
+        assertEquals("Hello", tcm.staticMethod(desc, "test", CheckCast.class).run("Hello"));
     }
 
     public interface CheckCast {
@@ -29,9 +33,9 @@ public final class CastTest {
 
     @Test
     public void testUncheckedCast() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.UncheckedCast", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.UncheckedCast", cc -> {
             cc.staticMethod("test", smc -> {
                 smc.returning(Object.class);
                 ParamVar input = smc.parameter("input", String.class);
@@ -40,7 +44,7 @@ public final class CastTest {
                 });
             });
         });
-        assertEquals("Hello", tcm.staticMethod("test", UncheckedCast.class).run("Hello"));
+        assertEquals("Hello", tcm.staticMethod(desc, "test", UncheckedCast.class).run("Hello"));
     }
 
     public interface UncheckedCast {
@@ -50,9 +54,9 @@ public final class CastTest {
     @Test
     public void testPrimitiveCast() {
         // we don't have to test every combination here; it's implemented by the classfile library
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.PrimitiveCast", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.PrimitiveCast", cc -> {
             cc.staticMethod("test0", smc -> {
                 smc.returning(byte.class);
                 ParamVar input = smc.parameter("input", int.class);
@@ -68,8 +72,8 @@ public final class CastTest {
                 });
             });
         });
-        assertEquals(0x50, tcm.staticMethod("test0", IntToByte.class).run(0xff443350));
-        assertEquals(0x3350, tcm.staticMethod("test1", IntToShort.class).run(0xff443350));
+        assertEquals(0x50, tcm.staticMethod(desc, "test0", IntToByte.class).run(0xff443350));
+        assertEquals(0x3350, tcm.staticMethod(desc, "test1", IntToShort.class).run(0xff443350));
     }
 
     public interface IntToByte {

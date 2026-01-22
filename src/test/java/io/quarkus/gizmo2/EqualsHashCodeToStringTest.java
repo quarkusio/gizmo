@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
+import io.smallrye.classfile.ClassFile;
 import io.smallrye.classfile.ClassModel;
 import io.smallrye.classfile.constantpool.MemberRefEntry;
 import io.smallrye.classfile.instruction.InvokeInstruction;
@@ -88,9 +90,9 @@ public class EqualsHashCodeToStringTest {
                 new String[][] { { "lm", "no" }, { "pq", "rs" } },
         };
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TestClass", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClass", cc -> {
             List<FieldDesc> fields = new ArrayList<>();
             fields.add(cc.field("booleanValue", fc -> fc.setType(boolean.class)));
             fields.add(cc.field("byteValue", fc -> fc.setType(byte.class)));
@@ -143,7 +145,7 @@ public class EqualsHashCodeToStringTest {
             cc.generateToString(cc.instanceFields());
         });
 
-        Class<?> clazz = tcm.definedClass();
+        Class<?> clazz = tcm.loadClass(desc);
         Constructor<?> ctor = clazz.getConstructor(params);
 
         Object obj1 = ctor.newInstance(args);
@@ -170,9 +172,10 @@ public class EqualsHashCodeToStringTest {
 
     @Test
     public void testConstants() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        ClassDesc desc = g.class_("io.quarkus.gizmo2.Constants", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        String name = "io.quarkus.gizmo2.Constants";
+        g.class_(name, cc -> {
             cc.staticMethod("equalsWithConstant", mc -> {
                 ParamVar val = mc.parameter("val", String.class);
                 mc.returning(boolean.class);
@@ -234,7 +237,7 @@ public class EqualsHashCodeToStringTest {
         Predicate<MemberRefEntry> objectToString = method -> method.owner().name().equalsString("java/lang/Object")
                 && method.name().equalsString("toString");
 
-        ClassModel model = tcm.forClass(desc).getModel();
+        ClassModel model = tcm.readClass(name, b -> ClassFile.of().parse(b));
 
         assertMethod(model, "equalsWithConstant", objectEquals, objectsEquals);
         assertMethod(model, "hashCodeOfConstant", objectHashCode, objectsHashCode);

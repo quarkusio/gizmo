@@ -9,6 +9,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 // verifies that we correctly fail when calling a method on a `BlockCreator`
 // which is not active, because a nested `BlockCreator` is active instead
 public class NestingTest {
@@ -16,8 +18,8 @@ public class NestingTest {
     public void block() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Block"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -36,8 +38,8 @@ public class NestingTest {
     public void blockExpr() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.BlockExpr"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -57,8 +59,8 @@ public class NestingTest {
     public void logicalAnd() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.LogicalAnd"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -78,8 +80,8 @@ public class NestingTest {
     public void logicalOr() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.LogicalOr"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -99,8 +101,8 @@ public class NestingTest {
     public void if_() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.If"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -119,8 +121,8 @@ public class NestingTest {
     public void ifNot() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.IfNot"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -139,8 +141,8 @@ public class NestingTest {
     public void ifElse() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.IfElse"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -161,8 +163,8 @@ public class NestingTest {
     public void cond() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Cond"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -185,8 +187,8 @@ public class NestingTest {
     public void switchStatement() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.SwitchStatement"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -213,8 +215,8 @@ public class NestingTest {
     public void switchExpression() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.SwitchExpression"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -244,8 +246,8 @@ public class NestingTest {
     public void loop() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Loop"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -265,8 +267,8 @@ public class NestingTest {
     public void while_() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.While"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -288,8 +290,8 @@ public class NestingTest {
     public void doWhile() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.DoWhile"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -311,8 +313,8 @@ public class NestingTest {
     public void forEach() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.ForEach"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -332,8 +334,8 @@ public class NestingTest {
     public void tryCatch() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TryCatch"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -357,8 +359,8 @@ public class NestingTest {
     public void tryFinally() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TryFinally"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -382,8 +384,8 @@ public class NestingTest {
     public void tryCatchFinally() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.TryCatchFinally"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -410,8 +412,8 @@ public class NestingTest {
     public void assert_() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Assert"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -431,8 +433,8 @@ public class NestingTest {
     public void synchronized_() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Synchronized"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
@@ -451,8 +453,8 @@ public class NestingTest {
     public void locked() {
         NestingFailureAsserter asserter = new NestingFailureAsserter();
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_(ClassDesc.of("io.quarkus.gizmo2.Locked"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {

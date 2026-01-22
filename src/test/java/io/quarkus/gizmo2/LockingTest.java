@@ -9,13 +9,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public final class LockingTest {
     @Test
     public void testMonitorIsAcquired() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestMonitorIsAcquired"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestMonitorIsAcquired"), zc -> {
             zc.public_();
             zc.staticMethod("testMonitor", mc -> {
                 ParamVar monitor = mc.parameter("monitor", Object.class);
@@ -31,7 +32,7 @@ public final class LockingTest {
             });
         });
         Object monitor = new Object();
-        tcm.staticMethod("testMonitor", TestMonitor.class).run(
+        tcm.staticMethod(desc, "testMonitor", TestMonitor.class).run(
                 monitor,
                 () -> {
                     assertTrue(Thread.holdsLock(monitor));
@@ -39,7 +40,7 @@ public final class LockingTest {
                 () -> {
                     assertFalse(Thread.holdsLock(monitor));
                 });
-        assertThrows(IllegalStateException.class, () -> tcm.staticMethod("testMonitor", TestMonitor.class).run(
+        assertThrows(IllegalStateException.class, () -> tcm.staticMethod(desc, "testMonitor", TestMonitor.class).run(
                 monitor,
                 () -> {
                     assertTrue(Thread.holdsLock(monitor));
@@ -57,9 +58,9 @@ public final class LockingTest {
 
     @Test
     public void testLockIsAcquired() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestLockIsAcquired"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestLockIsAcquired"), zc -> {
             zc.public_();
             zc.staticMethod("testLock", mc -> {
                 ParamVar lock = mc.parameter("lock", Lock.class);
@@ -75,7 +76,7 @@ public final class LockingTest {
             });
         });
         ReentrantLock lock = new ReentrantLock();
-        tcm.staticMethod("testLock", TestLock.class).run(
+        tcm.staticMethod(desc, "testLock", TestLock.class).run(
                 lock,
                 () -> {
                     assertTrue(lock.isHeldByCurrentThread());
@@ -83,7 +84,7 @@ public final class LockingTest {
                 () -> {
                     assertFalse(lock.isHeldByCurrentThread());
                 });
-        assertThrows(IllegalStateException.class, () -> tcm.staticMethod("testLock", TestLock.class).run(
+        assertThrows(IllegalStateException.class, () -> tcm.staticMethod(desc, "testLock", TestLock.class).run(
                 lock,
                 () -> {
                     assertTrue(lock.isHeldByCurrentThread());

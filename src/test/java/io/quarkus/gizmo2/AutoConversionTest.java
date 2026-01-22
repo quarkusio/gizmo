@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class AutoConversionTest {
     private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
@@ -39,9 +41,9 @@ public class AutoConversionTest {
 
     @Test
     public void invoke_boxUnboxArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             MethodDesc method = cc.staticMethod("method", mc -> {
                 // static String method(Byte a, int b, Long c, double d) {
                 //     return a + "_" + b + "_" + c + "_" + d;
@@ -76,14 +78,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals("1_13_42_5.0", tcm.staticMethod("test", Supplier.class).get());
+        assertEquals("1_13_42_5.0", tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void invoke_widenArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             MethodDesc method = cc.staticMethod("method", mc -> {
                 // static String method(long a, double b) {
                 //     return a + "_" + b;
@@ -111,14 +113,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals("42_13.0", tcm.staticMethod("test", Supplier.class).get());
+        assertEquals("42_13.0", tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void invoke_unboxAndWidenArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             MethodDesc method = cc.staticMethod("method", mc -> {
                 // static String method(long a, double b) {
                 //     return a + "_" + b;
@@ -147,14 +149,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals("13_42.0", tcm.staticMethod("test", Supplier.class).get());
+        assertEquals("13_42.0", tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void invoke_widenAndBoxArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             MethodDesc method = cc.staticMethod("method", mc -> {
                 // static String method(Long a, Double b) {
                 //     return a + "_" + b;
@@ -182,14 +184,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals("13_42.0", tcm.staticMethod("test", Supplier.class).get());
+        assertEquals("13_42.0", tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void invoke_boxInstance() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return 1.longValue();
@@ -201,14 +203,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(42L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(42L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void invoke_widenAndBoxInstance() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Invoke", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Invoke", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return 1.longValue();
@@ -221,14 +223,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(42L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(42L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void new_boxUnboxArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.New", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.New", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("a", Byte.class);
                 mc.parameter("b", int.class);
@@ -252,14 +254,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void new_widenArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.New", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.New", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("a", long.class);
                 mc.parameter("b", double.class);
@@ -280,14 +282,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void new_unboxAndWidenArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.New", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.New", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("a", long.class);
                 mc.parameter("b", double.class);
@@ -309,14 +311,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void new_widenAndBoxArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.New", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.New", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("a", Long.class);
                 mc.parameter("b", Double.class);
@@ -337,14 +339,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void localVarSet_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LocalVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LocalVarSet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     Integer local1 = 13;
@@ -363,14 +365,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void localVarSet_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LocalVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LocalVarSet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static double test() {
                 //     long local1 = 13;
@@ -389,14 +391,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void staticFieldVarSet_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
                 fc.setType(Integer.class);
             });
@@ -419,14 +421,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void staticFieldVarSet_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
                 fc.setType(long.class);
             });
@@ -449,14 +451,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void staticFieldVarSetViaHandle_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
                 fc.setType(Integer.class);
             });
@@ -479,14 +481,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void staticFieldVarSetViaHandle_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
                 fc.setType(long.class);
             });
@@ -509,14 +511,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void fieldVarSet_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
                 fc.setType(Integer.class);
             });
@@ -544,14 +546,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void fieldVarSet_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
                 fc.setType(long.class);
             });
@@ -579,14 +581,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void fieldVarSetViaHandle_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
                 fc.setType(Integer.class);
             });
@@ -614,14 +616,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void fieldVarSetViaHandle_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
                 fc.setType(long.class);
             });
@@ -649,14 +651,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void paramVarSet_boxUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ParamVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ParamVarSet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(Integer param1, int param2) {
                 //     param1 = 13;
@@ -674,14 +676,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntegerIntToIntFunction.class).apply(null, 0));
+        assertEquals(55, tcm.staticMethod(desc, "test", IntegerIntToIntFunction.class).apply(null, 0));
     }
 
     @Test
     public void paramVarSet_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ParamVarSet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ParamVarSet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static double test(long param1, double param2) {
                 //     param1 = 13;
@@ -699,14 +701,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", LongDoubleToDoubleFunction.class).apply(0L, 0.0));
+        assertEquals(55.0, tcm.staticMethod(desc, "test", LongDoubleToDoubleFunction.class).apply(0L, 0.0));
     }
 
     @Test
     public void arraySet_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     int[] array = new int[2];
@@ -724,14 +726,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void arraySet_box() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     Integer[] array = new Integer[2];
@@ -749,14 +751,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void arraySet_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static double test() {
                 //     double[] array = new double[2];
@@ -774,14 +776,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void arraySetViaHandle_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     int[] array = new int[2];
@@ -799,14 +801,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void arraySetViaHandle_box() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     Integer[] array = new Integer[2];
@@ -824,14 +826,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void arraySetViaHandle_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArraySet", cc -> {
             cc.staticMethod("test", mc -> {
                 // static double test() {
                 //     double[] array = new double[2];
@@ -849,14 +851,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55.0, tcm.staticMethod("test", DoubleSupplier.class).getAsDouble());
+        assertEquals(55.0, tcm.staticMethod(desc, "test", DoubleSupplier.class).getAsDouble());
     }
 
     @Test
     public void arrayIndex_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArrayIndex", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArrayIndex", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     int[] array = new int[] {13, 42};
@@ -873,14 +875,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void arrayIndexViaHandle_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArrayIndex", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ArrayIndex", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     int[] array = new int[] {13, 42};
@@ -897,14 +899,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(55, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void return_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Return", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Return", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return new Integer(3);
@@ -915,14 +917,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(3, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void return_box() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Return", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Return", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test() {
                 //     return 3;
@@ -933,14 +935,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(3, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void return_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return 3;
@@ -951,14 +953,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(3L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void return_unboxAndWiden() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Return", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Return", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return new Integer(3);
@@ -969,14 +971,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(3L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void return_widenAndBox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Return", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Return", cc -> {
             MethodDesc test = cc.staticMethod("test", mc -> {
                 // static Long test() {
                 //     return 3;
@@ -997,14 +999,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("testBridge", Supplier.class).get());
+        assertEquals(3L, tcm.staticMethod(desc, "testBridge", Supplier.class).get());
     }
 
     @Test
     public void yield_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return true ? new Integer(3) : new Integer(5);
@@ -1019,14 +1021,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(3, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void yield_box() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Integer test() {
                 //     return true ? 3 : 5;
@@ -1041,14 +1043,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(3, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void yield_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return true ? 3 : 5;
@@ -1063,14 +1065,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(3L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void yield_unboxAndWiden() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return true ? new Integer(3) : new Integer(5);
@@ -1085,14 +1087,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(3L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void yield_widenAndBox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Yield", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Yield", cc -> {
             MethodDesc test = cc.staticMethod("test", mc -> {
                 // static Long test() {
                 //     return true ? 3 : 5;
@@ -1117,14 +1119,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3L, tcm.staticMethod("testBridge", Supplier.class).get());
+        assertEquals(3L, tcm.staticMethod(desc, "testBridge", Supplier.class).get());
     }
 
     @Test
     public void newEmptyArray_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NewEmptyArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NewEmptyArray", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test() {
                 //     int[] array = new int[new Integer(2)];
@@ -1137,14 +1139,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertArrayEquals(new int[2], (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[2], (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void newArray_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NewArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NewArray", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test() {
                 //     int[] array = new int[] { 13, new Integer(42), new Integer(13), 42 };
@@ -1161,14 +1163,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertArrayEquals(new int[] { 13, 42, 13, 42 }, (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[] { 13, 42, 13, 42 }, (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void newArray_box() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NewArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NewArray", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test() {
                 //     Integer[] array = new Integer[] { 13, new Integer(42), new Integer(13), 42 };
@@ -1185,14 +1187,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertArrayEquals(new Integer[] { 13, 42, 13, 42 }, (Integer[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new Integer[] { 13, 42, 13, 42 }, (Integer[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void newArray_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NewArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NewArray", cc -> {
             cc.staticMethod("test", mc -> {
                 // static Object test() {
                 //     double[] array = new double[] { 13, 42L, 5.0F };
@@ -1208,14 +1210,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertArrayEquals(new double[] { 13.0, 42.0, 5.0 }, (double[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new double[] { 13.0, 42.0, 5.0 }, (double[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void plus_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Plus", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Plus", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return 3 + new Integer(5);
@@ -1228,14 +1230,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(8, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(8, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void plus_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Plus", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Plus", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return 3 + 5L;
@@ -1248,14 +1250,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(8L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(8L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void plus_unboxAndWiden() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Plus", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Plus", cc -> {
             cc.staticMethod("test", mc -> {
                 // static long test() {
                 //     return new Integer(3) + new Long(5L);
@@ -1268,14 +1270,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(8L, tcm.staticMethod("test", LongSupplier.class).getAsLong());
+        assertEquals(8L, tcm.staticMethod(desc, "test", LongSupplier.class).getAsLong());
     }
 
     @Test
     public void shl_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Shl", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Shl", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return new Integer(5) << new Integer(2);
@@ -1288,14 +1290,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(20, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(20, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void neg_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Neg", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Neg", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return -new Integer(5);
@@ -1306,14 +1308,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(-5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(-5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void if_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.If", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.If", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(boolean param) {
                 //     if (new Boolean(param)) {
@@ -1332,15 +1334,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", BooleanToIntFunction.class).apply(true));
-        assertEquals(5, tcm.staticMethod("test", BooleanToIntFunction.class).apply(false));
+        assertEquals(3, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(true));
+        assertEquals(5, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(false));
     }
 
     @Test
     public void ifNot_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfNot", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfNot", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(boolean param) {
                 //     if (!new Boolean(param)) {
@@ -1359,15 +1361,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", BooleanToIntFunction.class).apply(false));
-        assertEquals(5, tcm.staticMethod("test", BooleanToIntFunction.class).apply(true));
+        assertEquals(3, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(false));
+        assertEquals(5, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(true));
     }
 
     @Test
     public void ifElse_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfElse", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfElse", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(boolean param) {
                 //     if (new Boolean(param)) {
@@ -1388,15 +1390,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", BooleanToIntFunction.class).apply(true));
-        assertEquals(5, tcm.staticMethod("test", BooleanToIntFunction.class).apply(false));
+        assertEquals(3, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(true));
+        assertEquals(5, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(false));
     }
 
     @Test
     public void cond_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cond", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cond", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(boolean param) {
                 //     return new Boolean(param) ? 3 : 5;
@@ -1413,15 +1415,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(3, tcm.staticMethod("test", BooleanToIntFunction.class).apply(true));
-        assertEquals(5, tcm.staticMethod("test", BooleanToIntFunction.class).apply(false));
+        assertEquals(3, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(true));
+        assertEquals(5, tcm.staticMethod(desc, "test", BooleanToIntFunction.class).apply(false));
     }
 
     @Test
     public void cmp_unbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cmp", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cmp", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return cmp(5, new Integer(7));
@@ -1432,14 +1434,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(-1, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(-1, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void cmp_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cmp", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cmp", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return cmp(5, 7.0);
@@ -1450,14 +1452,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(-1, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(-1, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void cmp_unboxAndWiden() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cmp", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cmp", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //     return cmp(new Integer(5), new Double(7.0));
@@ -1468,14 +1470,14 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertEquals(-1, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(-1, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void eq_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.EQ", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.EQ", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 == 7.0;
@@ -1495,15 +1497,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void ne_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 != 7.0;
@@ -1523,15 +1525,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void lt_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LT", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LT", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 < 7.0;
@@ -1551,15 +1553,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void le_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 <= 7.0;
@@ -1579,15 +1581,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void gt_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GT", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GT", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 > 7.0;
@@ -1607,15 +1609,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void ge_widen() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 >= 7.0;
@@ -1635,15 +1637,15 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void eq_noConversion() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.EQ", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.EQ", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return new Integer(5) == null;
@@ -1674,16 +1676,16 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void ne_noConversion() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return new Integer(5) != null;
@@ -1714,8 +1716,8 @@ public class AutoConversionTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
     }
 }

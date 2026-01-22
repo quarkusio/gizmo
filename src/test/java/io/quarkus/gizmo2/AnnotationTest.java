@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public class AnnotationTest {
     @Retention(RetentionPolicy.RUNTIME)
     @interface MyAnnotation {
@@ -23,45 +25,45 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnClass() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnClass", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnClass", cc -> {
             cc.addAnnotation(MyAnnotation.class, ann -> {
                 ann.add(MyAnnotation::value, "annotationOnClass");
             });
-        });
-        MyAnnotation ann = tcm.definedClass().getAnnotation(MyAnnotation.class);
+        }));
+        MyAnnotation ann = clazz.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
         assertEquals("annotationOnClass", ann.value());
     }
 
     @Test
     public void annotationOnInterface() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnInterface", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnInterface", cc -> {
             cc.addAnnotation(MyAnnotation.class, ann -> {
                 ann.add(MyAnnotation::value, "annotationOnInterface");
             });
-        });
-        MyAnnotation ann = tcm.definedClass().getAnnotation(MyAnnotation.class);
+        }));
+        MyAnnotation ann = clazz.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
         assertEquals("annotationOnInterface", ann.value());
     }
 
     @Test
     public void annotationOnStaticClassField() throws NoSuchFieldException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassField", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassField", cc -> {
             cc.staticField("staticField", fc -> {
                 fc.setType(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnStaticClassField");
                 });
             });
-        });
-        Field field = tcm.definedClass().getDeclaredField("staticField");
+        }));
+        Field field = clazz.getDeclaredField("staticField");
         assertNotNull(field);
         MyAnnotation ann = field.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -70,17 +72,17 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnStaticInterfaceField() throws NoSuchFieldException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceField", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceField", cc -> {
             cc.staticField("staticField", fc -> {
                 fc.setType(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnStaticInterfaceField");
                 });
             });
-        });
-        Field field = tcm.definedClass().getDeclaredField("staticField");
+        }));
+        Field field = clazz.getDeclaredField("staticField");
         assertNotNull(field);
         MyAnnotation ann = field.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -89,17 +91,17 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnInstanceClassField() throws NoSuchFieldException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnInstanceClassField", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnInstanceClassField", cc -> {
             cc.field("field", fc -> {
                 fc.setType(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnInstanceClassField");
                 });
             });
-        });
-        Field field = tcm.definedClass().getDeclaredField("field");
+        }));
+        Field field = clazz.getDeclaredField("field");
         assertNotNull(field);
         MyAnnotation ann = field.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -108,9 +110,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnStaticClassMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassMethod", cc -> {
             cc.staticMethod("staticMethod", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -118,8 +120,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("staticMethod");
+        }));
+        Method method = clazz.getDeclaredMethod("staticMethod");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -128,9 +130,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnStaticInterfaceMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceMethod", cc -> {
             cc.staticMethod("staticMethod", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -138,8 +140,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("staticMethod");
+        }));
+        Method method = clazz.getDeclaredMethod("staticMethod");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -148,17 +150,17 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnAbstractClassMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnAbstractClassMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnAbstractClassMethod", cc -> {
             cc.abstractMethod("abstractMethod", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnAbstractClassMethod");
                 });
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("abstractMethod");
+        }));
+        Method method = clazz.getDeclaredMethod("abstractMethod");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -167,9 +169,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnClassMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnClassMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnClassMethod", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -177,8 +179,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("method");
+        }));
+        Method method = clazz.getDeclaredMethod("method");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -187,9 +189,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnAbstractInterfaceMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnAbstractInterfaceMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc xxx = g.interface_("io.quarkus.gizmo2.AnnotationOnAbstractInterfaceMethod", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -197,7 +199,8 @@ public class AnnotationTest {
                 });
             });
         });
-        Method method = tcm.definedClass().getDeclaredMethod("method");
+        Class<?> clazz = tcm.loadClass(xxx);
+        Method method = clazz.getDeclaredMethod("method");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -206,9 +209,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnDefaultInterfaceMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnDefaultInterfaceMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnDefaultInterfaceMethod", cc -> {
             cc.defaultMethod("defaultMethod", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -216,8 +219,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("defaultMethod");
+        }));
+        Method method = clazz.getDeclaredMethod("defaultMethod");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -226,9 +229,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnPrivateInterfaceMethod() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnPrivateInterfaceMethod", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnPrivateInterfaceMethod", cc -> {
             cc.privateMethod("privateMethod", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(MyAnnotation.class, ann -> {
@@ -236,8 +239,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("privateMethod");
+        }));
+        Method method = clazz.getDeclaredMethod("privateMethod");
         assertNotNull(method);
         MyAnnotation ann = method.getAnnotation(MyAnnotation.class);
         assertNotNull(ann);
@@ -246,9 +249,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnClassMethodParameter() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationOnClassMethodParameter", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnClassMethodParameter", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
@@ -259,8 +262,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("method", String.class);
+        }));
+        Method method = clazz.getDeclaredMethod("method", String.class);
         Parameter param = method.getParameters()[0];
         assertNotNull(param);
         MyAnnotation ann = param.getAnnotation(MyAnnotation.class);
@@ -270,9 +273,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnInterfaceMethodParameter() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.AnnotationOnInterfaceMethodParameter", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnInterfaceMethodParameter", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
@@ -282,8 +285,8 @@ public class AnnotationTest {
                     });
                 });
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("method", String.class);
+        }));
+        Method method = clazz.getDeclaredMethod("method", String.class);
         Parameter param = method.getParameters()[0];
         assertNotNull(param);
         MyAnnotation ann = param.getAnnotation(MyAnnotation.class);
@@ -293,8 +296,8 @@ public class AnnotationTest {
 
     @Test
     public void annotationOnWrongThing() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.AnnotationOnWrongThing", cc -> {
             cc.field("wrongPlace", fc -> {
                 assertThrows(IllegalArgumentException.class, () -> {
@@ -306,9 +309,9 @@ public class AnnotationTest {
 
     @Test
     public void repeatableAnnotation() throws NoSuchFieldException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.RepeatableAnnotation", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc xxx = g.class_("io.quarkus.gizmo2.RepeatableAnnotation", cc -> {
             cc.field("notAnnotated", fc -> {
             });
             cc.field("single", fc -> {
@@ -320,9 +323,10 @@ public class AnnotationTest {
                 fc.addAnnotation(RepeatableInner.class);
             });
         });
-        Field notAnnotated = tcm.definedClass().getDeclaredField("notAnnotated");
-        Field single = tcm.definedClass().getDeclaredField("single");
-        Field multi = tcm.definedClass().getDeclaredField("multi");
+        Class<?> clazz = tcm.loadClass(xxx);
+        Field notAnnotated = clazz.getDeclaredField("notAnnotated");
+        Field single = clazz.getDeclaredField("single");
+        Field multi = clazz.getDeclaredField("multi");
         assertNull(notAnnotated.getAnnotation(RepeatableInner.class));
         assertNull(notAnnotated.getAnnotation(RepeatableOuter.class));
         assertNotNull(single.getAnnotation(RepeatableInner.class));
@@ -405,9 +409,9 @@ public class AnnotationTest {
 
     @Test
     public void annotationCreation() throws NoSuchMethodException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.AnnotationCreation", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationCreation", cc -> {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.addAnnotation(ClassDesc.of(Deprecated.class.getName()), RetentionPolicy.RUNTIME, ac -> {
@@ -448,8 +452,8 @@ public class AnnotationTest {
                 });
                 mc.body(bc -> bc.return_("foobar"));
             });
-        });
-        Method method = tcm.definedClass().getDeclaredMethod("method");
+        }));
+        Method method = clazz.getDeclaredMethod("method");
         assertNotNull(method);
 
         Deprecated deprecated = method.getAnnotation(Deprecated.class);

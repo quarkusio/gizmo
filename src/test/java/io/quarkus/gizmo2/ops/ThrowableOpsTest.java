@@ -3,20 +3,22 @@ package io.quarkus.gizmo2.ops;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.constant.ClassDesc;
+
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
-import io.quarkus.gizmo2.TestClassMaker;
 import io.quarkus.gizmo2.creator.ops.ThrowableOps;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class ThrowableOpsTest {
 
     @Test
     public void testThrowableAddSuppressed() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Throwables", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Throwables", cc -> {
             cc.staticMethod("test", mc -> {
                 // static void test() {
                 //    Exception e = new IllegalStateException("foo");
@@ -34,7 +36,7 @@ public class ThrowableOpsTest {
             });
         });
         IllegalStateException ise = assertThrows(IllegalStateException.class,
-                () -> tcm.staticMethod("test", Runnable.class).run());
+                () -> tcm.staticMethod(desc, "test", Runnable.class).run());
         Throwable[] suppressed = ise.getSuppressed();
         assertEquals(2, suppressed.length);
         assertEquals("npe", suppressed[0].getMessage());

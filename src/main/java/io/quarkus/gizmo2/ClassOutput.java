@@ -72,4 +72,12 @@ public interface ClassOutput {
             }
         };
     }
+
+    /**
+     * {@return a class output that discards its inputs}
+     */
+    static ClassOutput discarding() {
+        return (path, bytes) -> {
+        };
+    }
 }

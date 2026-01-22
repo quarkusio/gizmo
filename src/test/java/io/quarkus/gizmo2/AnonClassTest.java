@@ -15,6 +15,7 @@ import io.quarkus.gizmo2.creator.MemberCreator;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 /**
  * Tests for anonymous classes and related behaviors.
@@ -23,9 +24,9 @@ public final class AnonClassTest {
 
     @Test
     public void testNoArgs() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Outer", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Outer", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -55,14 +56,14 @@ public final class AnonClassTest {
                     b0.return_(retVal);
                 });
             });
-        });
-        assertEquals(1, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(1, tcm.staticMethod(clazz, "runTest", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testExtendClass() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc baseDesc = g.class_("io.quarkus.gizmo2.Base", cc -> {
             cc.constructor(mc -> {
                 mc.public_();
@@ -73,7 +74,7 @@ public final class AnonClassTest {
             });
             cc.abstractMethod("go", MemberCreator::public_);
         });
-        g.class_("io.quarkus.gizmo2.Test", cc -> {
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Test", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -104,8 +105,8 @@ public final class AnonClassTest {
                     b0.return_(retVal);
                 });
             });
-        });
-        assertEquals(1, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(1, tcm.staticMethod(clazz, "runTest", IntSupplier.class).getAsInt());
     }
 
 }

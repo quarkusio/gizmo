@@ -3,11 +3,13 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class NewTest {
     @Test
@@ -21,9 +23,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NoParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NoParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.body(bc -> {
                     bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
@@ -38,7 +40,7 @@ public class NewTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -52,9 +54,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NoParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NoParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.body(bc -> {
                     bc.invokeSpecial(ConstructorDesc.of(Object.class), cc.this_());
@@ -69,7 +71,7 @@ public class NewTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -83,9 +85,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.OneParam", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.OneParam", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.body(bc -> {
@@ -101,7 +103,7 @@ public class NewTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -115,9 +117,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.OneParam", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.OneParam", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.body(bc -> {
@@ -133,7 +135,7 @@ public class NewTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -147,9 +149,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TwoParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TwoParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.parameter("param2", String.class);
@@ -166,7 +168,7 @@ public class NewTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -180,9 +182,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TwoParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TwoParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.parameter("param2", String.class);
@@ -199,7 +201,7 @@ public class NewTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -213,9 +215,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ThreeParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ThreeParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.parameter("param2", String.class);
@@ -233,7 +235,7 @@ public class NewTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -247,9 +249,9 @@ public class NewTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ThreeParams", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ThreeParams", cc -> {
             ConstructorDesc ctor = cc.constructor(mc -> {
                 mc.parameter("param1", int.class);
                 mc.parameter("param2", String.class);
@@ -267,6 +269,6 @@ public class NewTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 }

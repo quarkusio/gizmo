@@ -8,6 +8,8 @@ import java.util.function.IntUnaryOperator;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public final class SwitchTest {
 
     @FunctionalInterface
@@ -17,9 +19,9 @@ public final class SwitchTest {
 
     @Test
     public void testCharSwitch() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestCharSwitchExpr"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestCharSwitchExpr"), zc -> {
             zc.staticMethod("frobnicate", mc -> {
                 mc.returning(char.class);
                 ParamVar cp = mc.parameter("cp", char.class);
@@ -50,7 +52,7 @@ public final class SwitchTest {
                 });
             });
         });
-        CharUnaryOperator frobnicate = tcm.staticMethod("frobnicate", CharUnaryOperator.class);
+        CharUnaryOperator frobnicate = tcm.staticMethod(desc, "frobnicate", CharUnaryOperator.class);
         assertEquals('i', frobnicate.apply('a'));
         assertEquals('q', frobnicate.apply('q'));
         assertEquals('o', frobnicate.apply('e'));
@@ -58,9 +60,9 @@ public final class SwitchTest {
 
     @Test
     public void testIntSwitch() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
             zc.staticMethod("frobnicate", mc -> {
                 mc.returning(int.class);
                 ParamVar cp = mc.parameter("cp", int.class);
@@ -91,7 +93,7 @@ public final class SwitchTest {
                 });
             });
         });
-        IntUnaryOperator frobnicate = tcm.staticMethod("frobnicate", IntUnaryOperator.class);
+        IntUnaryOperator frobnicate = tcm.staticMethod(desc, "frobnicate", IntUnaryOperator.class);
         assertEquals('i', frobnicate.applyAsInt('a'));
         assertEquals('q', frobnicate.applyAsInt('q'));
         assertEquals('o', frobnicate.applyAsInt('e'));
@@ -99,9 +101,9 @@ public final class SwitchTest {
 
     @Test
     public void testIntSwitchWithoutDefaultCase() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitch"), zc -> {
             zc.staticMethod("frobnicate", mc -> {
                 mc.returning(int.class);
                 ParamVar cp = mc.parameter("cp", int.class);
@@ -117,7 +119,7 @@ public final class SwitchTest {
                 });
             });
         });
-        IntUnaryOperator frobnicate = tcm.staticMethod("frobnicate", IntUnaryOperator.class);
+        IntUnaryOperator frobnicate = tcm.staticMethod(desc, "frobnicate", IntUnaryOperator.class);
         assertEquals('i', frobnicate.applyAsInt('a'));
         assertEquals('q', frobnicate.applyAsInt('q'));
         assertEquals('o', frobnicate.applyAsInt('e'));
@@ -125,9 +127,9 @@ public final class SwitchTest {
 
     @Test
     public void testClassSwitch() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestClassSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestClassSwitch"), zc -> {
             zc.staticMethod("nameThatClass", mc -> {
                 mc.returning(String.class);
                 ParamVar clazz = mc.parameter("clazz", Class.class);
@@ -149,7 +151,7 @@ public final class SwitchTest {
                 });
             });
         });
-        ClassNamer nameThatClass = tcm.staticMethod("nameThatClass", ClassNamer.class);
+        ClassNamer nameThatClass = tcm.staticMethod(desc, "nameThatClass", ClassNamer.class);
         assertEquals("It's String!", nameThatClass.nameIt(String.class));
         assertEquals("Some kinda integer!", nameThatClass.nameIt(Integer.class));
         assertEquals("Some kinda integer!", nameThatClass.nameIt(int.class));
@@ -166,9 +168,9 @@ public final class SwitchTest {
 
     @Test
     public void testStringSwitch() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
             zc.staticMethod("nameToNumber", mc -> {
                 mc.returning(int.class);
                 ParamVar name = mc.parameter("name", String.class);
@@ -183,7 +185,7 @@ public final class SwitchTest {
                 });
             });
         });
-        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        NumberParser nameToNumber = tcm.staticMethod(desc, "nameToNumber", NumberParser.class);
         assertEquals(0, nameToNumber.get("zero"));
         assertEquals(1, nameToNumber.get("one"));
         assertEquals(2, nameToNumber.get("two"));
@@ -193,8 +195,8 @@ public final class SwitchTest {
 
     @Test
     public void testStringSwitchWeird() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.TestStringSwitch", cc -> {
             cc.staticMethod("guess", mc -> {
                 mc.returning(void.class);
@@ -212,9 +214,9 @@ public final class SwitchTest {
 
     @Test
     public void testStringSwitchWithoutDefaultCase() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
             zc.staticMethod("nameToNumber", mc -> {
                 mc.returning(int.class);
                 ParamVar name = mc.parameter("name", String.class);
@@ -229,7 +231,7 @@ public final class SwitchTest {
                 });
             });
         });
-        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        NumberParser nameToNumber = tcm.staticMethod(desc, "nameToNumber", NumberParser.class);
         assertEquals(0, nameToNumber.get("zero"));
         assertEquals(1, nameToNumber.get("one"));
         assertEquals(2, nameToNumber.get("two"));
@@ -243,9 +245,9 @@ public final class SwitchTest {
 
     @Test
     public void testIntSwitchWithNoCase() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitchExpr"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestIntSwitchExpr"), zc -> {
             zc.staticMethod("frobnicate", mc -> {
                 mc.returning(int.class);
                 ParamVar cp = mc.parameter("cp", int.class);
@@ -256,7 +258,7 @@ public final class SwitchTest {
                 });
             });
         });
-        IntUnaryOperator frobnicate = tcm.staticMethod("frobnicate", IntUnaryOperator.class);
+        IntUnaryOperator frobnicate = tcm.staticMethod(desc, "frobnicate", IntUnaryOperator.class);
         assertEquals('a', frobnicate.applyAsInt('a'));
         assertEquals('q', frobnicate.applyAsInt('q'));
         assertEquals('e', frobnicate.applyAsInt('e'));
@@ -264,9 +266,9 @@ public final class SwitchTest {
 
     @Test
     public void testStringSwitchWithNoCase() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
             zc.staticMethod("nameToNumber", mc -> {
                 mc.returning(int.class);
                 ParamVar name = mc.parameter("name", String.class);
@@ -277,7 +279,7 @@ public final class SwitchTest {
                 });
             });
         });
-        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        NumberParser nameToNumber = tcm.staticMethod(desc, "nameToNumber", NumberParser.class);
         assertEquals(-1, nameToNumber.get("zero"));
         assertEquals(-1, nameToNumber.get("one"));
         assertEquals(-1, nameToNumber.get("two"));
@@ -285,9 +287,9 @@ public final class SwitchTest {
 
     @Test
     public void testSwitchExpressionFallsThrough() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
             zc.staticMethod("nameToNumber", mc -> {
                 mc.returning(int.class);
                 ParamVar name = mc.parameter("name", String.class);
@@ -300,7 +302,7 @@ public final class SwitchTest {
                 });
             });
         });
-        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        NumberParser nameToNumber = tcm.staticMethod(desc, "nameToNumber", NumberParser.class);
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("zero"));
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("one"));
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("two"));
@@ -308,9 +310,9 @@ public final class SwitchTest {
 
     @Test
     public void testSwitchStatementDoesNotFallThrough() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestStringSwitch"), zc -> {
             zc.staticMethod("nameToNumber", mc -> {
                 mc.returning(int.class);
                 ParamVar name = mc.parameter("name", String.class);
@@ -326,7 +328,7 @@ public final class SwitchTest {
                 });
             });
         });
-        NumberParser nameToNumber = tcm.staticMethod("nameToNumber", NumberParser.class);
+        NumberParser nameToNumber = tcm.staticMethod(desc, "nameToNumber", NumberParser.class);
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("zero"));
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("one"));
         assertThrows(IllegalArgumentException.class, () -> nameToNumber.get("two"));

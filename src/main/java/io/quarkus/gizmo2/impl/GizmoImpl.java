@@ -150,4 +150,6 @@ public final class GizmoImpl implements Gizmo {
         outputHandler.write(desc, bytes);
         return desc;
     }
+
+    public static final GizmoImpl DEFAULT = new GizmoImpl(ClassOutput.discarding());
 }
