@@ -4,17 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public class ComparisonsTest {
     @Test
     public void cmp() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cmp", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cmp", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static int test1() {
                 //     return cmp(5, 7);
@@ -43,16 +46,16 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertEquals(-1, tcm.staticMethod("test1", IntSupplier.class).getAsInt());
-        assertEquals(1, tcm.staticMethod("test2", IntSupplier.class).getAsInt());
-        assertEquals(0, tcm.staticMethod("test3", IntSupplier.class).getAsInt());
+        assertEquals(-1, tcm.staticMethod(desc, "test1", IntSupplier.class).getAsInt());
+        assertEquals(1, tcm.staticMethod(desc, "test2", IntSupplier.class).getAsInt());
+        assertEquals(0, tcm.staticMethod(desc, "test3", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void eq() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.EQ", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.EQ", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 == 7;
@@ -90,17 +93,17 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void eqObjects() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.EQ", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.EQ", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     Object obj = new Object();
@@ -122,15 +125,15 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void ne() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5L != 7L;
@@ -168,17 +171,17 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void neObjects() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     Object obj = new Object();
@@ -200,15 +203,15 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void lt() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LT", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LT", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5.0F < 7.0F;
@@ -264,20 +267,20 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test5", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test6", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void le() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5.0 <= 7.0;
@@ -333,20 +336,20 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test5", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test6", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void gt() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GT", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GT", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5 > 7;
@@ -402,20 +405,20 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test5", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test6", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test7", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void ge() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GE", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GE", cc -> {
             cc.staticMethod("test1", mc -> {
                 // static boolean test1() {
                 //     return 5.0 >= 7.0;
@@ -471,12 +474,12 @@ public class ComparisonsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test4", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test5", BooleanSupplier.class).getAsBoolean());
-        assertFalse(tcm.staticMethod("test6", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test7", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test2", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test3", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test4", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test5", BooleanSupplier.class).getAsBoolean());
+        assertFalse(tcm.staticMethod(desc, "test6", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test7", BooleanSupplier.class).getAsBoolean());
     }
 }

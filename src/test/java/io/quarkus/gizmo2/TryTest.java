@@ -2,6 +2,7 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public final class TryTest {
     @Test
@@ -32,9 +34,9 @@ public final class TryTest {
         // return foo+bar;
         // }}}}}}}}}}}}
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CrashJavac", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc crashIt = g.class_("io.quarkus.gizmo2.CrashJavac", cc -> {
             cc.staticMethod("crashIt", smc -> {
                 ParamVar foo = smc.parameter("foo", String.class);
                 ParamVar bar = smc.parameter("bar", String.class);
@@ -84,14 +86,14 @@ public final class TryTest {
                 });
             });
         });
-        assertEquals("hello" + "world", tcm.staticMethod("crashIt", CrashIt.class).crashIt("hello", "world"));
+        assertEquals("hello" + "world", tcm.staticMethod(crashIt, "crashIt", CrashIt.class).crashIt("hello", "world"));
     }
 
     @Test
     public void testCatch() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CatchTests", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc catchTests = g.class_("io.quarkus.gizmo2.CatchTests", cc -> {
             // make sure it works *at all*
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
@@ -142,16 +144,16 @@ public final class TryTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test2", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(catchTests, "test0", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(catchTests, "test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(catchTests, "test2", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void testFinallySimpleCases() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FinallySimpleCasesTests", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc tests = g.class_("io.quarkus.gizmo2.FinallySimpleCasesTests", cc -> {
             // test finally-overrides-return
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
@@ -175,15 +177,15 @@ public final class TryTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
-        assertEquals(2, tcm.staticMethod("test1", IntSupplier.class).getAsInt());
+        assertTrue(tcm.staticMethod(tests, "test0", BooleanSupplier.class).getAsBoolean());
+        assertEquals(2, tcm.staticMethod(tests, "test1", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testFinallyControlFlow() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FinallyControlFlowTests", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc tests = g.class_("io.quarkus.gizmo2.FinallyControlFlowTests", cc -> {
             // make sure that finally is run when exiting the block via break
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
@@ -285,20 +287,20 @@ public final class TryTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(tests, "test0", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(tests, "test1", BooleanSupplier.class).getAsBoolean());
         for (int i = 0; i < 10; i++) {
-            assertTrue(tcm.staticMethod("test2", IntToBooleanFunction.class).apply(i));
+            assertTrue(tcm.staticMethod(tests, "test2", IntToBooleanFunction.class).apply(i));
         }
-        assertTrue(tcm.staticMethod("test3", BooleanSupplier.class).getAsBoolean());
-        assertEquals(1, tcm.staticMethod("test4", IntSupplier.class).getAsInt());
+        assertTrue(tcm.staticMethod(tests, "test3", BooleanSupplier.class).getAsBoolean());
+        assertEquals(1, tcm.staticMethod(tests, "test4", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testTryCatchFinally() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TryCatchFinallyTests", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc tests = g.class_("io.quarkus.gizmo2.TryCatchFinallyTests", cc -> {
             cc.staticMethod("test0", smc -> {
                 smc.returning(boolean.class);
                 smc.body(b0 -> {
@@ -351,8 +353,8 @@ public final class TryTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
-        assertTrue(tcm.staticMethod("test1", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(tests, "test0", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(tests, "test1", BooleanSupplier.class).getAsBoolean());
     }
 
     @FunctionalInterface

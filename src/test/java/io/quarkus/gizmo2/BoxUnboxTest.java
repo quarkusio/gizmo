@@ -3,16 +3,19 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public class BoxUnboxTest {
     @Test
     public void testBoxVoid() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.BoxVoid", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
@@ -28,9 +31,9 @@ public class BoxUnboxTest {
 
     @Test
     public void testBox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Box", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Box", cc -> {
             cc.staticMethod("test", mc -> {
                 // static List test() {
                 //    Boolean boolVal = true;
@@ -58,7 +61,7 @@ public class BoxUnboxTest {
             });
         });
         @SuppressWarnings("unchecked")
-        List<Object> list = (List<Object>) tcm.staticMethod("test", Supplier.class).get();
+        List<Object> list = (List<Object>) tcm.staticMethod(desc, "test", Supplier.class).get();
         assertEquals(true, list.get(0));
         assertEquals((byte) 123, list.get(1));
         assertEquals((short) 456, list.get(2));
@@ -71,9 +74,9 @@ public class BoxUnboxTest {
 
     @Test
     public void testBoxAlreadyBoxed() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.BoxAlreadyBoxed", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.BoxAlreadyBoxed", cc -> {
             cc.staticMethod("test", mc -> {
                 // static List test() {
                 //    Boolean boolVal = true;
@@ -101,7 +104,7 @@ public class BoxUnboxTest {
             });
         });
         @SuppressWarnings("unchecked")
-        List<Object> list = (List<Object>) tcm.staticMethod("test", Supplier.class).get();
+        List<Object> list = (List<Object>) tcm.staticMethod(desc, "test", Supplier.class).get();
         assertEquals(true, list.get(0));
         assertEquals((byte) 123, list.get(1));
         assertEquals((short) 456, list.get(2));
@@ -114,9 +117,9 @@ public class BoxUnboxTest {
 
     @Test
     public void testBoxViaCasting() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Box", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Box", cc -> {
             cc.staticMethod("test", mc -> {
                 // static List test() {
                 //    Boolean boolVal = true;
@@ -144,7 +147,7 @@ public class BoxUnboxTest {
             });
         });
         @SuppressWarnings("unchecked")
-        List<Object> list = (List<Object>) tcm.staticMethod("test", Supplier.class).get();
+        List<Object> list = (List<Object>) tcm.staticMethod(desc, "test", Supplier.class).get();
         assertEquals(true, list.get(0));
         assertEquals((byte) 123, list.get(1));
         assertEquals((short) 456, list.get(2));
@@ -157,8 +160,8 @@ public class BoxUnboxTest {
 
     @Test
     public void testUnboxVoid() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.UnboxVoid", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
@@ -174,9 +177,9 @@ public class BoxUnboxTest {
 
     @Test
     public void testUnbox() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Unbox", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Unbox", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(Boolean bool, Byte b, Short s, Character c, Integer i, Long l, Float f, Double d) {
                 //    if (!bool) {
@@ -232,15 +235,15 @@ public class BoxUnboxTest {
                 });
             });
         });
-        assertEquals(0, tcm.staticMethod("test", BoxSupplier.class)
+        assertEquals(0, tcm.staticMethod(desc, "test", BoxSupplier.class)
                 .get(true, (byte) 123, (short) 456, 'a', 10, 100L, 1.2F, 2.1));
     }
 
     @Test
     public void testUnboxAlreadyUnboxed() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.UnboxAlreadyUnboxed", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.UnboxAlreadyUnboxed", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(Boolean bool, Byte b, Short s, Character c, Integer i, Long l, Float f, Double d) {
                 //    if (!bool) {
@@ -296,15 +299,15 @@ public class BoxUnboxTest {
                 });
             });
         });
-        assertEquals(0, tcm.staticMethod("test", BoxSupplier.class)
+        assertEquals(0, tcm.staticMethod(desc, "test", BoxSupplier.class)
                 .get(true, (byte) 123, (short) 456, 'a', 10, 100L, 1.2F, 2.1));
     }
 
     @Test
     public void testUnboxViaCasting() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Unbox", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Unbox", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test(Boolean bool, Byte b, Short s, Character c, Integer i, Long l, Float f, Double d) {
                 //    if (!bool) {
@@ -360,7 +363,7 @@ public class BoxUnboxTest {
                 });
             });
         });
-        assertEquals(0, tcm.staticMethod("test", BoxSupplier.class)
+        assertEquals(0, tcm.staticMethod(desc, "test", BoxSupplier.class)
                 .get(true, (byte) 123, (short) 456, 'a', 10, 100L, 1.2F, 2.1));
     }
 

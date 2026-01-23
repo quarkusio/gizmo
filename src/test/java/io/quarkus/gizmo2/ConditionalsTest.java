@@ -3,20 +3,22 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class ConditionalsTest {
 
     @Test
     public void testIf() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.If", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.If", cc -> {
             cc.staticMethod("test", mc -> {
                 // static String test(boolean val) {
                 //    int len = val.toString().length();
@@ -35,15 +37,15 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test", BooleanFun.class).apply("foo"));
-        assertTrue(tcm.staticMethod("test", BooleanFun.class).apply("fooos"));
+        assertFalse(tcm.staticMethod(desc, "test", BooleanFun.class).apply("foo"));
+        assertTrue(tcm.staticMethod(desc, "test", BooleanFun.class).apply("fooos"));
     }
 
     @Test
     public void testIfNot() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfNot", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfNot", cc -> {
             cc.staticMethod("test", mc -> {
                 // static String test(boolean val) {
                 //    int len = val.toString().length();
@@ -62,15 +64,15 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test", BooleanFun.class).apply("foo"));
-        assertTrue(tcm.staticMethod("test", BooleanFun.class).apply("fooos"));
+        assertFalse(tcm.staticMethod(desc, "test", BooleanFun.class).apply("foo"));
+        assertTrue(tcm.staticMethod(desc, "test", BooleanFun.class).apply("fooos"));
     }
 
     @Test
     public void testCond() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Cond", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Cond", cc -> {
             cc.staticMethod("test", mc -> {
                 // static boolean test(String val) {
                 //    int len = val.length();
@@ -88,8 +90,8 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test", BooleanFun.class).apply("foo"));
-        assertTrue(tcm.staticMethod("test", BooleanFun.class).apply("fooos"));
+        assertFalse(tcm.staticMethod(desc, "test", BooleanFun.class).apply("foo"));
+        assertTrue(tcm.staticMethod(desc, "test", BooleanFun.class).apply("fooos"));
     }
 
     @FunctionalInterface
@@ -102,9 +104,9 @@ public class ConditionalsTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testIfInstanceOf() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfInstanceOf", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfInstanceOf", cc -> {
             cc.staticMethod("test", mc -> {
                 // static boolean test(Object param) {
                 //    if (param instanceof CharSequence) {
@@ -122,18 +124,18 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test", Predicate.class).test("foobar"));
-        assertTrue(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
-        assertFalse(tcm.staticMethod("test", Predicate.class).test(123));
-        assertFalse(tcm.staticMethod("test", Predicate.class).test(new Object()));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test("foobar"));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test(new StringBuilder()));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test(123));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test(new Object()));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testIfNotInstanceOf() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfNotInstanceOf", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfNotInstanceOf", cc -> {
             cc.staticMethod("test", mc -> {
                 // static boolean test(Object param) {
                 //    if (!(param instanceof CharSequence)) {
@@ -151,18 +153,18 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertFalse(tcm.staticMethod("test", Predicate.class).test("foobar"));
-        assertFalse(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
-        assertTrue(tcm.staticMethod("test", Predicate.class).test(123));
-        assertTrue(tcm.staticMethod("test", Predicate.class).test(new Object()));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test("foobar"));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test(new StringBuilder()));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test(123));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test(new Object()));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testIfInstanceOfElse() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.IfInstanceOfElse", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.IfInstanceOfElse", cc -> {
             cc.staticMethod("test", mc -> {
                 // static boolean test(Object param) {
                 //    if (param instanceof CharSequence) {
@@ -182,10 +184,10 @@ public class ConditionalsTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test", Predicate.class).test("foobar"));
-        assertTrue(tcm.staticMethod("test", Predicate.class).test(new StringBuilder()));
-        assertFalse(tcm.staticMethod("test", Predicate.class).test(123));
-        assertFalse(tcm.staticMethod("test", Predicate.class).test(new Object()));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test("foobar"));
+        assertTrue(tcm.staticMethod(desc, "test", Predicate.class).test(new StringBuilder()));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test(123));
+        assertFalse(tcm.staticMethod(desc, "test", Predicate.class).test(new Object()));
     }
 
 }

@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 @ParameterizedClass
 @ValueSource(booleans = { false, true })
@@ -26,15 +27,11 @@ public class LambdaTest {
     @Parameter
     boolean lambdasAsAnonymousClasses;
 
-    private Gizmo gizmo(TestClassMaker tcm) {
-        return Gizmo.create(tcm).withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses);
-    }
-
     @Test
     public void testSupplierLambda() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.SupplierLambda", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.SupplierLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static Object runTest() {
                 //    Supplier supplier = () -> "foobar";
@@ -51,14 +48,14 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals("foobar", tcm.staticMethod("runTest", Supplier.class).get());
+        assertEquals("foobar", tcm.staticMethod(desc, "runTest", Supplier.class).get());
     }
 
     @Test
     public void testRunnableLambda() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.RunnableLambda", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.RunnableLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -82,14 +79,14 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals(1, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        assertEquals(1, tcm.staticMethod(desc, "runTest", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testConsumerLambda() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.ConsumerLambda", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ConsumerLambda", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -117,14 +114,14 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals(10, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        assertEquals(10, tcm.staticMethod(desc, "runTest", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testBasicLambdas() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.Lambdas", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Lambdas", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -163,14 +160,14 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals(1, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(1, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testLambdaCapturingThis() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.LambdaCapturingThis", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LambdaCapturingThis", cc -> {
             cc.defaultConstructor();
 
             MethodDesc returnString = cc.method("returnString", mc -> {
@@ -216,13 +213,13 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals("foobar_next", tcm.staticMethod("runTest", Supplier.class).get());
+        assertEquals("foobar_next", tcm.staticMethod(desc, "runTest", Supplier.class).get());
     }
 
     @Test
     public void testLambdaWithManyParametersAndCaptures() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
         ClassDesc lambdaType = g.interface_("io.quarkus.gizmo2.LambdaType", cc -> {
             cc.addAnnotation(FunctionalInterface.class);
             cc.method("get", mc -> {
@@ -236,7 +233,7 @@ public class LambdaTest {
         });
         MethodDesc lambdaMethod = InterfaceMethodDesc.of(lambdaType, "get", String.class,
                 int.class, long.class, float.class, double.class, String.class);
-        g.class_("io.quarkus.gizmo2.LambdaWithManyParametersAndCaptures", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LambdaWithManyParametersAndCaptures", cc -> {
             cc.staticMethod("runTest", mc -> {
                 // static Object runTest() {
                 //     int ai = 1;
@@ -308,14 +305,14 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals("1_2_3.0_4.0_5-6-7_8_9_10.0_11.0_12-13-14", tcm.staticMethod("runTest", Supplier.class).get());
+        assertEquals("1_2_3.0_4.0_5-6-7_8_9_10.0_11.0_12-13-14", tcm.staticMethod(desc, "runTest", Supplier.class).get());
     }
 
     @Test
     public void testConsumerLambdaAssigningToItsParameter() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = gizmo(tcm);
-        g.class_("io.quarkus.gizmo2.ConsumerLambdaAssigningToItsParameter", cc -> {
+        TestClassMaker tcm = TestClassMaker.create(Gizmo.create().withLambdasAsAnonymousClasses(lambdasAsAnonymousClasses));
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ConsumerLambdaAssigningToItsParameter", cc -> {
             cc.staticMethod("runTest", smc -> {
                 // static int runTest() {
                 //    AtomicInteger ret = new AtomicInteger();
@@ -346,7 +343,7 @@ public class LambdaTest {
                 });
             });
         });
-        assertEquals(13, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        assertEquals(13, tcm.staticMethod(desc, "runTest", IntSupplier.class).getAsInt());
     }
 
 }

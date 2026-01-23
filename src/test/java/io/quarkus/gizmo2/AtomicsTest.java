@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public final class AtomicsTest {
 
@@ -19,10 +20,10 @@ public final class AtomicsTest {
 
     @Test
     public void testGetAndSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndSet");
-        g.class_(desc, zc -> {
+        Class<?> clazz = tcm.loadClass(g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             FieldDesc strVal = zc.field("strVal", Const.of("Hello"));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
@@ -188,21 +189,21 @@ public final class AtomicsTest {
                     b0.return_();
                 });
             });
-        });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
-        tcm.staticMethod("test3", Runnable.class).run();
-        tcm.staticMethod("test4", Runnable.class).run();
-        tcm.staticMethod("test5", Runnable.class).run();
+        }));
+        tcm.staticMethod(clazz, "test0", Runnable.class).run();
+        tcm.staticMethod(clazz, "test1", Runnable.class).run();
+        tcm.staticMethod(clazz, "test2", Runnable.class).run();
+        tcm.staticMethod(clazz, "test3", Runnable.class).run();
+        tcm.staticMethod(clazz, "test4", Runnable.class).run();
+        tcm.staticMethod(clazz, "test5", Runnable.class).run();
     }
 
     @Test
     public void testGetAndAdd() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndAdd");
-        g.class_(desc, zc -> {
+        ClassDesc xxx = g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
                 sfc.setInitial(404);
@@ -288,17 +289,18 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
+        Class<?> clazz = tcm.loadClass(xxx);
+        tcm.staticMethod(clazz, "test0", Runnable.class).run();
+        tcm.staticMethod(clazz, "test1", Runnable.class).run();
+        tcm.staticMethod(clazz, "test2", Runnable.class).run();
     }
 
     @Test
     public void testGetAndBitwiseOr() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndBitwiseOr");
-        g.class_(desc, zc -> {
+        Class<?> clazz = tcm.loadClass(g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
             StaticFieldVar staticIntVal = zc.staticField("staticIntVal", sfc -> {
                 sfc.setInitial(404);
@@ -383,16 +385,16 @@ public final class AtomicsTest {
                     b0.return_();
                 });
             });
-        });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
+        }));
+        tcm.staticMethod(clazz, "test0", Runnable.class).run();
+        tcm.staticMethod(clazz, "test1", Runnable.class).run();
+        tcm.staticMethod(clazz, "test2", Runnable.class).run();
     }
 
     @Test
     public void testGetAndBitwiseAnd() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndBitwiseAnd");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(4095));
@@ -480,15 +482,15 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
     }
 
     @Test
     public void testGetAndBitwiseXor() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndBitwiseXor");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(4095));
@@ -576,15 +578,15 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
     }
 
     @Test
     public void testCompareAndSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestCompareAndSet");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
@@ -688,18 +690,18 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
-        tcm.staticMethod("test3", Runnable.class).run();
-        tcm.staticMethod("test4", Runnable.class).run();
-        tcm.staticMethod("test5", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test3", Runnable.class).run();
+        tcm.staticMethod(desc, "test4", Runnable.class).run();
+        tcm.staticMethod(desc, "test5", Runnable.class).run();
     }
 
     @Test
     public void testWeakCompareAndSet() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestWeakCompareAndSet");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
@@ -804,18 +806,18 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
-        tcm.staticMethod("test3", Runnable.class).run();
-        tcm.staticMethod("test4", Runnable.class).run();
-        tcm.staticMethod("test5", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test3", Runnable.class).run();
+        tcm.staticMethod(desc, "test4", Runnable.class).run();
+        tcm.staticMethod(desc, "test5", Runnable.class).run();
     }
 
     @Test
     public void testCompareAndExchange() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestCompareAndExchange");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
@@ -984,18 +986,18 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
-        tcm.staticMethod("test3", Runnable.class).run();
-        tcm.staticMethod("test4", Runnable.class).run();
-        tcm.staticMethod("test5", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test3", Runnable.class).run();
+        tcm.staticMethod(desc, "test4", Runnable.class).run();
+        tcm.staticMethod(desc, "test5", Runnable.class).run();
     }
 
     @Test
     public void testGetAndSetSeparately() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestGetAndSetSeparately");
         g.class_(desc, zc -> {
             FieldDesc intVal = zc.field("intVal", Const.of(123));
@@ -1182,12 +1184,12 @@ public final class AtomicsTest {
                 });
             });
         });
-        tcm.staticMethod("test0", Runnable.class).run();
-        tcm.staticMethod("test1", Runnable.class).run();
-        tcm.staticMethod("test2", Runnable.class).run();
-        tcm.staticMethod("test3", Runnable.class).run();
-        tcm.staticMethod("test4", Runnable.class).run();
-        tcm.staticMethod("test5", Runnable.class).run();
+        tcm.staticMethod(desc, "test0", Runnable.class).run();
+        tcm.staticMethod(desc, "test1", Runnable.class).run();
+        tcm.staticMethod(desc, "test2", Runnable.class).run();
+        tcm.staticMethod(desc, "test3", Runnable.class).run();
+        tcm.staticMethod(desc, "test4", Runnable.class).run();
+        tcm.staticMethod(desc, "test5", Runnable.class).run();
     }
 
     private static final StackWalker SW = StackWalker.getInstance();

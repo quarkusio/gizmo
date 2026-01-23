@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class InvocationTest {
     private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
@@ -32,9 +33,9 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
             MethodDesc returnString = cc.staticMethod("returnString", mc -> {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
@@ -53,7 +54,7 @@ public class InvocationTest {
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -68,9 +69,9 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VirtualInvocation", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.VirtualInvocation", cc -> {
             cc.defaultConstructor();
 
             MethodDesc returnString = cc.method("returnString", mc -> {
@@ -92,7 +93,7 @@ public class InvocationTest {
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -113,8 +114,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc superclass = g.class_("io.quarkus.gizmo2.MySuperclass", cc -> {
             cc.defaultConstructor();
@@ -131,7 +132,7 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
             cc.extends_(superclass);
 
             cc.defaultConstructor();
@@ -140,9 +141,9 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    MethodDesc desc = ClassMethodDesc.of(superclass, "returnString",
+                    MethodDesc md = ClassMethodDesc.of(superclass, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeSpecial(desc, cc.this_(), input));
+                    bc.return_(bc.invokeSpecial(md, cc.this_(), input));
                 });
             });
 
@@ -154,7 +155,7 @@ public class InvocationTest {
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -173,8 +174,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
             cc.method("returnString", mc -> {
@@ -183,7 +184,7 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
             cc.implements_(myInterface);
 
             cc.defaultConstructor();
@@ -204,13 +205,13 @@ public class InvocationTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
-                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                    MethodDesc md = InterfaceMethodDesc.of(myInterface, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeInterface(desc, instance, Const.of("input")));
+                    bc.return_(bc.invokeInterface(md, instance, Const.of("input")));
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -227,8 +228,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
             cc.staticMethod("returnString", mc -> {
@@ -243,17 +244,17 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticInvocation", cc -> {
             cc.staticMethod("invoke", mc -> {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
-                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                    MethodDesc md = InterfaceMethodDesc.of(myInterface, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeStatic(desc, Const.of("input")));
+                    bc.return_(bc.invokeStatic(md, Const.of("input")));
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -274,8 +275,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
             cc.defaultMethod("returnString", mc -> {
@@ -290,7 +291,7 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.SpecialInvocation", cc -> {
             cc.implements_(myInterface);
 
             cc.defaultConstructor();
@@ -299,9 +300,9 @@ public class InvocationTest {
                 ParamVar input = mc.parameter("input", String.class);
                 mc.returning(String.class);
                 mc.body(bc -> {
-                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString",
+                    MethodDesc md = InterfaceMethodDesc.of(myInterface, "returnString",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeSpecial(desc, cc.this_(), input));
+                    bc.return_(bc.invokeSpecial(md, cc.this_(), input));
                 });
             });
 
@@ -313,7 +314,7 @@ public class InvocationTest {
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     @Test
@@ -336,8 +337,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
             MethodDesc returnString = cc.method("returnString", mc -> {
@@ -354,7 +355,7 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
             cc.implements_(myInterface);
 
             cc.defaultConstructor();
@@ -375,21 +376,21 @@ public class InvocationTest {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
-                    MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnStringCaller",
+                    MethodDesc md = InterfaceMethodDesc.of(myInterface, "returnStringCaller",
                             MethodTypeDesc.of(CD_String, CD_String));
-                    bc.return_(bc.invokeInterface(desc, instance, Const.of("input")));
+                    bc.return_(bc.invokeInterface(md, instance, Const.of("input")));
                 });
             });
         });
-        assertEquals("input_foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("input_foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 
     // ---
 
     @Test
     public void wrongNumberOfArguments() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.WrongNumberOfArguments", cc -> {
             MethodDesc returnString = cc.staticMethod("returnString", mc -> {
                 ParamVar input = mc.parameter("input", String.class);
@@ -418,8 +419,8 @@ public class InvocationTest {
 
     @Test
     public void wrongArgumentTypes() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         g.class_("io.quarkus.gizmo2.WrongArgumentTypes", cc -> {
             MethodDesc returnInt = cc.staticMethod("returnInt", mc -> {
                 ParamVar input = mc.parameter("input", int.class);
@@ -449,9 +450,9 @@ public class InvocationTest {
 
     @Test
     public void differentButCorrectArgumentTypes() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.DifferentButCorrectArgumentTypes", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.DifferentButCorrectArgumentTypes", cc -> {
             MethodDesc returnInt = cc.staticMethod("returnInt", mc -> {
                 ParamVar input = mc.parameter("input", int.class);
                 mc.returning(int.class);
@@ -467,7 +468,7 @@ public class InvocationTest {
                 });
             });
         });
-        assertEquals('b', tcm.staticMethod("invoke", IntSupplier.class).getAsInt());
+        assertEquals('b', tcm.staticMethod(desc, "invoke", IntSupplier.class).getAsInt());
     }
 
     @Test
@@ -486,8 +487,8 @@ public class InvocationTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
 
         ClassDesc myInterface = g.interface_("io.quarkus.gizmo2.MyInterface", cc -> {
             cc.method("returnString", mc -> {
@@ -495,7 +496,7 @@ public class InvocationTest {
             });
         });
 
-        g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.InterfaceInvocation", cc -> {
             cc.implements_(myInterface);
 
             cc.defaultConstructor();
@@ -513,16 +514,16 @@ public class InvocationTest {
                 mc.body(bc -> {
                     Expr instance = bc.new_(cc.type());
                     assertThrows(IllegalArgumentException.class, () -> {
-                        MethodDesc desc = ClassMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
-                        bc.return_(bc.invokeInterface(desc, instance));
+                        MethodDesc md = ClassMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
+                        bc.return_(bc.invokeInterface(md, instance));
                     });
                     assertDoesNotThrow(() -> {
-                        MethodDesc desc = InterfaceMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
-                        bc.return_(bc.invokeInterface(desc, instance));
+                        MethodDesc md = InterfaceMethodDesc.of(myInterface, "returnString", MethodTypeDesc.of(CD_String));
+                        bc.return_(bc.invokeInterface(md, instance));
                     });
                 });
             });
         });
-        assertEquals("foobar", tcm.staticMethod("invoke", Supplier.class).get());
+        assertEquals("foobar", tcm.staticMethod(desc, "invoke", Supplier.class).get());
     }
 }

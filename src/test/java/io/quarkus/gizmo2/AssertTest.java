@@ -8,12 +8,14 @@ import java.lang.constant.ClassDesc;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
+import io.quarkus.gizmo2.testing.TestClassMaker;
+
 public class AssertTest {
     @Test
     public void assert_() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.Assert"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_(ClassDesc.of("io.quarkus.gizmo2.Assert"), cc -> {
             cc.staticMethod("hello", mc -> {
                 mc.body(b0 -> {
                     b0.assert_(b1 -> {
@@ -22,10 +24,10 @@ public class AssertTest {
                     b0.return_();
                 });
             });
-        });
-        Assumptions.assumeTrue(tcm.definedClass().desiredAssertionStatus());
+        }));
+        Assumptions.assumeTrue(clazz.desiredAssertionStatus());
         AssertionError e = assertThrows(AssertionError.class, () -> {
-            tcm.staticMethod("hello", Runnable.class).run();
+            tcm.staticMethod(clazz.getName(), "hello", Runnable.class).run();
         });
         assertEquals("assertion", e.getMessage());
     }

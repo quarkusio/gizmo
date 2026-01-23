@@ -15,18 +15,18 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class AccessFlagsTest {
 
     @Test
     public void testClassDefaultFlags() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.Foo"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_(ClassDesc.of("io.quarkus.gizmo2.Foo"), cc -> {
             cc.implements_(Function.class);
             cc.extends_(Super.class);
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertFalse(clazz.isInterface());
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
@@ -36,17 +36,16 @@ public class AccessFlagsTest {
 
     @Test
     public void testPackagePrivateClass() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.Foo"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_(ClassDesc.of("io.quarkus.gizmo2.Foo"), cc -> {
             cc.packagePrivate();
             cc.implements_(Function.class);
             cc.extends_(Super.class);
             // check some invalid flags
             assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.STATIC));
             assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertFalse(clazz.isInterface());
         assertTrue(clazz.isSynthetic());
         assertFalse(Modifier.isPublic(clazz.getModifiers()));
@@ -58,12 +57,11 @@ public class AccessFlagsTest {
 
     @Test
     public void testInterfaceDefaultFlags() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_("io.quarkus.gizmo2.FooInterface", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.FooInterface", cc -> {
             cc.extends_(Consumer.class);
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertTrue(clazz.isInterface());
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
@@ -74,15 +72,14 @@ public class AccessFlagsTest {
 
     @Test
     public void testPackagePrivateInterface() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.interface_(ClassDesc.of("io.quarkus.gizmo2.FooInterface"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.interface_(ClassDesc.of("io.quarkus.gizmo2.FooInterface"), cc -> {
             cc.packagePrivate();
             cc.extends_(Consumer.class);
             assertThrows(IllegalArgumentException.class, () -> cc.setAccess(AccessLevel.PROTECTED));
             assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertTrue(clazz.isInterface());
         assertTrue(clazz.isSynthetic());
         assertFalse(Modifier.isPublic(clazz.getModifiers()));
@@ -95,9 +92,9 @@ public class AccessFlagsTest {
 
     @Test
     public void testClassFieldsFlags() throws NoSuchFieldException, SecurityException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FooFields", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.FooFields", cc -> {
             cc.field("alpha", fc -> {
                 fc.public_();
                 fc.setType(Integer.class);
@@ -123,8 +120,7 @@ public class AccessFlagsTest {
                 fc.final_();
                 fc.setType(Long.class);
             });
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
 
@@ -153,9 +149,9 @@ public class AccessFlagsTest {
 
     @Test
     public void testClassMethodFlags() throws NoSuchMethodException, SecurityException {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.FooMethods", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.FooMethods", cc -> {
             cc.method("alpha", mc -> {
                 mc.public_();
                 mc.body(BlockCreator::return_);
@@ -172,8 +168,7 @@ public class AccessFlagsTest {
                 mc.protected_();
                 mc.body(BlockCreator::return_);
             });
-        });
-        Class<?> clazz = tcm.definedClass();
+        }));
         assertTrue(clazz.isSynthetic());
         assertTrue(Modifier.isPublic(clazz.getModifiers()));
 

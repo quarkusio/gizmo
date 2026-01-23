@@ -10,15 +10,16 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class InstanceExecutableCreatorTest {
 
     @SuppressWarnings("unchecked")
     @Test
     public void testThis() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestFun"), cc -> {
             cc.implements_(
                     (GenericType.OfClass) GenericType.of(Function.class,
                             List.of(TypeArgument.of(String.class), TypeArgument.of(String.class))));
@@ -49,7 +50,7 @@ public class InstanceExecutableCreatorTest {
                 });
             });
         });
-        assertEquals("foo", tcm.noArgsConstructor(Function.class).apply("Foo"));
+        assertEquals("foo", tcm.newInstance(desc, Function.class).apply("Foo"));
     }
 
 }

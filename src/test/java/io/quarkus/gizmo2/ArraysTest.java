@@ -17,14 +17,15 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class ArraysTest {
 
     @Test
     public void testArrayVariableLength() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ArrayOps", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.ArrayOps", cc -> {
             cc.staticMethod("runTest", mc -> {
                 // static int runTest() {
                 //    String[] arr = new String[5];
@@ -44,8 +45,8 @@ public class ArraysTest {
                     bc.return_(arr.length());
                 });
             });
-        });
-        assertEquals(5, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(5, tcm.staticMethod(clazz, "runTest", IntSupplier.class).getAsInt());
     }
 
     @Test
@@ -160,9 +161,9 @@ public class ArraysTest {
     }
 
     private void testCreateArray(Function<BlockCreator, Expr> bytecode, String expectedResult) {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TestCreateArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.TestCreateArray", cc -> {
             cc.staticMethod("returnArrayString", mc -> {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
@@ -181,8 +182,8 @@ public class ArraysTest {
                     }
                 });
             });
-        });
-        assertEquals(expectedResult, tcm.staticMethod("returnArrayString", Supplier.class).get());
+        }));
+        assertEquals(expectedResult, tcm.staticMethod(clazz, "returnArrayString", Supplier.class).get());
     }
 
     @Test
@@ -232,24 +233,24 @@ public class ArraysTest {
     }
 
     private void testReadArray(Function<BlockCreator, Expr> bytecode, int expectedResult) {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TestReadArray", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.TestReadArray", cc -> {
             cc.staticMethod("returnInt", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
                     bc.return_(bytecode.apply(bc));
                 });
             });
-        });
-        assertEquals(expectedResult, tcm.staticMethod("returnInt", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(expectedResult, tcm.staticMethod(clazz, "returnInt", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testComputedIndex() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ComputedIndex", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.ComputedIndex", cc -> {
             MethodDesc one = cc.staticMethod("one", mc -> {
                 // static int one() {
                 //     return 1;
@@ -280,15 +281,15 @@ public class ArraysTest {
                     bc.return_(arr.elem(bc.add(bc.invokeStatic(one), bc.invokeStatic(two))));
                 });
             });
-        });
-        assertEquals("quux", tcm.staticMethod("runTest", Supplier.class).get());
+        }));
+        assertEquals("quux", tcm.staticMethod(clazz, "runTest", Supplier.class).get());
     }
 
     @Test
     public void testMultipleComputedIndices() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.MultipleComputedIndices", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.MultipleComputedIndices", cc -> {
             MethodDesc two = cc.staticMethod("two", mc -> {
                 // static int two() {
                 //     return 2;
@@ -319,15 +320,15 @@ public class ArraysTest {
                     bc.return_(bc.add(arr.elem(bc.invokeStatic(two)), arr.elem(bc.invokeStatic(three))));
                 });
             });
-        });
-        assertEquals(7, tcm.staticMethod("runTest", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(7, tcm.staticMethod(clazz, "runTest", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testGetArrayElement() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GetArrayElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.GetArrayElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
@@ -335,15 +336,15 @@ public class ArraysTest {
                     bc.return_(array.elem(1));
                 });
             });
-        });
-        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(2, tcm.staticMethod(clazz, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testExplicitGetArrayElement() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ExplicitGetArrayElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.ExplicitGetArrayElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
@@ -351,15 +352,15 @@ public class ArraysTest {
                     bc.return_(bc.get(array.elem(1)));
                 });
             });
-        });
-        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(2, tcm.staticMethod(clazz, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testVolatileGetArrayElement() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileGetArrayElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.VolatileGetArrayElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 mc.body(bc -> {
@@ -367,15 +368,15 @@ public class ArraysTest {
                     bc.return_(bc.get(array.elem(1), MemoryOrder.Volatile));
                 });
             });
-        });
-        assertEquals(2, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        }));
+        assertEquals(2, tcm.staticMethod(clazz, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testSetArrayElement() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.SetArrayElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.SetArrayElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
@@ -388,17 +389,17 @@ public class ArraysTest {
                     bc.return_(array.elem(1));
                 });
             });
-        });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        }));
+        assertEquals(5, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 
     @Test
     public void testVolatileSetArrayElement() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileSetArrayElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.VolatileSetArrayElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(int.class);
                 ParamVar param = mc.parameter("value", int.class);
@@ -411,17 +412,17 @@ public class ArraysTest {
                     bc.return_(array.elem(1));
                 });
             });
-        });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        }));
+        assertEquals(5, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(clazz, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 
     @Test
     public void testCreateArrayByMapping() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.CreateArrayByMapping", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.CreateArrayByMapping", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class); // always `String[]`
                 mc.body(bc -> {
@@ -431,7 +432,7 @@ public class ArraysTest {
                     }));
                 });
             });
-        });
-        assertArrayEquals(new String[] { "FOO", "BAR" }, (String[]) tcm.staticMethod("test", Supplier.class).get());
+        }));
+        assertArrayEquals(new String[] { "FOO", "BAR" }, (String[]) tcm.staticMethod(clazz, "test", Supplier.class).get());
     }
 }

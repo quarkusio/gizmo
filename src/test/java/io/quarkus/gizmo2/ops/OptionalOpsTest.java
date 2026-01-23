@@ -2,21 +2,22 @@ package io.quarkus.gizmo2.ops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.IntSupplier;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
-import io.quarkus.gizmo2.TestClassMaker;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class OptionalOpsTest {
 
     @Test
     public void testOps() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.OptionalOps", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.OptionalOps", cc -> {
             cc.staticMethod("test", mc -> {
                 // static int test() {
                 //    Optional foo = Optional.of("foo");
@@ -58,7 +59,7 @@ public class OptionalOpsTest {
                 });
             });
         });
-        assertEquals(0, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(0, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
 }

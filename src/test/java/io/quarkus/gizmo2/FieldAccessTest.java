@@ -3,6 +3,7 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.constant.ClassDesc;
+import java.lang.invoke.MethodType;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.IntSupplier;
@@ -14,15 +15,16 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class FieldAccessTest {
 
     @SuppressWarnings("unchecked")
     @Test
     public void testInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Alpha", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             FieldDesc bravoDesc = cc.field("bravo", fc -> {
                 fc.setType(String.class);
             });
@@ -47,15 +49,17 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
+        assertEquals(7,
+                tcm.virtualMethod(desc, "test", MethodType.methodType(int.class), ToIntFunction.class)
+                        .applyAsInt(tcm.constructor(desc, Supplier.class).get()));
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Alpha", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             var bravo = cc.staticField("bravo", fc -> {
                 fc.setType(String.class);
                 fc.setInitial(Const.of("charlie"));
@@ -86,16 +90,16 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals("charlies", tcm.staticMethod("test", Function.class).apply("foo").toString());
-        assertEquals("NULL", tcm.staticMethod("test", Function.class).apply(null).toString());
+        assertEquals("charlies", tcm.staticMethod(desc, "test", Function.class).apply("foo").toString());
+        assertEquals("NULL", tcm.staticMethod(desc, "test", Function.class).apply(null).toString());
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testConstantField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Alpha", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             var bravo = cc.constantField("BRAVO", Const.of("charlie"));
             cc.defaultConstructor();
             cc.method("test", mc -> {
@@ -110,15 +114,16 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(7, tcm.instanceMethod("test", ToIntFunction.class).applyAsInt(tcm.constructor(Supplier.class).get()));
+        assertEquals(7,
+                tcm.virtualMethod(desc, "test", ToIntFunction.class).applyAsInt(tcm.constructor(desc, Supplier.class).get()));
     }
 
     @Test
     public void testInstanceConstantField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         String className = "io.quarkus.gizmo2.InstanceConstantFieldTest";
-        g.class_(className, zc -> {
+        ClassDesc desc = g.class_(className, zc -> {
             // create an instance field and initialize it to a constant value
             FieldDesc field1 = zc.field("field1", ifc -> {
                 ifc.setType(String.class);
@@ -143,15 +148,15 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test0", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void testInstanceInitializedField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
         String className = "io.quarkus.gizmo2.InstanceInitializedFieldTest";
-        g.class_(className, zc -> {
+        ClassDesc desc = g.class_(className, zc -> {
             // create an instance field and initialize it to a non-constant value
             FieldDesc field1 = zc.field("field1", ifc -> {
                 ifc.setType(String.class);
@@ -178,14 +183,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test0", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test0", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void testStaticInitializedField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticInitializedFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticInitializedFieldTest", cc -> {
             // create a static field and initialize it to a non-constant value
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.final_();
@@ -203,14 +208,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertTrue(tcm.staticMethod("test", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(desc, "test", BooleanSupplier.class).getAsBoolean());
     }
 
     @Test
     public void testStaticInitializedFieldToInstanceOfItsClass() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.StaticInitializedFieldToInstanceOfItsClassTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticInitializedFieldToInstanceOfItsClassTest", cc -> {
             // create a static field and initialize it to a non-constant value
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.final_();
@@ -229,14 +234,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertNotNull(tcm.staticMethod("test", Supplier.class).get());
+        assertNotNull(tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
     public void testGetStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GetStaticFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -249,14 +254,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testExplicitGetStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ExplicitGetStaticFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ExplicitGetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -269,14 +274,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testVolatileGetStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileGetStaticFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileGetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -289,14 +294,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testSetStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.SetStaticFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.SetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.setType(int.class);
             });
@@ -310,16 +315,16 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        assertEquals(5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 
     @Test
     public void testVolatileSetStaticField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileSetStaticFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileSetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.setType(int.class);
             });
@@ -333,16 +338,16 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        assertEquals(5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 
     @Test
     public void testGetInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.GetInstanceFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.GetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -358,14 +363,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testExplicitGetInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ExplicitGetInstanceFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ExplicitGetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -381,14 +386,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testVolatileGetInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileGetInstanceFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileGetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
                 fc.setType(int.class);
                 fc.setInitial(5);
@@ -404,14 +409,14 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntSupplier.class).getAsInt());
+        assertEquals(5, tcm.staticMethod(desc, "test", IntSupplier.class).getAsInt());
     }
 
     @Test
     public void testSetInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.SetInstanceFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.SetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
                 fc.setType(int.class);
             });
@@ -430,16 +435,16 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        assertEquals(5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 
     @Test
     public void testVolatileSetInstanceField() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.VolatileSetInstanceFieldTest", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileSetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
                 fc.setType(int.class);
             });
@@ -458,8 +463,8 @@ public class FieldAccessTest {
                 });
             });
         });
-        assertEquals(5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(5));
-        assertEquals(0, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(0));
-        assertEquals(-5, tcm.staticMethod("test", IntUnaryOperator.class).applyAsInt(-5));
+        assertEquals(5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(5));
+        assertEquals(0, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(0));
+        assertEquals(-5, tcm.staticMethod(desc, "test", IntUnaryOperator.class).applyAsInt(-5));
     }
 }

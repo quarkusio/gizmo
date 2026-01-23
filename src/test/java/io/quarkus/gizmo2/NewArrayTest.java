@@ -3,9 +3,12 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class NewArrayTest {
     @Test
@@ -16,9 +19,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NoElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NoElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.body(bc -> {
                     bc.newArray(int.class);
@@ -26,7 +29,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -37,9 +40,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.NoElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.NoElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -47,7 +50,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertArrayEquals(new int[] {}, (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[] {}, (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -58,9 +61,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.OneElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.OneElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.body(bc -> {
                     bc.newArray(int.class, Const.of(1));
@@ -68,7 +71,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -79,9 +82,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.OneElement", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.OneElement", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -89,7 +92,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertArrayEquals(new int[] { 1 }, (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[] { 1 }, (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -100,9 +103,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TwoElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TwoElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.body(bc -> {
                     bc.newArray(int.class, Const.of(1), Const.of(2));
@@ -110,7 +113,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -121,9 +124,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TwoElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TwoElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -131,7 +134,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertArrayEquals(new int[] { 1, 2 }, (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[] { 1, 2 }, (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -142,9 +145,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ThreeElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ThreeElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.body(bc -> {
                     bc.newArray(int.class, Const.of(1), Const.of(2), Const.of(3));
@@ -152,7 +155,7 @@ public class NewArrayTest {
                 });
             });
         });
-        assertDoesNotThrow(tcm.staticMethod("test", Runnable.class)::run);
+        assertDoesNotThrow(tcm.staticMethod(desc, "test", Runnable.class)::run);
     }
 
     @Test
@@ -163,9 +166,9 @@ public class NewArrayTest {
         //     }
         // }
 
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.ThreeElements", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.ThreeElements", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -173,6 +176,6 @@ public class NewArrayTest {
                 });
             });
         });
-        assertArrayEquals(new int[] { 1, 2, 3 }, (int[]) tcm.staticMethod("test", Supplier.class).get());
+        assertArrayEquals(new int[] { 1, 2, 3 }, (int[]) tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 }

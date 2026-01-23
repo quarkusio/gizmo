@@ -2,6 +2,7 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -9,14 +10,15 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class LoopTest {
 
     @Test
     public void testForEach() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
             cc.implements_(StringListFun.class);
             cc.defaultConstructor();
             cc.method("apply", mc -> {
@@ -35,14 +37,14 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals("foo", tcm.noArgsConstructor(StringListFun.class).apply(List.of("foo", "bar", "baz")));
+        assertEquals("foo", tcm.newInstance(desc, StringListFun.class).apply(List.of("foo", "bar", "baz")));
     }
 
     @Test
     public void testForEachArray() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LoopArrayFun", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LoopArrayFun", cc -> {
             cc.implements_(StringArrayFun.class);
             cc.defaultConstructor();
             cc.method("apply", mc -> {
@@ -63,14 +65,14 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals(List.of("foo", "bar", "baz"), tcm.noArgsConstructor(StringArrayFun.class).apply("foo", "bar", "baz"));
+        assertEquals(List.of("foo", "bar", "baz"), tcm.newInstance(desc, StringArrayFun.class).apply("foo", "bar", "baz"));
     }
 
     @Test
     public void testForEachBreak() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
             cc.implements_(StringListFun.class);
             cc.defaultConstructor();
             cc.method("apply", mc -> {
@@ -93,7 +95,7 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals("foobar", tcm.noArgsConstructor(StringListFun.class).apply(List.of("foo", "bar", "baz")));
+        assertEquals("foobar", tcm.newInstance(desc, StringListFun.class).apply(List.of("foo", "bar", "baz")));
     }
 
     @Test
@@ -106,9 +108,9 @@ public class LoopTest {
         //    builder.append(e);
         // }
         // return builder.toString();
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.LoopFun", cc -> {
             cc.implements_(StringListFun.class);
             cc.defaultConstructor();
             cc.method("apply", mc -> {
@@ -128,7 +130,7 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals("foobaz", tcm.noArgsConstructor(StringListFun.class).apply(List.of("foo", "bar", "baz")));
+        assertEquals("foobaz", tcm.newInstance(desc, StringListFun.class).apply(List.of("foo", "bar", "baz")));
     }
 
     @Test
@@ -139,9 +141,9 @@ public class LoopTest {
         //     i++;
         //     sum += i;
         // } while (i < 10);
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.DoWhileSupplier", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.DoWhileSupplier", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -155,7 +157,7 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(55, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -169,9 +171,9 @@ public class LoopTest {
         //     }
         //     sum += i;
         // } while (i < 10);
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.DoWhileSupplier", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.DoWhileSupplier", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -189,7 +191,7 @@ public class LoopTest {
             });
         });
         // 1 + 3 + 5 + 7 + 9
-        assertEquals(25, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(25, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -200,9 +202,9 @@ public class LoopTest {
         //     i++;
         //     sum += i;
         // }
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.WhileSupplier", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.WhileSupplier", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -216,7 +218,7 @@ public class LoopTest {
                 });
             });
         });
-        assertEquals(55, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(55, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     @Test
@@ -230,9 +232,9 @@ public class LoopTest {
         //     }
         //     sum += i;
         // }
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.WhileSupplier", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.WhileSupplier", cc -> {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
@@ -250,7 +252,7 @@ public class LoopTest {
             });
         });
         // 1 + 3 + 5 + 7 + 9
-        assertEquals(25, tcm.staticMethod("test", Supplier.class).get());
+        assertEquals(25, tcm.staticMethod(desc, "test", Supplier.class).get());
     }
 
     public interface StringListFun {

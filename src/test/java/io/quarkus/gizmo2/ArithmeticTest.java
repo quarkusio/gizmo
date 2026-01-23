@@ -3,6 +3,7 @@ package io.quarkus.gizmo2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.IntBinaryOperator;
@@ -11,6 +12,8 @@ import java.util.function.LongBinaryOperator;
 import java.util.function.LongUnaryOperator;
 
 import org.junit.jupiter.api.Test;
+
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class ArithmeticTest {
     @FunctionalInterface
@@ -45,9 +48,9 @@ public class ArithmeticTest {
 
     @Test
     public void intArithmetic() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Int", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Int", cc -> {
             cc.staticMethod("neg", mc -> {
                 mc.returning(int.class);
                 ParamVar a = mc.parameter("a", int.class);
@@ -143,32 +146,32 @@ public class ArithmeticTest {
                     bc.return_(bc.ushr(a, b));
                 });
             });
-        });
-        assertEquals(-2, tcm.staticMethod("neg", IntUnaryOperator.class).applyAsInt(2));
-        assertEquals(2, tcm.staticMethod("neg", IntUnaryOperator.class).applyAsInt(-2));
-        assertEquals(2 + 3, tcm.staticMethod("add", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 - 3, tcm.staticMethod("sub", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 * 3, tcm.staticMethod("mul", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 / 3, tcm.staticMethod("div", IntBinaryOperator.class).applyAsInt(2, 3));
+        }));
+        assertEquals(-2, tcm.staticMethod(clazz, "neg", IntUnaryOperator.class).applyAsInt(2));
+        assertEquals(2, tcm.staticMethod(clazz, "neg", IntUnaryOperator.class).applyAsInt(-2));
+        assertEquals(2 + 3, tcm.staticMethod(clazz, "add", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 - 3, tcm.staticMethod(clazz, "sub", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 * 3, tcm.staticMethod(clazz, "mul", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 / 3, tcm.staticMethod(clazz, "div", IntBinaryOperator.class).applyAsInt(2, 3));
         assertThrows(ArithmeticException.class, () -> {
-            tcm.staticMethod("div", IntBinaryOperator.class).applyAsInt(2, 0);
+            tcm.staticMethod(clazz, "div", IntBinaryOperator.class).applyAsInt(2, 0);
         });
-        assertEquals(2 % 3, tcm.staticMethod("rem", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 & 3, tcm.staticMethod("and", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 | 3, tcm.staticMethod("or", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 ^ 3, tcm.staticMethod("xor", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(2 << 3, tcm.staticMethod("shl", IntBinaryOperator.class).applyAsInt(2, 3));
-        assertEquals(200 >> 3, tcm.staticMethod("shr", IntBinaryOperator.class).applyAsInt(200, 3));
-        assertEquals(-200 >> 3, tcm.staticMethod("shr", IntBinaryOperator.class).applyAsInt(-200, 3));
-        assertEquals(200 >>> 3, tcm.staticMethod("ushr", IntBinaryOperator.class).applyAsInt(200, 3));
-        assertEquals(-200 >>> 3, tcm.staticMethod("ushr", IntBinaryOperator.class).applyAsInt(-200, 3));
+        assertEquals(2 % 3, tcm.staticMethod(clazz, "rem", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 & 3, tcm.staticMethod(clazz, "and", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 | 3, tcm.staticMethod(clazz, "or", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 ^ 3, tcm.staticMethod(clazz, "xor", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(2 << 3, tcm.staticMethod(clazz, "shl", IntBinaryOperator.class).applyAsInt(2, 3));
+        assertEquals(200 >> 3, tcm.staticMethod(clazz, "shr", IntBinaryOperator.class).applyAsInt(200, 3));
+        assertEquals(-200 >> 3, tcm.staticMethod(clazz, "shr", IntBinaryOperator.class).applyAsInt(-200, 3));
+        assertEquals(200 >>> 3, tcm.staticMethod(clazz, "ushr", IntBinaryOperator.class).applyAsInt(200, 3));
+        assertEquals(-200 >>> 3, tcm.staticMethod(clazz, "ushr", IntBinaryOperator.class).applyAsInt(-200, 3));
     }
 
     @Test
     public void longArithmetic() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Long", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc xxx = g.class_("io.quarkus.gizmo2.Long", cc -> {
             cc.staticMethod("neg", mc -> {
                 mc.returning(long.class);
                 ParamVar a = mc.parameter("a", long.class);
@@ -265,31 +268,32 @@ public class ArithmeticTest {
                 });
             });
         });
-        assertEquals(-2L, tcm.staticMethod("neg", LongUnaryOperator.class).applyAsLong(2L));
-        assertEquals(2L, tcm.staticMethod("neg", LongUnaryOperator.class).applyAsLong(-2L));
-        assertEquals(2L + 3L, tcm.staticMethod("add", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L - 3L, tcm.staticMethod("sub", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L * 3L, tcm.staticMethod("mul", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L / 3L, tcm.staticMethod("div", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        Class<?> clazz = tcm.loadClass(xxx);
+        assertEquals(-2L, tcm.staticMethod(clazz, "neg", LongUnaryOperator.class).applyAsLong(2L));
+        assertEquals(2L, tcm.staticMethod(clazz, "neg", LongUnaryOperator.class).applyAsLong(-2L));
+        assertEquals(2L + 3L, tcm.staticMethod(clazz, "add", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L - 3L, tcm.staticMethod(clazz, "sub", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L * 3L, tcm.staticMethod(clazz, "mul", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L / 3L, tcm.staticMethod(clazz, "div", LongBinaryOperator.class).applyAsLong(2L, 3L));
         assertThrows(ArithmeticException.class, () -> {
-            tcm.staticMethod("div", LongBinaryOperator.class).applyAsLong(2L, 0L);
+            tcm.staticMethod(clazz, "div", LongBinaryOperator.class).applyAsLong(2L, 0L);
         });
-        assertEquals(2L % 3L, tcm.staticMethod("rem", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L & 3L, tcm.staticMethod("and", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L | 3L, tcm.staticMethod("or", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L ^ 3L, tcm.staticMethod("xor", LongBinaryOperator.class).applyAsLong(2L, 3L));
-        assertEquals(2L << 3L, tcm.staticMethod("shl", LongIntToLongFunction.class).apply(2L, 3));
-        assertEquals(200L >> 3L, tcm.staticMethod("shr", LongIntToLongFunction.class).apply(200L, 3));
-        assertEquals(-200L >> 3L, tcm.staticMethod("shr", LongIntToLongFunction.class).apply(-200L, 3));
-        assertEquals(200L >>> 3L, tcm.staticMethod("ushr", LongIntToLongFunction.class).apply(200L, 3));
-        assertEquals(-200L >>> 3L, tcm.staticMethod("ushr", LongIntToLongFunction.class).apply(-200L, 3));
+        assertEquals(2L % 3L, tcm.staticMethod(clazz, "rem", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L & 3L, tcm.staticMethod(clazz, "and", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L | 3L, tcm.staticMethod(clazz, "or", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L ^ 3L, tcm.staticMethod(clazz, "xor", LongBinaryOperator.class).applyAsLong(2L, 3L));
+        assertEquals(2L << 3L, tcm.staticMethod(clazz, "shl", LongIntToLongFunction.class).apply(2L, 3));
+        assertEquals(200L >> 3L, tcm.staticMethod(clazz, "shr", LongIntToLongFunction.class).apply(200L, 3));
+        assertEquals(-200L >> 3L, tcm.staticMethod(clazz, "shr", LongIntToLongFunction.class).apply(-200L, 3));
+        assertEquals(200L >>> 3L, tcm.staticMethod(clazz, "ushr", LongIntToLongFunction.class).apply(200L, 3));
+        assertEquals(-200L >>> 3L, tcm.staticMethod(clazz, "ushr", LongIntToLongFunction.class).apply(-200L, 3));
     }
 
     @Test
     public void intLongArithmetic() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Long", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Long", cc -> {
             cc.staticMethod("neg", mc -> {
                 mc.returning(long.class);
                 ParamVar a = mc.parameter("a", int.class);
@@ -385,32 +389,32 @@ public class ArithmeticTest {
                     bc.return_(bc.ushr(a, b));
                 });
             });
-        });
-        assertEquals(-2L, tcm.staticMethod("neg", IntToLongFunction.class).apply(2));
-        assertEquals(2L, tcm.staticMethod("neg", IntToLongFunction.class).apply(-2));
-        assertEquals(2L + 3L, tcm.staticMethod("add", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2L - 3L, tcm.staticMethod("sub", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2L * 3L, tcm.staticMethod("mul", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2L / 3L, tcm.staticMethod("div", IntLongToLongFunction.class).apply(2, 3L));
+        }));
+        assertEquals(-2L, tcm.staticMethod(clazz, "neg", IntToLongFunction.class).apply(2));
+        assertEquals(2L, tcm.staticMethod(clazz, "neg", IntToLongFunction.class).apply(-2));
+        assertEquals(2L + 3L, tcm.staticMethod(clazz, "add", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L - 3L, tcm.staticMethod(clazz, "sub", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L * 3L, tcm.staticMethod(clazz, "mul", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2L / 3L, tcm.staticMethod(clazz, "div", IntLongToLongFunction.class).apply(2, 3L));
         assertThrows(ArithmeticException.class, () -> {
-            tcm.staticMethod("div", IntLongToLongFunction.class).apply(2, 0L);
+            tcm.staticMethod(clazz, "div", IntLongToLongFunction.class).apply(2, 0L);
         });
-        assertEquals(2 % 3, tcm.staticMethod("rem", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2 & 3, tcm.staticMethod("and", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2 | 3, tcm.staticMethod("or", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2 ^ 3, tcm.staticMethod("xor", IntLongToLongFunction.class).apply(2, 3L));
-        assertEquals(2 << 3, tcm.staticMethod("shl", IntIntToLongFunction.class).apply(2, 3));
-        assertEquals(200 >> 3, tcm.staticMethod("shr", IntIntToLongFunction.class).apply(200, 3));
-        assertEquals(-200 >> 3, tcm.staticMethod("shr", IntIntToLongFunction.class).apply(-200, 3));
-        assertEquals(200 >>> 3, tcm.staticMethod("ushr", IntIntToLongFunction.class).apply(200, 3));
-        assertEquals(-200 >>> 3, tcm.staticMethod("ushr", IntIntToLongFunction.class).apply(-200, 3));
+        assertEquals(2 % 3, tcm.staticMethod(clazz, "rem", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 & 3, tcm.staticMethod(clazz, "and", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 | 3, tcm.staticMethod(clazz, "or", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 ^ 3, tcm.staticMethod(clazz, "xor", IntLongToLongFunction.class).apply(2, 3L));
+        assertEquals(2 << 3, tcm.staticMethod(clazz, "shl", IntIntToLongFunction.class).apply(2, 3));
+        assertEquals(200 >> 3, tcm.staticMethod(clazz, "shr", IntIntToLongFunction.class).apply(200, 3));
+        assertEquals(-200 >> 3, tcm.staticMethod(clazz, "shr", IntIntToLongFunction.class).apply(-200, 3));
+        assertEquals(200 >>> 3, tcm.staticMethod(clazz, "ushr", IntIntToLongFunction.class).apply(200, 3));
+        assertEquals(-200 >>> 3, tcm.staticMethod(clazz, "ushr", IntIntToLongFunction.class).apply(-200, 3));
     }
 
     @Test
     public void doubleArithmetic() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Double", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Double", cc -> {
             cc.staticMethod("neg", mc -> {
                 mc.returning(double.class);
                 ParamVar a = mc.parameter("a", double.class);
@@ -458,23 +462,23 @@ public class ArithmeticTest {
                     bc.return_(bc.rem(a, b));
                 });
             });
-        });
-        assertEquals(-2.0, tcm.staticMethod("neg", DoubleUnaryOperator.class).applyAsDouble(2.0));
-        assertEquals(2.0, tcm.staticMethod("neg", DoubleUnaryOperator.class).applyAsDouble(-2.0));
-        assertEquals(2.0 + 3.0, tcm.staticMethod("add", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
-        assertEquals(2.0 - 3.0, tcm.staticMethod("sub", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
-        assertEquals(2.0 * 3.0, tcm.staticMethod("mul", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
-        assertEquals(2.0 / 3.0, tcm.staticMethod("div", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
-        assertEquals(2.0 / 0.0, tcm.staticMethod("div", DoubleBinaryOperator.class).applyAsDouble(2.0, 0.0));
-        assertEquals(-2.0 / 0.0, tcm.staticMethod("div", DoubleBinaryOperator.class).applyAsDouble(-2.0, 0.0));
-        assertEquals(2.0 % 3.0, tcm.staticMethod("rem", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+        }));
+        assertEquals(-2.0, tcm.staticMethod(clazz, "neg", DoubleUnaryOperator.class).applyAsDouble(2.0));
+        assertEquals(2.0, tcm.staticMethod(clazz, "neg", DoubleUnaryOperator.class).applyAsDouble(-2.0));
+        assertEquals(2.0 + 3.0, tcm.staticMethod(clazz, "add", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+        assertEquals(2.0 - 3.0, tcm.staticMethod(clazz, "sub", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+        assertEquals(2.0 * 3.0, tcm.staticMethod(clazz, "mul", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+        assertEquals(2.0 / 3.0, tcm.staticMethod(clazz, "div", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
+        assertEquals(2.0 / 0.0, tcm.staticMethod(clazz, "div", DoubleBinaryOperator.class).applyAsDouble(2.0, 0.0));
+        assertEquals(-2.0 / 0.0, tcm.staticMethod(clazz, "div", DoubleBinaryOperator.class).applyAsDouble(-2.0, 0.0));
+        assertEquals(2.0 % 3.0, tcm.staticMethod(clazz, "rem", DoubleBinaryOperator.class).applyAsDouble(2.0, 3.0));
     }
 
     @Test
     public void longDoubleArithmetic() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.Double", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.Double", cc -> {
             cc.staticMethod("neg", mc -> {
                 mc.returning(double.class);
                 ParamVar a = mc.parameter("a", long.class);
@@ -522,15 +526,15 @@ public class ArithmeticTest {
                     bc.return_(bc.rem(a, b));
                 });
             });
-        });
-        assertEquals(-2.0, tcm.staticMethod("neg", LongToDoubleFunction.class).apply(2L));
-        assertEquals(2.0, tcm.staticMethod("neg", LongToDoubleFunction.class).apply(-2L));
-        assertEquals(2L + 3.0, tcm.staticMethod("add", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
-        assertEquals(2L - 3.0, tcm.staticMethod("sub", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
-        assertEquals(2L * 3.0, tcm.staticMethod("mul", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
-        assertEquals(2L / 3.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
-        assertEquals(2L / 0.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(2L, 0.0));
-        assertEquals(-2L / 0.0, tcm.staticMethod("div", LongDoubleToDoubleFunction.class).apply(-2L, 0.0));
-        assertEquals(2L % 3.0, tcm.staticMethod("rem", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        }));
+        assertEquals(-2.0, tcm.staticMethod(clazz, "neg", LongToDoubleFunction.class).apply(2L));
+        assertEquals(2.0, tcm.staticMethod(clazz, "neg", LongToDoubleFunction.class).apply(-2L));
+        assertEquals(2L + 3.0, tcm.staticMethod(clazz, "add", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L - 3.0, tcm.staticMethod(clazz, "sub", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L * 3.0, tcm.staticMethod(clazz, "mul", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L / 3.0, tcm.staticMethod(clazz, "div", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
+        assertEquals(2L / 0.0, tcm.staticMethod(clazz, "div", LongDoubleToDoubleFunction.class).apply(2L, 0.0));
+        assertEquals(-2L / 0.0, tcm.staticMethod(clazz, "div", LongDoubleToDoubleFunction.class).apply(-2L, 0.0));
+        assertEquals(2L % 3.0, tcm.staticMethod(clazz, "rem", LongDoubleToDoubleFunction.class).apply(2L, 3.0));
     }
 }

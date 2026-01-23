@@ -9,14 +9,15 @@ import org.junit.jupiter.api.function.Executable;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public final class BasicTest {
 
     @Test
     public void helloWorld() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("helloWorld", mc -> {
                 mc.body(b0 -> {
                     b0.printf("Hello world!%n", List.of());
@@ -24,14 +25,14 @@ public final class BasicTest {
                 });
             });
         });
-        tcm.staticMethod("helloWorld", Runnable.class).run();
+        tcm.staticMethod(testClass, "helloWorld", Runnable.class).run();
     }
 
     @Test
     public void cleanStack() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("helloWorld", mc -> {
                 mc.body(b0 -> {
                     b0.printf("Hello world!%n", List.of());
@@ -42,14 +43,14 @@ public final class BasicTest {
                 });
             });
         });
-        tcm.staticMethod("helloWorld", Runnable.class).run();
+        tcm.staticMethod(testClass, "helloWorld", Runnable.class).run();
     }
 
     @Test
     public void params() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("echoArg", mc -> {
                 Var argument = mc.parameter("argument", String.class);
                 mc.returning(String.class);
@@ -58,14 +59,14 @@ public final class BasicTest {
                 });
             });
         });
-        Assertions.assertEquals("hello world!", tcm.staticMethod("echoArg", OneParam.class).apply("hello world!"));
+        Assertions.assertEquals("hello world!", tcm.staticMethod(testClass, "echoArg", OneParam.class).apply("hello world!"));
     }
 
     @Test
     public void twoParams2() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("echoConcat", mc -> {
                 ParamVar first = mc.parameter("first", String.class);
                 ParamVar second = mc.parameter("second", String.class);
@@ -81,14 +82,15 @@ public final class BasicTest {
                 });
             });
         });
-        Assertions.assertEquals("hello world!", tcm.staticMethod("echoConcat", TwoParams.class).apply("hello", "world!"));
+        Assertions.assertEquals("hello world!",
+                tcm.staticMethod(testClass, "echoConcat", TwoParams.class).apply("hello", "world!"));
     }
 
     @Test
     public void twoParams() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("echoSecondArg", mc -> {
                 mc.parameter("ignored", String.class);
                 ParamVar echoed = mc.parameter("echoed", String.class);
@@ -99,14 +101,14 @@ public final class BasicTest {
             });
         });
         Assertions.assertEquals("hello world!",
-                tcm.staticMethod("echoSecondArg", TwoParams.class).apply("ignore me!", "hello world!"));
+                tcm.staticMethod(testClass, "echoSecondArg", TwoParams.class).apply("ignore me!", "hello world!"));
     }
 
     @Test
     public void twoParamsWithIf() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("selectArg", mc -> {
                 ParamVar arg0 = mc.parameter("arg0", String.class);
                 ParamVar arg1 = mc.parameter("arg1", String.class);
@@ -118,16 +120,18 @@ public final class BasicTest {
             });
         });
         Assertions.assertEquals("argument zero!",
-                tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 0));
+                tcm.staticMethod(testClass, "selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!",
+                        0));
         Assertions.assertEquals("argument one!",
-                tcm.staticMethod("selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!", 1));
+                tcm.staticMethod(testClass, "selectArg", TwoParamsWithSelect.class).apply("argument zero!", "argument one!",
+                        1));
     }
 
     @Test
     public void forEach() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestBasicOutput"), cc -> {
             cc.staticMethod("testForEach", mc -> {
                 ParamVar arg0 = mc.parameter("items", Iterable.class);
                 mc.body(b0 -> {
@@ -138,21 +142,21 @@ public final class BasicTest {
                 });
             });
         });
-        tcm.staticMethod("testForEach", OneIterable.class).apply(List.of("one", "two", "three!"));
+        tcm.staticMethod(testClass, "testForEach", OneIterable.class).apply(List.of("one", "two", "three!"));
     }
 
     @Test
     public void throwStuff() {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_(ClassDesc.of("io.quarkus.gizmo2.TestThrowingStuff"), cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc testClass = g.class_(ClassDesc.of("io.quarkus.gizmo2.TestThrowingStuff"), cc -> {
             cc.staticMethod("testThrowStuff", mc -> {
                 mc.body(bc -> {
                     bc.throw_(Error.class, "Hello!");
                 });
             });
         });
-        Assertions.assertThrows(Error.class, tcm.staticMethod("testThrowStuff", Executable.class));
+        Assertions.assertThrows(Error.class, tcm.staticMethod(testClass, "testThrowStuff", Executable.class));
     }
 
     public interface OneIterable {

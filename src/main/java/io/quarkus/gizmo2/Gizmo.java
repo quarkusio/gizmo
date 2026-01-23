@@ -22,6 +22,13 @@ public sealed interface Gizmo permits GizmoImpl {
     }
 
     /**
+     * {@return a new Gizmo which does not output classes by default}
+     */
+    static Gizmo create() {
+        return GizmoImpl.DEFAULT;
+    }
+
+    /**
      * {@return a Gizmo instance which uses the given output handler}
      *
      * @param outputHandler the output handler (must not be {@code null})

@@ -2,11 +2,13 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.constant.ClassDesc;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.testing.TestClassMaker;
 
 public class ConstantsTest {
     private static final MethodDesc MD_StringBuilder_append = MethodDesc.of(StringBuilder.class,
@@ -55,9 +57,9 @@ public class ConstantsTest {
     }
 
     private void test(Supplier<Const> bytecode, String expectedResult) {
-        TestClassMaker tcm = new TestClassMaker();
-        Gizmo g = Gizmo.create(tcm);
-        g.class_("io.quarkus.gizmo2.TestConstants", cc -> {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc desc = g.class_("io.quarkus.gizmo2.TestConstants", cc -> {
             cc.staticMethod("returnValueAndDescriptor", mc -> {
                 mc.returning(Object.class); // in fact always `String`
                 mc.body(bc -> {
@@ -70,7 +72,7 @@ public class ConstantsTest {
                 });
             });
         });
-        assertEquals(expectedResult, tcm.staticMethod("returnValueAndDescriptor", Supplier.class).get());
+        assertEquals(expectedResult, tcm.staticMethod(desc, "returnValueAndDescriptor", Supplier.class).get());
     }
 
     @Test
