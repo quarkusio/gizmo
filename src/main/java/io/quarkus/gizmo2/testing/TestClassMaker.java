@@ -19,10 +19,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -49,19 +50,23 @@ public final class TestClassMaker {
             public void write(final ClassDesc desc, final byte[] bytes) {
                 Assert.checkNotNullParam("desc", desc);
                 Assert.checkNotNullParam("bytes", bytes);
-                String bn = Util.binaryName(desc);
-                if (cl.classes.putIfAbsent(bn, bytes) != null) {
-                    throw new IllegalArgumentException("Class " + bn + " already defined");
+                String fn = Util.internalName(desc) + ".class";
+                if (cl.resources.putIfAbsent(fn, bytes) != null) {
+                    throw new IllegalArgumentException("Class " + Util.binaryName(desc) + " already defined");
                 }
             }
 
             public void write(final String path, final byte[] bytes) {
                 Assert.checkNotNullParam("path", path);
                 Assert.checkNotNullParam("bytes", bytes);
-                cl.resources.computeIfAbsent(path, ignored -> new ArrayList<>()).add(bytes);
+                if (cl.resources.putIfAbsent(path, bytes) != null) {
+                    throw new IllegalArgumentException("Resource " + path + " already defined");
+                }
             }
         });
     }
+
+    private static final StackWalker CALLER_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     /**
      * Construct a new instance.
@@ -72,7 +77,7 @@ public final class TestClassMaker {
      * @return a new test class maker instance (not {@code null})
      */
     public static TestClassMaker create(final Gizmo gizmo) {
-        return new TestClassMaker(gizmo, TestClassMaker.class.getClassLoader());
+        return create(gizmo, CALLER_WALKER.getCallerClass());
     }
 
     /**
@@ -81,7 +86,12 @@ public final class TestClassMaker {
      * @return a new test class maker instance (not {@code null})
      */
     public static TestClassMaker create() {
-        return create(Gizmo.create());
+        return create(Gizmo.create(), CALLER_WALKER.getCallerClass());
+    }
+
+    private static TestClassMaker create(final Gizmo gizmo, final Class<?> callerClass) {
+        return new TestClassMaker(gizmo,
+                Objects.requireNonNullElse(callerClass.getClassLoader(), TestClassMaker.class.getClassLoader()));
     }
 
     /**
@@ -144,7 +154,9 @@ public final class TestClassMaker {
         Assert.checkNotNullParam("path", path);
         Assert.checkNotNullParam("data", data);
         byte[] cloned = data.clone();
-        cl.resources.computeIfAbsent(path, ignored -> new ArrayList<>()).add(cloned);
+        if (cl.resources.putIfAbsent(path, cloned) != null) {
+            throw new IllegalArgumentException("Resource " + path + " already defined");
+        }
     }
 
     /**
@@ -222,7 +234,7 @@ public final class TestClassMaker {
      * @throws NoSuchElementException if there is no class with that name defined to this class loader
      */
     public <T> T readClass(String className, Function<byte[], T> func) {
-        byte[] bytes = cl.classes.get(className);
+        byte[] bytes = cl.resources.get(className.replace('.', '/') + ".class");
         if (bytes != null) {
             return func.apply(bytes);
         }
@@ -240,13 +252,12 @@ public final class TestClassMaker {
      */
     public <T> T readClass(ClassDesc classDesc, Function<byte[], T> func) {
         if (classDesc.isClassOrInterface()) {
-            String className = Util.binaryName(classDesc);
-            byte[] bytes = cl.classes.get(className);
+            byte[] bytes = cl.resources.get(Util.internalName(classDesc) + ".class");
             if (bytes != null) {
                 return func.apply(bytes);
             }
         }
-        throw new NoSuchElementException("No class for " + classDesc + " found");
+        throw new NoSuchElementException("No class for " + Util.binaryName(classDesc) + " found");
     }
 
     /**
@@ -687,8 +698,7 @@ public final class TestClassMaker {
     }
 
     private static final class Loader extends ClassLoader {
-        private final ConcurrentHashMap<String, byte[]> classes = new ConcurrentHashMap<>();
-        private final ConcurrentHashMap<String, List<byte[]>> resources = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, byte[]> resources = new ConcurrentHashMap<>();
 
         static {
             registerAsParallelCapable();
@@ -703,7 +713,7 @@ public final class TestClassMaker {
             if (clazz != null) {
                 return clazz;
             }
-            byte[] bytes = classes.get(name);
+            byte[] bytes = resources.get(name.replace('.', '/') + ".class");
             if (bytes == null) {
                 return null;
             }
@@ -732,27 +742,28 @@ public final class TestClassMaker {
         }
 
         public InputStream getResourceAsStream(final String name) {
-            List<byte[]> list = resources.getOrDefault(name, List.of());
-            if (list.isEmpty()) {
+            byte[] bytes = resources.get(name);
+            if (bytes == null) {
                 return null;
             }
-            return new ByteArrayInputStream(list.get(0));
+            return new ByteArrayInputStream(bytes);
         }
 
         public Enumeration<URL> getResources(final String name) {
-            List<byte[]> list = resources.getOrDefault(name, List.of());
-            return list.isEmpty() ? emptyEnumeration() : new Enumeration<URL>() {
-                int idx = 0;
+            byte[] r = resources.get(name);
+            return r == null ? emptyEnumeration() : new Enumeration<URL>() {
+                boolean done = false;
 
                 public boolean hasMoreElements() {
-                    return idx < list.size();
+                    return !done;
                 }
 
                 public URL nextElement() {
                     if (!hasMoreElements()) {
                         throw new NoSuchElementException();
                     }
-                    return newUrl(list.get(idx++), name);
+                    done = true;
+                    return newUrl(r, name);
                 }
             };
         }
@@ -763,7 +774,7 @@ public final class TestClassMaker {
         }
 
         public Stream<URL> resources(final String name) {
-            return resources.getOrDefault(name, List.of()).stream().map(b -> newUrl(b, name));
+            return Optional.ofNullable(getResource(name)).stream();
         }
 
         private static URL newUrl(final byte[] bytes, final String name) {
