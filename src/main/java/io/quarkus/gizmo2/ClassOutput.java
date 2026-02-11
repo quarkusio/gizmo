@@ -2,6 +2,8 @@ package io.quarkus.gizmo2;
 
 import java.io.IOException;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
+import java.lang.constant.MethodTypeDesc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -25,6 +27,28 @@ public interface ClassOutput {
             throw new IllegalArgumentException("Can only write classes/interfaces");
         }
         write(Util.internalName(desc) + ".class", bytes);
+    }
+
+    /**
+     * Register a newly created bootstrap method.
+     * This can be used to register the method with a native image generator such as GraalVM.
+     * The first three argument types of the method type descriptor must be:
+     * <ul>
+     * <li>{@link ConstantDescs#CD_MethodHandles_Lookup} (for the lookup to use)</li>
+     * <li>{@link ConstantDescs#CD_String} (for the constant name)</li>
+     * <li>either {@link ConstantDescs#CD_Class} (for dynamic constants) or {@link ConstantDescs#CD_MethodType} (for
+     * {@code invokedynamic} call sites)</li>
+     * </ul>
+     * Furthermore, if the method is a for an {@code invokedynamic} bootstrap, its return type must be
+     * {@link ConstantDescs#CD_CallSite}.
+     * The default implementation does nothing.
+     *
+     * @param owner the owner of the bootstrap method (must not be {@code null})
+     * @param name the bootstrap method name (must not be {@code null})
+     * @param type the bootstrap method type (must not be {@code null})
+     */
+    default void registerBootstrapMethod(ClassDesc owner, String name, MethodTypeDesc type) {
+        // do nothing by default
     }
 
     /**
