@@ -54,6 +54,10 @@ public final class GizmoImpl implements Gizmo {
         return ClassFile.of(options);
     }
 
+    ClassOutput outputHandler() {
+        return outputHandler;
+    }
+
     @Override
     public Gizmo withDefaultModifiers(final Consumer<ModifierConfigurator> builder) {
         final int[] flags = modifiersByLocation.clone();

@@ -356,13 +356,19 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     void buildLambdaBootstrap() {
         if (getAndSetBootstrap(Bootstrap.LAMBDA)) {
+            MethodTypeDesc bootstrapType = MethodTypeDesc.of(
+                CD_CallSite,
+                CD_MethodHandles_Lookup,
+                CD_String,
+                CD_MethodType);
+            gizmo.outputHandler().registerBootstrapMethod(
+                type,
+                "defineLambdaCallSite",
+                bootstrapType
+            );
             staticMethod(
                     "defineLambdaCallSite",
-                    MethodTypeDesc.of(
-                            CD_CallSite,
-                            CD_MethodHandles_Lookup,
-                            CD_String,
-                            CD_MethodType),
+                    bootstrapType,
                     smc -> {
                         smc.setAccess(AccessLevel.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
@@ -576,6 +582,16 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     void buildStringListConstantBootstrap() {
         buildReadLineBoostrapHelper();
         if (getAndSetBootstrap(Bootstrap.LIST_CONSTANT)) {
+            MethodTypeDesc bootstrapType = MethodTypeDesc.of(
+                CD_List,
+                CD_MethodHandles_Lookup,
+                CD_String,
+                CD_Class);
+            gizmo.outputHandler().registerBootstrapMethod(
+                type,
+                "loadStringListConstant",
+                bootstrapType
+            );
             staticMethod("loadStringListConstant", mc -> {
                 mc.returning(CD_List);
                 mc.parameter("lookup", CD_MethodHandles_Lookup);
@@ -642,6 +658,16 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     void buildStringSetConstantBootstrap() {
         buildReadLineBoostrapHelper();
         if (getAndSetBootstrap(Bootstrap.SET_CONSTANT)) {
+            MethodTypeDesc bootstrapType = MethodTypeDesc.of(
+                CD_Set,
+                CD_MethodHandles_Lookup,
+                CD_String,
+                CD_Class);
+            gizmo.outputHandler().registerBootstrapMethod(
+                type,
+                "loadStringSetConstant",
+                bootstrapType
+            );
             staticMethod("loadStringSetConstant", mc -> {
                 mc.returning(CD_Set);
                 mc.parameter("lookup", CD_MethodHandles_Lookup);
@@ -708,6 +734,16 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     void buildStringMapConstantBootstrap() {
         buildReadLineBoostrapHelper();
         if (getAndSetBootstrap(Bootstrap.MAP_CONSTANT)) {
+            MethodTypeDesc bootstrapType = MethodTypeDesc.of(
+                CD_Map,
+                CD_MethodHandles_Lookup,
+                CD_String,
+                CD_Class);
+            gizmo.outputHandler().registerBootstrapMethod(
+                type,
+                "loadStringMapConstant",
+                bootstrapType
+            );
             staticMethod("loadStringMapConstant", mc -> {
                 mc.returning(CD_Map);
                 mc.parameter("lookup", CD_MethodHandles_Lookup);
