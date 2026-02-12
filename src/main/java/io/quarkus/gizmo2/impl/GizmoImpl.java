@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.LambdaStrategy;
 import io.quarkus.gizmo2.ModifierConfigurator;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.ClassCreator;
@@ -22,21 +23,21 @@ public final class GizmoImpl implements Gizmo {
     private final int[] modifiersByLocation;
     private final boolean debugInfo;
     private final boolean parameters;
-    private final boolean lambdasAsAnonymousClasses;
+    private final LambdaStrategy lambdaStrategy;
     private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, true, true, false);
+        this(outputHandler, DEFAULTS, true, true, LambdaStrategy.OPTIMIZED);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
             final boolean debugInfo, final boolean parameters,
-            final boolean lambdasAsAnonymousClasses) {
+            final LambdaStrategy lambdaStrategy) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.debugInfo = debugInfo;
         this.parameters = parameters;
-        this.lambdasAsAnonymousClasses = lambdasAsAnonymousClasses;
+        this.lambdaStrategy = lambdaStrategy;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
         options.add(ClassFile.StackMapsOption.DROP_STACK_MAPS);
         if (!debugInfo) {
@@ -91,39 +92,39 @@ public final class GizmoImpl implements Gizmo {
         };
         builder.accept(configurator);
         return new GizmoImpl(outputHandler, flags.clone(), debugInfo, parameters,
-                lambdasAsAnonymousClasses);
+                lambdaStrategy);
     }
 
     boolean parameters() {
         return parameters;
     }
 
-    boolean lambdasAsAnonymousClasses() {
-        return lambdasAsAnonymousClasses;
+    LambdaStrategy lambdaStrategy() {
+        return lambdaStrategy;
     }
 
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdasAsAnonymousClasses);
+                lambdaStrategy);
     }
 
     @Override
     public Gizmo withDebugInfo(final boolean debugInfo) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdasAsAnonymousClasses);
+                lambdaStrategy);
     }
 
     @Override
     public Gizmo withParameters(final boolean parameters) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdasAsAnonymousClasses);
+                lambdaStrategy);
     }
 
     @Override
-    public Gizmo withLambdasAsAnonymousClasses(boolean lambdasAsAnonymousClasses) {
+    public Gizmo withLambdaStrategy(final LambdaStrategy lambdaStrategy) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdasAsAnonymousClasses);
+                lambdaStrategy);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {
