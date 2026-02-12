@@ -68,8 +68,21 @@ public sealed interface Gizmo permits GizmoImpl {
      * By default, lambdas are <em>not</em> generated as anonymous classes.
      *
      * @param lambdasAsAnonymousClasses whether lambdas should be generated as anonymous classes
+     * @deprecated Use {@link #withLambdaStrategy(LambdaStrategy) withLambdaStrategy(LambdaStrategy.ANONYMOUS_CLASS)}
+     *             instead.
      */
-    Gizmo withLambdasAsAnonymousClasses(boolean lambdasAsAnonymousClasses);
+    @Deprecated
+    default Gizmo withLambdasAsAnonymousClasses(boolean lambdasAsAnonymousClasses) {
+        return withLambdaStrategy(lambdasAsAnonymousClasses ? LambdaStrategy.ANONYMOUS_CLASS : LambdaStrategy.OPTIMIZED);
+    }
+
+    /**
+     * {@return a Gizmo instance which translates lambdas according to the given strategy}
+     * The default lambda translation strategy is {@link LambdaStrategy#OPTIMIZED}.
+     *
+     * @param lambdaStrategy the lambda translation strategy to use (must not be {@code null})
+     */
+    Gizmo withLambdaStrategy(LambdaStrategy lambdaStrategy);
 
     /**
      * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
