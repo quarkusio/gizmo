@@ -370,7 +370,8 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                         ParamVar methodType = smc.parameter("methodType", 2);
                         smc.body(b0 -> {
                             var decoder = b0.localVar("decoder", b0.invokeStatic(MD_Base64.getUrlDecoder));
-                            var bytes = b0.localVar("bytes", b0.invokeVirtual(MD_Base64.Decoder.decode_1, decoder, base64));
+                            var bytes = b0.localVar("bytes",
+                                    b0.invokeVirtual(MD_Base64.Decoder.decode_String, decoder, base64));
                             var definedLookup = b0.localVar("definedLookup", b0.invokeVirtual(
                                     MD_MethodHandles.Lookup.defineHiddenClass,
                                     lookup,

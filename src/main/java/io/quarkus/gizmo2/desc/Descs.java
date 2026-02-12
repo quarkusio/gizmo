@@ -490,7 +490,7 @@ public final class Descs {
             public static final ClassMethodDesc lookupClass = ClassMethodDesc.of(CD_MethodHandles_Lookup, "lookupClass",
                     CD_Class);
             public static final ClassMethodDesc findConstructor = ClassMethodDesc.of(CD_MethodHandles_Lookup, "findConstructor",
-                    CD_MethodHandle, CD_MethodType);
+                    CD_MethodHandle, CD_Class, CD_MethodType);
         }
     }
 
