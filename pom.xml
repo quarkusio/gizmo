@@ -48,7 +48,7 @@
         <signTag>false</signTag><!-- we don't sign tags as we don't want GPG secrets available in repository -->
         
         <version.classfile>26</version.classfile>
-        <version.junit>6.0.2</version.junit>
+        <version.junit>6.0.3</version.junit>
         <version.smallrye-common>2.16.0</version.smallrye-common>
 
         <version.formatter-maven-plugin>2.29.0</version.formatter-maven-plugin>
