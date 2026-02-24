@@ -16,6 +16,8 @@
 
 package io.quarkus.gizmo;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -81,6 +83,7 @@ public class LoadClassTestCase {
 
     @Test
     public void testLoadNonPublicJdkClassFromTCCL2() throws Exception {
+        assumeTrue(Runtime.version().feature() < 25);
         TestClassLoader cl = new TestClassLoader(getClass().getClassLoader());
         try (ClassCreator creator = ClassCreator.builder().classOutput(cl).className("com.MyTest").interfaces(Supplier.class)
                 .build()) {
