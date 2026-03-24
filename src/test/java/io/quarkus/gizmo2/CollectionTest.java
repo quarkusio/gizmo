@@ -2,7 +2,6 @@ package io.quarkus.gizmo2;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.constant.ClassDesc;
 import java.util.ArrayList;
@@ -135,7 +134,8 @@ public class CollectionTest {
                         items.add(Const.of(e.getKey()));
                         items.add(Const.of(e.getValue()));
                     }
-                    assertThrows(UnsupportedOperationException.class, () -> bc.mapOf(items));
+                    // should not throw
+                    bc.mapOf(items);
                     bc.returnNull();
                 });
             });
@@ -168,10 +168,9 @@ public class CollectionTest {
                 mc.returning(Object.class);
                 Map<String, Integer> map = Map.of("charlie", 42, "foo", 1, "bar", 10);
                 mc.body(bc -> {
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        bc.mapOf(List.of(Map.entry(Const.of("foo"), Const.of("bar"))), Function.identity(),
-                                Function.identity());
-                    });
+                    // should not throw
+                    bc.mapOf(List.of(Map.entry(Const.of("foo"), Const.of("bar"))), Function.identity(),
+                            Function.identity());
                     Expr ret = bc.mapOf(map.entrySet().stream().toList(), key -> {
                         // key -> key.toUpperCase()
                         return bc.invokeVirtual(MethodDesc.of(String.class, "toUpperCase", String.class), Const.of(key));
@@ -195,13 +194,12 @@ public class CollectionTest {
             cc.staticMethod("test", mc -> {
                 mc.returning(Object.class);
                 mc.body(bc -> {
-                    assertThrows(IllegalArgumentException.class, () -> {
-                        Map<Const, Const> illegal = IntStream.rangeClosed(1, 15)
-                                .boxed()
-                                .collect(Collectors.toMap(i -> Const.of("foo"), i -> Const.of("bar"), (a, b) -> a));
-                        bc.mapOf(illegal.entrySet().stream().toList(), Function.identity(),
-                                Function.identity());
-                    });
+                    // should not throw
+                    Map<Const, Const> notIllegalAnymore = IntStream.rangeClosed(1, 15)
+                            .boxed()
+                            .collect(Collectors.toMap(i -> Const.of("foo"), i -> Const.of("bar"), (a, b) -> a));
+                    bc.mapOf(notIllegalAnymore.entrySet().stream().toList(), Function.identity(),
+                            Function.identity());
                     Expr ret = bc.mapOf(map.entrySet().stream().toList(), key -> {
                         // key -> key.toUpperCase()
                         return bc.invokeVirtual(MethodDesc.of(String.class, "toUpperCase", String.class), Const.of(key));

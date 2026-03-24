@@ -3820,7 +3820,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     }
 
     /**
-     * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
+     * Generate a call to {@link Map#of()} or one of its variants for up to 10 entries, or {@link Map#ofEntries(Entry...)} for
+     * more than 10 entries.
      *
      * @param items the keys and values from which the map is populated
      * @return map expression (not {@code null})
@@ -3829,7 +3830,8 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     Expr mapOf(List<? extends Expr> items);
 
     /**
-     * Generate a call to {@link Map#of()} or one of its variants, based on the number of arguments.
+     * Generate a call to {@link Map#of()} or one of its variants for up to 10 entries, or {@link Map#ofEntries(Entry...)} for
+     * more than 10 entries.
      *
      * @param items the keys and values from which the map is populated
      * @return map expression (not {@code null})
@@ -3842,8 +3844,6 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     /**
      * Generate a call to {@link Map#of()} or one of its variants for up to 10 entries, or {@link Map#ofEntries(Entry...)} for
      * more than 10 entries.
-     * <p>
-     * Note that neither a key nor a value of any map entry can be an instance of {@link Expr}.
      *
      * @param entries the entries from which the map is populated
      * @param keyMapper the function to map entry keys to expressions
