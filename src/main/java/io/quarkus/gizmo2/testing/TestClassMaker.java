@@ -1,10 +1,13 @@
 package io.quarkus.gizmo2.testing;
 
-import static java.lang.invoke.MethodHandles.*;
-import static java.util.Collections.*;
+import static java.lang.invoke.MethodHandles.lookup;
+import static java.lang.invoke.MethodHandles.privateLookupIn;
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.util.Collections.emptyEnumeration;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.constant.ClassDesc;
@@ -19,6 +22,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -53,6 +57,18 @@ public final class TestClassMaker {
                 String fn = Util.internalName(desc) + ".class";
                 if (cl.resources.putIfAbsent(fn, bytes) != null) {
                     throw new IllegalArgumentException("Class " + Util.binaryName(desc) + " already defined");
+                }
+                if (System.getProperty("dumpClass") != null) {
+                    try {
+                        String descriptor = desc.descriptorString();
+                        File dir = new File("target/test-classes/", desc.packageName().replace(".", "/"));
+                        dir.mkdirs();
+                        File output = new File("target/test-classes/",
+                                descriptor.substring(1, descriptor.length() - 1) + ".class");
+                        Files.write(output.toPath(), bytes);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Cannot dump the class: " + desc, e);
+                    }
                 }
             }
 

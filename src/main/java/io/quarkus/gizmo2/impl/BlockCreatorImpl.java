@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -40,6 +42,29 @@ import io.quarkus.gizmo2.creator.LambdaCreator;
 import io.quarkus.gizmo2.creator.SwitchCreator;
 import io.quarkus.gizmo2.creator.TryCreator;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.Descs.FD_System;
+import io.quarkus.gizmo2.desc.Descs.MD_Arrays;
+import io.quarkus.gizmo2.desc.Descs.MD_AutoCloseable;
+import io.quarkus.gizmo2.desc.Descs.MD_Boolean;
+import io.quarkus.gizmo2.desc.Descs.MD_Byte;
+import io.quarkus.gizmo2.desc.Descs.MD_Character;
+import io.quarkus.gizmo2.desc.Descs.MD_Class;
+import io.quarkus.gizmo2.desc.Descs.MD_Double;
+import io.quarkus.gizmo2.desc.Descs.MD_Float;
+import io.quarkus.gizmo2.desc.Descs.MD_Integer;
+import io.quarkus.gizmo2.desc.Descs.MD_Iterable;
+import io.quarkus.gizmo2.desc.Descs.MD_List;
+import io.quarkus.gizmo2.desc.Descs.MD_Lock;
+import io.quarkus.gizmo2.desc.Descs.MD_Long;
+import io.quarkus.gizmo2.desc.Descs.MD_Map;
+import io.quarkus.gizmo2.desc.Descs.MD_Object;
+import io.quarkus.gizmo2.desc.Descs.MD_Objects;
+import io.quarkus.gizmo2.desc.Descs.MD_Optional;
+import io.quarkus.gizmo2.desc.Descs.MD_PrintStream;
+import io.quarkus.gizmo2.desc.Descs.MD_Set;
+import io.quarkus.gizmo2.desc.Descs.MD_Short;
+import io.quarkus.gizmo2.desc.Descs.MD_String;
+import io.quarkus.gizmo2.desc.Descs.MD_Thread;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.gizmo2.impl.constant.ConstImpl;
@@ -1384,6 +1409,39 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         } else {
             throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
         }
+    }
+
+    @Override
+    public <K, V> Expr mapOf(List<Entry<K, V>> entries, Function<K, ? extends Expr> keyMapper,
+            Function<V, ? extends Expr> valueMapper) {
+        Objects.requireNonNull(entries);
+        Objects.requireNonNull(keyMapper);
+        Objects.requireNonNull(valueMapper);
+        int size = entries.size();
+        if (size == 0) {
+            return invokeStatic(MD_Map.of_0);
+        } else if (size <= 10) {
+            List<Expr> flat = new ArrayList<>(size * 2);
+            for (Entry<K, V> e : entries) {
+                flat.add(keyMapper.apply(requireNonExpr(e.getKey())));
+                flat.add(valueMapper.apply(requireNonExpr(e.getValue())));
+            }
+            return invokeStatic(MD_Map.of_n(size), flat);
+        } else {
+            List<Expr> exprEntries = new ArrayList<>(size);
+            for (Entry<K, V> e : entries) {
+                exprEntries.add(
+                        mapEntry(keyMapper.apply(requireNonExpr(e.getKey())), valueMapper.apply(requireNonExpr(e.getValue()))));
+            }
+            return invokeStatic(MD_Map.ofEntries, newArray(Object.class, exprEntries));
+        }
+    }
+
+    private static <T> T requireNonExpr(T val) {
+        if (val instanceof Expr) {
+            throw new IllegalArgumentException("Must not be an Expr: " + val);
+        }
+        return val;
     }
 
     public Expr mapEntry(final Expr key, final Expr value) {
