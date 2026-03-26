@@ -8,6 +8,9 @@ on:
       - '.github/project.yml'
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: "Build with JDK ${{ matrix.distribution }} on ${{ matrix.os }}"
