@@ -76,6 +76,11 @@ public interface ClassOutput {
                 ClassOutput.this.write(path, bytes);
                 next.write(path, bytes);
             }
+
+            public void registerBootstrapMethod(final ClassDesc owner, final String name, final MethodTypeDesc type) {
+                ClassOutput.this.registerBootstrapMethod(owner, name, type);
+                next.registerBootstrapMethod(owner, name, type);
+            }
         };
     }
 
