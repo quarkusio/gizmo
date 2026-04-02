@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -3837,6 +3838,21 @@ public sealed interface BlockCreator extends SimpleTyped permits BlockCreatorImp
     default Expr mapOf(Expr... items) {
         return mapOf(List.of(items));
     }
+
+    /**
+     * Generate a call to {@link Map#of()} or one of its variants for up to 10 entries, or {@link Map#ofEntries(Entry...)} for
+     * more than 10 entries.
+     * <p>
+     * Note that neither a key nor a value of any map entry can be an instance of {@link Expr}.
+     *
+     * @param entries the entries from which the map is populated
+     * @param keyMapper the function to map entry keys to expressions
+     * @param valueMapper the function to map entry values to expressions
+     * @return the map expression (not {@code null})
+     * @throws IllegalArgumentException If a key/value of a map entry is an instance of {@link Expr}
+     */
+    <K, V> Expr mapOf(List<Entry<K, V>> entries, Function<K, ? extends Expr> keyMapper,
+            Function<V, ? extends Expr> valueMapper);
 
     /**
      * Generate a call to {@link Map#entry(Object, Object)}.
