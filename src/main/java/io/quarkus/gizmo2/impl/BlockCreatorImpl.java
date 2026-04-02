@@ -1378,7 +1378,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (size <= 10) {
             return invokeStatic(MD_List.of_n(size), exprs);
         } else {
-            return invokeStatic(MD_List.of_array, newArray(Object.class, exprs));
+            return invokeStatic(MD_List.of_array, newArray(CD_Object, exprs));
         }
     }
 
@@ -1393,7 +1393,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (size <= 10) {
             return invokeStatic(MD_Set.of_n(size), exprs);
         } else {
-            return invokeStatic(MD_Set.of_array, newArray(Object.class, exprs));
+            return invokeStatic(MD_Set.of_array, newArray(CD_Object, exprs));
         }
     }
 
@@ -1404,10 +1404,24 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (size % 2 != 0) {
             throw new IllegalArgumentException("Invalid number of items: " + items);
         }
-        if (size <= 20) {
-            return invokeStatic(MD_Map.of_n(size >> 1), items);
+        int entryCount = size >> 1;
+        if (entryCount <= 10) {
+            return invokeStatic(MD_Map.of_n(entryCount), items);
         } else {
-            throw new UnsupportedOperationException("Maps with more than 10 entries are not supported");
+            List<Invoke> exprEntries = new ArrayList<>(entryCount);
+            for (int i = 0; i < size; i += 2) {
+                exprEntries.add(
+                        new Invoke(Opcode.INVOKESTATIC, MD_Map.entry, null, List.of(items.get(i), items.get(i + 1)), null));
+            }
+            // now, weave them in
+            ListIterator<Item> itr = iterator();
+            for (int i = entryCount - 1; i >= 0; i--) {
+                Invoke invoke = exprEntries.get(i);
+                invoke.insert(itr);
+                // now skip over the key and value (or insert it if it is unbound)
+                invoke.forEachDependency(itr, Item::insertIfUnbound);
+            }
+            return invokeStatic(MD_Map.ofEntries, newArray(CD_Object, exprEntries));
         }
     }
 
@@ -1420,28 +1434,10 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         int size = entries.size();
         if (size == 0) {
             return invokeStatic(MD_Map.of_0);
-        } else if (size <= 10) {
-            List<Expr> flat = new ArrayList<>(size * 2);
-            for (Entry<K, V> e : entries) {
-                flat.add(keyMapper.apply(requireNonExpr(e.getKey())));
-                flat.add(valueMapper.apply(requireNonExpr(e.getValue())));
-            }
-            return invokeStatic(MD_Map.of_n(size), flat);
         } else {
-            List<Expr> exprEntries = new ArrayList<>(size);
-            for (Entry<K, V> e : entries) {
-                exprEntries.add(
-                        mapEntry(keyMapper.apply(requireNonExpr(e.getKey())), valueMapper.apply(requireNonExpr(e.getValue()))));
-            }
-            return invokeStatic(MD_Map.ofEntries, newArray(Object.class, exprEntries));
+            return mapOf(entries.stream().flatMap(e -> Stream.of(keyMapper.apply(e.getKey()), valueMapper.apply(e.getValue())))
+                    .toList());
         }
-    }
-
-    private static <T> T requireNonExpr(T val) {
-        if (val instanceof Expr) {
-            throw new IllegalArgumentException("Must not be an Expr: " + val);
-        }
-        return val;
     }
 
     public Expr mapEntry(final Expr key, final Expr value) {
