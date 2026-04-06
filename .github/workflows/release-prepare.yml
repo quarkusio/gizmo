@@ -20,3 +20,5 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true}}
     uses: quarkusio/.github/.github/workflows/prepare-release.yml@main
     secrets: inherit
+    with:
+      java_version: 25
