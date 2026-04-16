@@ -145,7 +145,7 @@
                     <dependency>
                         <groupId>io.quarkus</groupId>
                         <artifactId>quarkus-ide-config</artifactId>
-                        <version>3.34.3</version>
+                        <version>3.34.4</version>
                     </dependency>
                 </dependencies>
                 <configuration>
