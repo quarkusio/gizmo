@@ -1011,6 +1011,15 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         finish();
     }
 
+    public void accept(final Consumer<? super BlockCreator> handler, final Runnable ifEmpty) {
+        checkActive();
+        handler.accept(this);
+        if (items.size() == 1 && items.get(0) instanceof BlockHeader) {
+            ifEmpty.run();
+        }
+        finish();
+    }
+
     private void finish() {
         if (!done()) {
             addItem(Yield.YIELD_VOID);

@@ -357,6 +357,111 @@ public final class TryTest {
         assertTrue(tcm.staticMethod(tests, "test1", BooleanSupplier.class).getAsBoolean());
     }
 
+    @Test
+    public void testEmptyTryOnlyCatch() {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc catchTests = g.class_("io.quarkus.gizmo2.EmptyTryOnlyCatch", cc -> {
+            StaticFieldVar caught = cc.staticField("caught", Const.of(false));
+
+            cc.staticMethod("test", mc -> {
+                mc.body(b0 -> {
+                    b0.try_(try0 -> {
+                        try0.body(b1 -> {
+                        });
+                        try0.catch_(Exception.class, "e", (b1, e) -> {
+                            b1.set(caught, Const.of(true));
+                        });
+                    });
+                    b0.return_();
+                });
+            });
+
+            cc.staticMethod("caught", mc -> {
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(caught);
+                });
+            });
+        });
+        assertDoesNotThrow(() -> tcm.staticMethod(catchTests, "test", Runnable.class).run());
+        assertFalse(tcm.staticMethod(catchTests, "caught", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void testEmptyTryOnlyFinally() {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc catchTests = g.class_("io.quarkus.gizmo2.EmptyTryOnlyFinally", cc -> {
+            StaticFieldVar always = cc.staticField("always", Const.of(false));
+
+            cc.staticMethod("test", mc -> {
+                mc.body(b0 -> {
+                    b0.try_(try0 -> {
+                        try0.body(b1 -> {
+                        });
+                        try0.finally_(b1 -> {
+                            b1.set(always, Const.of(true));
+                        });
+                    });
+                    b0.return_();
+                });
+            });
+
+            cc.staticMethod("always", mc -> {
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(always);
+                });
+            });
+        });
+        assertDoesNotThrow(() -> tcm.staticMethod(catchTests, "test", Runnable.class).run());
+        assertTrue(tcm.staticMethod(catchTests, "always", BooleanSupplier.class).getAsBoolean());
+    }
+
+    @Test
+    public void testEmptyTryCatchAndFinally() {
+        TestClassMaker tcm = TestClassMaker.create();
+        Gizmo g = tcm.gizmo();
+        ClassDesc catchTests = g.class_("io.quarkus.gizmo2.EmptyTryCatchAndFinally", cc -> {
+            StaticFieldVar caught = cc.staticField("caught", Const.of(false));
+            StaticFieldVar always = cc.staticField("always", Const.of(false));
+
+            cc.staticMethod("test", mc -> {
+                mc.body(b0 -> {
+                    b0.try_(try0 -> {
+                        try0.body(b1 -> {
+                        });
+                        try0.catch_(Exception.class, "e", (b1, e) -> {
+                            b1.set(caught, Const.of(true));
+                        });
+                        try0.finally_(b1 -> {
+                            b1.set(always, Const.of(true));
+                        });
+                    });
+                    b0.return_();
+                });
+            });
+
+            cc.staticMethod("caught", mc -> {
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(caught);
+                });
+            });
+
+            cc.staticMethod("always", mc -> {
+                mc.returning(boolean.class);
+                mc.body(bc -> {
+                    bc.return_(always);
+                });
+            });
+        });
+        assertDoesNotThrow(() -> tcm.staticMethod(catchTests, "test", Runnable.class).run());
+        assertFalse(tcm.staticMethod(catchTests, "caught", BooleanSupplier.class).getAsBoolean());
+        assertTrue(tcm.staticMethod(catchTests, "always", BooleanSupplier.class).getAsBoolean());
+    }
+
     @FunctionalInterface
     public interface CrashIt {
         String crashIt(String foo, String bar);
