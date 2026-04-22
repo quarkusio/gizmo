@@ -3,6 +3,7 @@ package io.quarkus.gizmo2.impl;
 import static java.lang.constant.ConstantDescs.*;
 
 import java.lang.constant.ClassDesc;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.Const;
@@ -15,6 +16,16 @@ import io.smallrye.common.constraint.Assert;
 
 public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl implements StaticFieldCreator
         permits ClassStaticFieldCreatorImpl, InterfaceStaticFieldCreatorImpl {
+
+    // it is only possible to emit a `ConstantValue` for these types
+    // see `ConstantValueAttribute.of()`
+    private static final Set<String> CONSTANT_TYPE_DESCS = Set.of(
+            CD_int.descriptorString(),
+            CD_long.descriptorString(),
+            CD_float.descriptorString(),
+            CD_double.descriptorString(),
+            CD_String.descriptorString());
+
     private Const initial;
     private Consumer<BlockCreator> initializer;
 
@@ -26,7 +37,7 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
         setType(initial.type());
-        if (initial.type().isPrimitive() || Util.equals(initial.type(), CD_String)) {
+        if (CONSTANT_TYPE_DESCS.contains(initial.type().descriptorString())) {
             this.initial = initial;
         } else {
             initializer = bc -> bc.setStaticField(desc(), initial);

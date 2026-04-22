@@ -38,7 +38,10 @@ public final class TryCreatorImpl implements TryCreator {
     public void body(final Consumer<BlockCreator> builder) {
         advanceToState(ST_BODY);
         body.parent().nesting(() -> {
-            body.accept(builder);
+            body.accept(builder, () -> {
+                // `body` is empty, but an exception handler must guard at least one instruction
+                body.addItem(Nop.EMITTING);
+            });
         });
         advanceToState(ST_CATCH);
     }
