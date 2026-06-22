@@ -47,7 +47,7 @@
         <releaseProfiles>release</releaseProfiles>
         <signTag>false</signTag><!-- we don't sign tags as we don't want GPG secrets available in repository -->
         
-        <version.classfile>26</version.classfile>
+        <version.classfile>27</version.classfile>
         <version.junit>6.1.0</version.junit>
         <version.smallrye-common>2.19.0</version.smallrye-common>
 
