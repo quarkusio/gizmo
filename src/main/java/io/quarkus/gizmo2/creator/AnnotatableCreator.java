@@ -67,6 +67,22 @@ public sealed interface AnnotatableCreator
     <A extends Annotation> void addAnnotation(Class<A> annotationClass, Consumer<AnnotationCreator<A>> builder);
 
     /**
+     * Add an annotation with no elements.
+     * <p>
+     * If the annotation is repeatable, then it is the responsibility of the caller to ensure
+     * that the repeated values are appropriately wrapped in the container annotation
+     * if necessary.
+     *
+     * @param annotationClass the class of the annotation (must not be {@code null})
+     * @param retentionPolicy the retention policy of the annotation (must not be {@code null})
+     * @throws IllegalArgumentException if the annotation appears more than once on this element
+     */
+    default void addAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy) {
+        addAnnotation(annotationClass, retentionPolicy, builder -> {
+        });
+    }
+
+    /**
      * Add an annotation of given class with given retention policy and with elements provided by
      * given {@code builder}.
      * <p>
@@ -81,4 +97,38 @@ public sealed interface AnnotatableCreator
      */
     void addAnnotation(ClassDesc annotationClass, RetentionPolicy retentionPolicy,
             Consumer<AnnotationCreator<Annotation>> builder);
+
+    /**
+     * Add an annotation by name with no elements.
+     * <p>
+     * If the annotation is repeatable, then it is the responsibility of the caller to ensure
+     * that the repeated values are appropriately wrapped in the container annotation
+     * if necessary.
+     *
+     * @param annotationClassName the name of the class of the annotation (must not be {@code null})
+     * @param retentionPolicy the retention policy of the annotation (must not be {@code null})
+     * @throws IllegalArgumentException if the annotation appears more than once on this element
+     */
+    default void addAnnotation(String annotationClassName, RetentionPolicy retentionPolicy) {
+        addAnnotation(annotationClassName, retentionPolicy, builder -> {
+        });
+    }
+
+    /**
+     * Add an annotation by name of given class with given retention policy and with elements provided by
+     * given {@code builder}.
+     * <p>
+     * If the annotation is repeatable, then it is the responsibility of the caller to ensure
+     * that the repeated values are appropriately wrapped in the container annotation
+     * if necessary.
+     *
+     * @param annotationClassName the class of the annotation (must not be {@code null})
+     * @param retentionPolicy the retention policy of the annotation (must not be {@code null})
+     * @param builder the builder which adds annotation values (must not be {@code null})
+     * @throws IllegalArgumentException if the annotation appears more than once on this element
+     */
+    default void addAnnotation(String annotationClassName, RetentionPolicy retentionPolicy,
+            Consumer<AnnotationCreator<Annotation>> builder) {
+        addAnnotation(ClassDesc.of(annotationClassName), retentionPolicy, builder);
+    }
 }
