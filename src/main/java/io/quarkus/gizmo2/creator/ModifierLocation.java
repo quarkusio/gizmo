@@ -126,6 +126,26 @@ public enum ModifierLocation {
             bitsOf(ModifierFlag.ABSTRACT),
             AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
     /**
+     * A named member class (static or non-static).
+     * Whether the class is static (a static member class) or non-static (an inner class) is determined
+     * by whether the {@link ModifierFlag#STATIC STATIC} flag is set.
+     */
+    MEMBER_CLASS(
+            bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
+            bitsOf(ModifierFlag.ABSTRACT, ModifierFlag.FINAL, ModifierFlag.STATIC, ModifierFlag.SYNTHETIC),
+            0,
+            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+    /**
+     * A member interface.
+     * Member interfaces are always implicitly static; the {@link ModifierFlag#STATIC STATIC} flag
+     * is silently accepted but cannot be removed.
+     */
+    MEMBER_INTERFACE(
+            bitsOf(AccessLevel.PUBLIC, AccessLevel.PROTECTED, AccessLevel.PACKAGE_PRIVATE, AccessLevel.PRIVATE),
+            bitsOf(ModifierFlag.SYNTHETIC),
+            bitsOf(ModifierFlag.ABSTRACT, ModifierFlag.STATIC),
+            AccessLevel.PUBLIC, ModifierFlag.SYNTHETIC),
+    /**
      * An anonymous class.
      */
     ANONYMOUS_CLASS(

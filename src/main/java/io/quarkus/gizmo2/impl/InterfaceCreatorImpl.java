@@ -17,10 +17,16 @@ import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.classfile.ClassBuilder;
 import io.smallrye.classfile.ClassFile;
 
-public final class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator {
+public sealed class InterfaceCreatorImpl extends TypeCreatorImpl implements InterfaceCreator
+        permits MemberInterfaceCreatorImpl {
 
     InterfaceCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
-        super(gizmo, type, output, zb);
+        this(gizmo, type, output, zb, null);
+    }
+
+    InterfaceCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
+            final TypeCreatorImpl enclosingType) {
+        super(gizmo, type, output, zb, enclosingType);
         // not a user-visible modifier, so set it explicitly here
         modifiers |= ClassFile.ACC_INTERFACE;
     }

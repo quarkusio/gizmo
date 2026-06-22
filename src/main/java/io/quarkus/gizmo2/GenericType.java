@@ -58,7 +58,7 @@ public abstract class GenericType {
         Class<?> enclosingClass = type.getEnclosingClass();
         if (enclosingClass != null) {
             if (Modifier.isStatic(type.getModifiers())) {
-                // "root" class (nested interfaces, annotations, enums or records are always `static`)
+                // "root" class (member interfaces, annotations, enums or records are always `static`)
                 return of(Util.classDesc(type));
             } else {
                 return ofInnerClass(ofClass(enclosingClass), type.getSimpleName());

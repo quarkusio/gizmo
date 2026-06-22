@@ -49,7 +49,7 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
                 superArgs.add(cc.parameter("p" + i, ctorType.parameterType(i)));
             }
         });
-        this_ = new ThisExpr(type, null);
+        this_ = new ThisExpr(this, type, null);
     }
 
     public ModifierLocation modifierLocation() {
