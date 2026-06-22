@@ -653,7 +653,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(owner.version().major(), 0);
-            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb,
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, owner,
                     ConstructorDesc.of(Object.class), captureExprs);
             if (sam instanceof InterfaceMethodDesc) {
                 // implement the interface too
@@ -728,8 +728,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             // anonymous classes: outer_class_info_index and inner_name_index must both be zero (JVMS §4.7.6)
             zb.with(InnerClassesAttribute.of(
                     InnerClassInfo.of(desc, Optional.empty(), Optional.empty(), 0)));
-            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, superCtor,
-                    captureExprs);
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, owner,
+                    superCtor, captureExprs);
             tc.preAccept();
             builder.accept(tc);
             tc.freezeCaptures();
