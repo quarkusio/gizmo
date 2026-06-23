@@ -27,6 +27,11 @@ public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCre
         super(gizmo, type, output, zb);
     }
 
+    ClassCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
+            final TypeCreatorImpl enclosingType) {
+        super(gizmo, type, output, zb, enclosingType);
+    }
+
     public ModifierLocation modifierLocation() {
         return ModifierLocation.CLASS;
     }

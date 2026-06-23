@@ -653,7 +653,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         final ArrayList<Expr> captureExprs = new ArrayList<>();
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(owner.version().major(), 0);
-            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb,
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, owner,
                     ConstructorDesc.of(Object.class), captureExprs);
             if (sam instanceof InterfaceMethodDesc) {
                 // implement the interface too
@@ -725,10 +725,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         byte[] bytes = cf.build(desc, zb -> {
             zb.withVersion(owner.version().major(), 0);
             zb.with(NestHostAttribute.of(ownerDesc));
+            // anonymous classes: outer_class_info_index and inner_name_index must both be zero (JVMS §4.7.6)
             zb.with(InnerClassesAttribute.of(
-                    InnerClassInfo.of(desc, Optional.of(ownerDesc), Optional.empty(), 0)));
-            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, superCtor,
-                    captureExprs);
+                    InnerClassInfo.of(desc, Optional.empty(), Optional.empty(), 0)));
+            AnonymousClassCreatorImpl tc = new AnonymousClassCreatorImpl(owner.gizmo, desc, owner.output(), zb, owner,
+                    superCtor, captureExprs);
             tc.preAccept();
             builder.accept(tc);
             tc.freezeCaptures();
@@ -742,6 +743,8 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         MethodModel ourCtor = methods.get(methods.size() - 1);
         owner.output().write(desc, bytes);
         owner.addNestMember(desc);
+        // register InnerClassInfo on the outer class (JVMS §4.7.6)
+        owner.addInnerClassInfo(InnerClassInfo.of(desc, Optional.empty(), Optional.empty(), 0));
         return new_(ConstructorDesc.of(desc, ourCtor.methodTypeSymbol()),
                 Stream.concat(args.stream(), captureExprs.stream()).toList());
     }

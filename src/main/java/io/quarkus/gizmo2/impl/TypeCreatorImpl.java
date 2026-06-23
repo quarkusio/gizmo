@@ -53,6 +53,8 @@ import io.smallrye.classfile.ClassBuilder;
 import io.smallrye.classfile.ClassSignature;
 import io.smallrye.classfile.Signature;
 import io.smallrye.classfile.TypeAnnotation;
+import io.smallrye.classfile.attribute.InnerClassInfo;
+import io.smallrye.classfile.attribute.InnerClassesAttribute;
 import io.smallrye.classfile.attribute.NestMembersAttribute;
 import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.smallrye.classfile.attribute.SignatureAttribute;
@@ -81,7 +83,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private List<Consumer<BlockCreator>> staticInits = List.of();
     List<Consumer<BlockCreator>> preInits = List.of();
     List<Consumer<BlockCreator>> postInits = List.of();
-    private List<ClassDesc> nestMembers = new ArrayList<>();
+    private final List<ClassDesc> nestMembers = new ArrayList<>();
+    private final List<InnerClassInfo> innerClassInfos = new ArrayList<>();
+    private final TypeCreatorImpl enclosingType;
     private int bootstraps;
 
     /**
@@ -99,11 +103,17 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     int lambdaAndAnonClassCounter;
 
     TypeCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
+        this(gizmo, type, output, zb, null);
+    }
+
+    TypeCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
+            final TypeCreatorImpl enclosingType) {
         super(gizmo);
         this.gizmo = gizmo;
         this.type = type;
         this.output = output;
         this.zb = zb;
+        this.enclosingType = enclosingType;
     }
 
     public ClassOutput output() {
@@ -128,8 +138,40 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         return version;
     }
 
+    /**
+     * {@return the immediately enclosing type creator, or {@code null} if this is a top-level type}
+     */
+    TypeCreatorImpl enclosingType() {
+        return enclosingType;
+    }
+
+    /**
+     * {@return the top-level (nest host) type creator, which is {@code this} for top-level types}
+     */
+    TypeCreatorImpl topLevel() {
+        TypeCreatorImpl cur = this;
+        while (cur.enclosingType != null) {
+            cur = cur.enclosingType;
+        }
+        return cur;
+    }
+
+    /**
+     * Register a nest member on the nest host's shared list.
+     *
+     * @param nestMember the descriptor of the nest member class (must not be {@code null})
+     */
     void addNestMember(ClassDesc nestMember) {
-        nestMembers.add(nestMember);
+        topLevel().nestMembers.add(nestMember);
+    }
+
+    /**
+     * Register an inner class info entry to be emitted in the {@code InnerClasses} attribute of this class.
+     *
+     * @param info the inner class info entry (must not be {@code null})
+     */
+    void addInnerClassInfo(InnerClassInfo info) {
+        innerClassInfos.add(info);
     }
 
     public void sourceFile(final String name) {
@@ -282,6 +324,9 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         addInvisible(zb);
         if (!nestMembers.isEmpty()) {
             zb.with(NestMembersAttribute.ofSymbols(nestMembers));
+        }
+        if (!innerClassInfos.isEmpty()) {
+            zb.with(InnerClassesAttribute.of(innerClassInfos));
         }
         ArrayList<TypeAnnotation> visible = new ArrayList<>();
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();

@@ -34,8 +34,9 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
     private final ThisExpr this_;
 
     AnonymousClassCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb,
-            final ConstructorDesc superCtor, final ArrayList<Expr> captureExprs) {
-        super(gizmo, type, output, zb);
+            final TypeCreatorImpl enclosingType, final ConstructorDesc superCtor,
+            final ArrayList<Expr> captureExprs) {
+        super(gizmo, type, output, zb, enclosingType);
         modifiers |= ACC_FINAL;
         this.superCtor = superCtor;
         extends_(superCtor.owner());
