@@ -560,7 +560,9 @@ public sealed interface Const extends Expr, Constable permits ConstImpl {
 
     // Private to avoid ambiguous overload behavior
     private static Const of(Object any) {
-        if (any instanceof ConstantDesc cd) {
+        if (any instanceof Const c) {
+            return c;
+        } else if (any instanceof ConstantDesc cd) {
             return of(cd);
         } else if (any instanceof Constable c) {
             return of(c);
