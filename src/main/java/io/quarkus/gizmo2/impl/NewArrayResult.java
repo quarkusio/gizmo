@@ -16,6 +16,20 @@ public class NewArrayResult extends Item {
         this.elements = elements;
     }
 
+    /**
+     * {@return the underlying empty array allocation}
+     */
+    NewEmptyArray newEmptyArray() {
+        return newEmptyArray;
+    }
+
+    /**
+     * {@return the list of array element stores}
+     */
+    List<ArrayStore> elements() {
+        return elements;
+    }
+
     @Override
     public String itemName() {
         return "NewArrayResult:" + newEmptyArray.type().displayName();
@@ -44,5 +58,11 @@ public class NewArrayResult extends Item {
     @Override
     public void writeCode(CodeBuilder cb, BlockCreatorImpl block, final StackMapBuilder smb) {
         // nothing
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprNewArrayResult(this, buf, sb);
     }
 }

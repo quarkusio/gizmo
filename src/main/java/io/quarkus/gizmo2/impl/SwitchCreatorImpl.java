@@ -59,6 +59,10 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
     int min, max;
     boolean fallThrough;
     boolean done;
+    /**
+     * Set when a {@code gotoCase} or {@code gotoDefault} targets this switch.
+     */
+    boolean jumpTarget;
 
     SwitchCreatorImpl(final BlockCreatorImpl enclosing, final Expr switchVal, final ClassDesc type,
             final Class<C> constantType) {
@@ -73,6 +77,17 @@ public sealed abstract class SwitchCreatorImpl<C extends ConstImpl> extends Item
             // this allows (and, in fact, requires) using them as actual expressions
             fallThrough = true;
         }
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.emitSwitch(this, sb);
     }
 
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {

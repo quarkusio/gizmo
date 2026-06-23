@@ -87,4 +87,10 @@ public final class ThisExpr extends Item implements This {
     public String itemName() {
         return "this";
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append("this");
+    }
 }

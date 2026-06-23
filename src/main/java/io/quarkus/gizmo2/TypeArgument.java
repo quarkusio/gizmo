@@ -4,6 +4,7 @@ import java.lang.constant.ClassDesc;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
@@ -121,6 +122,16 @@ public abstract sealed class TypeArgument {
     public abstract StringBuilder toString(StringBuilder b);
 
     /**
+     * Append the string representation of this type argument to the given builder,
+     * using the given function to resolve class names.
+     *
+     * @param b the string builder (must not be {@code null})
+     * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
+     * @return the same string builder (not {@code null})
+     */
+    public abstract StringBuilder toString(StringBuilder b, Function<ClassDesc, String> typeNameFn);
+
+    /**
      * {@return the string representation of this type argument}
      */
     public String toString() {
@@ -179,7 +190,11 @@ public abstract sealed class TypeArgument {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return type.toString(b);
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return type.toString(b, typeNameFn);
         }
     }
 
@@ -266,11 +281,15 @@ public abstract sealed class TypeArgument {
         }
 
         public StringBuilder toString(StringBuilder b) {
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(StringBuilder b, Function<ClassDesc, String> typeNameFn) {
             for (Annotation annotation : visible) {
-                Util.appendAnnotation(b, annotation).append(' ');
+                Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
             }
             for (Annotation annotation : invisible) {
-                Util.appendAnnotation(b, annotation).append(' ');
+                Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
             }
             return b;
         }
@@ -347,7 +366,11 @@ public abstract sealed class TypeArgument {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return bound.toString(super.toString(b).append("? extends "));
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return bound.toString(super.toString(b, typeNameFn).append("? extends "), typeNameFn);
         }
     }
 
@@ -406,7 +429,11 @@ public abstract sealed class TypeArgument {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return bound.toString(super.toString(b).append("? super "));
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return bound.toString(super.toString(b, typeNameFn).append("? super "), typeNameFn);
         }
     }
 
@@ -451,7 +478,11 @@ public abstract sealed class TypeArgument {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append('?');
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return super.toString(b, typeNameFn).append('?');
         }
     }
 }

@@ -66,4 +66,10 @@ public final class ParamVarImpl extends AssignableImpl implements ParamVar {
     public String name() {
         return name;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append(name());
+    }
 }

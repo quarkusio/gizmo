@@ -60,6 +60,13 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     private List<TypeParameter> typeParameters = List.of();
 
+    /**
+     * {@return the type parameters declared on this executable (not {@code null})}
+     */
+    List<TypeParameter> typeParameters() {
+        return typeParameters;
+    }
+
     ClassDesc returnType;
     GenericType genericReturnType;
     boolean typeEstablished;
@@ -403,6 +410,10 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             }
         }
         bc.accept(builder);
+        SourceBuilder srcBuilder = typeCreator.sourceBuilder();
+        if (srcBuilder != null) {
+            SourceGenerator.generateMethodBody(srcBuilder, this, bc);
+        }
         bc.writeCode(cb, bc, smb);
 
         if (bc.mayFallThrough()) {

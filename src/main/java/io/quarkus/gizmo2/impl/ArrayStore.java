@@ -35,6 +35,17 @@ final class ArrayStore extends Item {
         return value;
     }
 
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtArrayStore(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         index.process(itr, op);

@@ -92,6 +92,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     private final List<InnerClassInfo> innerClassInfos = new ArrayList<>();
     private final TypeCreatorImpl enclosingType;
     private int bootstraps;
+    private SourceBuilder sourceBuilder;
 
     /**
      * All fields on the class.
@@ -124,6 +125,18 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
 
     public ClassOutput output() {
         return output;
+    }
+
+    /**
+     * {@return the source builder for this type, creating it lazily if source generation is enabled}
+     * Returns {@code null} if source generation is disabled.
+     */
+    SourceBuilder sourceBuilder() {
+        SourceBuilder sb = sourceBuilder;
+        if (sb == null && gizmo.sourceGeneration()) {
+            sourceBuilder = sb = new SourceBuilder();
+        }
+        return sb;
     }
 
     @Override
@@ -471,9 +484,105 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                             b0.return_();
                         }
                     });
+                    // source generation before writeCode (sets sourceLine for LineNumberTable)
+                    if (sourceBuilder != null) {
+                        SourceGenerator.generateStaticInitializer(sourceBuilder, bc);
+                    }
                     bc.writeCode(cb, bc, new StackMapBuilder());
                 });
             });
+        }
+        // finalize and write source if source generation is enabled
+        SourceBuilder sb = sourceBuilder;
+        if (sb != null) {
+            String simpleName = SourceGenerator.simpleClassName(type);
+            sourceFile(simpleName + ".java");
+            // build class header with annotations
+            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn = SourceGenerator.typeNameFn(sb);
+            StringBuilder classHeader = new StringBuilder();
+            for (io.smallrye.classfile.Annotation a : visible()) {
+                Util.appendAnnotation(classHeader, a, typeNameFn).append('\n');
+            }
+            for (io.smallrye.classfile.Annotation a : invisible()) {
+                Util.appendAnnotation(classHeader, a, typeNameFn).append('\n');
+            }
+            int headerFlags = modifiers & ~ACC_STATIC;
+            boolean isInterface = (headerFlags & ClassFile.ACC_INTERFACE) != 0;
+            SourceGenerator.appendAccessFlags(classHeader, headerFlags & ~ClassFile.ACC_INTERFACE & ~ClassFile.ACC_ABSTRACT);
+            if (isInterface) {
+                classHeader.append("interface ").append(simpleName);
+                appendClassTypeParameters(classHeader, typeNameFn);
+                // interfaces "extend" other interfaces
+                if (!interfaceSigs.isEmpty()) {
+                    classHeader.append(" extends ");
+                    appendInterfaceList(classHeader, typeNameFn, sb);
+                }
+            } else {
+                classHeader.append("class ").append(simpleName);
+                appendClassTypeParameters(classHeader, typeNameFn);
+                if (!Util.equals(superSig.desc(), CD_Object)) {
+                    classHeader.append(" extends ");
+                    if (superSig.isRaw()) {
+                        classHeader.append(SourceGenerator.typeName(superSig.desc(), sb));
+                    } else {
+                        superSig.toString(classHeader, typeNameFn);
+                    }
+                }
+                if (!interfaceSigs.isEmpty()) {
+                    classHeader.append(" implements ");
+                    appendInterfaceList(classHeader, typeNameFn, sb);
+                }
+            }
+            // compute package name
+            String fullName = SourceGenerator.typeName(type);
+            int lastDot = fullName.lastIndexOf('.');
+            String packageName = lastDot >= 0 ? fullName.substring(0, lastDot) : null;
+            String source = sb.finalize(packageName, classHeader);
+            output.writeSource(type, source);
+        }
+    }
+
+    /**
+     * Appends the class/interface type parameter list (e.g., {@code <T, U extends Number>}).
+     * If there are no type parameters, nothing is appended.
+     *
+     * @param classHeader the string builder for the class header (must not be {@code null})
+     * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
+     */
+    private void appendClassTypeParameters(StringBuilder classHeader,
+            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn) {
+        if (!typeParameters.isEmpty()) {
+            classHeader.append('<');
+            for (int i = 0; i < typeParameters.size(); i++) {
+                if (i > 0) {
+                    classHeader.append(", ");
+                }
+                typeParameters.get(i).toString(classHeader, typeNameFn);
+            }
+            classHeader.append('>');
+        }
+    }
+
+    /**
+     * Appends the comma-separated list of implemented/extended interfaces, using generic type rendering
+     * when the interface type has type arguments.
+     *
+     * @param classHeader the string builder for the class header (must not be {@code null})
+     * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
+     * @param sb the source builder for import tracking (must not be {@code null})
+     */
+    private void appendInterfaceList(StringBuilder classHeader,
+            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn, SourceBuilder sb) {
+        for (int i = 0; i < interfaceSigs.size(); i++) {
+            if (i > 0) {
+                classHeader.append(", ");
+            }
+            GenericType.OfClass iface = interfaceSigs.get(i);
+            if (iface.isRaw()) {
+                classHeader.append(SourceGenerator.typeName(iface.desc(), sb));
+            } else {
+                iface.toString(classHeader, typeNameFn);
+            }
         }
     }
 

@@ -18,4 +18,10 @@ final class PrimitiveCast extends Cast {
         smb.push(type()); // result
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprPrimitiveCast(this, buf, sb);
+    }
 }

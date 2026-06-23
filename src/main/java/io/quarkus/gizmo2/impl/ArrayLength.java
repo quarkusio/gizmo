@@ -16,6 +16,13 @@ final class ArrayLength extends Item {
         this.item = item;
     }
 
+    /**
+     * {@return the array expression item}
+     */
+    Item arrayItem() {
+        return item;
+    }
+
     protected void computeType() {
         initType(CD_int);
     }
@@ -40,5 +47,11 @@ final class ArrayLength extends Item {
         smb.pop();
         smb.push(StackMapFrameInfo.SimpleVerificationTypeInfo.INTEGER);
         smb.wroteCode();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayLength(this, buf, sb);
     }
 }

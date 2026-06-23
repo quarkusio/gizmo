@@ -24,6 +24,13 @@ final class Neg extends Item {
         }
     }
 
+    /**
+     * {@return the operand being negated}
+     */
+    Item input() {
+        return a;
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         a.process(itr, op);
     }
@@ -37,5 +44,11 @@ final class Neg extends Item {
             default -> throw impossibleSwitchCase(typeKind().asLoadable());
         }
         smb.wroteCode();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprNeg(this, buf, sb);
     }
 }

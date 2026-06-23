@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
+
 public final class InvokeConst extends ConstImpl {
     private final MethodHandleConst handleConstant;
     private final List<ConstImpl> args;
@@ -18,6 +21,20 @@ public final class InvokeConst extends ConstImpl {
         super(handleConstant.desc().invocationType().returnType());
         this.handleConstant = handleConstant;
         this.args = args;
+    }
+
+    /**
+     * {@return the method handle constant being invoked}
+     */
+    public MethodHandleConst handleConstant() {
+        return handleConstant;
+    }
+
+    /**
+     * {@return the arguments to the invocation}
+     */
+    public List<ConstImpl> args() {
+        return args;
     }
 
     public boolean equals(final ConstImpl obj) {
@@ -59,5 +76,11 @@ public final class InvokeConst extends ConstImpl {
             }
         }
         return b.append(')');
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprInvokeConst(this, buf, sb);
     }
 }

@@ -91,4 +91,10 @@ final class RelZero extends Item {
         cb.labelBinding(end);
         smb.addFrameInfo(cb);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprRelZero(this, buf, sb);
+    }
 }

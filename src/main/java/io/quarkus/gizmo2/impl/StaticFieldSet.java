@@ -14,6 +14,31 @@ final class StaticFieldSet extends Item {
         this.value = value;
     }
 
+    /**
+     * {@return the static field being assigned to}
+     */
+    StaticFieldVarImpl staticFieldVar() {
+        return staticFieldVar;
+    }
+
+    /**
+     * {@return the value being assigned}
+     */
+    Item value() {
+        return value;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtStaticFieldSet(this, sb);
+    }
+
     protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
     }

@@ -13,6 +13,24 @@ public final class Pop extends Item {
         this.expr = expr;
     }
 
+    /**
+     * {@return the expression being popped}
+     */
+    Item expr() {
+        return expr;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtPop(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         expr.process(itr, op);
     }

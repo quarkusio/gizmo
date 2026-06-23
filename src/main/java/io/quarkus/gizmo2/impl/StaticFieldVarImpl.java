@@ -54,4 +54,10 @@ public final class StaticFieldVarImpl extends AssignableImpl implements StaticFi
         smb.push(type());
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldVar(this, buf, sb);
+    }
 }

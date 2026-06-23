@@ -17,4 +17,10 @@ final class UncheckedCast extends Cast {
         smb.pop();
         smb.push(type());
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprUncheckedCast(this, buf, sb);
+    }
 }

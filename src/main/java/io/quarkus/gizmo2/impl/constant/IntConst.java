@@ -4,6 +4,8 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+
 public final class IntConst extends IntBasedConst {
     private final Integer value;
 
@@ -38,5 +40,11 @@ public final class IntConst extends IntBasedConst {
 
     public Optional<Integer> describeConstable() {
         return Optional.of(value);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append(intValue());
     }
 }

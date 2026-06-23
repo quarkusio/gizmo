@@ -16,6 +16,36 @@ class GotoCase extends Goto {
         this.case_ = case_;
     }
 
+    /**
+     * {@return the target switch of this goto-case statement}
+     */
+    SwitchCreatorImpl<?> switch_() {
+        return (SwitchCreatorImpl<?>) switch_;
+    }
+
+    /**
+     * {@return the target case constant}
+     */
+    Const case_() {
+        return case_;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SwitchCreatorImpl<?> sw = (SwitchCreatorImpl<?>) switch_;
+        sourceLine = sb.startLine();
+        if (sw == sb.currentSwitch()) {
+            sb.body().append("goto case ");
+        } else {
+            sb.body().append("goto ").append(sb.ensureLabel(sw)).append(".case ");
+        }
+        SourceGenerator.expr(sb.body(), (Item) case_, sb);
+        sb.body().append(';');
+        sb.endLine();
+        sb.trackItem(this);
+    }
+
     Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;

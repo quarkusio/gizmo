@@ -4,6 +4,9 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
+
 public final class DynamicConst extends ConstImpl {
 
     private final DynamicConstantDesc<?> desc;
@@ -35,5 +38,11 @@ public final class DynamicConst extends ConstImpl {
 
     public Optional<DynamicConstantDesc<?>> describeConstable() {
         return Optional.of(desc);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.dynamicConstExpr(buf, this, sb);
     }
 }

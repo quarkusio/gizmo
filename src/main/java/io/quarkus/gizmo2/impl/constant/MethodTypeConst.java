@@ -5,12 +5,22 @@ import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
+
 public final class MethodTypeConst extends ConstImpl {
     private final MethodTypeDesc desc;
 
     MethodTypeConst(final MethodTypeDesc desc) {
         super(ConstantDescs.CD_MethodType);
         this.desc = desc;
+    }
+
+    /**
+     * {@return the method type descriptor}
+     */
+    public MethodTypeDesc methodTypeDesc() {
+        return desc;
     }
 
     public boolean isNonZero() {
@@ -44,5 +54,11 @@ public final class MethodTypeConst extends ConstImpl {
             b.append(desc.parameterType(i).descriptorString());
         }
         return b.append(')').append(desc.returnType().descriptorString());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprMethodTypeConst(this, buf, sb);
     }
 }

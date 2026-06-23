@@ -17,6 +17,19 @@ final class FieldReadModifyWrite extends ReadModifyWrite {
         instance = fieldDeref.instance();
     }
 
+    /**
+     * {@return the instance expression}
+     */
+    Item instance() {
+        return instance;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprFieldReadModifyWrite(this, buf, sb);
+    }
+
     protected void forEachCoordinateDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         instance.process(itr, op);
     }

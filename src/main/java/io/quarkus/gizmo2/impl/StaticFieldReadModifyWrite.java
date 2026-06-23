@@ -12,4 +12,10 @@ final class StaticFieldReadModifyWrite extends ReadModifyWrite {
                 ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()),
                 MethodTypeDesc.of(staticFieldVar.type(), staticFieldVar.type()));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldReadModifyWrite(this, buf, sb);
+    }
 }

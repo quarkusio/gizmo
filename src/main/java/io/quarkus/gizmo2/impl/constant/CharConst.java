@@ -5,6 +5,9 @@ import static java.lang.constant.ConstantDescs.CD_char;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
+
 public final class CharConst extends IntBasedConst {
     private final Character value;
 
@@ -36,5 +39,11 @@ public final class CharConst extends IntBasedConst {
 
     public Optional<DynamicConstantDesc<Character>> describeConstable() {
         return value.describeConstable();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.charLiteral(buf, intValue());
     }
 }

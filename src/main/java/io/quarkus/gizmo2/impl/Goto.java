@@ -20,6 +20,11 @@ abstract class Goto extends Item {
      */
     abstract Label target(BlockCreatorImpl from, StackMapBuilder smb);
 
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         cb.goto_(target(block, smb));
         smb.wroteCode();
