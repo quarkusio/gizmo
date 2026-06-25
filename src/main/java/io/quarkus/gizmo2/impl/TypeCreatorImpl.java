@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -41,6 +42,8 @@ import io.quarkus.gizmo2.TypeArgument;
 import io.quarkus.gizmo2.TypeParameter;
 import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.creator.ClassCreator;
+import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
@@ -50,11 +53,13 @@ import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.classfile.ClassBuilder;
+import io.smallrye.classfile.ClassFile;
 import io.smallrye.classfile.ClassSignature;
 import io.smallrye.classfile.Signature;
 import io.smallrye.classfile.TypeAnnotation;
 import io.smallrye.classfile.attribute.InnerClassInfo;
 import io.smallrye.classfile.attribute.InnerClassesAttribute;
+import io.smallrye.classfile.attribute.NestHostAttribute;
 import io.smallrye.classfile.attribute.NestMembersAttribute;
 import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.smallrye.classfile.attribute.SignatureAttribute;
@@ -172,6 +177,93 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
      */
     void addInnerClassInfo(InnerClassInfo info) {
         innerClassInfos.add(info);
+    }
+
+    /**
+     * Register a nested type within this enclosing type, emitting all required JVMS nesting attributes.
+     * <p>
+     * This sets the {@link NestHostAttribute} on the nested type, creates and registers
+     * {@link InnerClassInfo} on both the nested and enclosing type, and adds the nested type
+     * as a nest member on the top-level nest host.
+     * <p>
+     * Must be called before the nested type's {@link #postAccept()} so that the
+     * {@code InnerClassesAttribute} includes the entry.
+     *
+     * @param nested the nested type creator (must not be {@code null})
+     * @param simpleName the simple name for named nested types, or {@code null} for anonymous classes
+     * @param innerClassFlags the access flags for the {@link InnerClassInfo} entry
+     */
+    void registerNestedType(TypeCreatorImpl nested, String simpleName, int innerClassFlags) {
+        nested.zb.with(NestHostAttribute.of(topLevel().type()));
+        InnerClassInfo info = InnerClassInfo.of(nested.type(),
+                simpleName != null ? Optional.of(type()) : Optional.empty(),
+                Optional.ofNullable(simpleName),
+                innerClassFlags);
+        nested.addInnerClassInfo(info);
+        addInnerClassInfo(info);
+        addNestMember(nested.type());
+    }
+
+    /**
+     * Compute the class descriptor for a member type with the given simple name.
+     * The convention is {@code EnclosingDesc$SimpleName}, e.g. {@code Lcom/example/Outer$Inner;}.
+     *
+     * @param simpleName the simple name of the member type (must not be {@code null})
+     * @return the descriptor for the member type (not {@code null})
+     */
+    ClassDesc computeMemberDesc(String simpleName) {
+        String ds = type.descriptorString();
+        return ClassDesc.ofDescriptor(ds.substring(0, ds.length() - 1) + "$" + simpleName + ";");
+    }
+
+    /**
+     * Create a named member class within this type.
+     * Whether the class is a static member class or a non-static inner class is determined
+     * by whether the {@link io.quarkus.gizmo2.creator.ModifierFlag#STATIC STATIC} flag is set
+     * by the builder.
+     *
+     * @param simpleName the simple name of the member class (must not be {@code null})
+     * @param builder the builder for the member class (must not be {@code null})
+     * @return the descriptor of the member class (not {@code null})
+     */
+    public ClassDesc class_(String simpleName, Consumer<ClassCreator> builder) {
+        checkNotNullParam("simpleName", simpleName);
+        checkNotNullParam("builder", builder);
+        ClassDesc memberDesc = computeMemberDesc(simpleName);
+        ClassFile cf = gizmo.createClassFile();
+        byte[] bytes = cf.build(memberDesc, zb -> {
+            MemberClassCreatorImpl tc = new MemberClassCreatorImpl(gizmo, memberDesc, output(), zb, this);
+            tc.preAccept();
+            builder.accept(tc);
+            registerNestedType(tc, simpleName, tc.modifiers);
+            tc.postAccept();
+        });
+        output.write(memberDesc, bytes);
+        return memberDesc;
+    }
+
+    /**
+     * Create a named member interface within this type.
+     * Member interfaces are always implicitly static.
+     *
+     * @param simpleName the simple name of the member interface (must not be {@code null})
+     * @param builder the builder for the member interface (must not be {@code null})
+     * @return the descriptor of the member interface (not {@code null})
+     */
+    public ClassDesc interface_(String simpleName, Consumer<InterfaceCreator> builder) {
+        checkNotNullParam("simpleName", simpleName);
+        checkNotNullParam("builder", builder);
+        ClassDesc memberDesc = computeMemberDesc(simpleName);
+        ClassFile cf = gizmo.createClassFile();
+        byte[] bytes = cf.build(memberDesc, zb -> {
+            MemberInterfaceCreatorImpl tc = new MemberInterfaceCreatorImpl(gizmo, memberDesc, output(), zb, this);
+            tc.preAccept();
+            builder.accept(tc);
+            registerNestedType(tc, simpleName, tc.modifiers);
+            tc.postAccept();
+        });
+        output.write(memberDesc, bytes);
+        return memberDesc;
     }
 
     public void sourceFile(final String name) {
@@ -304,7 +396,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     public This this_() {
         ThisExpr this_ = this.this_;
         if (this_ == null) {
-            this_ = this.this_ = new ThisExpr(type(), hasGenericType() ? genericType() : null);
+            this_ = this.this_ = new ThisExpr(this, type(), hasGenericType() ? genericType() : null);
         }
         return this_;
     }
@@ -316,7 +408,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     void postAccept() {
         zb.withSuperclass(superSig.desc());
         zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
-        zb.withFlags(modifiers);
+        zb.withFlags(modifiers & ~ACC_STATIC);
         if (signatureNeeded()) {
             zb.with(SignatureAttribute.of(computeSignature()));
         }

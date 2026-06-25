@@ -22,7 +22,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 import io.smallrye.classfile.ClassBuilder;
 
-public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator permits AnonymousClassCreatorImpl {
+public sealed class ClassCreatorImpl extends TypeCreatorImpl implements ClassCreator
+        permits AnonymousClassCreatorImpl, MemberClassCreatorImpl {
     public ClassCreatorImpl(final GizmoImpl gizmo, final ClassDesc type, final ClassOutput output, final ClassBuilder zb) {
         super(gizmo, type, output, zb);
     }

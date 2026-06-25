@@ -182,6 +182,30 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
     Const stringMapResourceConstant(String name, Map<String, String> items);
 
     /**
+     * Create a named member class within this type.
+     * Whether the class is a static member class or a non-static inner class is determined
+     * by whether the {@link ModifierFlag#STATIC STATIC} flag is set by the builder.
+     * <p>
+     * For non-static inner classes, a synthetic {@code this$N} field and constructor parameter
+     * are automatically injected to capture the enclosing instance.
+     *
+     * @param simpleName the simple name of the member class (must not be {@code null})
+     * @param builder the builder for the member class (must not be {@code null})
+     * @return the descriptor of the member class (not {@code null})
+     */
+    ClassDesc class_(String simpleName, Consumer<ClassCreator> builder);
+
+    /**
+     * Create a named member interface within this type.
+     * Member interfaces are always implicitly static.
+     *
+     * @param simpleName the simple name of the member interface (must not be {@code null})
+     * @param builder the builder for the member interface (must not be {@code null})
+     * @return the descriptor of the member interface (not {@code null})
+     */
+    ClassDesc interface_(String simpleName, Consumer<InterfaceCreator> builder);
+
+    /**
      * {@return the {@code this} expression}
      * This expression is only valid for instance methods and constructors.
      */
