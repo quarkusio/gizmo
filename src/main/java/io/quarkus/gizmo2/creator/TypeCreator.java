@@ -25,7 +25,8 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
         permits ClassCreator, InterfaceCreator, TypeCreatorImpl {
     /**
      * Set the class file version to correspond with a run time version.
-     * If not called, the generated class has the version of Java 17.
+     * If not called, the generated class uses the version set on the {@link io.quarkus.gizmo2.Gizmo}
+     * instance via {@link io.quarkus.gizmo2.Gizmo#withVersion(ClassVersion)}, or Java 17 if none was set.
      *
      * @param version the run time version (must not be {@code null})
      */
@@ -33,7 +34,8 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
 
     /**
      * Set the class file version.
-     * If not called, the generated class has the version of Java 17.
+     * If not called, the generated class uses the version set on the {@link io.quarkus.gizmo2.Gizmo}
+     * instance via {@link io.quarkus.gizmo2.Gizmo#withVersion(ClassVersion)}, or Java 17 if none was set.
      *
      * @param version the class file version (must not be {@code null})
      */

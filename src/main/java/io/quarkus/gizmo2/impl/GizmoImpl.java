@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.ClassVersion;
 import io.quarkus.gizmo2.Gizmo;
 import io.quarkus.gizmo2.LambdaStrategy;
 import io.quarkus.gizmo2.ModifierConfigurator;
@@ -24,20 +25,22 @@ public final class GizmoImpl implements Gizmo {
     private final boolean debugInfo;
     private final boolean parameters;
     private final LambdaStrategy lambdaStrategy;
+    private final ClassVersion classVersion;
     private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, true, true, LambdaStrategy.OPTIMIZED);
+        this(outputHandler, DEFAULTS, true, true, LambdaStrategy.OPTIMIZED, ClassVersion.V17);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
             final boolean debugInfo, final boolean parameters,
-            final LambdaStrategy lambdaStrategy) {
+            final LambdaStrategy lambdaStrategy, final ClassVersion classVersion) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.debugInfo = debugInfo;
         this.parameters = parameters;
         this.lambdaStrategy = lambdaStrategy;
+        this.classVersion = classVersion;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
         options.add(ClassFile.StackMapsOption.DROP_STACK_MAPS);
         if (!debugInfo) {
@@ -92,7 +95,7 @@ public final class GizmoImpl implements Gizmo {
         };
         builder.accept(configurator);
         return new GizmoImpl(outputHandler, flags.clone(), debugInfo, parameters,
-                lambdaStrategy);
+                lambdaStrategy, classVersion);
     }
 
     boolean parameters() {
@@ -103,28 +106,38 @@ public final class GizmoImpl implements Gizmo {
         return lambdaStrategy;
     }
 
+    ClassVersion classVersion() {
+        return classVersion;
+    }
+
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy);
+                lambdaStrategy, classVersion);
     }
 
     @Override
     public Gizmo withDebugInfo(final boolean debugInfo) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy);
+                lambdaStrategy, classVersion);
     }
 
     @Override
     public Gizmo withParameters(final boolean parameters) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy);
+                lambdaStrategy, classVersion);
     }
 
     @Override
     public Gizmo withLambdaStrategy(final LambdaStrategy lambdaStrategy) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy);
+                lambdaStrategy, classVersion);
+    }
+
+    @Override
+    public Gizmo withVersion(final ClassVersion classVersion) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
+                lambdaStrategy, classVersion);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {
