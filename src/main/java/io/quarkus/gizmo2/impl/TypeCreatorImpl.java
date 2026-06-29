@@ -75,7 +75,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
             "invoke", ConstantDescs.CD_Object);
 
     final GizmoImpl gizmo;
-    private ClassFileFormatVersion version = ClassFileFormatVersion.RELEASE_17;
+    private ClassFileFormatVersion version;
     private final ClassDesc type;
     private GenericType.OfClass genericType;
     private final ClassOutput output;
@@ -119,6 +119,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         this.output = output;
         this.zb = zb;
         this.enclosingType = enclosingType;
+        setVersion(gizmo.classVersion());
     }
 
     public ClassOutput output() {
@@ -402,10 +403,10 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     void preAccept() {
-        zb.withVersion(version.major(), 0);
     }
 
     void postAccept() {
+        zb.withVersion(version.major(), 0);
         zb.withSuperclass(superSig.desc());
         zb.withInterfaces(interfaceSigs.stream().map(d -> zb.constantPool().classEntry(d.desc())).toList());
         zb.withFlags(modifiers & ~ACC_STATIC);
