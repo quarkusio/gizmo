@@ -363,7 +363,7 @@ public final class SourceGenerator {
         } else if (cd instanceof Float f) {
             return buf.append(f).append('f');
         } else if (cd instanceof Double d) {
-            return buf.append(d).append('d');
+            return buf.append(d);
         } else if (cd instanceof ClassDesc classDesc) {
             return buf.append(typeName(classDesc, sb)).append(".class");
         } else if (cd instanceof MethodTypeDesc mt) {

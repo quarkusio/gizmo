@@ -117,6 +117,6 @@ public final class DoubleConst extends ConstImpl {
     /** {@inheritDoc} */
     @Override
     protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
-        return buf.append(desc()).append('d');
+        return buf.append(desc());
     }
 }
