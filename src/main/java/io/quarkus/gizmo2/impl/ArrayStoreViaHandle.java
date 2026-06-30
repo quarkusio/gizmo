@@ -22,6 +22,38 @@ final class ArrayStoreViaHandle extends Item {
         this.mode = mode;
     }
 
+    /**
+     * {@return the array dereference containing array and index}
+     */
+    ArrayDeref arrayDeref() {
+        return arrayDeref;
+    }
+
+    /**
+     * {@return the value being stored}
+     */
+    Item value() {
+        return value;
+    }
+
+    /**
+     * {@return the memory order for this store operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayStoreViaHandle(this, buf, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         arrayDeref.index().process(itr, op);

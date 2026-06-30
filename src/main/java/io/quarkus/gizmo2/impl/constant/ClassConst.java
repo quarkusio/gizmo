@@ -17,6 +17,8 @@ import java.lang.constant.ConstantDesc;
 import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.classfile.CodeBuilder;
@@ -85,5 +87,11 @@ public final class ClassConst extends ConstImpl {
         } else {
             super.writeCode(cb, block, smb);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprClassConst(this, buf, sb);
     }
 }

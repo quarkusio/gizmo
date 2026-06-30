@@ -4,6 +4,8 @@ import java.lang.constant.ConstantDesc;
 import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+
 public final class StringConst extends ConstImpl {
 
     private final String value;
@@ -69,5 +71,11 @@ public final class StringConst extends ConstImpl {
         }
         b.append('"');
         return b;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return toShortString(buf);
     }
 }

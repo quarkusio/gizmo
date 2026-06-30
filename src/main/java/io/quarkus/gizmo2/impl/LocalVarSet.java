@@ -14,6 +14,31 @@ final class LocalVarSet extends Item {
         this.value = value;
     }
 
+    /**
+     * {@return the local variable being set}
+     */
+    LocalVarImpl localVar() {
+        return localVar;
+    }
+
+    /**
+     * {@return the value being assigned}
+     */
+    Item value() {
+        return value;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtLocalVarSet(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
     }

@@ -22,6 +22,38 @@ final class StaticFieldSetViaHandle extends Item {
         this.value = value;
     }
 
+    /**
+     * {@return the static field variable}
+     */
+    StaticFieldVarImpl staticFieldVar() {
+        return staticFieldVar;
+    }
+
+    /**
+     * {@return the value being set}
+     */
+    Item value() {
+        return value;
+    }
+
+    /**
+     * {@return the memory order for this set operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldSetViaHandle(this, buf, sb);
+    }
+
     protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()).process(itr, op);

@@ -13,6 +13,26 @@ final class GotoStart extends Goto {
         this.outer = (BlockCreatorImpl) outer;
     }
 
+    /**
+     * {@return the target block of this goto-start statement}
+     */
+    BlockCreatorImpl outer() {
+        return outer;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        if (outer == sb.currentBlock()) {
+            sourceLine = sb.line("goto start;");
+        } else {
+            sourceLine = sb.startLine();
+            sb.body().append("goto ").append(sb.ensureLabel(outer)).append(".start;");
+            sb.endLine();
+        }
+        sb.trackItem(this);
+    }
+
     public String itemName() {
         return "GotoStart:" + outer;
     }

@@ -46,6 +46,27 @@ final class Cmp extends Item {
         this.kind = kind;
     }
 
+    /**
+     * {@return the left operand}
+     */
+    Item a() {
+        return a;
+    }
+
+    /**
+     * {@return the right operand}
+     */
+    Item b() {
+        return b;
+    }
+
+    /**
+     * {@return the comparison kind}
+     */
+    Kind kind() {
+        return kind;
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         b.process(itr, op);
         a.process(itr, op);
@@ -101,6 +122,12 @@ final class Cmp extends Item {
 
     private static void fcmp(CodeBuilder cb) {
         cb.invokestatic(CD_Float, "compare", MethodTypeDesc.of(CD_int, CD_float, CD_float));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprCmp(this, buf, sb);
     }
 
     interface CmpOp {

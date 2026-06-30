@@ -32,6 +32,20 @@ final class InstanceOf extends Item {
         }
     }
 
+    /**
+     * {@return the input expression being tested}
+     */
+    Item input() {
+        return input;
+    }
+
+    /**
+     * {@return the type being checked against}
+     */
+    ClassDesc checkType() {
+        return checkType;
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         input.process(itr, op);
     }
@@ -49,5 +63,11 @@ final class InstanceOf extends Item {
             Util.computeAnnotations(checkGenericType, retention, TypeAnnotation.TargetInfo.ofInstanceofExpr(label), annotations,
                     new ArrayDeque<>());
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprInstanceOf(this, buf, sb);
     }
 }

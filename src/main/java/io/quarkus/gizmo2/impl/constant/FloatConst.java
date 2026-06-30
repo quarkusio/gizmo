@@ -4,6 +4,7 @@ import java.lang.constant.ConstantDescs;
 import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.smallrye.classfile.CodeBuilder;
 
@@ -107,5 +108,11 @@ public final class FloatConst extends ConstImpl {
 
     public StringBuilder toShortString(final StringBuilder b) {
         return b.append(value).append(" (").append(Float.toHexString(value)).append(')');
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append(desc()).append('f');
     }
 }

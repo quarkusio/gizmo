@@ -32,4 +32,10 @@ final class CheckCast extends Cast {
                     new ArrayDeque<>());
         }
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprCheckCast(this, buf, sb);
+    }
 }

@@ -20,6 +20,13 @@ final class NewEmptyArray extends Item {
         this.size = convert(size, CD_int);
     }
 
+    /**
+     * {@return the size expression item}
+     */
+    Item sizeItem() {
+        return size;
+    }
+
     @Override
     public String itemName() {
         return "NewEmptyArray:" + type().displayName();
@@ -44,5 +51,11 @@ final class NewEmptyArray extends Item {
         smb.pop(); // size
         smb.push(type());
         smb.wroteCode();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprNewEmptyArray(this, buf, sb);
     }
 }

@@ -14,6 +14,31 @@ final class ParamSet extends Item {
         this.value = value;
     }
 
+    /**
+     * {@return the parameter variable being set}
+     */
+    ParamVarImpl paramVar() {
+        return paramVar;
+    }
+
+    /**
+     * {@return the value being assigned}
+     */
+    Item value() {
+        return value;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtParamSet(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
     }

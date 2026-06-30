@@ -22,6 +22,38 @@ final class FieldSetViaHandle extends Item {
         this.mode = mode;
     }
 
+    /**
+     * {@return the field dereference containing instance and field descriptor}
+     */
+    FieldDeref fieldDeref() {
+        return fieldDeref;
+    }
+
+    /**
+     * {@return the value being set}
+     */
+    Item value() {
+        return value;
+    }
+
+    /**
+     * {@return the memory order for this set operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprFieldSetViaHandle(this, buf, sb);
+    }
+
     protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         fieldDeref.instance().process(itr, op);

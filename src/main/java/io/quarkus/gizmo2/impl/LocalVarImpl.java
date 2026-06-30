@@ -86,4 +86,10 @@ public final class LocalVarImpl extends AssignableImpl implements LocalVar {
             super.emitDec(block, amount);
         }
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append(name());
+    }
 }

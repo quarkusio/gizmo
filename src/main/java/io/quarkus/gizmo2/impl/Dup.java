@@ -14,6 +14,13 @@ final class Dup extends Item {
         this.input = input;
     }
 
+    /**
+     * {@return the duplicated input item}
+     */
+    Item inputItem() {
+        return input;
+    }
+
     protected void computeType() {
         initType(input.type());
         if (input.hasGenericType()) {
@@ -59,5 +66,11 @@ final class Dup extends Item {
             }
             default -> throw impossibleSwitchCase(typeKind().asLoadable());
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprDup(this, buf, sb);
     }
 }

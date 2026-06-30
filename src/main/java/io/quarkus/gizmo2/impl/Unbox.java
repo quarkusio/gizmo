@@ -42,4 +42,10 @@ final class Unbox extends Cast {
         smb.push(type()); // unboxed
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprUnbox(this, buf, sb);
+    }
 }

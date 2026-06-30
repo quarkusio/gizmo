@@ -13,4 +13,10 @@ final class StaticFieldCompareAndSet extends CompareAndSet {
         super(expect, update, weak, mode, ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()),
                 MethodTypeDesc.of(CD_boolean, staticFieldVar.type(), staticFieldVar.type()));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldCompareAndSet(this, buf, sb);
+    }
 }

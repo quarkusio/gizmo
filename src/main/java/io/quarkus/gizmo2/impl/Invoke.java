@@ -69,9 +69,49 @@ final class Invoke extends Item {
         this.args = newArgs;
     }
 
+    /**
+     * {@return the owner class descriptor}
+     */
+    ClassDesc owner() {
+        return owner;
+    }
+
+    /**
+     * {@return the method name}
+     */
+    String name() {
+        return name;
+    }
+
+    /**
+     * {@return the method type descriptor}
+     */
+    MethodTypeDesc methodType() {
+        return type;
+    }
+
+    /**
+     * {@return the receiver instance, or {@code null} for static invocations}
+     */
+    Item instance() {
+        return instance;
+    }
+
+    /**
+     * {@return the argument items}
+     */
+    List<Item> args() {
+        return args;
+    }
+
     @Override
     public String itemName() {
         return "Invoke:" + owner.displayName() + "." + name;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
     }
 
     protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
@@ -100,5 +140,11 @@ final class Invoke extends Item {
             smb.push(type.returnType()); // result
         }
         smb.wroteCode();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.invokeExpr(buf, this, sb);
     }
 }

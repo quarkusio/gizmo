@@ -21,6 +21,26 @@ final class ArrayReadModifyWrite extends ReadModifyWrite {
         index = arrayDeref.index();
     }
 
+    /**
+     * {@return the array expression}
+     */
+    Item array() {
+        return array;
+    }
+
+    /**
+     * {@return the index expression}
+     */
+    Item index() {
+        return index;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayReadModifyWrite(this, buf, sb);
+    }
+
     protected void forEachCoordinateDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         index.process(itr, op);
         array.process(itr, op);

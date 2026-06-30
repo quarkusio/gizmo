@@ -20,11 +20,36 @@ final class FieldGetViaHandle extends Item {
         this.mode = mode;
     }
 
+    /**
+     * {@return the field dereference containing instance and field descriptor}
+     */
+    FieldDeref fieldDeref() {
+        return fieldDeref;
+    }
+
+    /**
+     * {@return the memory order for this get operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
     protected void computeType() {
         initType(fieldDeref.type());
         if (fieldDeref.hasGenericType()) {
             initGenericType(fieldDeref.genericType());
         }
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprFieldGetViaHandle(this, buf, sb);
     }
 
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {

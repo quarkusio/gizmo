@@ -30,6 +30,39 @@ abstract class CompareAndExchange extends Item {
         this.opDesc = opDesc;
     }
 
+    /**
+     * {@return the expected value operand}
+     */
+    Item expect() {
+        return expect;
+    }
+
+    /**
+     * {@return the update value operand}
+     */
+    Item update() {
+        return update;
+    }
+
+    /**
+     * {@return the memory order for this operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    /**
+     * {@return the VarHandle constant}
+     */
+    VarHandleConst handle() {
+        return handle;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         update.process(itr, op);
         expect.process(itr, op);

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import io.quarkus.gizmo2.desc.ConstructorDesc;
@@ -130,6 +131,40 @@ public sealed abstract class TypeParameter implements GenericTyped {
      */
     public String toString() {
         return name();
+    }
+
+    /**
+     * Append the string representation of this type parameter declaration to the given builder,
+     * including annotations and bounds, using the given function to resolve class names.
+     *
+     * @param b the string builder (must not be {@code null})
+     * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
+     * @return the string builder that was passed in (not {@code null})
+     */
+    public StringBuilder toString(StringBuilder b, Function<ClassDesc, String> typeNameFn) {
+        for (Annotation annotation : visible) {
+            Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
+        }
+        for (Annotation annotation : invisible) {
+            Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
+        }
+        b.append(name);
+        if (firstBound.isPresent() || !otherBounds.isEmpty()) {
+            b.append(" extends ");
+            boolean first = true;
+            if (firstBound.isPresent()) {
+                firstBound.get().toString(b, typeNameFn);
+                first = false;
+            }
+            for (GenericType.OfThrows bound : otherBounds) {
+                if (!first) {
+                    b.append(" & ");
+                }
+                bound.toString(b, typeNameFn);
+                first = false;
+            }
+        }
+        return b;
     }
 
     /**

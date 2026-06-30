@@ -12,4 +12,10 @@ final class StaticFieldCompareAndExchange extends CompareAndExchange {
                 mode, ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()),
                 MethodTypeDesc.of(staticFieldVar.type(), staticFieldVar.type(), staticFieldVar.type()));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldCompareAndExchange(this, buf, sb);
+    }
 }

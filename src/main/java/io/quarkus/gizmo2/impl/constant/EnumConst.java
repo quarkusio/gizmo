@@ -4,6 +4,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.classfile.CodeBuilder;
@@ -57,5 +59,11 @@ public final class EnumConst extends ConstImpl {
 
     public StringBuilder toShortString(final StringBuilder b) {
         return Util.descName(b, desc.constantType()).append('#').append(desc.constantName());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprEnumConst(this, buf, sb);
     }
 }

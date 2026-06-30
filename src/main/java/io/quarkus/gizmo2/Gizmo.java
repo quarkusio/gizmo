@@ -85,6 +85,17 @@ public sealed interface Gizmo permits GizmoImpl {
     Gizmo withLambdaStrategy(LambdaStrategy lambdaStrategy);
 
     /**
+     * {@return a Gizmo instance which has source code generation enabled or disabled}
+     * When enabled, pseudo-Java source files are generated alongside class files,
+     * and source file name and line number information is embedded into the bytecode.
+     * <p>
+     * By default, source generation is disabled.
+     *
+     * @param sourceGeneration {@code true} to enable source generation, or {@code false} to disable it
+     */
+    Gizmo withSourceGeneration(boolean sourceGeneration);
+
+    /**
      * {@return a Gizmo instance which uses the default modifiers configured by the given configurator}
      *
      * @param builder the builder for the defaults (must not be {@code null})

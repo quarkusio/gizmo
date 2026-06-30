@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -268,21 +269,36 @@ public final class Util {
     }
 
     public static StringBuilder appendAnnotation(final StringBuilder b, final Annotation annotation) {
+        return appendAnnotation(b, annotation, Util::binaryName);
+    }
+
+    /**
+     * Appends an annotation to the given string builder, using the provided function
+     * to render type names.
+     *
+     * @param b the string builder to append to (must not be {@code null})
+     * @param annotation the annotation to render (must not be {@code null})
+     * @param typeNameFn function that converts a {@link ClassDesc} to a type name string
+     * @return the string builder, for chaining
+     */
+    public static StringBuilder appendAnnotation(final StringBuilder b, final Annotation annotation,
+            final Function<ClassDesc, String> typeNameFn) {
         b.append('@');
-        b.append(binaryName(annotation.classSymbol()));
+        b.append(typeNameFn.apply(annotation.classSymbol()));
         List<AnnotationElement> elements = annotation.elements();
         if (!elements.isEmpty()) {
             b.append('(');
             if (elements.size() == 1 && elements.get(0).name().equalsString("value")) {
-                appendAnnotationValue(b, elements.get(0).value());
+                appendAnnotationValue(b, elements.get(0).value(), typeNameFn);
             } else {
                 Iterator<AnnotationElement> iter = elements.iterator();
                 assert iter.hasNext();
                 AnnotationElement entry = iter.next();
-                appendAnnotationValue(b.append(entry.name().stringValue()).append('='), entry.value());
+                appendAnnotationValue(b.append(entry.name().stringValue()).append('='), entry.value(), typeNameFn);
                 while (iter.hasNext()) {
                     entry = iter.next();
-                    appendAnnotationValue(b.append(',').append(entry.name().stringValue()).append('='), entry.value());
+                    appendAnnotationValue(b.append(',').append(entry.name().stringValue()).append('='), entry.value(),
+                            typeNameFn);
                 }
             }
             b.append(')');
@@ -291,9 +307,23 @@ public final class Util {
     }
 
     public static void appendAnnotationValue(final StringBuilder b, final AnnotationValue value) {
+        appendAnnotationValue(b, value, Util::binaryName);
+    }
+
+    /**
+     * Appends an annotation element value to the given string builder, using the provided
+     * function to render type names for enum constants, class literals, and nested annotations.
+     *
+     * @param b the string builder to append to (must not be {@code null})
+     * @param value the annotation value to render (must not be {@code null})
+     * @param typeNameFn function that converts a {@link ClassDesc} to a type name string
+     */
+    public static void appendAnnotationValue(final StringBuilder b, final AnnotationValue value,
+            final Function<ClassDesc, String> typeNameFn) {
         switch (value.tag()) {
             case AnnotationValue.TAG_BYTE -> b.append(((AnnotationValue.OfByte) value).byteValue());
-            case AnnotationValue.TAG_CHAR -> b.append('\'').append(((AnnotationValue.OfChar) value).charValue()).append('\'');
+            case AnnotationValue.TAG_CHAR ->
+                b.append('\'').append(((AnnotationValue.OfChar) value).charValue()).append('\'');
             case AnnotationValue.TAG_SHORT -> b.append(((AnnotationValue.OfShort) value).shortValue());
             case AnnotationValue.TAG_INT -> b.append(((AnnotationValue.OfInt) value).intValue());
             case AnnotationValue.TAG_LONG -> b.append(((AnnotationValue.OfLong) value).longValue()).append('L');
@@ -304,24 +334,26 @@ public final class Util {
                 b.append('"').append(((AnnotationValue.OfString) value).stringValue()).append('"');
             case AnnotationValue.TAG_ENUM -> {
                 AnnotationValue.OfEnum ofEnum = (AnnotationValue.OfEnum) value;
-                b.append(binaryName(ofEnum.classSymbol())).append('.').append(ofEnum.constantName().stringValue());
+                b.append(typeNameFn.apply(ofEnum.classSymbol())).append('.').append(ofEnum.constantName().stringValue());
             }
             case AnnotationValue.TAG_ARRAY -> {
                 b.append('{');
                 final Iterator<AnnotationValue> iterator = ((AnnotationValue.OfArray) value).values().iterator();
                 if (iterator.hasNext()) {
                     AnnotationValue nested = iterator.next();
-                    appendAnnotationValue(b, nested);
+                    appendAnnotationValue(b, nested, typeNameFn);
                     while (iterator.hasNext()) {
                         b.append(',');
                         nested = iterator.next();
-                        appendAnnotationValue(b, nested);
+                        appendAnnotationValue(b, nested, typeNameFn);
                     }
                 }
                 b.append('}');
             }
-            case AnnotationValue.TAG_CLASS -> b.append(binaryName(((AnnotationValue.OfClass) value).classSymbol()));
-            case AnnotationValue.TAG_ANNOTATION -> appendAnnotation(b, ((AnnotationValue.OfAnnotation) value).annotation());
+            case AnnotationValue.TAG_CLASS ->
+                b.append(typeNameFn.apply(((AnnotationValue.OfClass) value).classSymbol()));
+            case AnnotationValue.TAG_ANNOTATION ->
+                appendAnnotation(b, ((AnnotationValue.OfAnnotation) value).annotation(), typeNameFn);
             default -> throw Assert.impossibleSwitchCase(value.tag());
         }
     }

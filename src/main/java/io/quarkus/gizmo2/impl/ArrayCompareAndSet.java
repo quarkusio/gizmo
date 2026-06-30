@@ -21,6 +21,26 @@ final class ArrayCompareAndSet extends CompareAndSet {
         index = arrayDeref.index();
     }
 
+    /**
+     * {@return the array expression}
+     */
+    Item array() {
+        return array;
+    }
+
+    /**
+     * {@return the index expression}
+     */
+    Item index() {
+        return index;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayCompareAndSet(this, buf, sb);
+    }
+
     protected void forEachCoordinateDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         index.process(itr, op);
         array.process(itr, op);

@@ -19,6 +19,12 @@ final class IfZero extends If {
         this.a = mustBeBoolean ? convert(a, CD_boolean) : a;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.emitIf(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         a.process(itr, op);
     }

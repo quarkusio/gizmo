@@ -13,6 +13,31 @@ final class LocalVarIncrement extends Item {
         this.amount = amount;
     }
 
+    /**
+     * {@return the local variable being incremented}
+     */
+    LocalVarImpl localVar() {
+        return localVar;
+    }
+
+    /**
+     * {@return the increment amount}
+     */
+    Const amount() {
+        return amount;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtLocalVarIncrement(this, sb);
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         localVar.checkSlot();
         cb.iinc(localVar.slot, ((IntBasedConst) amount).intValue());

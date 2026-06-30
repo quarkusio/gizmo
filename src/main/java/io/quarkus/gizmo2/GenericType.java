@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import io.quarkus.gizmo2.creator.AnnotatableCreator;
 import io.quarkus.gizmo2.creator.AnnotationCreator;
@@ -427,11 +428,23 @@ public abstract class GenericType {
      * @return the string builder that was passed in (not {@code null})
      */
     public StringBuilder toString(StringBuilder b) {
+        return toString(b, Util::binaryName);
+    }
+
+    /**
+     * Append a string representation of this type to the given string builder,
+     * using the given function to resolve class names.
+     *
+     * @param b the string builder (must not be {@code null})
+     * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
+     * @return the string builder that was passed in (not {@code null})
+     */
+    public StringBuilder toString(StringBuilder b, Function<ClassDesc, String> typeNameFn) {
         for (Annotation annotation : visible) {
-            Util.appendAnnotation(b, annotation).append(' ');
+            Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
         }
         for (Annotation annotation : invisible) {
-            Util.appendAnnotation(b, annotation).append(' ');
+            Util.appendAnnotation(b, annotation, typeNameFn).append(' ');
         }
         return b;
     }
@@ -527,7 +540,11 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append(name);
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return super.toString(b, typeNameFn).append(name);
         }
 
         public OfTypeVariable withAnnotations(final Consumer<AnnotatableCreator> builder) {
@@ -703,24 +720,28 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
             GenericType element = this;
             while (element instanceof OfArray arr) {
                 element = arr.componentType;
             }
-            element.toString(b);
-            appendComponent(b);
+            element.toString(b, typeNameFn);
+            appendComponent(b, typeNameFn);
             return b;
         }
 
-        private void appendComponent(StringBuilder b) {
+        private void appendComponent(StringBuilder b, Function<ClassDesc, String> typeNameFn) {
             // cannot use just `hasAnnotations()`, because that delegates to `has{Visible,Invisible}Annotations()`,
             // which are both overridden in this class to also check the component type
             if (super.hasVisibleAnnotations() || super.hasInvisibleAnnotations()) {
                 b.append(' ');
             }
-            super.toString(b).append("[]");
+            super.toString(b, typeNameFn).append("[]");
             if (componentType instanceof OfArray arr) {
-                arr.appendComponent(b);
+                arr.appendComponent(b, typeNameFn);
             }
         }
 
@@ -861,13 +882,17 @@ public abstract class GenericType {
         }
 
         StringBuilder typeArgumentsToString(StringBuilder b) {
+            return typeArgumentsToString(b, Util::binaryName);
+        }
+
+        StringBuilder typeArgumentsToString(StringBuilder b, Function<ClassDesc, String> typeNameFn) {
             Iterator<TypeArgument> iter = typeArguments.iterator();
             if (iter.hasNext()) {
                 b.append('<');
-                iter.next().toString(b);
+                iter.next().toString(b, typeNameFn);
                 while (iter.hasNext()) {
                     b.append(", ");
-                    iter.next().toString(b);
+                    iter.next().toString(b, typeNameFn);
                 }
                 b.append('>');
             }
@@ -958,11 +983,20 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            String pkgName = desc.packageName();
-            if (!pkgName.isEmpty()) {
-                b.append(pkgName).append('.');
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            // type annotations go between the package qualifier and the simple name
+            String resolvedName = typeNameFn.apply(desc);
+            int lastDot = resolvedName.lastIndexOf('.');
+            if (lastDot >= 0) {
+                b.append(resolvedName, 0, lastDot + 1);
+                return typeArgumentsToString(
+                        super.toString(b, typeNameFn).append(resolvedName, lastDot + 1, resolvedName.length()), typeNameFn);
+            } else {
+                return typeArgumentsToString(super.toString(b, typeNameFn).append(resolvedName), typeNameFn);
             }
-            return typeArgumentsToString(super.toString(b).append(desc.displayName()));
         }
     }
 
@@ -1057,7 +1091,12 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return typeArgumentsToString(super.toString(outerType.toString(b).append('.')).append(name));
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return typeArgumentsToString(
+                    super.toString(outerType.toString(b, typeNameFn).append('.'), typeNameFn).append(name), typeNameFn);
         }
 
         List<TypeAnnotation> computeAnnotations(final RetentionPolicy retention, final TypeAnnotation.TargetInfo targetInfo,
@@ -1133,7 +1172,11 @@ public abstract class GenericType {
         }
 
         public StringBuilder toString(final StringBuilder b) {
-            return super.toString(b).append(type.displayName());
+            return toString(b, Util::binaryName);
+        }
+
+        public StringBuilder toString(final StringBuilder b, final Function<ClassDesc, String> typeNameFn) {
+            return super.toString(b, typeNameFn).append(type.displayName());
         }
 
         public ClassDesc desc() {

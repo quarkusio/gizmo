@@ -106,8 +106,31 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
      * All the items to emit, in order.
      */
     private final ArrayList<Item> items = new ArrayList<Item>(40);
+
+    /**
+     * {@return the item list for source generation}
+     */
+    ArrayList<Item> items() {
+        return items;
+    }
+
     private boolean breakTarget;
     private boolean branchTarget;
+
+    /**
+     * {@return {@code true} if this block is a target of a {@code break} statement}
+     */
+    boolean isBreakTarget() {
+        return breakTarget;
+    }
+
+    /**
+     * {@return {@code true} if this block is a target of a {@code goto} statement}
+     */
+    boolean isBranchTarget() {
+        return branchTarget;
+    }
+
     /**
      * Set if this block is an outermost body block of a {@code try} that also has a {@code finally}.
      * Note that this is only set when the {@code finally} block is added, so when generating the
@@ -219,6 +242,30 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     protected void computeType() {
         initType(outputType);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For non-void blocks, renders as a GCC-style block expression: {@code ({ ... yield value; })}.
+     * Void blocks fall through to the default placeholder rendering.
+     */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        if (isVoid()) {
+            return super.appendSourceExpr(buf, sb);
+        }
+        // render deferred label slot if this block is a jump target
+        if (isBreakTarget() || isBranchTarget()) {
+            sb.addLabelSlot(this);
+        }
+        buf.append("({");
+        sb.endLine();
+        sb.indent();
+        SourceGenerator.generateBlock(this, sb);
+        sb.dedent();
+        sb.startLine();
+        return buf.append("})");
     }
 
     public boolean active() {
@@ -381,10 +428,12 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (!sci.contains(this)) {
             throw new IllegalArgumentException("The given switch statement does not enclose this block");
         }
+        sci.jumpTarget = true;
         addItem(new GotoCase(switch_, case_));
     }
 
     public void gotoDefault(final SwitchCreator switch_) {
+        ((SwitchCreatorImpl<?>) switch_).jumpTarget = true;
         addItem(new GotoDefault(switch_));
     }
 
@@ -1501,8 +1550,14 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
             bcb.labelBinding(startLabel);
             List<Item> items = this.items;
             int sz = items.size();
+            int lastSourceLine = -1;
             for (int i = 0; i < sz; i++) {
-                items.get(i).writeCode(bcb, this, smb);
+                Item item = items.get(i);
+                if (item.sourceLine >= 0 && item.sourceLine != lastSourceLine) {
+                    bcb.lineNumber(item.sourceLine);
+                    lastSourceLine = item.sourceLine;
+                }
+                item.writeCode(bcb, this, smb);
             }
             bcb.labelBinding(endLabel);
         });

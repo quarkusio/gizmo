@@ -72,4 +72,10 @@ final class Rel extends Item {
         smb.addFrameInfo(cb);
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprRel(this, buf, sb);
+    }
 }
