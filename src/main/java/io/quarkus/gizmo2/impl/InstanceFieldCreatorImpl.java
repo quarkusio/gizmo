@@ -53,6 +53,10 @@ public final class InstanceFieldCreatorImpl extends FieldCreatorImpl implements 
         } else if (initializer != null) {
             tc.instanceInitializer(initializer);
         }
+        SourceBuilder srcBuilder = tc.sourceBuilder();
+        if (srcBuilder != null) {
+            SourceGenerator.generateFieldDeclaration(srcBuilder, this);
+        }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);
             if (genericType != null && !genericType.isRaw()) {

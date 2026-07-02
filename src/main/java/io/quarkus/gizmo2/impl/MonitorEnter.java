@@ -12,6 +12,24 @@ final class MonitorEnter extends Item {
         this.monitor = monitor;
     }
 
+    /**
+     * {@return the monitor object expression}
+     */
+    Item monitor() {
+        return monitor;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtMonitorEnter(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         monitor.process(itr, op);
     }

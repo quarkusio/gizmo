@@ -21,6 +21,31 @@ final class StaticFieldGetViaHandle extends Item {
         this.mode = mode;
     }
 
+    /**
+     * {@return the static field variable}
+     */
+    StaticFieldVarImpl staticFieldVar() {
+        return staticFieldVar;
+    }
+
+    /**
+     * {@return the memory order for this get operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldGetViaHandle(this, buf, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         ConstImpl.ofStaticFieldVarHandle(staticFieldVar.desc()).process(itr, op);
     }

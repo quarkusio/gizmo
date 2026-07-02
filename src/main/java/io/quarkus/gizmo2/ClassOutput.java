@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.ConstantDescs;
 import java.lang.constant.MethodTypeDesc;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -27,6 +28,21 @@ public interface ClassOutput {
             throw new IllegalArgumentException("Can only write classes/interfaces");
         }
         write(Util.internalName(desc) + ".class", bytes);
+    }
+
+    /**
+     * Accept and write generated source text for a class.
+     * The source is written to a path derived from the class descriptor,
+     * using a {@code .java} extension instead of {@code .class}.
+     *
+     * @param desc the class descriptor (not {@code null})
+     * @param source the source text (not {@code null})
+     */
+    default void writeSource(ClassDesc desc, String source) {
+        if (!desc.isClassOrInterface()) {
+            throw new IllegalArgumentException("Can only write source for classes/interfaces");
+        }
+        write(Util.internalName(desc) + ".java", source.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
@@ -70,6 +86,11 @@ public interface ClassOutput {
             public void write(final ClassDesc desc, final byte[] bytes) {
                 ClassOutput.this.write(desc, bytes);
                 next.write(desc, bytes);
+            }
+
+            public void writeSource(final ClassDesc desc, final String source) {
+                ClassOutput.this.writeSource(desc, source);
+                next.writeSource(desc, source);
             }
 
             public void write(final String path, final byte[] bytes) {

@@ -87,4 +87,10 @@ public final class FieldDeref extends AssignableImpl implements InstanceFieldVar
         smb.push(type()); // value
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprFieldDeref(this, buf, sb);
+    }
 }

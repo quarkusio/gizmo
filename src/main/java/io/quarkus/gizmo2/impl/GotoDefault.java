@@ -13,6 +13,27 @@ class GotoDefault extends Goto {
         this.switch_ = switch_;
     }
 
+    /**
+     * {@return the target switch of this goto-default statement}
+     */
+    SwitchCreatorImpl<?> switch_() {
+        return (SwitchCreatorImpl<?>) switch_;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SwitchCreatorImpl<?> sw = (SwitchCreatorImpl<?>) switch_;
+        if (sw == sb.currentSwitch()) {
+            sourceLine = sb.line("goto default;");
+        } else {
+            sourceLine = sb.startLine();
+            sb.body().append("goto ").append(sb.ensureLabel(sw)).append(".default;");
+            sb.endLine();
+        }
+        sb.trackItem(this);
+    }
+
     Label target(final BlockCreatorImpl from, final StackMapBuilder smb) {
         TryFinally tryFinally = from.tryFinally();
         SwitchCreatorImpl<?> sci = (SwitchCreatorImpl<?>) switch_;

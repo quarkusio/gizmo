@@ -21,6 +21,20 @@ final class TryCatch extends Item {
         this.body = body;
     }
 
+    /**
+     * {@return the try body block}
+     */
+    BlockCreatorImpl body() {
+        return body;
+    }
+
+    /**
+     * {@return the list of catch clauses}
+     */
+    List<Catch> catches() {
+        return catches;
+    }
+
     public boolean mayFallThrough() {
         return body.mayFallThrough() || catches.stream().map(Catch::body).anyMatch(BlockCreatorImpl::mayFallThrough);
     }
@@ -35,6 +49,17 @@ final class TryCatch extends Item {
             catches = Util.listWith(catches, catch_);
         }
         return bci;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.emitTryCatch(this, sb);
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {

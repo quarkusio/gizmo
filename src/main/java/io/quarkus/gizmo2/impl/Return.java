@@ -19,8 +19,26 @@ final class Return extends Item {
         this.returnValue = (Item) returnValue;
     }
 
+    /**
+     * {@return the return value item}
+     */
+    Item returnValue() {
+        return returnValue;
+    }
+
     public boolean mayFallThrough() {
         return false;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtReturn(this, sb);
     }
 
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {

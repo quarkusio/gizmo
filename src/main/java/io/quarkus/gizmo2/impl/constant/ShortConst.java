@@ -5,6 +5,8 @@ import static java.lang.constant.ConstantDescs.CD_short;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+
 public final class ShortConst extends IntBasedConst {
     private final Short value;
 
@@ -36,5 +38,11 @@ public final class ShortConst extends IntBasedConst {
 
     public Optional<DynamicConstantDesc<Short>> describeConstable() {
         return value.describeConstable();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append("(short) ").append(intValue());
     }
 }

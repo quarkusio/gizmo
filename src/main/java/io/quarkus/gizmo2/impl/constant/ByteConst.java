@@ -5,6 +5,8 @@ import static java.lang.constant.ConstantDescs.CD_byte;
 import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
+import io.quarkus.gizmo2.impl.SourceBuilder;
+
 public final class ByteConst extends IntBasedConst {
     private final Byte value;
 
@@ -36,5 +38,11 @@ public final class ByteConst extends IntBasedConst {
 
     public Optional<DynamicConstantDesc<Byte>> describeConstable() {
         return value.describeConstable();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append("(byte) ").append(intValue());
     }
 }

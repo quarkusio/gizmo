@@ -66,6 +66,27 @@ final class BinOp extends Item {
         }
     }
 
+    /**
+     * {@return the left operand}
+     */
+    Item left() {
+        return a;
+    }
+
+    /**
+     * {@return the right operand}
+     */
+    Item right() {
+        return b;
+    }
+
+    /**
+     * {@return the operation kind}
+     */
+    Kind kind() {
+        return kind;
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         Operation op = kind.opFor(typeKind());
         // we validated op above
@@ -79,6 +100,12 @@ final class BinOp extends Item {
 
     public StringBuilder toShortString(final StringBuilder sb) {
         return b.toShortString(a.toShortString(sb).append(kind));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprBinOp(this, buf, sb);
     }
 
     enum Operands {

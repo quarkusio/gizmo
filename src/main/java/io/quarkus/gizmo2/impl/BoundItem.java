@@ -34,4 +34,10 @@ final class BoundItem extends Item {
     public String itemName() {
         return item.itemName() + ":bound";
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprBoundItem(this, buf, sb);
+    }
 }

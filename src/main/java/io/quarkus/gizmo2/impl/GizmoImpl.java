@@ -25,25 +25,28 @@ public final class GizmoImpl implements Gizmo {
     private final boolean debugInfo;
     private final boolean parameters;
     private final LambdaStrategy lambdaStrategy;
+    private final boolean sourceGeneration;
     private final ClassVersion classVersion;
     private final ClassFile.Option[] options;
 
     public GizmoImpl(final ClassOutput outputHandler) {
-        this(outputHandler, DEFAULTS, true, true, LambdaStrategy.OPTIMIZED, ClassVersion.V17);
+        this(outputHandler, DEFAULTS, true, true, LambdaStrategy.OPTIMIZED, ClassVersion.V17, false);
     }
 
     private GizmoImpl(final ClassOutput outputHandler, final int[] modifiersByLocation,
             final boolean debugInfo, final boolean parameters,
-            final LambdaStrategy lambdaStrategy, final ClassVersion classVersion) {
+            final LambdaStrategy lambdaStrategy, final ClassVersion classVersion,
+            final boolean sourceGeneration) {
         this.outputHandler = outputHandler;
         this.modifiersByLocation = modifiersByLocation;
         this.debugInfo = debugInfo;
         this.parameters = parameters;
         this.lambdaStrategy = lambdaStrategy;
+        this.sourceGeneration = sourceGeneration;
         this.classVersion = classVersion;
         ArrayList<ClassFile.Option> options = new ArrayList<>();
         options.add(ClassFile.StackMapsOption.DROP_STACK_MAPS);
-        if (!debugInfo) {
+        if (!debugInfo && !sourceGeneration) {
             options.add(ClassFile.DebugElementsOption.DROP_DEBUG);
             options.add(ClassFile.LineNumbersOption.DROP_LINE_NUMBERS);
         }
@@ -95,7 +98,14 @@ public final class GizmoImpl implements Gizmo {
         };
         builder.accept(configurator);
         return new GizmoImpl(outputHandler, flags.clone(), debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
+    }
+
+    /**
+     * {@return {@code true} if source code generation is enabled}
+     */
+    boolean sourceGeneration() {
+        return sourceGeneration;
     }
 
     boolean parameters() {
@@ -113,31 +123,37 @@ public final class GizmoImpl implements Gizmo {
     @Override
     public Gizmo withOutput(final ClassOutput outputHandler) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
     }
 
     @Override
     public Gizmo withDebugInfo(final boolean debugInfo) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
     }
 
     @Override
     public Gizmo withParameters(final boolean parameters) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
     }
 
     @Override
     public Gizmo withLambdaStrategy(final LambdaStrategy lambdaStrategy) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
     }
 
     @Override
     public Gizmo withVersion(final ClassVersion classVersion) {
         return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
-                lambdaStrategy, classVersion);
+                lambdaStrategy, classVersion, sourceGeneration);
+    }
+
+    @Override
+    public Gizmo withSourceGeneration(final boolean sourceGeneration) {
+        return new GizmoImpl(outputHandler, modifiersByLocation, debugInfo, parameters,
+                lambdaStrategy, classVersion, sourceGeneration);
     }
 
     public ClassDesc class_(final ClassDesc desc, final Consumer<ClassCreator> builder) {

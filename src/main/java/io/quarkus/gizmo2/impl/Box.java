@@ -35,4 +35,10 @@ final class Box extends Cast {
         smb.push(type()); // boxed type
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprBox(this, buf, sb);
+    }
 }

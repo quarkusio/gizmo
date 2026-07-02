@@ -3,6 +3,8 @@ package io.quarkus.gizmo2.impl.constant;
 import java.lang.invoke.VarHandle;
 
 import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
 
 public final class StaticFieldVarHandleConst extends VarHandleConst {
     private final FieldDesc field;
@@ -24,9 +26,22 @@ public final class StaticFieldVarHandleConst extends VarHandleConst {
         return field.hashCode();
     }
 
+    /**
+     * {@return the field descriptor for this static var handle}
+     */
+    public FieldDesc field() {
+        return field;
+    }
+
     public StringBuilder toShortString(final StringBuilder b) {
         b.append("VarHandle[static ");
         field.toString(b);
         return b.append(']');
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFieldVarHandleConst(this, buf, sb);
     }
 }

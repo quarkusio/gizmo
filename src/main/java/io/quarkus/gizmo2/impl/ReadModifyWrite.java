@@ -30,6 +30,39 @@ abstract class ReadModifyWrite extends Item {
         this.opDesc = opDesc;
     }
 
+    /**
+     * {@return the RMW operation name (e.g., "Set", "Add", "BitwiseOr")}
+     */
+    String op() {
+        return op;
+    }
+
+    /**
+     * {@return the value operand}
+     */
+    Item value() {
+        return value;
+    }
+
+    /**
+     * {@return the memory order for this operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    /**
+     * {@return the VarHandle constant}
+     */
+    VarHandleConst handle() {
+        return handle;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         forEachCoordinateDependency(itr, op);

@@ -11,6 +11,8 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MemberDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
 
 public final class MethodHandleConst extends ConstImpl {
     private final MethodHandleDesc desc;
@@ -73,5 +75,11 @@ public final class MethodHandleConst extends ConstImpl {
     @Override
     public StringBuilder toShortString(StringBuilder b) {
         return member != null ? member.toString(b) : b.append("<unknown>");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprMethodHandleConst(this, buf, sb);
     }
 }

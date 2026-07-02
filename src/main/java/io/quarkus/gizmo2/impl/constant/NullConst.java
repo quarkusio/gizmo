@@ -7,6 +7,7 @@ import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.quarkus.gizmo2.impl.Util;
 import io.smallrye.classfile.CodeBuilder;
@@ -55,5 +56,11 @@ public final class NullConst extends ConstImpl {
 
     public StringBuilder toShortString(final StringBuilder b) {
         return Util.descName(b.append('('), type()).append(")null");
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append("null");
     }
 }

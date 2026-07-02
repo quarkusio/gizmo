@@ -15,6 +15,13 @@ public class NewResult extends Item {
         this.invoke = invoke;
     }
 
+    /**
+     * {@return the invoke item representing the constructor call}
+     */
+    Invoke invoke() {
+        return invoke;
+    }
+
     @Override
     public String itemName() {
         return "NewResult:" + new_.type().displayName();
@@ -31,5 +38,11 @@ public class NewResult extends Item {
         // nothing
         smb.pop(); // uninitialized
         smb.push(type());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.newExpr(buf, this, sb);
     }
 }

@@ -78,6 +78,12 @@ public abstract non-sealed class Item implements Expr {
     protected final String creationSite = Util.trackCaller();
     private ClassDesc type;
     private GenericType genericType;
+    /**
+     * The source line number assigned to this item by source generation, or {@code -1} if none.
+     * Set by the source generator during the source generation phase; read during bytecode emission
+     * to emit {@code LineNumber} entries.
+     */
+    int sourceLine = -1;
 
     protected Item() {
     }
@@ -93,6 +99,43 @@ public abstract non-sealed class Item implements Expr {
     protected Item(final ClassDesc type, final GenericType genericType) {
         this.type = type;
         this.genericType = genericType;
+    }
+
+    /**
+     * {@return {@code true} if this item is rendered as a statement line
+     * in generated source, or {@code false} if it is an inline expression}
+     */
+    protected boolean isSourceStatement() {
+        return false;
+    }
+
+    /**
+     * Appends the source expression for this item to the buffer.
+     * Subclasses override this to provide type-specific rendering;
+     * the default renders a fallback placeholder comment.
+     *
+     * @param buf the string builder to append to (must not be {@code null})
+     * @param sb the source builder for import tracking (must not be {@code null})
+     * @return the buffer, for chaining
+     */
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append("/* ").append(itemName()).append(" */");
+    }
+
+    /**
+     * Emits a source statement line for this item.
+     * The default renders as {@code appendSourceExpr(buf, sb) + ";"} with
+     * standard line tracking.
+     * Subclasses with custom statement rendering override this method.
+     * Only called when {@link #isSourceStatement()} is {@code true}.
+     *
+     * @param sb the source builder for line and indent management (must not be {@code null})
+     */
+    protected void appendSourceStatement(SourceBuilder sb) {
+        sourceLine = sb.startLine();
+        appendSourceExpr(sb.body(), sb).append(';');
+        sb.endLine();
+        sb.trackItem(this);
     }
 
     public String itemName() {

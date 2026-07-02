@@ -14,6 +14,31 @@ final class FieldSet extends Item {
         this.value = value;
     }
 
+    /**
+     * {@return the field dereference being assigned to}
+     */
+    FieldDeref fieldDeref() {
+        return fieldDeref;
+    }
+
+    /**
+     * {@return the value being assigned}
+     */
+    Item value() {
+        return value;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.stmtFieldSet(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         value.process(itr, op);
         fieldDeref.instance().process(itr, op);

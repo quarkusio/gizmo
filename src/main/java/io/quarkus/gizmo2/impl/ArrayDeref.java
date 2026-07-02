@@ -88,4 +88,10 @@ public final class ArrayDeref extends AssignableImpl {
         smb.push(type());
         smb.wroteCode();
     }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayDeref(this, buf, sb);
+    }
 }

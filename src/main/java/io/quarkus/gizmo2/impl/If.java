@@ -60,6 +60,11 @@ abstract class If extends Item {
         }
     }
 
+    @Override
+    protected boolean isSourceStatement() {
+        return isVoid();
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         StackMapBuilder.Saved saved;
         if (whenTrue != null) {
@@ -141,6 +146,19 @@ abstract class If extends Item {
     }
 
     abstract IfOp op(Kind kind);
+
+    /**
+     * {@inheritDoc}
+     * Value-producing if items are rendered as ternary or if-expression syntax.
+     * Void if items use the default fallback.
+     */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        if (isVoid()) {
+            return super.appendSourceExpr(buf, sb);
+        }
+        return SourceGenerator.exprIfValue(this, buf, sb);
+    }
 
     interface IfOp {
         void accept(CodeBuilder cb, Label a);

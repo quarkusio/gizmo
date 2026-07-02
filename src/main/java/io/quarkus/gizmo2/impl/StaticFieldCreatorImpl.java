@@ -29,6 +29,15 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
     private Const initial;
     private Consumer<BlockCreator> initializer;
 
+    /**
+     * {@return the constant initial value for this field, or {@code null} if none}
+     * Only returns non-null for types that can use {@code ConstantValueAttribute}
+     * (int, long, float, double, String).
+     */
+    Const initial() {
+        return initial;
+    }
+
     protected StaticFieldCreatorImpl(final TypeCreatorImpl tc, final ClassDesc owner, final String name) {
         super(owner, name, tc);
     }
@@ -63,6 +72,10 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         builder.accept(this);
         if (initializer != null) {
             tc.staticInitializer(initializer);
+        }
+        SourceBuilder srcBuilder = tc.sourceBuilder();
+        if (srcBuilder != null) {
+            SourceGenerator.generateFieldDeclaration(srcBuilder, this);
         }
         tc.zb.withField(name(), desc().type(), fb -> {
             fb.withFlags(modifiers);

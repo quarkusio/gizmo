@@ -61,6 +61,17 @@ final class TryFinally extends Item {
 
     IllegalStateException written = null;
 
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.emitTryFinally(this, sb);
+    }
+
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
         if (written != null) {
             throw written;

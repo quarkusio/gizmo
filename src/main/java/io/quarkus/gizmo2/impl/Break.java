@@ -13,6 +13,26 @@ final class Break extends Goto {
         this.outer = (BlockCreatorImpl) outer;
     }
 
+    /**
+     * {@return the target block of this break statement}
+     */
+    BlockCreatorImpl outer() {
+        return outer;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        if (outer == sb.currentBlock()) {
+            sourceLine = sb.line("break;");
+        } else {
+            sourceLine = sb.startLine();
+            sb.body().append("break ").append(sb.ensureLabel(outer)).append(';');
+            sb.endLine();
+        }
+        sb.trackItem(this);
+    }
+
     public String itemName() {
         return "Break:" + outer;
     }

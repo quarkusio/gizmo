@@ -13,6 +13,8 @@ import java.util.Optional;
 
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
+import io.quarkus.gizmo2.impl.SourceGenerator;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.smallrye.classfile.CodeBuilder;
 
@@ -25,6 +27,13 @@ public final class StaticFinalFieldConst extends ConstImpl {
     public StaticFinalFieldConst(final FieldDesc fieldDesc) {
         super(fieldDesc.type());
         this.fieldDesc = fieldDesc;
+    }
+
+    /**
+     * {@return the field descriptor for this static final field constant}
+     */
+    public FieldDesc fieldDesc() {
+        return fieldDesc;
     }
 
     public boolean equals(final ConstImpl obj) {
@@ -71,5 +80,11 @@ public final class StaticFinalFieldConst extends ConstImpl {
         b.append("StaticFinalField[");
         fieldDesc.toString(b);
         return b.append(']');
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprStaticFinalFieldConst(this, buf, sb);
     }
 }

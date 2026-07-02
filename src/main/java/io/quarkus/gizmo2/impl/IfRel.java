@@ -18,6 +18,12 @@ final class IfRel extends If {
         this.b = b;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    protected void appendSourceStatement(SourceBuilder sb) {
+        SourceGenerator.emitIf(this, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         b.process(itr, op);
         a.process(itr, op);

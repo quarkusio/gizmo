@@ -20,6 +20,21 @@ final class InvokeDynamic extends Item {
         this.callSiteDesc = callSiteDesc;
     }
 
+    /**
+     * {@return the dynamic call site descriptor}
+     */
+    DynamicCallSiteDesc callSiteDesc() {
+        return callSiteDesc;
+    }
+
+    /**
+     * {@return the invocation argument items}
+     */
+    @SuppressWarnings("unchecked")
+    List<Item> invocationArgs() {
+        return (List<Item>) (List<?>) args;
+    }
+
     protected void forEachDependency(ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         for (int i = args.size() - 1; i >= 0; i--) {
             ((Item) args.get(i)).process(itr, op);
@@ -36,5 +51,11 @@ final class InvokeDynamic extends Item {
             smb.push(type.returnType()); // result
         }
         smb.wroteCode();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.invokeDynamicExpr(buf, this, sb);
     }
 }

@@ -5,6 +5,7 @@ import java.lang.constant.DynamicConstantDesc;
 import java.util.Optional;
 
 import io.quarkus.gizmo2.impl.BlockCreatorImpl;
+import io.quarkus.gizmo2.impl.SourceBuilder;
 import io.quarkus.gizmo2.impl.StackMapBuilder;
 import io.smallrye.classfile.CodeBuilder;
 
@@ -59,5 +60,11 @@ public final class BooleanConst extends ConstImpl {
 
     public int hashCode() {
         return Boolean.hashCode(value);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return buf.append(this == TRUE);
     }
 }

@@ -20,6 +20,31 @@ final class ArrayLoadViaHandle extends Item {
         this.mode = mode;
     }
 
+    /**
+     * {@return the array dereference containing array and index}
+     */
+    ArrayDeref arrayDeref() {
+        return arrayDeref;
+    }
+
+    /**
+     * {@return the memory order for this load operation}
+     */
+    MemoryOrder mode() {
+        return mode;
+    }
+
+    @Override
+    protected boolean isSourceStatement() {
+        return true;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected StringBuilder appendSourceExpr(StringBuilder buf, SourceBuilder sb) {
+        return SourceGenerator.exprArrayLoadViaHandle(this, buf, sb);
+    }
+
     protected void forEachDependency(final ListIterator<Item> itr, final BiConsumer<Item, ListIterator<Item>> op) {
         arrayDeref.index().process(itr, op);
         arrayDeref.array().process(itr, op);
