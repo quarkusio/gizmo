@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.quarkus.gizmo2.ClassOutput;
@@ -44,6 +45,7 @@ import io.quarkus.gizmo2.creator.AccessLevel;
 import io.quarkus.gizmo2.creator.BlockCreator;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
+import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.quarkus.gizmo2.creator.StaticFieldCreator;
 import io.quarkus.gizmo2.creator.StaticMethodCreator;
 import io.quarkus.gizmo2.creator.TypeCreator;
@@ -52,6 +54,7 @@ import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
+import io.smallrye.classfile.Annotation;
 import io.smallrye.classfile.ClassBuilder;
 import io.smallrye.classfile.ClassFile;
 import io.smallrye.classfile.ClassSignature;
@@ -64,6 +67,8 @@ import io.smallrye.classfile.attribute.NestMembersAttribute;
 import io.smallrye.classfile.attribute.RuntimeVisibleTypeAnnotationsAttribute;
 import io.smallrye.classfile.attribute.SignatureAttribute;
 import io.smallrye.classfile.attribute.SourceFileAttribute;
+import io.smallrye.classfile.attribute.StackMapFrameInfo;
+import io.smallrye.classfile.attribute.StackMapTableAttribute;
 import io.smallrye.classfile.extras.reflect.ClassFileFormatVersion;
 import io.smallrye.common.constraint.Assert;
 
@@ -233,7 +238,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     /**
      * Create a named member class within this type.
      * Whether the class is a static member class or a non-static inner class is determined
-     * by whether the {@link io.quarkus.gizmo2.creator.ModifierFlag#STATIC STATIC} flag is set
+     * by whether the {@link ModifierFlag#STATIC STATIC} flag is set
      * by the builder.
      *
      * @param simpleName the simple name of the member class (must not be {@code null})
@@ -488,7 +493,12 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     if (sourceBuilder != null) {
                         SourceGenerator.generateStaticInitializer(sourceBuilder, bc);
                     }
-                    bc.writeCode(cb, bc, new StackMapBuilder());
+                    StackMapBuilder smb = new StackMapBuilder();
+                    bc.writeCode(cb, bc, smb);
+                    List<StackMapFrameInfo> infos = smb.frameInfos();
+                    if (!infos.isEmpty()) {
+                        cb.with(StackMapTableAttribute.of(infos));
+                    }
                 });
             });
         }
@@ -498,12 +508,12 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
             String simpleName = SourceGenerator.simpleClassName(type);
             sourceFile(simpleName + ".java");
             // build class header with annotations
-            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn = SourceGenerator.typeNameFn(sb);
+            Function<ClassDesc, String> typeNameFn = SourceGenerator.typeNameFn(sb);
             StringBuilder classHeader = new StringBuilder();
-            for (io.smallrye.classfile.Annotation a : visible()) {
+            for (Annotation a : visible()) {
                 Util.appendAnnotation(classHeader, a, typeNameFn).append('\n');
             }
-            for (io.smallrye.classfile.Annotation a : invisible()) {
+            for (Annotation a : invisible()) {
                 Util.appendAnnotation(classHeader, a, typeNameFn).append('\n');
             }
             int headerFlags = modifiers & ~ACC_STATIC;
@@ -550,7 +560,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
      * @param typeNameFn the function to resolve class descriptors to display names (must not be {@code null})
      */
     private void appendClassTypeParameters(StringBuilder classHeader,
-            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn) {
+            Function<ClassDesc, String> typeNameFn) {
         if (!typeParameters.isEmpty()) {
             classHeader.append('<');
             for (int i = 0; i < typeParameters.size(); i++) {
@@ -572,7 +582,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
      * @param sb the source builder for import tracking (must not be {@code null})
      */
     private void appendInterfaceList(StringBuilder classHeader,
-            java.util.function.Function<java.lang.constant.ClassDesc, String> typeNameFn, SourceBuilder sb) {
+            Function<ClassDesc, String> typeNameFn, SourceBuilder sb) {
         for (int i = 0; i < interfaceSigs.size(); i++) {
             if (i > 0) {
                 classHeader.append(", ");
