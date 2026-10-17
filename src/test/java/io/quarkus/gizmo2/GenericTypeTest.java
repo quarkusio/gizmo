@@ -103,7 +103,7 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("list", pc -> {
-                    pc.setType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                    pc.type(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -128,13 +128,13 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationParameter", zc -> {
             zc.staticMethod("test0", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.setType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
+                    pc.type(GenericType.ofClass(String.class).withAnnotation(Visible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
             zc.staticMethod("test1", mc -> {
                 mc.parameter("foo", pc -> {
-                    pc.setType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
+                    pc.type(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
                 });
                 mc.body(BlockCreator::return_);
             });
@@ -218,7 +218,7 @@ public final class GenericTypeTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericField", zc -> {
             zc.field("test0", fc -> {
-                fc.setType(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
+                fc.type(GenericType.of(List.class, List.of(TypeArgument.of(String.class))));
             });
         });
         ClassModel model = tcm.readClass(desc, b -> ClassFile.of().parse(b));
@@ -233,10 +233,10 @@ public final class GenericTypeTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestTypeAnnotationField", zc -> {
             zc.field("test0", fc -> {
-                fc.setType(GenericType.ofClass(String.class).withAnnotation(Visible.class));
+                fc.type(GenericType.ofClass(String.class).withAnnotation(Visible.class));
             });
             zc.field("test1", fc -> {
-                fc.setType(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
+                fc.type(GenericType.ofClass(String.class).withAnnotation(Invisible.class));
             });
         });
         ClassModel model = tcm.readClass(desc, b -> ClassFile.of().parse(b));
@@ -270,7 +270,7 @@ public final class GenericTypeTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestComplexCase", zc -> {
             zc.field("test0", fc -> {
-                fc.setType(bigGenericType);
+                fc.type(bigGenericType);
             });
         });
         ClassModel model = tcm.readClass(desc, b -> ClassFile.of().parse(b));
@@ -403,8 +403,8 @@ public final class GenericTypeTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClassTypeParameter", zc -> {
             zc.typeParameter("T", tvc -> {
-                tvc.setFirstBound(GenericType.ofClass(String.class));
-                tvc.setOtherBounds(List.of(GenericType.ofClass(Serializable.class)));
+                tvc.firstBound(GenericType.ofClass(String.class));
+                tvc.otherBounds(List.of(GenericType.ofClass(Serializable.class)));
             });
         });
         ClassModel model = tcm.readClass(desc, b -> ClassFile.of().parse(b));
@@ -444,7 +444,7 @@ public final class GenericTypeTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestGenericReceiver", zc -> {
             zc.typeParameter("T", tvc -> {
-                tvc.setOtherBounds(List.of(GenericType.ofClass(CharSequence.class)));
+                tvc.otherBounds(List.of(GenericType.ofClass(CharSequence.class)));
             });
             zc.method("test0", mc -> {
                 mc.returning(zc.genericType());
@@ -467,11 +467,11 @@ public final class GenericTypeTest {
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestRecursiveType", zc -> {
             GenericType.OfTypeVariable S = zc.typeParameter("S", tpc -> {
                 // `T` doesn't exist yet, so have to specify it in full
-                tpc.setFirstBound(
+                tpc.firstBound(
                         GenericType.ofClass(List.class, TypeArgument.ofExact(GenericType.ofTypeVariable("T", CD_List))));
             });
             zc.typeParameter("T", tvc -> {
-                tvc.setFirstBound(GenericType.ofClass(List.class, TypeArgument.ofExact(S)));
+                tvc.firstBound(GenericType.ofClass(List.class, TypeArgument.ofExact(S)));
             });
         });
         ClassModel model = tcm.readClass(desc, b -> ClassFile.of().parse(b));

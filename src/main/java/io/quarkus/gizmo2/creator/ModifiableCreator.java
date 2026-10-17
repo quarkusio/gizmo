@@ -86,7 +86,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @param access the access level to set (must not be {@code null})
      * @throws IllegalArgumentException if this creator does not support the given access level
      */
-    void setAccess(AccessLevel access);
+    void access(AccessLevel access);
 
     /**
      * Set the access level of this creator to {@code public}.
@@ -94,7 +94,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code public} access level
      */
     default void public_() {
-        setAccess(AccessLevel.PUBLIC);
+        access(AccessLevel.PUBLIC);
     }
 
     /**
@@ -103,7 +103,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code protected} access level
      */
     default void protected_() {
-        setAccess(AccessLevel.PROTECTED);
+        access(AccessLevel.PROTECTED);
     }
 
     /**
@@ -112,7 +112,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the package-private access level
      */
     default void packagePrivate() {
-        setAccess(AccessLevel.PACKAGE_PRIVATE);
+        access(AccessLevel.PACKAGE_PRIVATE);
     }
 
     /**
@@ -121,7 +121,7 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      * @throws IllegalArgumentException if this creator does not support the {@code private} access level
      */
     default void private_() {
-        setAccess(AccessLevel.PRIVATE);
+        access(AccessLevel.PRIVATE);
     }
 
     /**
@@ -140,5 +140,13 @@ public sealed interface ModifiableCreator extends AnnotatableCreator
      */
     default void synthetic() {
         addFlag(ModifierFlag.SYNTHETIC);
+    }
+
+    /**
+     * @deprecated Use {@link #access(AccessLevel)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setAccess(AccessLevel access) {
+        access(access);
     }
 }

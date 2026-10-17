@@ -80,8 +80,8 @@ public final class MemberClassCreatorImpl extends ClassCreatorImpl {
             outerFieldName = "this$" + depth;
             // create the synthetic this$N field
             outerFieldDesc = field(outerFieldName, ifc -> {
-                ifc.setType(enclosingType().type());
-                ifc.setAccess(AccessLevel.PRIVATE);
+                ifc.type(enclosingType().type());
+                ifc.access(AccessLevel.PRIVATE);
                 ifc.addFlag(ModifierFlag.FINAL);
                 ifc.addFlag(ModifierFlag.SYNTHETIC);
             });

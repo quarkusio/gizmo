@@ -42,7 +42,7 @@ public final class ClassVersionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = ClassDesc.of("io.quarkus.gizmo2.TestPerClassOverride");
         g.class_(desc, cc -> {
-            cc.setVersion(ClassVersion.V17);
+            cc.version(ClassVersion.V17);
         });
         int major = readMajorVersion(tcm, desc);
         assertEquals(JAVA_17_MAJOR, major);

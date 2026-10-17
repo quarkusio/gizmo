@@ -77,7 +77,7 @@ public class AccessFlagsTest {
         Class<?> clazz = tcm.loadClass(g.interface_(ClassDesc.of("io.quarkus.gizmo2.FooInterface"), cc -> {
             cc.packagePrivate();
             cc.extends_(Consumer.class);
-            assertThrows(IllegalArgumentException.class, () -> cc.setAccess(AccessLevel.PROTECTED));
+            assertThrows(IllegalArgumentException.class, () -> cc.access(AccessLevel.PROTECTED));
             assertThrows(IllegalArgumentException.class, () -> cc.addFlag(ModifierFlag.SYNCHRONIZED));
         }));
         assertTrue(clazz.isInterface());
@@ -97,19 +97,19 @@ public class AccessFlagsTest {
         Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.FooFields", cc -> {
             cc.field("alpha", fc -> {
                 fc.public_();
-                fc.setType(Integer.class);
+                fc.type(Integer.class);
             });
             cc.field("bravo", fc -> {
                 fc.packagePrivate();
-                fc.setType(Double.class);
+                fc.type(Double.class);
                 // should be a no-op
                 fc.removeFlag(ModifierFlag.STATIC);
                 assertThrows(IllegalArgumentException.class, () -> fc.addFlag(ModifierFlag.STATIC));
             });
             cc.staticField("charlie", fc -> {
                 fc.protected_();
-                fc.setType(String.class);
-                fc.setInitial(Const.of("oops"));
+                fc.type(String.class);
+                fc.initial(Const.of("oops"));
                 assertThrows(IllegalArgumentException.class, () -> fc.addFlag(ModifierFlag.TRANSIENT));
                 // should be a no-op
                 fc.addFlag(ModifierFlag.STATIC);
@@ -118,7 +118,7 @@ public class AccessFlagsTest {
             cc.field("delta", fc -> {
                 fc.private_();
                 fc.final_();
-                fc.setType(Long.class);
+                fc.type(Long.class);
             });
         }));
         assertTrue(clazz.isSynthetic());

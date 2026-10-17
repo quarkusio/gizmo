@@ -211,7 +211,7 @@ public final class SourceGenerationTest {
             });
             // annotated field
             cc.staticField("count", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
                 fc.addAnnotation(Deprecated.class);
             });
             // annotated method with annotated parameter
@@ -219,7 +219,7 @@ public final class SourceGenerationTest {
                 mc.addAnnotation(Deprecated.class);
                 mc.returning(String.class);
                 ParamVar input = mc.parameter("input", pc -> {
-                    pc.setType(String.class);
+                    pc.type(String.class);
                     pc.addAnnotation(TestAnno.class, ann -> {
                         ann.add(TestAnno::value, "paramLevel");
                     });

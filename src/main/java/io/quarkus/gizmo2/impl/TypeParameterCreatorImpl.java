@@ -36,12 +36,12 @@ public final class TypeParameterCreatorImpl extends AnnotatableCreatorImpl imple
     }
 
     @Override
-    public void setFirstBound(final GenericType.OfClass bound) {
+    public void firstBound(final GenericType.OfClass bound) {
         firstBound = Assert.checkNotNullParam("bound", bound);
     }
 
     @Override
-    public void setFirstBound(final GenericType.OfTypeVariable bound) {
+    public void firstBound(final GenericType.OfTypeVariable bound) {
         if (!otherBounds.isEmpty()) {
             throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
         }
@@ -49,7 +49,7 @@ public final class TypeParameterCreatorImpl extends AnnotatableCreatorImpl imple
     }
 
     @Override
-    public void setOtherBounds(final List<GenericType.OfClass> bounds) {
+    public void otherBounds(final List<GenericType.OfClass> bounds) {
         if (firstBound instanceof GenericType.OfTypeVariable) {
             throw new IllegalArgumentException("Other bounds may not be present when the first bound is a type variable");
         }

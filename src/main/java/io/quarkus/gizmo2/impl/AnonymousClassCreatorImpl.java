@@ -61,8 +61,8 @@ public final class AnonymousClassCreatorImpl extends ClassCreatorImpl implements
             // define additional parameters
             ParamVar param = cc.parameter(name, value.type());
             FieldDesc desc = field(name, ifc -> {
-                ifc.setType(value.type());
-                ifc.setAccess(AccessLevel.PRIVATE);
+                ifc.type(value.type());
+                ifc.access(AccessLevel.PRIVATE);
                 ifc.addFlag(ModifierFlag.FINAL);
             });
             InstanceFieldVar fv = this_().field(desc);

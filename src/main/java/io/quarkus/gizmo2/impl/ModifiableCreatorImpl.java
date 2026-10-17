@@ -41,7 +41,7 @@ public abstract sealed class ModifiableCreatorImpl extends AnnotatableCreatorImp
         return modifierLocation().requires(flag);
     }
 
-    public void setAccess(final AccessLevel access) {
+    public void access(final AccessLevel access) {
         if (supports(access)) {
             modifiers = modifiers & ~AccessLevel.fullMask() | access.mask();
         } else {

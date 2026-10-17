@@ -400,10 +400,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
-                fc.setType(Integer.class);
+                fc.type(Integer.class);
             });
             StaticFieldVar field2 = cc.staticField("field2", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -430,10 +430,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
-                fc.setType(long.class);
+                fc.type(long.class);
             });
             StaticFieldVar field2 = cc.staticField("field2", fc -> {
-                fc.setType(double.class);
+                fc.type(double.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -460,10 +460,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
-                fc.setType(Integer.class);
+                fc.type(Integer.class);
             });
             StaticFieldVar field2 = cc.staticField("field2", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -490,10 +490,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.StaticFieldVarSet", cc -> {
             StaticFieldVar field1 = cc.staticField("field1", fc -> {
-                fc.setType(long.class);
+                fc.type(long.class);
             });
             StaticFieldVar field2 = cc.staticField("field2", fc -> {
-                fc.setType(double.class);
+                fc.type(double.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -520,10 +520,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
-                fc.setType(Integer.class);
+                fc.type(Integer.class);
             });
             FieldDesc field2 = cc.field("field2", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.defaultConstructor();
@@ -555,10 +555,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
-                fc.setType(long.class);
+                fc.type(long.class);
             });
             FieldDesc field2 = cc.field("field2", fc -> {
-                fc.setType(double.class);
+                fc.type(double.class);
             });
 
             cc.defaultConstructor();
@@ -590,10 +590,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
-                fc.setType(Integer.class);
+                fc.type(Integer.class);
             });
             FieldDesc field2 = cc.field("field2", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.defaultConstructor();
@@ -625,10 +625,10 @@ public class AutoConversionTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.FieldVarSet", cc -> {
             FieldDesc field1 = cc.field("field1", fc -> {
-                fc.setType(long.class);
+                fc.type(long.class);
             });
             FieldDesc field2 = cc.field("field2", fc -> {
-                fc.setType(double.class);
+                fc.type(double.class);
             });
 
             cc.defaultConstructor();

@@ -26,7 +26,7 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             FieldDesc bravoDesc = cc.field("bravo", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
             });
             cc.constructor(con -> {
                 // this.bravo = "charlie";
@@ -61,8 +61,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.Alpha", cc -> {
             var bravo = cc.staticField("bravo", fc -> {
-                fc.setType(String.class);
-                fc.setInitial(Const.of("charlie"));
+                fc.type(String.class);
+                fc.initial(Const.of("charlie"));
             });
             cc.defaultConstructor();
             cc.staticMethod("test", mc -> {
@@ -126,9 +126,9 @@ public class FieldAccessTest {
         ClassDesc desc = g.class_(className, zc -> {
             // create an instance field and initialize it to a constant value
             FieldDesc field1 = zc.field("field1", ifc -> {
-                ifc.setType(String.class);
+                ifc.type(String.class);
                 ifc.final_();
-                ifc.setInitial("Hello world");
+                ifc.initial("Hello world");
             });
             // create a constructor that does not explicitly initialize the field
             zc.constructor(cc -> {
@@ -159,9 +159,9 @@ public class FieldAccessTest {
         ClassDesc desc = g.class_(className, zc -> {
             // create an instance field and initialize it to a non-constant value
             FieldDesc field1 = zc.field("field1", ifc -> {
-                ifc.setType(String.class);
+                ifc.type(String.class);
                 ifc.final_();
-                ifc.setInitializer(b0 -> {
+                ifc.initializer(b0 -> {
                     b0.yield(b0.withString(Const.of("Hello")).concat(Const.of(" world")));
                 });
             });
@@ -194,8 +194,8 @@ public class FieldAccessTest {
             // create a static field and initialize it to a non-constant value
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.final_();
-                fc.setType(String.class);
-                fc.setInitializer(bc -> {
+                fc.type(String.class);
+                fc.initializer(bc -> {
                     bc.yield(bc.withString(Const.of("Hello")).concat(Const.of(" world")));
                 });
             });
@@ -219,8 +219,8 @@ public class FieldAccessTest {
             // create a static field and initialize it to a non-constant value
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
                 fc.final_();
-                fc.setType(cc.type());
-                fc.setInitializer(bc -> {
+                fc.type(cc.type());
+                fc.initializer(bc -> {
                     bc.yield(bc.new_(cc.type()));
                 });
             });
@@ -243,8 +243,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.GetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.staticMethod("test", mc -> {
@@ -263,8 +263,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.ExplicitGetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.staticMethod("test", mc -> {
@@ -283,8 +283,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileGetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.staticMethod("test", mc -> {
@@ -303,7 +303,7 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.SetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -326,7 +326,7 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileSetStaticFieldTest", cc -> {
             StaticFieldVar fieldVar = cc.staticField("field", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.staticMethod("test", mc -> {
@@ -349,8 +349,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.GetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.defaultConstructor();
@@ -372,8 +372,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.ExplicitGetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.defaultConstructor();
@@ -395,8 +395,8 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileGetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(5);
+                fc.type(int.class);
+                fc.initial(5);
             });
 
             cc.defaultConstructor();
@@ -418,7 +418,7 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.SetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.defaultConstructor();
@@ -446,7 +446,7 @@ public class FieldAccessTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.VolatileSetInstanceFieldTest", cc -> {
             FieldDesc field = cc.field("field", fc -> {
-                fc.setType(int.class);
+                fc.type(int.class);
             });
 
             cc.defaultConstructor();

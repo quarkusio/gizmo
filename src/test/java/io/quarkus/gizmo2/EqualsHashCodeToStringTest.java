@@ -94,35 +94,35 @@ public class EqualsHashCodeToStringTest {
         Gizmo g = tcm.gizmo();
         ClassDesc desc = g.class_("io.quarkus.gizmo2.TestClass", cc -> {
             List<FieldDesc> fields = new ArrayList<>();
-            fields.add(cc.field("booleanValue", fc -> fc.setType(boolean.class)));
-            fields.add(cc.field("byteValue", fc -> fc.setType(byte.class)));
-            fields.add(cc.field("shortValue", fc -> fc.setType(short.class)));
-            fields.add(cc.field("intValue", fc -> fc.setType(int.class)));
-            fields.add(cc.field("longValue", fc -> fc.setType(long.class)));
-            fields.add(cc.field("floatValue", fc -> fc.setType(float.class)));
-            fields.add(cc.field("doubleValue", fc -> fc.setType(double.class)));
-            fields.add(cc.field("charValue", fc -> fc.setType(char.class)));
-            fields.add(cc.field("stringValue", fc -> fc.setType(String.class)));
+            fields.add(cc.field("booleanValue", fc -> fc.type(boolean.class)));
+            fields.add(cc.field("byteValue", fc -> fc.type(byte.class)));
+            fields.add(cc.field("shortValue", fc -> fc.type(short.class)));
+            fields.add(cc.field("intValue", fc -> fc.type(int.class)));
+            fields.add(cc.field("longValue", fc -> fc.type(long.class)));
+            fields.add(cc.field("floatValue", fc -> fc.type(float.class)));
+            fields.add(cc.field("doubleValue", fc -> fc.type(double.class)));
+            fields.add(cc.field("charValue", fc -> fc.type(char.class)));
+            fields.add(cc.field("stringValue", fc -> fc.type(String.class)));
 
-            fields.add(cc.field("booleanArrayValue", fc -> fc.setType(boolean[].class)));
-            fields.add(cc.field("byteArrayValue", fc -> fc.setType(byte[].class)));
-            fields.add(cc.field("shortArrayValue", fc -> fc.setType(short[].class)));
-            fields.add(cc.field("intArrayValue", fc -> fc.setType(int[].class)));
-            fields.add(cc.field("longArrayValue", fc -> fc.setType(long[].class)));
-            fields.add(cc.field("floatArrayValue", fc -> fc.setType(float[].class)));
-            fields.add(cc.field("doubleArrayValue", fc -> fc.setType(double[].class)));
-            fields.add(cc.field("charArrayValue", fc -> fc.setType(char[].class)));
-            fields.add(cc.field("stringArrayValue", fc -> fc.setType(String[].class)));
+            fields.add(cc.field("booleanArrayValue", fc -> fc.type(boolean[].class)));
+            fields.add(cc.field("byteArrayValue", fc -> fc.type(byte[].class)));
+            fields.add(cc.field("shortArrayValue", fc -> fc.type(short[].class)));
+            fields.add(cc.field("intArrayValue", fc -> fc.type(int[].class)));
+            fields.add(cc.field("longArrayValue", fc -> fc.type(long[].class)));
+            fields.add(cc.field("floatArrayValue", fc -> fc.type(float[].class)));
+            fields.add(cc.field("doubleArrayValue", fc -> fc.type(double[].class)));
+            fields.add(cc.field("charArrayValue", fc -> fc.type(char[].class)));
+            fields.add(cc.field("stringArrayValue", fc -> fc.type(String[].class)));
 
-            fields.add(cc.field("boolean2DArrayValue", fc -> fc.setType(boolean[][].class)));
-            fields.add(cc.field("byte2DArrayValue", fc -> fc.setType(byte[][].class)));
-            fields.add(cc.field("short2DArrayValue", fc -> fc.setType(short[][].class)));
-            fields.add(cc.field("int2DArrayValue", fc -> fc.setType(int[][].class)));
-            fields.add(cc.field("long2DArrayValue", fc -> fc.setType(long[][].class)));
-            fields.add(cc.field("float2DArrayValue", fc -> fc.setType(float[][].class)));
-            fields.add(cc.field("double2DArrayValue", fc -> fc.setType(double[][].class)));
-            fields.add(cc.field("char2DArrayValue", fc -> fc.setType(char[][].class)));
-            fields.add(cc.field("string2DArrayValue", fc -> fc.setType(String[][].class)));
+            fields.add(cc.field("boolean2DArrayValue", fc -> fc.type(boolean[][].class)));
+            fields.add(cc.field("byte2DArrayValue", fc -> fc.type(byte[][].class)));
+            fields.add(cc.field("short2DArrayValue", fc -> fc.type(short[][].class)));
+            fields.add(cc.field("int2DArrayValue", fc -> fc.type(int[][].class)));
+            fields.add(cc.field("long2DArrayValue", fc -> fc.type(long[][].class)));
+            fields.add(cc.field("float2DArrayValue", fc -> fc.type(float[][].class)));
+            fields.add(cc.field("double2DArrayValue", fc -> fc.type(double[][].class)));
+            fields.add(cc.field("char2DArrayValue", fc -> fc.type(char[][].class)));
+            fields.add(cc.field("string2DArrayValue", fc -> fc.type(String[][].class)));
 
             cc.constructor(mc -> {
                 mc.public_();

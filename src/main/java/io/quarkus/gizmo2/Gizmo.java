@@ -106,7 +106,7 @@ public sealed interface Gizmo permits GizmoImpl {
      * {@return a Gizmo instance which generates classes with the given class file version}
      * When set, all classes and interfaces created by the returned instance will
      * use the specified version by default, unless overridden per-class via
-     * {@link io.quarkus.gizmo2.creator.TypeCreator#setVersion(ClassVersion)}.
+     * {@link io.quarkus.gizmo2.creator.TypeCreator#version(ClassVersion)}.
      * <p>
      * If not called, generated classes default to Java 17.
      *

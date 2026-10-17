@@ -30,7 +30,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the run time version (must not be {@code null})
      */
-    void setVersion(Runtime.Version version);
+    void version(Runtime.Version version);
 
     /**
      * Set the class file version.
@@ -39,7 +39,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      *
      * @param version the class file version (must not be {@code null})
      */
-    void setVersion(ClassVersion version);
+    void version(ClassVersion version);
 
     /**
      * Set the source file name for this type.
@@ -90,7 +90,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default MethodDesc staticMethod(String name, MethodTypeDesc type, Consumer<StaticMethodCreator> builder) {
         return staticMethod(name, smc -> {
-            smc.setType(type);
+            smc.type(type);
             builder.accept(smc);
         });
     }
@@ -128,7 +128,7 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default StaticFieldVar staticField(String name, Const initial) {
         return staticField(name, sfc -> {
-            sfc.setInitial(initial);
+            sfc.initial(initial);
         });
     }
 
@@ -141,9 +141,9 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     default StaticFieldVar constantField(String name, Const value) {
         return staticField(name, sfc -> {
-            sfc.setAccess(AccessLevel.PUBLIC);
+            sfc.access(AccessLevel.PUBLIC);
             sfc.addFlag(ModifierFlag.FINAL);
-            sfc.setInitial(value);
+            sfc.initial(value);
         });
     }
 
@@ -238,4 +238,19 @@ public sealed interface TypeCreator extends ModifiableCreator, GenericTyped
      */
     List<ConstructorDesc> constructors();
 
+    /**
+     * @deprecated Use {@link #version(Runtime.Version)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setVersion(Runtime.Version version) {
+        version(version);
+    }
+
+    /**
+     * @deprecated Use {@link #version(ClassVersion)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setVersion(ClassVersion version) {
+        version(version);
+    }
 }

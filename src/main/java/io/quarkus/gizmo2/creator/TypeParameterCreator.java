@@ -20,7 +20,7 @@ public sealed interface TypeParameterCreator extends AnnotatableCreator permits 
      *
      * @param bound the first bound (must not be {@code null})
      */
-    void setFirstBound(GenericType.OfClass bound);
+    void firstBound(GenericType.OfClass bound);
 
     /**
      * Establish the (optional) first bound for the type variable.
@@ -29,7 +29,7 @@ public sealed interface TypeParameterCreator extends AnnotatableCreator permits 
      *
      * @param bound the first bound (must not be {@code null})
      */
-    void setFirstBound(GenericType.OfTypeVariable bound);
+    void firstBound(GenericType.OfTypeVariable bound);
 
     /**
      * Establish the other (secondary) bounds for the type variable.
@@ -41,7 +41,7 @@ public sealed interface TypeParameterCreator extends AnnotatableCreator permits 
      *
      * @param bounds the secondary bounds (must not be {@code null})
      */
-    void setOtherBounds(List<GenericType.OfClass> bounds);
+    void otherBounds(List<GenericType.OfClass> bounds);
 
     /**
      * Establish the other (secondary) bounds for the type variable.
@@ -53,7 +53,39 @@ public sealed interface TypeParameterCreator extends AnnotatableCreator permits 
      *
      * @param bounds the secondary bounds (must not be {@code null})
      */
+    default void otherBounds(GenericType.OfClass... bounds) {
+        otherBounds(List.of(bounds));
+    }
+
+    /**
+     * @deprecated Use {@link #firstBound(GenericType.OfClass)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setFirstBound(GenericType.OfClass bound) {
+        firstBound(bound);
+    }
+
+    /**
+     * @deprecated Use {@link #firstBound(GenericType.OfTypeVariable)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setFirstBound(GenericType.OfTypeVariable bound) {
+        firstBound(bound);
+    }
+
+    /**
+     * @deprecated Use {@link #otherBounds(List)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setOtherBounds(List<GenericType.OfClass> bounds) {
+        otherBounds(bounds);
+    }
+
+    /**
+     * @deprecated Use {@link #otherBounds(GenericType.OfClass[])} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
     default void setOtherBounds(GenericType.OfClass... bounds) {
-        setOtherBounds(List.of(bounds));
+        otherBounds(bounds);
     }
 }

@@ -233,7 +233,7 @@ public final class TryTest {
             });
             // make sure that finally is run when exiting the block via return
             StaticFieldVar ran = cc.staticField("ran", ifc -> {
-                ifc.setType(boolean.class);
+                ifc.type(boolean.class);
             });
             MethodDesc test2 = cc.staticMethod("test2body", smc -> {
                 ParamVar i = smc.parameter("i", int.class);

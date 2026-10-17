@@ -125,7 +125,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
         this.output = output;
         this.zb = zb;
         this.enclosingType = enclosingType;
-        setVersion(gizmo.classVersion());
+        version(gizmo.classVersion());
     }
 
     public ClassOutput output() {
@@ -145,12 +145,12 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     @Override
-    public void setVersion(final Runtime.Version version) {
+    public void version(final Runtime.Version version) {
         checkNotNullParam("version", version);
         this.version = ClassFileFormatVersion.valueOf(version);
     }
 
-    public void setVersion(final ClassVersion version) {
+    public void version(final ClassVersion version) {
         checkNotNullParam("version", version);
         this.version = switch (version) {
             case V17 -> ClassFileFormatVersion.RELEASE_17;
@@ -626,7 +626,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     "defineLambdaCallSite",
                     bootstrapType,
                     smc -> {
-                        smc.setAccess(AccessLevel.PRIVATE);
+                        smc.access(AccessLevel.PRIVATE);
                         ParamVar lookup = smc.parameter("lookup", 0);
                         ParamVar base64 = smc.parameter("base64", 1);
                         ParamVar methodType = smc.parameter("methodType", 2);

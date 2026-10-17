@@ -40,17 +40,17 @@ public final class ParamCreatorImpl extends ModifiableCreatorImpl implements Par
                 List.copyOf(visible.values()));
     }
 
-    public void setType(final GenericType genericType) {
+    public void type(final GenericType genericType) {
         checkNotNullParam("type", genericType);
         if (typeEstablished && !genericType.equals(this.genericType)) {
             throw new IllegalArgumentException(
                     "Given type " + genericType + " differs from established type " + this.genericType);
         }
-        setType(genericType.desc());
+        type(genericType.desc());
         this.genericType = genericType;
     }
 
-    public void setType(final ClassDesc type) {
+    public void type(final ClassDesc type) {
         checkNotNullParam("type", type);
         if (Util.isVoid(type)) {
             throw new IllegalArgumentException("Bad type for parameter: " + type);

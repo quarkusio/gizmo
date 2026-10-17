@@ -92,8 +92,8 @@ public class MemberClassTest {
         g.class_("io.quarkus.gizmo2.OuterForInner", cc -> {
             // an instance field on the outer class
             FieldDesc outerField = cc.field("value", ifc -> {
-                ifc.setType(String.class);
-                ifc.setAccess(AccessLevel.PRIVATE);
+                ifc.type(String.class);
+                ifc.access(AccessLevel.PRIVATE);
             });
             cc.class_("Inner", ic -> {
                 // no STATIC flag → inner class
@@ -197,11 +197,11 @@ public class MemberClassTest {
         ClassDesc innerDesc = ClassDesc.of("io.quarkus.gizmo2.OuterMultiCtor$Inner");
         g.class_("io.quarkus.gizmo2.OuterMultiCtor", cc -> {
             FieldDesc outerField = cc.field("name", ifc -> {
-                ifc.setType(String.class);
+                ifc.type(String.class);
             });
             cc.class_("Inner", ic -> {
                 FieldDesc innerField = ic.field("label", ifc -> {
-                    ifc.setType(String.class);
+                    ifc.type(String.class);
                 });
                 // first constructor: default label
                 ic.constructor(ctc -> {
@@ -448,7 +448,7 @@ public class MemberClassTest {
         Gizmo g = tcm.gizmo();
         ClassDesc outerDesc = g.class_("io.quarkus.gizmo2.PrivOuter", cc -> {
             ClassDesc innerDesc = cc.class_("PrivInner", ic -> {
-                ic.setAccess(AccessLevel.PRIVATE);
+                ic.access(AccessLevel.PRIVATE);
                 ic.addFlag(ModifierFlag.STATIC);
                 ic.constructor(ctc -> {
                     ctc.body(b0 -> {
@@ -531,8 +531,8 @@ public class MemberClassTest {
         ClassDesc outerDesc = ClassDesc.of("io.quarkus.gizmo2.AutoOuterThis");
         g.class_("io.quarkus.gizmo2.AutoOuterThis", cc -> {
             FieldDesc outerField = cc.field("value", ifc -> {
-                ifc.setType(String.class);
-                ifc.setAccess(AccessLevel.PRIVATE);
+                ifc.type(String.class);
+                ifc.access(AccessLevel.PRIVATE);
             });
             cc.class_("Inner", ic -> {
                 ic.constructor(ctc -> {
@@ -586,11 +586,11 @@ public class MemberClassTest {
         ClassDesc cDesc = ClassDesc.of("io.quarkus.gizmo2.AutoMultiA$B$C");
         g.class_("io.quarkus.gizmo2.AutoMultiA", cc -> {
             FieldDesc aField = cc.field("aValue", ifc -> {
-                ifc.setType(String.class);
+                ifc.type(String.class);
             });
             cc.class_("B", bc -> {
                 FieldDesc bField = bc.field("bValue", ifc -> {
-                    ifc.setType(String.class);
+                    ifc.type(String.class);
                 });
                 bc.class_("C", innerC -> {
                     innerC.constructor(ctc -> {
@@ -657,7 +657,7 @@ public class MemberClassTest {
         g.class_("io.quarkus.gizmo2.SameThisOuter", cc -> {
             cc.class_("Inner", ic -> {
                 FieldDesc label = ic.field("label", ifc -> {
-                    ifc.setType(String.class);
+                    ifc.type(String.class);
                 });
                 ic.constructor(ctc -> {
                     ParamVar val = ctc.parameter("val", String.class);

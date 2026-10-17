@@ -60,7 +60,7 @@ public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedC
      */
     default MethodDesc defaultMethod(String name, MethodTypeDesc type, Consumer<InstanceMethodCreator> builder) {
         return defaultMethod(name, imc -> {
-            imc.setType(type);
+            imc.type(type);
             builder.accept(imc);
         });
     }
@@ -96,7 +96,7 @@ public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedC
      */
     default MethodDesc privateMethod(String name, MethodTypeDesc type, Consumer<InstanceMethodCreator> builder) {
         return privateMethod(name, imc -> {
-            imc.setType(type);
+            imc.type(type);
             builder.accept(imc);
         });
     }
@@ -133,7 +133,7 @@ public sealed interface InterfaceCreator extends TypeCreator, TypeParameterizedC
      */
     default MethodDesc method(String name, MethodTypeDesc type, Consumer<AbstractMethodCreator> builder) {
         return method(name, amc -> {
-            amc.setType(type);
+            amc.type(type);
             builder.accept(amc);
         });
     }

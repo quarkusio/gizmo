@@ -42,10 +42,10 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         super(owner, name, tc);
     }
 
-    public void setInitial(final Const initial) {
+    public void initial(final Const initial) {
         Assert.checkNotNullParam("initial", initial);
         checkOneInit();
-        setType(initial.type());
+        type(initial.type());
         if (CONSTANT_TYPE_DESCS.contains(initial.type().descriptorString())) {
             this.initial = initial;
         } else {
@@ -53,7 +53,7 @@ public sealed abstract class StaticFieldCreatorImpl extends FieldCreatorImpl imp
         }
     }
 
-    public void setInitializer(final Consumer<BlockCreator> init) {
+    public void initializer(final Consumer<BlockCreator> init) {
         Assert.checkNotNullParam("init", init);
         checkOneInit();
         initializer = (b0 -> {

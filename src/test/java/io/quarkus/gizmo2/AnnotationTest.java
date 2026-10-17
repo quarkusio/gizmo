@@ -57,7 +57,7 @@ public class AnnotationTest {
         Gizmo g = tcm.gizmo();
         Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnStaticClassField", cc -> {
             cc.staticField("staticField", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnStaticClassField");
                 });
@@ -76,7 +76,7 @@ public class AnnotationTest {
         Gizmo g = tcm.gizmo();
         Class<?> clazz = tcm.loadClass(g.interface_("io.quarkus.gizmo2.AnnotationOnStaticInterfaceField", cc -> {
             cc.staticField("staticField", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnStaticInterfaceField");
                 });
@@ -95,7 +95,7 @@ public class AnnotationTest {
         Gizmo g = tcm.gizmo();
         Class<?> clazz = tcm.loadClass(g.class_("io.quarkus.gizmo2.AnnotationOnInstanceClassField", cc -> {
             cc.field("field", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
                 fc.addAnnotation(MyAnnotation.class, ann -> {
                     ann.add(MyAnnotation::value, "annotationOnInstanceClassField");
                 });
@@ -255,7 +255,7 @@ public class AnnotationTest {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
-                    pc.setType(String.class);
+                    pc.type(String.class);
                     pc.addAnnotation(MyAnnotation.class, ann -> {
                         ann.add(MyAnnotation::value, "annotationOnClassMethodParameter");
                     });
@@ -279,7 +279,7 @@ public class AnnotationTest {
             cc.method("method", mc -> {
                 mc.returning(String.class);
                 mc.parameter("parameter", pc -> {
-                    pc.setType(String.class);
+                    pc.type(String.class);
                     pc.addAnnotation(MyAnnotation.class, ann -> {
                         ann.add(MyAnnotation::value, "annotationOnInterfaceMethodParameter");
                     });

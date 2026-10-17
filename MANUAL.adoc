@@ -254,11 +254,11 @@ public class SimpleClassExample {
             // we can remove flags
             cc.removeFlag(ModifierFlag.SYNTHETIC);
             // we can set the access level
-            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            cc.access(AccessLevel.PACKAGE_PRIVATE);
             // or...
             cc.packagePrivate();
             // we can set the class version
-            cc.setVersion(ClassVersion.V17);
+            cc.version(ClassVersion.V17);
         });
         // at this point, the class has been written to the output
     }
@@ -294,9 +294,9 @@ public class SimpleInterfaceExample {
             // we can set the access level
             cc.public_();
             // or...
-            cc.setAccess(AccessLevel.PUBLIC);
+            cc.access(AccessLevel.PUBLIC);
             // we can set the class version
-            cc.setVersion(ClassVersion.V17);
+            cc.version(ClassVersion.V17);
         });
     }
 }
@@ -311,8 +311,8 @@ These methods accept a consumer for a `StaticFieldCreator` or `InstanceFieldCrea
 The `field` method returns a <<fielddesc,`FieldDesc`>> for the newly created field.
 The `staticField` and `constantField` methods return a <<fields,`StaticFieldVar`>> which may be used directly in expressions.
 
-Fields may be initialized directly with a constant value at the time the field is defined by using the `setInitial` method.
-For more complex initializers, the `setInitializer` method may be used, which accepts a <<blocks,code block creator>> which must yield a value for the field.
+Fields may be initialized directly with a constant value at the time the field is defined by using the `initial` method.
+For more complex initializers, the `initializer` method may be used, which accepts a <<blocks,code block creator>> which must yield a value for the field.
 Initializers are automatically emitted into constructors or static initializers in the order that they are established.
 
 By convention, the parameter name `fc` is typically used for the `FieldCreator` instance.
@@ -344,31 +344,31 @@ public class ClassWithFieldsExample {
                 fc.final_();
                 fc.addFlag(ModifierFlag.TRANSIENT);
                 // implicitly a `String` because of the initializer
-                fc.setInitial("A more complex field");
+                fc.initial("A more complex field");
             });
             // a field with a specified type and no initializer
             cc.field("problem", fc -> {
                 fc.private_();
-                fc.setType(Throwable.class);
+                fc.type(Throwable.class);
             });
             // a public static final constant field
             cc.constantField("KIBI", Const.of(1024));
             // a regular static field
             cc.staticField("closed", fc -> {
                 fc.volatile_();
-                fc.setType(boolean.class);
+                fc.type(boolean.class);
             });
             // static fields may be final as well
             var nameArray = cc.staticField("nameArray", fc -> {
-                fc.setType(String[].class);
+                fc.type(String[].class);
                 fc.final_();
                 // initialize here or separately
             });
             // a more complex initializer example
             cc.field("namesAsList", fc -> {
-                fc.setType(List.class);
+                fc.type(List.class);
                 // blocks and expressions are covered elsewhere
-                fc.setInitializer(b0 -> {
+                fc.initializer(b0 -> {
                     b0.yield(
                         b0.invokeStatic(
                             MethodDesc.of(Arrays.class, "asList", List.class, Object[].class),
@@ -557,8 +557,8 @@ Instance initializers and instance field initializers are all assembled into a s
 Types, members, and variables in Java have an access level (specifically, `private`, package-private, `protected`, or `public`) as well as modifier flags (e.g. `volatile`, `final`, `synchronized`, etc.).
 
 Access levels are represented using the `AccessLevel` enumeration.
-Generally speaking, any type, member, or variable which is being built can have its access level set using the `setAccess(...)` method on its creator instance.
-In most cases, there will also be convenience methods to set the valid access levels (`public_()`, `private_()`, etc.) which are equivalent to calling `setAccess(...)` with the corresponding access level as an argument.
+Generally speaking, any type, member, or variable which is being built can have its access level set using the `access(...)` method on its creator instance.
+In most cases, there will also be convenience methods to set the valid access levels (`public_()`, `private_()`, etc.) which are equivalent to calling `access(...)` with the corresponding access level as an argument.
 
 Most things default to `PUBLIC`, other than (for example) fields or native methods, which generally default to `PRIVATE`.
 The detailed breakdown of initial default modifiers is described <<default-modifiers,below>>.
@@ -599,7 +599,7 @@ public class ModifiersAndAccessLevelsExample {
         Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
         gizmo.class_("org.example.ModifiersAndAccessLevels", cc -> {
             // set the access level by enumeration
-            cc.setAccess(AccessLevel.PACKAGE_PRIVATE);
+            cc.access(AccessLevel.PACKAGE_PRIVATE);
             // or by direct method call
             cc.packagePrivate();
             // last one written "wins"
@@ -611,9 +611,9 @@ public class ModifiersAndAccessLevelsExample {
             // flags can be removed even if they are not supported here
             cc.removeFlag(ModifierFlag.STATIC);
             cc.field("exampleField", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
                 // set access by enumeration
-                fc.setAccess(AccessLevel.PROTECTED);
+                fc.access(AccessLevel.PROTECTED);
                 // or method call
                 fc.protected_();
                 // flags by enumeration
@@ -623,8 +623,8 @@ public class ModifiersAndAccessLevelsExample {
             });
 
             cc.staticField("staticField", fc -> {
-                fc.setType(int.class);
-                fc.setInitial(12345);
+                fc.type(int.class);
+                fc.initial(12345);
                 // set access
                 fc.private_();
                 // and flags
@@ -640,13 +640,13 @@ public class ModifiersAndAccessLevelsExample {
                 // or by method call
                 mc.final_();
                 // set access level by enumeration
-                mc.setAccess(AccessLevel.PUBLIC);
+                mc.access(AccessLevel.PUBLIC);
                 // or method call
                 mc.public_();
                 mc.parameter("aFinalInt", pc -> {
-                    pc.setType(int.class);
+                    pc.type(int.class);
                     // no access levels are supported on parameters!
-                    /* pc.setAccess(xxx); */
+                    /* pc.access(xxx); */
                     // flags can be added to parameters
                     pc.addFlag(ModifierFlag.FINAL);
                     // by method call too
@@ -1135,7 +1135,7 @@ public class SwapExample {
             cc.defaultConstructor();
             This this_ = cc.this_();
             FieldDesc name = cc.field("name", fc -> {
-                fc.setType(String.class);
+                fc.type(String.class);
                 fc.private_();
             });
             // fluent style accessors
@@ -4320,7 +4320,7 @@ public class TypeParamExample {
     public static void main(String[] ignored) {
         Gizmo gizmo = Gizmo.create(ClassOutput.fileWriter(Path.of("output")));
         gizmo.interface_("CharSequenceList", cc -> {
-            GenericType.OfTypeVariable tee = cc.typeParameter("T", tpc -> tpc.setFirstBound(GenericType.ofClass(CharSequence.class)));
+            GenericType.OfTypeVariable tee = cc.typeParameter("T", tpc -> tpc.firstBound(GenericType.ofClass(CharSequence.class)));
             cc.extends_(GenericType.ofClass(List.class).withArguments(List.of(
                 TypeArgument.ofExact(tee)
             )));

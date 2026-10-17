@@ -31,7 +31,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      * @throws IllegalArgumentException if some parameters are already defined,
      *         and their types do not match the given type descriptor
      */
-    void setType(MethodTypeDesc desc);
+    void type(MethodTypeDesc desc);
 
     /**
      * Add a parameter.
@@ -122,7 +122,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, GenericType type) {
         return parameter(name, pc -> {
-            pc.setType(type);
+            pc.type(type);
         });
     }
 
@@ -145,7 +145,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, int position, GenericType type) {
         return parameter(name, position, pc -> {
-            pc.setType(type);
+            pc.type(type);
         });
     }
 
@@ -166,7 +166,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, ClassDesc type) {
         return parameter(name, pc -> {
-            pc.setType(type);
+            pc.type(type);
         });
     }
 
@@ -189,7 +189,7 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
      */
     default ParamVar parameter(String name, int position, ClassDesc type) {
         return parameter(name, position, pc -> {
-            pc.setType(type);
+            pc.type(type);
         });
     }
 
@@ -265,4 +265,11 @@ public sealed interface ExecutableCreator extends MethodTyped, TypeParameterized
         addFlag(ModifierFlag.VARARGS);
     }
 
+    /**
+     * @deprecated Use {@link #type(MethodTypeDesc)} instead.
+     */
+    @Deprecated(since = "2.4", forRemoval = true)
+    default void setType(MethodTypeDesc desc) {
+        type(desc);
+    }
 }
