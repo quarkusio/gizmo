@@ -12,10 +12,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo2.creator.ModifierFlag;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -89,6 +91,79 @@ public class TransformerTest {
         // other members are untouched
         assertNotNull(c.getDeclaredMethod("hello"));
         assertNotNull(c.getDeclaredField("name"));
+    }
+
+    @Test
+    public void testAddMembers() throws Exception {
+        FieldDesc name = FieldDesc.of(TARGET, "name", String.class);
+        MethodDesc hello = MethodDesc.of(TransformTarget.class, "hello", String.class);
+        Class<?> c = transform(ct -> {
+            // rename the original and add a replacement with the same signature, like ArC does for intercepted static methods
+            ct.method(MethodDesc.of(TransformTarget.class, "secret", String.class), mt -> mt.rename("secret$original"));
+            ct.staticMethod("secret", smc -> {
+                smc.returning(String.class);
+                smc.body(b0 -> b0.return_(b0.withString(Const.of("intercepted "))
+                        .concat(b0.invokeStatic(ClassMethodDesc.of(TARGET, "secret$original", String.class)))));
+            });
+            // a new constructor which sets an existing field
+            ct.constructor(con -> {
+                ParamVar p = con.parameter("name", String.class);
+                con.body(b0 -> {
+                    b0.invokeSpecial(ConstructorDesc.of(Object.class), ct.this_());
+                    b0.set(ct.this_().field(name), p);
+                    b0.return_();
+                });
+            });
+            // a new field, and a new method which uses a lambda
+            ct.field("counter", fc -> fc.setType(int.class));
+            ct.method("greet", mc -> {
+                mc.returning(Object.class);
+                mc.body(b0 -> {
+                    Expr supplier = b0.lambda(Supplier.class, lc -> {
+                        Var self = lc.capture("self", ct.this_());
+                        lc.body(b1 -> b1.return_(b1.invokeVirtual(hello, self)));
+                    });
+                    b0.return_(b0.invokeInterface(MethodDesc.of(Supplier.class, "get", Object.class), supplier));
+                });
+            });
+        });
+        Method secret = c.getDeclaredMethod("secret");
+        secret.setAccessible(true);
+        assertEquals("intercepted secret", secret.invoke(null));
+
+        Constructor<?> ctor = c.getDeclaredConstructor(String.class);
+        ctor.setAccessible(true);
+        Object instance = ctor.newInstance("world");
+        Method greet = c.getDeclaredMethod("greet");
+        greet.setAccessible(true);
+        assertEquals("hello world", greet.invoke(instance));
+        assertEquals(int.class, c.getDeclaredField("counter").getType());
+    }
+
+    @Test
+    public void testInvalidAdditions() throws Exception {
+        byte[] bytes = readTarget();
+        Gizmo g = Gizmo.create();
+        // field initializers would have to be merged into the existing initializers
+        assertThrows(IllegalArgumentException.class, () -> g.transform(bytes, ct -> ct.staticField("x", fc -> {
+            fc.setType(String.class);
+            fc.setInitializer(b0 -> b0.yield(Const.of("x")));
+        })));
+        // clashes with an existing method
+        assertThrows(IllegalArgumentException.class, () -> g.transform(bytes, ct -> ct.staticMethod("secret", smc -> {
+            smc.returning(String.class);
+            smc.body(b0 -> b0.return_(Const.of("x")));
+        })));
+        // anonymous classes would have to be added to the existing nest
+        Gizmo anon = Gizmo.create().withLambdaStrategy(LambdaStrategy.ANONYMOUS_CLASS);
+        assertThrows(IllegalArgumentException.class, () -> anon.transform(bytes, ct -> ct.staticMethod("run", smc -> {
+            smc.returning(Object.class);
+            smc.body(b0 -> b0.return_(b0.lambda(Runnable.class, lc -> lc.body(b1 -> b1.return_()))));
+        })));
+        // the transformer cannot be used after its builder returns
+        ClassTransformer[] escaped = new ClassTransformer[1];
+        g.transform(bytes, ct -> escaped[0] = ct);
+        assertThrows(IllegalStateException.class, () -> escaped[0].removeField(FieldDesc.of(TARGET, "unused", int.class)));
     }
 
     @Test

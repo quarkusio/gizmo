@@ -191,9 +191,8 @@ public final class GizmoImpl implements Gizmo {
         Assert.checkNotNullParam("classBytes", classBytes);
         Assert.checkNotNullParam("builder", builder);
         ClassFile cf = createClassFile();
-        ClassTransformerImpl ct = new ClassTransformerImpl(cf.parse(classBytes));
-        builder.accept(ct);
-        return ct.transform(cf);
+        ClassTransformerImpl ct = new ClassTransformerImpl(this, cf.parse(classBytes));
+        return ct.transform(cf, builder);
     }
 
     public static final GizmoImpl DEFAULT = new GizmoImpl(ClassOutput.discarding());

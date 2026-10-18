@@ -26,6 +26,13 @@ public final class MethodTransformerImpl extends ModifiableTransformerImpl imple
         this.newName = newName;
     }
 
+    /**
+     * {@return the new method name, or {@code null} if the method is not renamed}
+     */
+    String newName() {
+        return newName;
+    }
+
     void apply(ClassBuilder cb, MethodModel mm) {
         String name = newName == null ? mm.methodName().stringValue() : newName;
         cb.withMethod(name, mm.methodTypeSymbol(), applyFlags(mm.flags().flagsMask()), mb -> {
