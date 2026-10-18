@@ -14,4 +14,5 @@ module io.quarkus.gizmo2 {
     exports io.quarkus.gizmo2.creator.ops;
     exports io.quarkus.gizmo2.desc;
     exports io.quarkus.gizmo2.testing;
+    exports io.quarkus.gizmo2.transformer;
 }

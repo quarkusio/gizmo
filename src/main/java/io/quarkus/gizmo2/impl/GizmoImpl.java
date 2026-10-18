@@ -14,7 +14,9 @@ import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.creator.ModifierFlag;
 import io.quarkus.gizmo2.creator.ModifierLocation;
+import io.quarkus.gizmo2.transformer.ClassTransformer;
 import io.smallrye.classfile.ClassFile;
+import io.smallrye.common.constraint.Assert;
 
 public final class GizmoImpl implements Gizmo {
     private static final int[] DEFAULTS = ModifierLocation.values.stream().mapToInt(ModifierLocation::defaultModifierBits)
@@ -183,6 +185,15 @@ public final class GizmoImpl implements Gizmo {
         });
         outputHandler.write(desc, bytes);
         return desc;
+    }
+
+    public byte[] transform(final byte[] classBytes, final Consumer<ClassTransformer> builder) {
+        Assert.checkNotNullParam("classBytes", classBytes);
+        Assert.checkNotNullParam("builder", builder);
+        ClassFile cf = createClassFile();
+        ClassTransformerImpl ct = new ClassTransformerImpl(cf.parse(classBytes));
+        builder.accept(ct);
+        return ct.transform(cf);
     }
 
     public static final GizmoImpl DEFAULT = new GizmoImpl(ClassOutput.discarding());
