@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import io.quarkus.gizmo2.creator.ClassCreator;
 import io.quarkus.gizmo2.creator.InterfaceCreator;
 import io.quarkus.gizmo2.impl.GizmoImpl;
+import io.quarkus.gizmo2.transformer.ClassTransformer;
 
 /**
  * A simplified class file writer.
@@ -113,6 +114,19 @@ public sealed interface Gizmo permits GizmoImpl {
      * @param version the class file version (must not be {@code null})
      */
     Gizmo withVersion(ClassVersion version);
+
+    /**
+     * Transform an existing class or interface.
+     * <p>
+     * The builder records the changes to make; they are applied when it returns.
+     * Members which are not changed or removed, including the code of existing methods, are copied unchanged.
+     * The transformed class is returned and is <em>not</em> written to this instance's {@link ClassOutput}.
+     *
+     * @param classBytes the class file bytes to transform (must not be {@code null})
+     * @param builder the builder for the transformation (must not be {@code null})
+     * @return the transformed class file bytes (not {@code null})
+     */
+    byte[] transform(byte[] classBytes, Consumer<ClassTransformer> builder);
 
     /**
      * Add a new class.

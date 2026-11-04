@@ -163,6 +163,39 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
     }
 
     /**
+     * Prepare this creator for adding members to an existing class which is being transformed.
+     * Nothing is written to the class builder, because the existing class header is kept.
+     *
+     * @param flags the access flags of the existing class
+     * @param superClass the superclass of the existing class, or {@code null} if it has none
+     * @param version the class file version of the existing class (must not be {@code null})
+     */
+    void initForTransform(final int flags, final ClassDesc superClass, final ClassFileFormatVersion version) {
+        this.modifiers = flags;
+        this.version = version;
+        if (superClass != null) {
+            this.superType = superClass;
+            this.superSig = (GenericType.OfClass) GenericType.of(superClass);
+        }
+    }
+
+    /**
+     * {@return a description of the first class-level element that the added members need,
+     * but which cannot be merged into an existing class, or {@code null} if there is none}
+     */
+    String unsupportedForTransform() {
+        if (!staticInits.isEmpty()) {
+            return "static initializers or static field initializers";
+        } else if (!preInits.isEmpty() || !postInits.isEmpty()) {
+            return "instance initializers or instance field initializers";
+        } else if (!nestMembers.isEmpty() || !innerClassInfos.isEmpty()) {
+            return "nested, member or anonymous classes";
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * {@return the immediately enclosing type creator, or {@code null} if this is a top-level type}
      */
     TypeCreatorImpl enclosingType() {
