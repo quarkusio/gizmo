@@ -62,7 +62,7 @@ abstract sealed class HashSwitchCreatorImpl<C extends ConstImpl> extends SwitchC
 
         TypeKind tk = Util.actualKindOf(switchVal.typeKind());
         // todo: improved alloc scheme
-        int idx = cb.allocateLocal(tk);
+        int idx = block.allocateLocal(tk);
         doDup(cb);
         cb.storeLocal(tk, idx);
         smb.store(idx, switchVal.type());

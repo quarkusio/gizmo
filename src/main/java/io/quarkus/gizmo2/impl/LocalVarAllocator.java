@@ -22,7 +22,7 @@ final class LocalVarAllocator extends Item {
     }
 
     public void writeCode(final CodeBuilder cb, final BlockCreatorImpl block, final StackMapBuilder smb) {
-        int slot = cb.allocateLocal(Util.actualKindOf(localVar.typeKind()));
+        int slot = block.allocateLocal(Util.actualKindOf(localVar.typeKind()));
         // we reserve the slot for the full remainder of the block to avoid control-flow analysis
         startScope = cb.newBoundLabel();
         endScope = block.endLabel();

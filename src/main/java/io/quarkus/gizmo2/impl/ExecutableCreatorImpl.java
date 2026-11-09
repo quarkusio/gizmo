@@ -356,6 +356,13 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         ArrayList<TypeAnnotation> invisible = new ArrayList<>();
         BlockCreatorImpl bc = new BlockCreatorImpl(typeCreator, cb, returnType(),
                 this instanceof ConstructorCreator ? "new" : name());
+        // local variable slots start after the receiver and the parameters
+        MethodTypeDesc methodType = type();
+        int firstFreeSlot = firstSlot();
+        for (int i = 0; i < methodType.parameterCount(); i++) {
+            firstFreeSlot += TypeKind.from(methodType.parameterType(i)).slotSize();
+        }
+        bc.topLocal = firstFreeSlot;
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
