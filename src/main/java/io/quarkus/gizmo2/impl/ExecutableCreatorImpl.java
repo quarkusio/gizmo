@@ -257,7 +257,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
             for (int i = 0; i < params.size(); i++) {
                 ParamVarImpl currentParam = params.get(i);
                 if (currentParam != null) {
-                    parameters.add(i, MethodParameterInfo.ofParameter(Optional.of(currentParam.name()), currentParam.flags()));
+                    parameters.add(i, MethodParameterInfo.of(Optional.of(mb.constantPool().utf8Entry(currentParam.name())),
+                            currentParam.flags()));
                     parametersVisibleAnnotations.add(i, currentParam.visible);
                     hasVisibleAnnotations = hasVisibleAnnotations || !currentParam.visible.isEmpty();
                     parametersInvisibleAnnotations.add(i, currentParam.invisible);
@@ -359,7 +360,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         ArrayDeque<TypeAnnotation.TypePathComponent> pathStack = new ArrayDeque<>();
         if ((modifiers & ACC_STATIC) == 0) {
             // reserve `this` for all instance methods
-            cb.with(LocalVariable.of(0, "this", typeCreator.type(), bc.startLabel(), bc.endLabel()));
+            cb.with(LocalVariable.of(0, cb.constantPool().utf8Entry("this"), cb.constantPool().utf8Entry(typeCreator.type()),
+                    bc.startLabel(), bc.endLabel()));
             if (typeCreator.hasGenericType()) {
                 GenericType.OfClass genericType = typeCreator.genericType();
                 if (!genericType.isRaw()) {
@@ -387,7 +389,8 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         }
         for (final ParamVarImpl param : params) {
             if (param != null) {
-                cb.with(LocalVariable.of(param.slot(), param.name(), param.type(), bc.startLabel(), bc.endLabel()));
+                cb.with(LocalVariable.of(param.slot(), cb.constantPool().utf8Entry(param.name()),
+                        cb.constantPool().utf8Entry(param.type()), bc.startLabel(), bc.endLabel()));
                 if (param.hasGenericType()) {
                     GenericType genericType = param.genericType();
                     if (!genericType.isRaw()) {
