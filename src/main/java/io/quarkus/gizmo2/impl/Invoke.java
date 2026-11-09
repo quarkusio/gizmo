@@ -133,7 +133,7 @@ final class Invoke extends Item {
         if (opcode != Opcode.INVOKESTATIC) {
             smb.pop(); // receiver
         }
-        for (ClassDesc paramType : type.parameterList()) {
+        for (int i = 0; i < type.parameterCount(); i++) {
             smb.pop(); // parameter
         }
         if (!Util.isVoid(type.returnType())) {
