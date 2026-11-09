@@ -310,7 +310,7 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
         }
         if (builder != null) {
             mb.withCode(cb -> {
-                StackMapBuilder smb = new StackMapBuilder();
+                StackMapBuilder smb = new StackMapBuilder(typeCreator.stackMapCache);
                 if ((modifiers & ACC_STATIC) == 0) {
                     if (this instanceof ConstructorCreatorImpl) {
                         smb.store(0, StackMapFrameInfo.SimpleVerificationTypeInfo.UNINITIALIZED_THIS);

@@ -74,6 +74,10 @@ import io.smallrye.common.constraint.Assert;
 
 public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl implements TypeCreator
         permits ClassCreatorImpl, InterfaceCreatorImpl {
+    /**
+     * The stack map caches shared by all the methods of this class.
+     */
+    final StackMapBuilder.Cache stackMapCache = new StackMapBuilder.Cache();
 
     // invoke is sigpoly, so don't make a shared constant for now
     private static final ClassMethodDesc MD_invoke_returning_Object = ClassMethodDesc.of(ConstantDescs.CD_MethodHandle,
@@ -493,7 +497,7 @@ public abstract sealed class TypeCreatorImpl extends ModifiableCreatorImpl imple
                     if (sourceBuilder != null) {
                         SourceGenerator.generateStaticInitializer(sourceBuilder, bc);
                     }
-                    StackMapBuilder smb = new StackMapBuilder();
+                    StackMapBuilder smb = new StackMapBuilder(stackMapCache);
                     bc.writeCode(cb, bc, smb);
                     List<StackMapFrameInfo> infos = smb.frameInfos();
                     if (!infos.isEmpty()) {

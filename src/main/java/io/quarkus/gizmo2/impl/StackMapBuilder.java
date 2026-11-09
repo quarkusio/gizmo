@@ -18,13 +18,39 @@ public final class StackMapBuilder {
     private final ArrayList<StackMapFrameInfo.VerificationTypeInfo> locals = new ArrayList<>();
     private final ArrayList<StackMapFrameInfo> frameInfos = new ArrayList<>();
     private boolean wroteCode;
-    private final HashMap<List<StackMapFrameInfo.VerificationTypeInfo>, List<StackMapFrameInfo.VerificationTypeInfo>> lists = new HashMap<>();
-    private final HashMap<String, StackMapFrameInfo.ObjectVerificationTypeInfo> vtiCache = new HashMap<>();
+    private final HashMap<List<StackMapFrameInfo.VerificationTypeInfo>, List<StackMapFrameInfo.VerificationTypeInfo>> lists;
+    private final HashMap<String, StackMapFrameInfo.ObjectVerificationTypeInfo> vtiCache;
 
     /**
      * Construct a new instance.
      */
     public StackMapBuilder() {
+        this(new Cache());
+    }
+
+    /**
+     * Construct a new instance sharing the given cache. The cache may be shared by all the methods of a class.
+     *
+     * @param cache the cache (must not be {@code null})
+     */
+    public StackMapBuilder(Cache cache) {
+        this.lists = cache.lists;
+        this.vtiCache = cache.vtiCache;
+    }
+
+    /**
+     * Objects which may be shared by the stack map builders of all the methods of a class.
+     * The verification type infos hold temporary constant pool entries, so they do not depend on the class being generated.
+     */
+    public static final class Cache {
+        private final HashMap<List<StackMapFrameInfo.VerificationTypeInfo>, List<StackMapFrameInfo.VerificationTypeInfo>> lists = new HashMap<>();
+        private final HashMap<String, StackMapFrameInfo.ObjectVerificationTypeInfo> vtiCache = new HashMap<>();
+
+        /**
+         * Construct a new instance.
+         */
+        public Cache() {
+        }
     }
 
     /**
