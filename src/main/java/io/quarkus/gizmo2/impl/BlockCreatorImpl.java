@@ -105,7 +105,7 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     /**
      * All the items to emit, in order.
      */
-    private final ArrayList<Item> items = new ArrayList<Item>(40);
+    private final ArrayList<Item> items = new ArrayList<Item>();
 
     /**
      * {@return the item list for source generation}
