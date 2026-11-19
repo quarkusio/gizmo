@@ -141,6 +141,11 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
     private int state;
     private final Label startLabel;
     private final Label endLabel;
+    /**
+     * The next free local variable slot while writing the code of this block.
+     * Slots allocated in a block are released when the block ends.
+     */
+    int topLocal;
     private final Item input;
     private final ClassDesc outputType;
     private final ClassDesc returnType;
@@ -226,6 +231,18 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
 
     Label newLabel() {
         return outerCodeBuilder.newLabel();
+    }
+
+    /**
+     * Allocate a local variable slot in this block, to be released when this block ends.
+     *
+     * @param typeKind the type kind of the variable (must not be {@code null})
+     * @return the slot
+     */
+    int allocateLocal(final io.smallrye.classfile.TypeKind typeKind) {
+        int slot = topLocal;
+        topLocal += typeKind.slotSize();
+        return slot;
     }
 
     ClassDesc returnType() {
@@ -1546,21 +1563,25 @@ public final class BlockCreatorImpl extends Item implements BlockCreator {
         if (branchTarget) {
             smb.addFrameInfo(cb);
         }
-        cb.block(bcb -> {
-            bcb.labelBinding(startLabel);
-            List<Item> items = this.items;
-            int sz = items.size();
-            int lastSourceLine = -1;
-            for (int i = 0; i < sz; i++) {
-                Item item = items.get(i);
-                if (item.sourceLine >= 0 && item.sourceLine != lastSourceLine) {
-                    bcb.lineNumber(item.sourceLine);
-                    lastSourceLine = item.sourceLine;
-                }
-                item.writeCode(bcb, this, smb);
+        if (block != this) {
+            // a nested block starts allocating local variable slots where its enclosing block currently is
+            topLocal = block.topLocal;
+        }
+        // we write directly into the code builder of the method: we manage our own labels and local variable slots,
+        // and a nested block builder would wrap every instruction into an object before forwarding it
+        cb.labelBinding(startLabel);
+        List<Item> items = this.items;
+        int sz = items.size();
+        int lastSourceLine = -1;
+        for (int i = 0; i < sz; i++) {
+            Item item = items.get(i);
+            if (item.sourceLine >= 0 && item.sourceLine != lastSourceLine) {
+                cb.lineNumber(item.sourceLine);
+                lastSourceLine = item.sourceLine;
             }
-            bcb.labelBinding(endLabel);
-        });
+            item.writeCode(cb, this, smb);
+        }
+        cb.labelBinding(endLabel);
         smb.restore(saved);
         if (!Util.isVoid(input.type())) {
             // consume argument
