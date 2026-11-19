@@ -140,8 +140,13 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
 
     MethodTypeDesc computeType() {
         assert type == null;
-        return MethodTypeDesc.of(returnType(),
-                params.stream().map(ParamVarImpl::type).toArray(ClassDesc[]::new));
+        ClassDesc[] paramTypes = new ClassDesc[params.size()];
+        // indexed loop on purpose: avoids allocating an Iterator on this hot path
+        // do not replace with a Stream: it allocates even more
+        for (int i = 0; i < paramTypes.length; i++) {
+            paramTypes[i] = params.get(i).type();
+        }
+        return MethodTypeDesc.of(returnType(), paramTypes);
     }
 
     public GenericType genericReturnType() {
@@ -338,10 +343,28 @@ public sealed abstract class ExecutableCreatorImpl extends ModifiableCreatorImpl
     }
 
     boolean signatureNeeded() {
-        return !typeParameters.isEmpty() || throws_.stream().anyMatch(GenericType::signatureNeeded)
-                || hasGenericReturnType() && genericReturnType().signatureNeeded()
-                || params.stream().filter(ParamVarImpl::hasGenericType).map(ParamVarImpl::genericType)
-                        .anyMatch(GenericType::signatureNeeded);
+        if (!typeParameters.isEmpty()) {
+            return true;
+        }
+        // indexed loop on purpose: avoids allocating an Iterator on this hot path
+        // do not replace with a Stream: it allocates even more
+        for (int i = 0; i < throws_.size(); i++) {
+            if (throws_.get(i).signatureNeeded()) {
+                return true;
+            }
+        }
+        if (hasGenericReturnType() && genericReturnType().signatureNeeded()) {
+            return true;
+        }
+        // indexed loop on purpose: avoids allocating an Iterator on this hot path
+        // do not replace with a Stream: it allocates even more
+        for (int i = 0; i < params.size(); i++) {
+            ParamVarImpl param = params.get(i);
+            if (param.hasGenericType() && param.genericType().signatureNeeded()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     MethodSignature computeSignature() {

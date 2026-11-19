@@ -133,7 +133,8 @@ final class Invoke extends Item {
         if (opcode != Opcode.INVOKESTATIC) {
             smb.pop(); // receiver
         }
-        for (ClassDesc paramType : type.parameterList()) {
+        // counted loop on purpose: avoids allocating a parameter List and its Iterator on this hot path
+        for (int i = 0; i < type.parameterCount(); i++) {
             smb.pop(); // parameter
         }
         if (!Util.isVoid(type.returnType())) {
