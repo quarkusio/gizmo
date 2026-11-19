@@ -26,7 +26,9 @@ final class LocalVarAllocator extends Item {
         // we reserve the slot for the full remainder of the block to avoid control-flow analysis
         startScope = cb.newBoundLabel();
         endScope = block.endLabel();
-        cb.with(LocalVariable.of(slot, localVar.name(), localVar.type(), startScope, endScope));
+        cb.with(LocalVariable.of(slot, cb.constantPool().utf8Entry(localVar.name()),
+                cb.constantPool().utf8Entry(localVar.type()),
+                startScope, endScope));
         if (localVar.hasGenericType()) {
             GenericType gt = localVar.genericType();
             if (!gt.isRaw()) {
